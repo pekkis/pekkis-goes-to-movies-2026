@@ -1,0 +1,739 @@
+{
+  "adult": false,
+  "backdrop_path": "/6TSxLmwT7j1ugtKi8NyMmdzWAGj.jpg",
+  "budget": 40000000,
+  "genres": [
+    {
+      "id": 16,
+      "name": "Animaatio"
+    },
+    {
+      "id": 12,
+      "name": "Seikkailu"
+    },
+    {
+      "id": 10751,
+      "name": "Perhe"
+    },
+    {
+      "id": 14,
+      "name": "Fantasia"
+    },
+    {
+      "id": 35,
+      "name": "Komedia"
+    }
+  ],
+  "homepage": "",
+  "id": 1185806,
+  "imdb_id": "tt29356163",
+  "origin_country": ["CA"],
+  "original_language": "en",
+  "original_title": "PAW Patrol: The Dino Movie",
+  "overview": "",
+  "popularity": 57.0076,
+  "poster_path": "/qnin56Syy5rbG7KCaxWY7SPuy6p.jpg",
+  "production_countries": [
+    {
+      "iso_3166_1": "CA",
+      "name": "Canada"
+    },
+    {
+      "iso_3166_1": "US",
+      "name": "United States of America"
+    }
+  ],
+  "release_date": "2026-07-23",
+  "revenue": 138326933,
+  "runtime": 88,
+  "softcore": false,
+  "status": "Released",
+  "tagline": "",
+  "title": "PAW Patrol: The Dino Movie",
+  "video": false,
+  "vote_average": 8.2,
+  "vote_count": 172,
+  "translations": {
+    "translations": [
+      {
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "name": "English",
+        "english_name": "English",
+        "data": {
+          "homepage": "https://www.paramountpictures.com/movies/paw-patrol-3-the-dino-movie",
+          "overview": "The Paw Patrol lands on a mysterious dinosaur island after a storm, where they meet Rex, a stranded pup. When Humdinger's reckless mining triggers a volcano, the team faces their biggest rescue mission yet to save the island.",
+          "runtime": 88,
+          "tagline": "An adventure of prehistoric pawportions.",
+          "title": ""
+        }
+      },
+      {
+        "iso_3166_1": "SE",
+        "iso_639_1": "sv",
+        "name": "svenska",
+        "english_name": "Swedish",
+        "data": {
+          "homepage": "",
+          "overview": "Efter att deras skepp har fångats i en mystisk storm, kraschlandar valparna i Paw Patrol på en okänd tropisk ö, full av dinosaurier. Där träffar de Rex, en valp som har varit strandsatt på ön i åratal och som har blivit expert på allt som har med dinosaurier att göra. När Paw Patrols ärkefiende, borgmästare Överdängare, hänsynslöst öppnar gruvor i hopp om att kunna utnyttja öns naturtillgångar, orsakar han oavsiktligt att en stor vilande vulkan får ett utbrott. Valparna i Paw Patrol kastas in i en serie jättefarliga, dinosauriestora räddningsinsatser, större än allt som de någonsin har gjort förut, för att försöka stoppa Överdängare innan allt liv på ön dör ut.",
+          "runtime": 0,
+          "tagline": "Äventyret når nya höjder.",
+          "title": "Paw Patrol: Dinosaurie-filmen"
+        }
+      }
+    ]
+  },
+  "alternative_titles": {
+    "titles": [
+      {
+        "iso_3166_1": "BR",
+        "title": "Patrulha Canina: Um Filme Dinossáurico",
+        "type": ""
+      },
+      {
+        "iso_3166_1": "AR",
+        "title": "Paw Patrol: La Dino Pelicula",
+        "type": ""
+      },
+      {
+        "iso_3166_1": "ES",
+        "title": "La Patrulla Canina: La Dino Película",
+        "type": ""
+      }
+    ]
+  },
+  "release_dates": {
+    "results": [
+      {
+        "iso_3166_1": "FI",
+        "release_dates": [
+          {
+            "certification": "K-7",
+            "descriptors": [],
+            "iso_639_1": "",
+            "note": "",
+            "release_date": "2026-08-07T00:00:00.000Z",
+            "type": 3
+          }
+        ]
+      },
+      {
+        "iso_3166_1": "US",
+        "release_dates": [
+          {
+            "certification": "PG",
+            "descriptors": [],
+            "iso_639_1": "",
+            "note": "",
+            "release_date": "2026-08-14T00:00:00.000Z",
+            "type": 3
+          },
+          {
+            "certification": "PG",
+            "descriptors": [],
+            "iso_639_1": "",
+            "note": "",
+            "release_date": "2026-09-29T00:00:00.000Z",
+            "type": 4
+          }
+        ]
+      }
+    ]
+  },
+  "images": {
+    "backdrops": [
+      {
+        "aspect_ratio": 1.778,
+        "height": 2160,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/qFNoS2RJRFVOpwSx7YuCGTX1gqo.jpg",
+        "vote_average": 3.334,
+        "vote_count": 1,
+        "width": 3840
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 2160,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/6TSxLmwT7j1ugtKi8NyMmdzWAGj.jpg",
+        "vote_average": 2.542,
+        "vote_count": 4,
+        "width": 3840
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 858,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/upNeU9FNGAvdhnoThvv64Z0MWKn.jpg",
+        "vote_average": 2.278,
+        "vote_count": 3,
+        "width": 1525
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 2160,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/dSAGnA3OZs0cC3JQ0GLqQVndZON.jpg",
+        "vote_average": 1.75,
+        "vote_count": 2,
+        "width": 3840
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 1080,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/sgIZiW15kFifR2y1SwAr6DyOZ8s.jpg",
+        "vote_average": 1.75,
+        "vote_count": 2,
+        "width": 1920
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 2160,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/A8cbD8HTMUHAzLaGTJgQqb3X95S.jpg",
+        "vote_average": 1.75,
+        "vote_count": 2,
+        "width": 3840
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 1080,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/c9Vatzm113Q3HgYsqThfYf0mpsr.jpg",
+        "vote_average": 1.75,
+        "vote_count": 2,
+        "width": 1920
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 2074,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/rlREba6gEHwcIyxvZLrUebJjxsI.jpg",
+        "vote_average": 1.222,
+        "vote_count": 3,
+        "width": 3686
+      },
+      {
+        "aspect_ratio": 1.775,
+        "height": 845,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/rMfDaKeyNiHXkszNxB065dKagV6.jpg",
+        "vote_average": 0.166,
+        "vote_count": 1,
+        "width": 1500
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 797,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/mtZCXtdDxVpPPG4JxWDGOtZ40Ow.jpg",
+        "vote_average": 0.166,
+        "vote_count": 1,
+        "width": 1417
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 1080,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/sSKamRdD04b2LaTfLf8UQ5iA4lP.jpg",
+        "vote_average": 0,
+        "vote_count": 1,
+        "width": 1920
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 2160,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/dY4LyVSvjk9dN20YsxuouaMIMox.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 3840
+      },
+      {
+        "aspect_ratio": 1.779,
+        "height": 802,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/IdSmuVixVHyuMhQI0JCL4H3uz6.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1427
+      },
+      {
+        "aspect_ratio": 1.779,
+        "height": 802,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/whF8WoRWjhd6Fv05NYEwNnoIKgG.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1427
+      },
+      {
+        "aspect_ratio": 1.779,
+        "height": 802,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/hYcxFMO7sWWD4b5DtUrgexRVBEe.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1427
+      },
+      {
+        "aspect_ratio": 1.779,
+        "height": 802,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/dOOEaaPAc2ToGmXAs8uKgXoNrcD.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1427
+      },
+      {
+        "aspect_ratio": 1.779,
+        "height": 802,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/3xdF0cGBPvc68SkEfbLbzAHYe41.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1427
+      },
+      {
+        "aspect_ratio": 1.779,
+        "height": 802,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/2Fyok4ol8dcf3hiehvnLNIn3E7j.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1427
+      },
+      {
+        "aspect_ratio": 1.779,
+        "height": 802,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/2XfnguUHUjk7m1RZszFHO8J0ceJ.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1427
+      },
+      {
+        "aspect_ratio": 1.779,
+        "height": 802,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/cXxKDE761GCIbBDvX778qZhQhda.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1427
+      },
+      {
+        "aspect_ratio": 1.779,
+        "height": 802,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/uxCOEiiS1SSYMs35s5FD17R26gS.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1427
+      },
+      {
+        "aspect_ratio": 1.779,
+        "height": 802,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/hmNKWbGphDHn7EuOfhohsjxVDfY.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1427
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 1079,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/Ao5hNL0ZIJUhpZwX7L9XaplfGGM.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1919
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 720,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/qKmTFm0bMuoUKKuN8ojoOK5Q8JU.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1280
+      },
+      {
+        "aspect_ratio": 1.779,
+        "height": 720,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/abrnXiPHVDetH4stR0il6hUFLIO.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1281
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 802,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/6jCiG9CKBeN3q2xkCGEptaYVVgg.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1426
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 803,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/fkQo0LvY9GmL8WF4hY1Igf5lkZI.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1428
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 1080,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/d7QlvX6A5r31jrcqsPxO1FWwqpM.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1920
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 1080,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/5zMf3Kqa7w3VrpytOnYVJ7jz1Uv.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1920
+      },
+      {
+        "aspect_ratio": 1.779,
+        "height": 800,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/q1rlAtjYWSeUf1Y8YWqtbuOAH43.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1423
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 1080,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/jKBt8LM4kD2A7NDdLfxMHm7R8Pi.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1920
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 1080,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/mknsbNMPRFMJU6a8qDTcfYNZgNX.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1920
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 858,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/x8X5ntswU1rXJ6BvGGfhvwi40xs.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1525
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 858,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/kqGHCUdGanwejGj51UC1USIogwI.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1525
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 858,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/h93FW5xRBiTZeV6IjJ5hVyftarV.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1525
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 858,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/lfBDogyzpgPmjCacZIZHmPY3BdP.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1525
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 858,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/74Ce3LF7ltGm4GtM3MygNqTKyMy.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1525
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 858,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/3nVDegQMxhXjys7VCBJV0VmUmUu.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1525
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 858,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/bHQVdtnOd1Uwo6E8uxZbEDBHRNh.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1525
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 858,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/yIjmpNIt6nqJhwf0d8mwmzuVwQb.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1525
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 858,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/v9DwkVyGihjTgLxFLST968Xm9Tq.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1525
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 858,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/oAPAKeYg6lNQOwZ0N37q4kxICnU.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1525
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 858,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/jb6ddlzfryb5WK5PW4RpUOU0lx8.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1525
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 858,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/5a8AESTH2ISEOmuZcH3eu7Jp8v2.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1525
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 1080,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/dr4izcnpab4Aaa5SI1JZqLPf0SL.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1920
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 858,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/9rnwCe3V2Jg4oo1r8gkC9DVqXuP.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1525
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 858,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/fMytQPhtXJlsOfDT0eMm8s6LXVM.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1525
+      },
+      {
+        "aspect_ratio": 1.777,
+        "height": 858,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/9koo48X86T5HqPZkgdm5Bq2aDp1.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1525
+      },
+      {
+        "aspect_ratio": 1.775,
+        "height": 810,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/lr7pPCrNfnTpOkAn69jUN6lsHeZ.jpg",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1438
+      }
+    ],
+    "logos": [
+      {
+        "aspect_ratio": 0.979,
+        "height": 1119,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/Bw024JsfPIsxp26W4tZlUtAtU.png",
+        "vote_average": 3.334,
+        "vote_count": 2,
+        "width": 1096
+      },
+      {
+        "aspect_ratio": 1.033,
+        "height": 5210,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/gYDFGDMu9CJQRFLcvvj568L38IW.png",
+        "vote_average": 2.278,
+        "vote_count": 3,
+        "width": 5380
+      },
+      {
+        "aspect_ratio": 1.03,
+        "height": 976,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/g71OOvUUc6M9VXk79wRGlUC4L1m.png",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1005
+      },
+      {
+        "aspect_ratio": 3.513,
+        "height": 491,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/zWgM06IlZLv676OYJ2dQKMVHOxP.png",
+        "vote_average": 0,
+        "vote_count": 0,
+        "width": 1725
+      }
+    ],
+    "posters": [
+      {
+        "aspect_ratio": 0.667,
+        "height": 3000,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/qnin56Syy5rbG7KCaxWY7SPuy6p.jpg",
+        "vote_average": 8.362,
+        "vote_count": 6,
+        "width": 2000
+      },
+      {
+        "aspect_ratio": 0.667,
+        "height": 3000,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/cxXSF4aY5N2cOGwaga5OnpPFHzk.jpg",
+        "vote_average": 2.066,
+        "vote_count": 5,
+        "width": 2000
+      },
+      {
+        "aspect_ratio": 0.667,
+        "height": 3000,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/hvF9KgDanGvPXJ1vACh7Y2JlYV.jpg",
+        "vote_average": 3.334,
+        "vote_count": 2,
+        "width": 2000
+      }
+    ]
+  },
+  "videos": {
+    "results": [
+      {
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "name": "Official Trailer",
+        "key": "xgI5iYmOf5Q",
+        "site": "YouTube",
+        "size": 1080,
+        "type": "Trailer",
+        "official": true,
+        "id": "6a298e79f6c3bc1882ae0d77",
+        "published_at": "2026-06-10T13:00:02.000Z"
+      },
+      {
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "name": "Get your paws into this! Visit PAW Patrol's Ultimate Dino Dig at Westfield Hurstville this weekend",
+        "key": "MF-oZYGW70Q",
+        "site": "YouTube",
+        "size": 1080,
+        "type": "Featurette",
+        "official": true,
+        "id": "6aba324b0833921160f2ae75",
+        "published_at": "2026-09-11T08:56:57.000Z"
+      }
+    ]
+  }
+}

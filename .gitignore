@@ -1,0 +1,9 @@
+node_modules/
+# Fetched data belongs to the cinemas; never commit it
+data/
+.env
+.env.*
+!.env.example
+.DS_Store
+coverage/
+*.log

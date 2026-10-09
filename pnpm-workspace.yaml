@@ -1,0 +1,18 @@
+# pnpm settings (pnpm 10+ reads settings from here instead of .npmrc).
+
+# --- Supply chain ---------------------------------------------------------
+# Do not install versions younger than one day (minutes). Most malicious
+# releases are caught and unpublished within hours.
+minimumReleaseAge: 1440
+# Refuse a package whose publish trust level dropped (e.g. lost provenance).
+trustPolicy: no-downgrade
+# Transitive dependencies may not come from git repos or tarball URLs.
+blockExoticSubdeps: true
+# Fail the install when a dependency wants to run a build script that is not allowed below.
+strictDepBuilds: true
+# Dependencies allowed to run install scripts. None needed so far.
+allowBuilds: {}
+
+# --- Consistency ----------------------------------------------------------
+# Enforce package.json "engines" (node >= 24).
+engineStrict: true

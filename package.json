@@ -1,0 +1,44 @@
+{
+  "name": "pekkis-goes-to-movies",
+  "version": "0.1.0",
+  "private": true,
+  "description": "All Finnish cinema showtimes on one site",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "pull": "node --env-file-if-exists=.env src/cli/fetch.ts",
+    "match": "node --env-file-if-exists=.env src/cli/match.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc",
+    "lint": "oxlint",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "check": "pnpm typecheck && pnpm lint && pnpm fmt:check && pnpm test"
+  },
+  "dependencies": {
+    "@date-fns/tz": "^1.5.0",
+    "date-fns": "^4.4.0",
+    "ky": "^2.1.0",
+    "p-queue": "^9.3.3",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "oxfmt": "^0.72.0",
+    "oxlint": "^1.87.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.10.1",
+      "onFail": "download"
+    }
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@12.10.1"
+}
