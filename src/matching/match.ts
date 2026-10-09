@@ -5,7 +5,7 @@ import type { MovieDetails, SearchResult } from "../tmdb/raw.ts";
 import type { Aliases } from "./aliases.ts";
 import { toCountryCodes } from "./countries.ts";
 import { decide, gatherEvidence, type ListingFacts } from "./score.ts";
-import { titlePrefix } from "./titles.ts";
+import { normalizeTitle, stripQualifiers, titlePrefix } from "./titles.ts";
 
 /** How many search hits get their details fetched and scored. */
 const MAX_CANDIDATES = 5;
@@ -13,7 +13,7 @@ const MAX_CANDIDATES = 5;
 export type MatchOutcome = {
   films: Film[];
   /** listing id -> decision */
-  links: Map<string, { filmId: string; method: "auto" | "alias" }>;
+  links: Map<string, { filmId: string; method: "auto" | "alias" | "sibling" }>;
   unmatched: Unmatched[];
 };
 
@@ -56,13 +56,15 @@ export const matchListings = async (
       continue;
     }
 
+    const clean = stripQualifiers(title);
     const facts: ListingFacts = {
-      title,
+      title: clean,
       countries: toCountryCodes(listing.countries),
       ...(listing.runtimeMinutes && { runtimeMinutes: listing.runtimeMinutes }),
       ...(listing.year && { year: listing.year }),
+      ...(listing.rating && { rating: listing.rating }),
     };
-    const queries = [title, titlePrefix(title)].filter((q): q is string => Boolean(q));
+    const queries = [clean, titlePrefix(clean)].filter((q): q is string => Boolean(q));
     const hits = (await Promise.all(queries.map((q) => tmdb.search(q)))).flat();
     const ranked = rankHits(hits, currentYear).slice(0, MAX_CANDIDATES);
     const details = await Promise.all(ranked.map((hit) => tmdb.movie(hit.id)));
@@ -71,7 +73,7 @@ export const matchListings = async (
     if (decision.kind === "match") {
       const chosen = details.find((d) => d.id === decision.tmdbId)!;
       links.set(listing.id, { filmId: keep(chosen), method: "auto" });
-    } else {
+    } else if (listing.kind !== "event") {
       unmatched.push({
         listingId: listing.id,
         title,
@@ -84,5 +86,33 @@ export const matchListings = async (
     }
   }
 
-  return { films: [...films.values()], links, unmatched };
+  // Sibling pass: a listing another provider already linked, with the same title and
+  // nearly the same runtime, is the same film. Catches what one provider's data cannot
+  // prove on its own (e.g. Finnkino publishes no production countries) and reuses aliases.
+  const siblingKey = (listing: FilmListing) => {
+    const title = listing.title.fi ?? listing.title.en ?? listing.title.sv;
+    return title ? normalizeTitle(stripQualifiers(title)) : undefined;
+  };
+  const linked = listings.filter((l) => links.has(l.id));
+  const stillUnmatched: Unmatched[] = [];
+  for (const entry of unmatched) {
+    const listing = listings.find((l) => l.id === entry.listingId)!;
+    const key = siblingKey(listing);
+    const siblings = linked.filter(
+      (other) =>
+        other.provider !== listing.provider &&
+        siblingKey(other) === key &&
+        listing.runtimeMinutes !== undefined &&
+        other.runtimeMinutes !== undefined &&
+        Math.abs(listing.runtimeMinutes - other.runtimeMinutes) <= 3,
+    );
+    const filmIds = new Set(siblings.map((s) => links.get(s.id)!.filmId));
+    if (filmIds.size === 1) {
+      links.set(listing.id, { filmId: [...filmIds][0]!, method: "sibling" });
+    } else {
+      stillUnmatched.push(entry);
+    }
+  }
+
+  return { films: [...films.values()], links, unmatched: stillUnmatched };
 };

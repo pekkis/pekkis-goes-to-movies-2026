@@ -18,7 +18,7 @@ The project is part of the user-centered design course at JAMK.
 
 ## Status (updated 2026-10-09)
 
-- **The BioRex adapter is done**, with tests: `pnpm pull` fetches all 12 cinemas for 7 days into JSON and matches the films to TMDB. Finnkino is not done yet.
+- **BioRex and Finnkino adapters are done**, with tests: `pnpm pull` fetches both chains (12 + 17 cinemas) for 7 days into JSON and matches the films to TMDB.
 - **License: AGPL-3.0-or-later** ([LICENSE](LICENSE)). Everything is published as open source.
 - **Direction:** a better version of Leffavuoro (Shady-Dev/kino) in TypeScript, with a precise, typed data model and JSON output. Model: [docs/data-model.md](docs/data-model.md). The source of truth is [src/model/schema.ts](src/model/schema.ts).
 - Data collection is written in TypeScript (strict). The frontend stack is still open, so do not add a UI framework until the maintainer decides.
@@ -28,15 +28,17 @@ The project is part of the user-centered design course at JAMK.
 ## Commands
 
 ```sh
-pnpm pull                    # fetch BioRex → data/raw/… + data/normalized/biorex.json, then match to TMDB
+pnpm pull                    # fetch all providers → data/raw/… + data/normalized/{provider}.json, then match to TMDB
+pnpm pull --provider finnkino --days 3 --from 2026-10-10
+pnpm pull --provider biorex --venue 13   # --venue takes source ids and needs exactly one --provider
 pnpm match                   # re-run TMDB matching only (e.g. after editing aliases)
-pnpm pull --days 3 --cinema 13 --from 2026-10-10
 pnpm test                    # vitest, no network
 pnpm check                   # typecheck + lint + fmt:check + test (run before saying you are done)
 pnpm fmt                     # oxfmt rewrites formatting
 ```
 
 - **`pnpm fetch` is a built-in pnpm command.** That is why the fetch script is called `pull`.
+- **Finnkino opens a visible Chrome window** for a few seconds when its 12-hour token needs renewing (about twice a day; cached in `data/cache/finnkino-token.json`). It needs Google Chrome installed and cannot run in CI. If one provider fails, the others still run and `pull` exits non-zero.
 - **`.env`** (gitignored) is loaded by Node's own `--env-file-if-exists=.env` flag. **No dotenv.**
   - Variables are validated with Zod in [src/lib/env.ts](src/lib/env.ts) (`loadEnv()`), the only place that reads `process.env`.
   - `TMDB_APIKEY` (required): TMDB v4 read access token, used as a Bearer token. Never print it.
@@ -51,6 +53,8 @@ src/lib/                      env, http (ky + p-queue, per-host pacing), time (H
 src/providers/<id>/raw.ts     schemas of the source's raw responses (looseObject: only the fields we read)
 src/providers/<id>/fetch.ts   I/O only → raw snapshot
 src/providers/<id>/parse.ts   pure function: raw snapshot → ProviderBatch
+src/providers/finnkino/token.ts  Finnkino token via headed Chrome (Playwright), cached
+src/providers/registry.ts     list of adapters; the CLI runs them
 src/tmdb/                     TMDB client (cached), raw schemas, toFilm (pure)
 src/matching/                 TMDB matching: score.ts (pure scoring), match.ts, catalog.ts (films.json)
 config/tmdb-aliases.json      hand-maintained aliases, listing id → TMDB id (committed)
@@ -66,7 +70,7 @@ data/                         fetched data (gitignored)
 2. Write `raw.ts`, `fetch.ts` and `parse.ts`.
 3. Build fixtures that cover the different cases.
 4. Write the tests.
-5. Wire the adapter into the CLI.
+5. Add it to `src/providers/registry.ts`.
 
 ## Tools and libraries
 
@@ -89,17 +93,18 @@ data/                         fetched data (gitignored)
   - `zod` v4: schemas, types and JSON Schema
   - `date-fns` + `@date-fns/tz`: time zones (Europe/Helsinki)
   - `p-queue`: request pacing
-- Not yet: HTML parser, Playwright, database library. Data is stored **as JSON files on disk for now** and **in PostgreSQL later**.
+- `playwright`: only for the Finnkino token, driving the installed Chrome (`channel: "chrome"`, no bundled browser download).
+- Not yet: HTML parser, database library. Data is stored **as JSON files on disk for now** and **in PostgreSQL later**.
 
 ## Data sources: summary
 
 Detailed findings, sample payloads and references: [docs/data-sources.md](docs/data-sources.md).
 
-| Source         | Method                                                                     | Auth                                     | Status                             |
-| -------------- | -------------------------------------------------------------------------- | ---------------------------------------- | ---------------------------------- |
-| BioRex         | Unofficial JSON (`webshop.biorex.fi/webservices/...`)                      | None                                     | ✅ Verified working                |
-| Finnkino       | Vista OCAPI JSON (`digital-api.finnkino.fi/WSVistaWebClient/ocapi/v1/...`) | JWT from the front page HTML, Cloudflare | ⚠️ Fragile, not yet verified by us |
-| Finnkino (old) | XML API `finnkino.fi/xml/...`                                              | –                                        | ❌ Retired (2025–2026)             |
+| Source         | Method                                                                     | Auth                                                                 | Status                                  |
+| -------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------- |
+| BioRex         | Unofficial JSON (`webshop.biorex.fi/webservices/...`)                      | None                                                                 | ✅ Verified working                     |
+| Finnkino       | Vista OCAPI JSON (`digital-api.finnkino.fi/WSVistaWebClient/ocapi/v1/...`) | Public 12 h JWT from the front page; headed Chrome passes Cloudflare | ✅ Working, needs a desktop with Chrome |
+| Finnkino (old) | XML API `finnkino.fi/xml/...`                                              | –                                                                    | ❌ Retired (2025–2026)                  |
 
 Neither needs classic HTML crawling.
 
@@ -110,6 +115,7 @@ Neither needs classic HTML crawling.
 - **Posters, synopses and trailers come only from TMDB, never from cinemas.** A film is linked only when the match is certain. Otherwise it stays unmatched and is fixed with an alias. Rules: [docs/data-model.md](docs/data-model.md#tmdb-matching).
 - Unmatched films are listed in the `pnpm match` output and in the `unmatched` list of `films.json`, with candidates. **Verify an alias on TMDB (runtime, countries, year) before adding it**, and write the reasoning in its `note`.
 - Do not loosen the matching rules without a regression test (`test/matching/score.test.ts`).
+- Event cinema (`kind: "event"`: operas, concerts) is never reported as unmatched; do not spend effort aliasing it.
 - TMDB's terms require attribution (logo and notice) in the UI.
 
 ### Architecture
@@ -124,7 +130,7 @@ Neither needs classic HTML crawling.
 
 - **User-Agent:** use an identifiable User-Agent with contact details. No residential proxies, fingerprint spoofing or captcha solving. Never call ticket purchase or payment endpoints.
 - **Politeness:** when probing external APIs, make few requests and only GETs. Do not try hard to get around Cloudflare.
-- **Finnkino:** Cloudflare blocks datacenter IPs. Do not assume fetching works from the cloud or CI.
-- **Legal:** both APIs are undocumented and we have no permission to use them. Point this out when planning production use.
+- **Finnkino:** Cloudflare challenges every non-browser client (even from home) and headless Chrome. Only the token step needs a browser; never try to defeat the check by other means (no fingerprint spoofing, no captcha solving). Do not assume it works in the cloud or CI.
+- **Contacting cinemas:** we have not contacted any source and do not need to while this is a course project. **If the service ever goes truly public, we notify every cinema and chain first** (what we read, how often, that every click goes to their own ticket page) and remove any that object. Do not expect API keys from them; the realistic risk is technical breakage (e.g. Cloudflare tightening), not a missing permission.
 - **Verified vs. assumed:** always mark separately in the docs what was tested first-hand and what was inferred or read elsewhere.
 - **Keep this file up to date:** update `AGENTS.md` when the stack, architecture or data sources change.

@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import { toCountryCodes } from "../../src/matching/countries.ts";
-import { normalizeTitle, titlePrefix } from "../../src/matching/titles.ts";
+import { normalizeTitle, stripQualifiers, titlePrefix } from "../../src/matching/titles.ts";
 
 it.each([
   ["Kätyrit & Monsterit", "kätyrit and monsterit"],
@@ -26,4 +26,14 @@ it("maps Finnish country names and drops unknown ones", () => {
     "US",
     "CZ",
   ]);
+});
+
+it.each([
+  ["Nalle Puhin elokuva (dub)", "Nalle Puhin elokuva"],
+  ["Vaiana (liveaction)", "Vaiana"],
+  ["Autot (uudelleenjulkaisu) (orig)", "Autot"],
+  ["(500) Days of Summer", "(500) Days of Summer"],
+  ["(dub)", "(dub)"],
+])("stripQualifiers(%s)", (input, expected) => {
+  expect(stripQualifiers(input)).toBe(expected);
 });

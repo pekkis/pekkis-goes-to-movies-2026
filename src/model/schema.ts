@@ -107,10 +107,18 @@ export const FilmListing = z.object({
   genres: z.array(z.string()),
   /** Production countries as the provider writes them (e.g. Finnish names). */
   countries: z.array(z.string()),
+  /**
+   * `event`: opera, concert, sports and other event cinema. Matched to TMDB when possible,
+   * but never reported as unmatched: most of them are not on TMDB at all.
+   */
+  kind: z.enum(["film", "event"]),
   /** Canonical film (`tmdb:{id}`), set by the matching step. */
   filmId: z.string().optional(),
-  /** How `filmId` was decided. */
-  match: z.enum(["auto", "alias"]).optional(),
+  /**
+   * How `filmId` was decided: `auto` (TMDB search), `alias` (config/tmdb-aliases.json) or
+   * `sibling` (same title and runtime as a listing another provider already linked).
+   */
+  match: z.enum(["auto", "alias", "sibling"]).optional(),
 });
 export type FilmListing = z.infer<typeof FilmListing>;
 

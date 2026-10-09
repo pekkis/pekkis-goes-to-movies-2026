@@ -17,3 +17,12 @@ export const titlePrefix = (title: string): string | undefined => {
   const prefix = match?.[1]?.trim();
   return prefix && prefix.length >= 4 && prefix !== title.trim() ? prefix : undefined;
 };
+
+/**
+ * Drops trailing parenthesized qualifiers cinemas add to a title:
+ * "Nalle Puhin elokuva (dub)", "Vaiana (liveaction)", "Autot (uudelleenjulkaisu)".
+ */
+export const stripQualifiers = (title: string): string => {
+  const stripped = title.replace(/(\s*\([^()]*\))+\s*$/, "").trim();
+  return stripped || title.trim();
+};

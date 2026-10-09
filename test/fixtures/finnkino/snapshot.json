@@ -1,0 +1,3141 @@
+{
+  "fetchedAt": "2026-10-09T14:05:17.999Z",
+  "from": "2026-10-09",
+  "days": 1,
+  "sites": {
+    "sites": [
+      {
+        "id": "1004",
+        "name": {
+          "text": "Promenadi Pori",
+          "translations": []
+        },
+        "location": {
+          "latitude": 61.51614827,
+          "longitude": 21.77650159
+        },
+        "contactDetails": {
+          "email": "noreply@finnkino.com",
+          "address": {
+            "line1": "Yrjönkatu 17",
+            "line2": "28100",
+            "city": "Pori"
+          },
+          "addressV2": {
+            "line1": {
+              "text": "Yrjönkatu 17",
+              "translations": []
+            },
+            "line2": {
+              "text": "28100",
+              "translations": []
+            },
+            "line3": {
+              "text": "Pori",
+              "translations": []
+            },
+            "line4": null
+          }
+        },
+        "ianaTimeZoneName": "Europe/Kyiv",
+        "hasSellableItems": true,
+        "allowedItemDeliveryMethods": ["CounterPickup", "ServiceAreaPickup"]
+      },
+      {
+        "id": "1095",
+        "name": {
+          "text": "Fantasia Jyväskylä",
+          "translations": []
+        },
+        "location": {
+          "latitude": 62.24302769,
+          "longitude": 25.74652332
+        },
+        "contactDetails": {
+          "email": "noreply@finnkino.com",
+          "address": {
+            "line1": "Kauppakatu 29-31",
+            "line2": "40100 ",
+            "city": "Jyväskylä"
+          },
+          "addressV2": {
+            "line1": {
+              "text": "Kauppakatu 29-31",
+              "translations": []
+            },
+            "line2": {
+              "text": "40100 ",
+              "translations": []
+            },
+            "line3": {
+              "text": "Jyväskylä",
+              "translations": []
+            },
+            "line4": null
+          }
+        },
+        "ianaTimeZoneName": "Europe/Kyiv",
+        "hasSellableItems": true,
+        "allowedItemDeliveryMethods": ["CounterPickup", "ServiceAreaPickup"]
+      },
+      {
+        "id": "1100",
+        "name": {
+          "text": "Kinopalatsi Helsinki",
+          "translations": []
+        },
+        "location": {
+          "latitude": 60.17127741,
+          "longitude": 24.94642027
+        },
+        "contactDetails": {
+          "email": "noreply@finnkino.com",
+          "address": {
+            "line1": "Kaisaniemenkatu 2",
+            "line2": "00100 ",
+            "city": "Helsinki"
+          },
+          "addressV2": {
+            "line1": {
+              "text": "Kaisaniemenkatu 2",
+              "translations": []
+            },
+            "line2": {
+              "text": "00100 ",
+              "translations": []
+            },
+            "line3": {
+              "text": "Helsinki",
+              "translations": []
+            },
+            "line4": null
+          }
+        },
+        "ianaTimeZoneName": "Europe/Kyiv",
+        "hasSellableItems": true,
+        "allowedItemDeliveryMethods": ["CounterPickup", "ServiceAreaPickup"]
+      },
+      {
+        "id": "1101",
+        "name": {
+          "text": "Kinopalatsi Turku",
+          "translations": []
+        },
+        "location": {
+          "latitude": 60.4530671,
+          "longitude": 22.26697543
+        },
+        "contactDetails": {
+          "email": "noreply@finnkino.com",
+          "address": {
+            "line1": "Kauppiaskatu 11",
+            "line2": "20100 ",
+            "city": "Turku"
+          },
+          "addressV2": {
+            "line1": {
+              "text": "Kauppiaskatu 11",
+              "translations": []
+            },
+            "line2": {
+              "text": "20100 ",
+              "translations": []
+            },
+            "line3": {
+              "text": "Turku",
+              "translations": []
+            },
+            "line4": null
+          }
+        },
+        "ianaTimeZoneName": "Europe/Kyiv",
+        "hasSellableItems": true,
+        "allowedItemDeliveryMethods": ["CounterPickup", "ServiceAreaPickup"]
+      },
+      {
+        "id": "1107",
+        "name": {
+          "text": "Plaza Oulu",
+          "translations": []
+        },
+        "location": {
+          "latitude": 65.01133215,
+          "longitude": 25.46565751
+        },
+        "contactDetails": {
+          "email": "noreply@finnkino.com",
+          "address": {
+            "line1": "Torikatu 32",
+            "line2": "90100",
+            "city": "Oulu"
+          },
+          "addressV2": {
+            "line1": {
+              "text": "Torikatu 32",
+              "translations": []
+            },
+            "line2": {
+              "text": "90100",
+              "translations": []
+            },
+            "line3": {
+              "text": "Oulu",
+              "translations": []
+            },
+            "line4": null
+          }
+        },
+        "ianaTimeZoneName": "Europe/Kyiv",
+        "hasSellableItems": true,
+        "allowedItemDeliveryMethods": ["CounterPickup", "ServiceAreaPickup"]
+      },
+      {
+        "id": "1111",
+        "name": {
+          "text": "Tennispalatsi Helsinki",
+          "translations": []
+        },
+        "location": {
+          "latitude": 60.16939926,
+          "longitude": 24.93099976
+        },
+        "contactDetails": {
+          "email": "noreply@finnkino.com",
+          "address": {
+            "line1": "Salomonkatu 15",
+            "line2": "00100",
+            "city": "Helsinki"
+          },
+          "addressV2": {
+            "line1": {
+              "text": "Salomonkatu 15",
+              "translations": []
+            },
+            "line2": {
+              "text": "00100",
+              "translations": []
+            },
+            "line3": {
+              "text": "Helsinki",
+              "translations": []
+            },
+            "line4": null
+          }
+        },
+        "ianaTimeZoneName": "Europe/Kyiv",
+        "hasSellableItems": true,
+        "allowedItemDeliveryMethods": ["CounterPickup", "ServiceAreaPickup"]
+      },
+      {
+        "id": "1162",
+        "name": {
+          "text": "Itis Helsinki",
+          "translations": []
+        },
+        "location": {
+          "latitude": 60.2112587,
+          "longitude": 25.08359256
+        },
+        "contactDetails": {
+          "email": "noreply@finnkino.com",
+          "address": {
+            "line1": "Itäkatu 1-7",
+            "line2": "00930",
+            "city": "Helsinki"
+          },
+          "addressV2": {
+            "line1": {
+              "text": "Itäkatu 1-7",
+              "translations": []
+            },
+            "line2": {
+              "text": "00930",
+              "translations": []
+            },
+            "line3": {
+              "text": "Helsinki",
+              "translations": []
+            },
+            "line4": null
+          }
+        },
+        "ianaTimeZoneName": "Europe/Kyiv",
+        "hasSellableItems": true,
+        "allowedItemDeliveryMethods": ["CounterPickup", "ServiceAreaPickup"]
+      }
+    ]
+  },
+  "showtimes": {
+    "fixture": {
+      "businessDate": null,
+      "showtimes": [
+        {
+          "id": "1004-5833",
+          "schedule": {
+            "businessDate": "2026-10-09",
+            "startsAt": "2026-10-09T17:15:00+03:00",
+            "endsAt": "2026-10-09T19:04:00+03:00",
+            "filmStartsAt": "2026-10-09T17:15:00+03:00",
+            "filmEndsAt": "2026-10-09T19:04:00+03:00",
+            "inSeatItemDelivery": null
+          },
+          "isSoldOut": false,
+          "seatLayoutId": "1004-4-6",
+          "filmId": "HO00000553",
+          "siteId": "1004",
+          "screenId": "1004-4",
+          "areaCategories": [
+            {
+              "areaCategoryId": "1004-0000000001",
+              "isAllocatedSeating": true
+            }
+          ],
+          "attributeIds": ["0000000001", "0000000057", "0000000065", "0000000068", "0000000082"],
+          "isAllocatedSeating": true,
+          "requires3dGlasses": false,
+          "eventId": null,
+          "restrictions": [],
+          "filmAdvanceBookingRuleId": null
+        },
+        {
+          "id": "1095-7848",
+          "schedule": {
+            "businessDate": "2026-10-09",
+            "startsAt": "2026-10-09T17:50:00+03:00",
+            "endsAt": "2026-10-09T19:39:00+03:00",
+            "filmStartsAt": "2026-10-09T17:50:00+03:00",
+            "filmEndsAt": "2026-10-09T19:39:00+03:00",
+            "inSeatItemDelivery": null
+          },
+          "isSoldOut": false,
+          "seatLayoutId": "1095-6-8",
+          "filmId": "HO00000435",
+          "siteId": "1095",
+          "screenId": "1095-6",
+          "areaCategories": [
+            {
+              "areaCategoryId": "1095-0000000001",
+              "isAllocatedSeating": true
+            }
+          ],
+          "attributeIds": ["0000000001", "0000000066", "0000000082"],
+          "isAllocatedSeating": true,
+          "requires3dGlasses": false,
+          "eventId": null,
+          "restrictions": [],
+          "filmAdvanceBookingRuleId": null
+        },
+        {
+          "id": "1111-26299",
+          "schedule": {
+            "businessDate": "2026-10-09",
+            "startsAt": "2026-10-09T18:15:00+03:00",
+            "endsAt": "2026-10-09T19:42:00+03:00",
+            "filmStartsAt": "2026-10-09T18:15:00+03:00",
+            "filmEndsAt": "2026-10-09T19:42:00+03:00",
+            "inSeatItemDelivery": null
+          },
+          "isSoldOut": false,
+          "seatLayoutId": "1111-14-16",
+          "filmId": "HO00000406",
+          "siteId": "1111",
+          "screenId": "1111-14",
+          "areaCategories": [
+            {
+              "areaCategoryId": "1111-0000000001",
+              "isAllocatedSeating": true
+            }
+          ],
+          "attributeIds": ["0000000001", "0000000066", "0000000059", "0000000087", "0000000082"],
+          "isAllocatedSeating": true,
+          "requires3dGlasses": false,
+          "eventId": null,
+          "restrictions": [],
+          "filmAdvanceBookingRuleId": null
+        },
+        {
+          "id": "1100-15225",
+          "schedule": {
+            "businessDate": "2026-10-09",
+            "startsAt": "2026-10-09T19:00:00+03:00",
+            "endsAt": "2026-10-09T20:29:00+03:00",
+            "filmStartsAt": "2026-10-09T19:00:00+03:00",
+            "filmEndsAt": "2026-10-09T20:29:00+03:00",
+            "inSeatItemDelivery": null
+          },
+          "isSoldOut": false,
+          "seatLayoutId": "1100-3-11",
+          "filmId": "HO00000547",
+          "siteId": "1100",
+          "screenId": "1100-3",
+          "areaCategories": [
+            {
+              "areaCategoryId": "1100-0000000001",
+              "isAllocatedSeating": true
+            }
+          ],
+          "attributeIds": [
+            "0000000001",
+            "0000000014",
+            "0000000064",
+            "0000000065",
+            "0000000040",
+            "0000000087",
+            "0000000082"
+          ],
+          "isAllocatedSeating": true,
+          "requires3dGlasses": false,
+          "eventId": null,
+          "restrictions": [],
+          "filmAdvanceBookingRuleId": null
+        },
+        {
+          "id": "1100-15212",
+          "schedule": {
+            "businessDate": "2026-10-09",
+            "startsAt": "2026-10-09T21:30:00+03:00",
+            "endsAt": "2026-10-09T23:21:00+03:00",
+            "filmStartsAt": "2026-10-09T21:30:00+03:00",
+            "filmEndsAt": "2026-10-09T23:21:00+03:00",
+            "inSeatItemDelivery": null
+          },
+          "isSoldOut": false,
+          "seatLayoutId": "1100-4-10",
+          "filmId": "HO00000550",
+          "siteId": "1100",
+          "screenId": "1100-4",
+          "areaCategories": [
+            {
+              "areaCategoryId": "1100-0000000001",
+              "isAllocatedSeating": true
+            }
+          ],
+          "attributeIds": [
+            "0000000001",
+            "0000000014",
+            "0000000065",
+            "0000000087",
+            "0000000036",
+            "0000000082"
+          ],
+          "isAllocatedSeating": true,
+          "requires3dGlasses": false,
+          "eventId": null,
+          "restrictions": [],
+          "filmAdvanceBookingRuleId": null
+        },
+        {
+          "id": "1095-7932",
+          "schedule": {
+            "businessDate": "2026-10-12",
+            "startsAt": "2026-10-12T12:40:00+03:00",
+            "endsAt": "2026-10-12T14:00:00+03:00",
+            "filmStartsAt": "2026-10-12T12:40:00+03:00",
+            "filmEndsAt": "2026-10-12T14:00:00+03:00",
+            "inSeatItemDelivery": null
+          },
+          "isSoldOut": false,
+          "seatLayoutId": "1095-5-7",
+          "filmId": "HO00000466",
+          "siteId": "1095",
+          "screenId": "1095-5",
+          "areaCategories": [
+            {
+              "areaCategoryId": "1095-0000000001",
+              "isAllocatedSeating": true
+            }
+          ],
+          "attributeIds": ["0000000001", "0000000023", "0000000082"],
+          "isAllocatedSeating": true,
+          "requires3dGlasses": false,
+          "eventId": null,
+          "restrictions": [],
+          "filmAdvanceBookingRuleId": null
+        },
+        {
+          "id": "1004-5830",
+          "schedule": {
+            "businessDate": "2026-10-09",
+            "startsAt": "2026-10-09T17:50:00+03:00",
+            "endsAt": "2026-10-09T19:42:00+03:00",
+            "filmStartsAt": "2026-10-09T17:50:00+03:00",
+            "filmEndsAt": "2026-10-09T19:42:00+03:00",
+            "inSeatItemDelivery": null
+          },
+          "isSoldOut": false,
+          "seatLayoutId": "1004-2-4",
+          "filmId": "HO00000434",
+          "siteId": "1004",
+          "screenId": "1004-2",
+          "areaCategories": [
+            {
+              "areaCategoryId": "1004-0000000001",
+              "isAllocatedSeating": true
+            }
+          ],
+          "attributeIds": ["0000000001", "0000000014", "0000000066", "0000000068", "0000000082"],
+          "isAllocatedSeating": true,
+          "requires3dGlasses": false,
+          "eventId": null,
+          "restrictions": [],
+          "filmAdvanceBookingRuleId": null
+        },
+        {
+          "id": "1100-15222",
+          "schedule": {
+            "businessDate": "2026-10-09",
+            "startsAt": "2026-10-09T17:30:00+03:00",
+            "endsAt": "2026-10-09T19:39:00+03:00",
+            "filmStartsAt": "2026-10-09T17:30:00+03:00",
+            "filmEndsAt": "2026-10-09T19:39:00+03:00",
+            "inSeatItemDelivery": null
+          },
+          "isSoldOut": false,
+          "seatLayoutId": "1100-1-2",
+          "filmId": "HO00000460",
+          "siteId": "1100",
+          "screenId": "1100-1",
+          "areaCategories": [
+            {
+              "areaCategoryId": "1100-0000000001",
+              "isAllocatedSeating": true
+            }
+          ],
+          "attributeIds": [
+            "0000000001",
+            "0000000016",
+            "0000000057",
+            "0000000065",
+            "0000000087",
+            "0000000068",
+            "0000000082"
+          ],
+          "isAllocatedSeating": true,
+          "requires3dGlasses": false,
+          "eventId": null,
+          "restrictions": ["FilmAdvanceBookingRule"],
+          "filmAdvanceBookingRuleId": "1100-4-HO00000460"
+        },
+        {
+          "id": "1107-10403",
+          "schedule": {
+            "businessDate": "2026-10-09",
+            "startsAt": "2026-10-09T18:30:00+03:00",
+            "endsAt": "2026-10-09T19:58:00+03:00",
+            "filmStartsAt": "2026-10-09T18:30:00+03:00",
+            "filmEndsAt": "2026-10-09T19:58:00+03:00",
+            "inSeatItemDelivery": null
+          },
+          "isSoldOut": false,
+          "seatLayoutId": "1107-1-2",
+          "filmId": "HO00000515",
+          "siteId": "1107",
+          "screenId": "1107-1",
+          "areaCategories": [
+            {
+              "areaCategoryId": "1107-0000000004",
+              "isAllocatedSeating": true
+            }
+          ],
+          "attributeIds": [
+            "0000000001",
+            "0000000016",
+            "0000000066",
+            "0000000011",
+            "0000000068",
+            "0000000082"
+          ],
+          "isAllocatedSeating": true,
+          "requires3dGlasses": false,
+          "eventId": null,
+          "restrictions": [],
+          "filmAdvanceBookingRuleId": null
+        },
+        {
+          "id": "1101-12732",
+          "schedule": {
+            "businessDate": "2026-10-09",
+            "startsAt": "2026-10-09T18:10:00+03:00",
+            "endsAt": "2026-10-09T19:38:00+03:00",
+            "filmStartsAt": "2026-10-09T18:10:00+03:00",
+            "filmEndsAt": "2026-10-09T19:38:00+03:00",
+            "inSeatItemDelivery": null
+          },
+          "isSoldOut": false,
+          "seatLayoutId": "1101-1-2",
+          "filmId": "HO00000515",
+          "siteId": "1101",
+          "screenId": "1101-1",
+          "areaCategories": [
+            {
+              "areaCategoryId": "1101-0000000003",
+              "isAllocatedSeating": true
+            }
+          ],
+          "attributeIds": [
+            "0000000001",
+            "0000000066",
+            "0000000010",
+            "0000000068",
+            "0000000089",
+            "0000000082"
+          ],
+          "isAllocatedSeating": true,
+          "requires3dGlasses": false,
+          "eventId": null,
+          "restrictions": [],
+          "filmAdvanceBookingRuleId": null
+        },
+        {
+          "id": "1162-12065",
+          "schedule": {
+            "businessDate": "2026-10-09",
+            "startsAt": "2026-10-09T20:45:00+03:00",
+            "endsAt": "2026-10-09T23:37:00+03:00",
+            "filmStartsAt": "2026-10-09T20:45:00+03:00",
+            "filmEndsAt": "2026-10-09T23:37:00+03:00",
+            "inSeatItemDelivery": null
+          },
+          "isSoldOut": false,
+          "seatLayoutId": "1162-1-14",
+          "filmId": "HO00000334",
+          "siteId": "1162",
+          "screenId": "1162-1",
+          "areaCategories": [
+            {
+              "areaCategoryId": "1162-0000000002",
+              "isAllocatedSeating": true
+            }
+          ],
+          "attributeIds": [
+            "0000000001",
+            "0000000016",
+            "0000000057",
+            "0000000065",
+            "0000000008",
+            "0000000087",
+            "0000000068",
+            "0000000082"
+          ],
+          "isAllocatedSeating": true,
+          "requires3dGlasses": false,
+          "eventId": null,
+          "restrictions": ["FilmAdvanceBookingRule"],
+          "filmAdvanceBookingRuleId": "1162-22-HO00000334"
+        },
+        {
+          "id": "1095-7931",
+          "schedule": {
+            "businessDate": "2026-10-12",
+            "startsAt": "2026-10-12T13:40:00+03:00",
+            "endsAt": "2026-10-12T15:00:00+03:00",
+            "filmStartsAt": "2026-10-12T13:40:00+03:00",
+            "filmEndsAt": "2026-10-12T15:00:00+03:00",
+            "inSeatItemDelivery": null
+          },
+          "isSoldOut": false,
+          "seatLayoutId": "1095-2-4",
+          "filmId": "HO00000508",
+          "siteId": "1095",
+          "screenId": "1095-2",
+          "areaCategories": [
+            {
+              "areaCategoryId": "1095-0000000001",
+              "isAllocatedSeating": true
+            }
+          ],
+          "attributeIds": ["0000000001", "0000000023", "0000000066", "0000000082"],
+          "isAllocatedSeating": true,
+          "requires3dGlasses": false,
+          "eventId": null,
+          "restrictions": [],
+          "filmAdvanceBookingRuleId": null
+        },
+        {
+          "id": "1095-7042",
+          "schedule": {
+            "businessDate": "2026-10-10",
+            "startsAt": "2026-10-10T12:30:00+03:00",
+            "endsAt": "2026-10-10T14:17:00+03:00",
+            "filmStartsAt": "2026-10-10T12:40:00+03:00",
+            "filmEndsAt": "2026-10-10T14:17:00+03:00",
+            "inSeatItemDelivery": null
+          },
+          "isSoldOut": false,
+          "seatLayoutId": "1095-1-16",
+          "filmId": "HO00000563",
+          "siteId": "1095",
+          "screenId": "1095-1",
+          "areaCategories": [
+            {
+              "areaCategoryId": "1095-0000000001",
+              "isAllocatedSeating": true
+            }
+          ],
+          "attributeIds": ["0000000001", "0000000057", "0000000064", "0000000062", "0000000082"],
+          "isAllocatedSeating": true,
+          "requires3dGlasses": false,
+          "eventId": null,
+          "restrictions": [],
+          "filmAdvanceBookingRuleId": null
+        },
+        {
+          "id": "1100-15240",
+          "schedule": {
+            "businessDate": "2026-10-10",
+            "startsAt": "2026-10-10T14:30:00+03:00",
+            "endsAt": "2026-10-10T15:58:00+03:00",
+            "filmStartsAt": "2026-10-10T14:30:00+03:00",
+            "filmEndsAt": "2026-10-10T15:58:00+03:00",
+            "inSeatItemDelivery": null
+          },
+          "isSoldOut": false,
+          "seatLayoutId": "1100-10-4",
+          "filmId": "HO00000501",
+          "siteId": "1100",
+          "screenId": "1100-10",
+          "areaCategories": [
+            {
+              "areaCategoryId": "1100-0000000001",
+              "isAllocatedSeating": true
+            }
+          ],
+          "attributeIds": [
+            "0000000001",
+            "0000000065",
+            "0000000054",
+            "0000000087",
+            "0000000068",
+            "0000000082"
+          ],
+          "isAllocatedSeating": true,
+          "requires3dGlasses": false,
+          "eventId": null,
+          "restrictions": [],
+          "filmAdvanceBookingRuleId": null
+        },
+        {
+          "id": "1100-15391",
+          "schedule": {
+            "businessDate": "2026-10-12",
+            "startsAt": "2026-10-12T13:30:00+03:00",
+            "endsAt": "2026-10-12T15:37:00+03:00",
+            "filmStartsAt": "2026-10-12T13:30:00+03:00",
+            "filmEndsAt": "2026-10-12T15:37:00+03:00",
+            "inSeatItemDelivery": null
+          },
+          "isSoldOut": false,
+          "seatLayoutId": "1100-4-10",
+          "filmId": "HO00000502",
+          "siteId": "1100",
+          "screenId": "1100-4",
+          "areaCategories": [
+            {
+              "areaCategoryId": "1100-0000000001",
+              "isAllocatedSeating": true
+            }
+          ],
+          "attributeIds": [
+            "0000000001",
+            "0000000065",
+            "0000000087",
+            "0000000068",
+            "0000000085",
+            "0000000082"
+          ],
+          "isAllocatedSeating": true,
+          "requires3dGlasses": false,
+          "eventId": null,
+          "restrictions": [],
+          "filmAdvanceBookingRuleId": null
+        },
+        {
+          "id": "1004-5821",
+          "schedule": {
+            "businessDate": "2026-10-09",
+            "startsAt": "2026-10-09T17:15:00+03:00",
+            "endsAt": "2026-10-09T19:12:00+03:00",
+            "filmStartsAt": "2026-10-09T17:15:00+03:00",
+            "filmEndsAt": "2026-10-09T19:12:00+03:00",
+            "inSeatItemDelivery": null
+          },
+          "isSoldOut": false,
+          "seatLayoutId": "1004-5-12",
+          "filmId": "HO00000481",
+          "siteId": "1004",
+          "screenId": "1004-5",
+          "areaCategories": [
+            {
+              "areaCategoryId": "1004-0000000001",
+              "isAllocatedSeating": true
+            }
+          ],
+          "attributeIds": ["0000000001", "0000000057", "0000000065", "0000000068", "0000000082"],
+          "isAllocatedSeating": true,
+          "requires3dGlasses": false,
+          "eventId": null,
+          "restrictions": ["FilmAdvanceBookingRule"],
+          "filmAdvanceBookingRuleId": "1004-34-HO00000481"
+        }
+      ],
+      "relatedData": {
+        "films": [
+          {
+            "id": "HO00000334",
+            "title": {
+              "text": "The Odyssey",
+              "translations": [
+                {
+                  "languageTag": "en-US",
+                  "text": "The Odyssey"
+                }
+              ]
+            },
+            "censorRatingId": "0000000027",
+            "censorRatingNote": null,
+            "releaseDate": "2026-07-17",
+            "runtimeInMinutes": 172,
+            "trailerUrl": null,
+            "displayPriority": 50,
+            "genreIds": ["0000000001", "0000000002", "0000000039"],
+            "externalIds": {
+              "moviexchangeReleaseId": "fe6d4b44-2cd3-4f03-ad12-7848d6ff7b71",
+              "corporateId": null
+            },
+            "hopk": "HO00000334",
+            "hoCode": "A000000341",
+            "eventId": null,
+            "distributorName": "Finnkinon teatterilevitys"
+          },
+          {
+            "id": "HO00000406",
+            "title": {
+              "text": "Presidentin kyyditys",
+              "translations": [
+                {
+                  "languageTag": "en-US",
+                  "text": "Presidentin kyyditys"
+                }
+              ]
+            },
+            "censorRatingId": "0000000018",
+            "censorRatingNote": null,
+            "releaseDate": "2026-09-04",
+            "runtimeInMinutes": 87,
+            "trailerUrl": null,
+            "displayPriority": 50,
+            "genreIds": ["0000000002", "0000000019", "0000000021"],
+            "externalIds": {
+              "moviexchangeReleaseId": "9c19e81d-ceb5-4bd9-92c8-875f0374cd1d",
+              "corporateId": null
+            },
+            "hopk": "HO00000406",
+            "hoCode": "A000000414",
+            "eventId": null,
+            "distributorName": "Oy Nordisk Film Ab"
+          },
+          {
+            "id": "HO00000434",
+            "title": {
+              "text": "Kerro kaikille",
+              "translations": [
+                {
+                  "languageTag": "en-US",
+                  "text": "Kerro kaikille"
+                }
+              ]
+            },
+            "censorRatingId": "0000000047",
+            "censorRatingNote": null,
+            "releaseDate": "2026-10-09",
+            "runtimeInMinutes": 112,
+            "trailerUrl": null,
+            "displayPriority": 1,
+            "genreIds": ["0000000002", "0000000014", "0000000021"],
+            "externalIds": {
+              "moviexchangeReleaseId": "6c7d853e-9e8b-474c-9c89-4b01d8ea97fe",
+              "corporateId": null
+            },
+            "hopk": "HO00000434",
+            "hoCode": "A000000443",
+            "eventId": null,
+            "distributorName": "SF Film Finland Oy"
+          },
+          {
+            "id": "HO00000435",
+            "title": {
+              "text": "Unohdettu saari",
+              "translations": [
+                {
+                  "languageTag": "en-US",
+                  "text": "Forgotten Island"
+                },
+                {
+                  "languageTag": "en",
+                  "text": "Forgotten Island"
+                }
+              ]
+            },
+            "censorRatingId": "0000000041",
+            "censorRatingNote": null,
+            "releaseDate": "2026-10-09",
+            "runtimeInMinutes": 109,
+            "trailerUrl": null,
+            "displayPriority": 50,
+            "genreIds": ["0000000019", "0000000034", "0000000039"],
+            "externalIds": {
+              "moviexchangeReleaseId": "ff71b146-22d9-4a37-80cc-174791433875",
+              "corporateId": null
+            },
+            "hopk": "HO00000435",
+            "hoCode": "A000000444",
+            "eventId": null,
+            "distributorName": "Finnkinon teatterilevitys"
+          },
+          {
+            "id": "HO00000460",
+            "title": {
+              "text": "DIGGER",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "DIGGER"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "DIGGER"
+                }
+              ]
+            },
+            "censorRatingId": "0000000047",
+            "censorRatingNote": null,
+            "releaseDate": "2026-10-02",
+            "runtimeInMinutes": 129,
+            "trailerUrl": null,
+            "displayPriority": 50,
+            "genreIds": ["0000000002", "0000000019"],
+            "externalIds": {
+              "moviexchangeReleaseId": "aa90be71-4a89-4bb9-84c5-8c6e3a409e40",
+              "corporateId": null
+            },
+            "hopk": "HO00000460",
+            "hoCode": "A000000471",
+            "eventId": null,
+            "distributorName": "Warner Bros. Finland Oy"
+          },
+          {
+            "id": "HO00000466",
+            "title": {
+              "text": "Late Lammas -elokuva: Hämäräpuuhissa",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Shaun the Sheep: The Beast of Mossy Bottom"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "Shaun the Sheep: The Beast of Mossy Bottom"
+                }
+              ]
+            },
+            "censorRatingId": "0000000008",
+            "censorRatingNote": null,
+            "releaseDate": "2026-10-30",
+            "runtimeInMinutes": 80,
+            "trailerUrl": null,
+            "displayPriority": 50,
+            "genreIds": ["0000000003", "0000000019", "0000000034"],
+            "externalIds": {
+              "moviexchangeReleaseId": "e416277d-f8b8-4b3b-b10d-6e98e58e211d",
+              "corporateId": null
+            },
+            "hopk": "HO00000466",
+            "hoCode": "A000000477",
+            "eventId": null,
+            "distributorName": "Cinemanse Oy"
+          },
+          {
+            "id": "HO00000481",
+            "title": {
+              "text": "Verityn varjo",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Verity"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "Verity"
+                }
+              ]
+            },
+            "censorRatingId": "0000000047",
+            "censorRatingNote": null,
+            "releaseDate": "2026-10-02",
+            "runtimeInMinutes": 117,
+            "trailerUrl": null,
+            "displayPriority": 2,
+            "genreIds": ["0000000002", "0000000015"],
+            "externalIds": {
+              "moviexchangeReleaseId": "067d8f55-2d39-4367-af2c-54df1d0587df",
+              "corporateId": null
+            },
+            "hopk": "HO00000481",
+            "hoCode": "A000000492",
+            "eventId": null,
+            "distributorName": "SF Film Finland Oy"
+          },
+          {
+            "id": "HO00000501",
+            "title": {
+              "text": "Päivien lumo",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Days of Wonder"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "Days of Wonder"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Skimrande dagar"
+                }
+              ]
+            },
+            "censorRatingId": "0000000001",
+            "censorRatingNote": null,
+            "releaseDate": "2026-08-28",
+            "runtimeInMinutes": 88,
+            "trailerUrl": null,
+            "displayPriority": 50,
+            "genreIds": ["0000000007", "0000000021"],
+            "externalIds": {
+              "moviexchangeReleaseId": "4675b897-be99-4741-b7b6-37bee6b79791",
+              "corporateId": null
+            },
+            "hopk": "HO00000501",
+            "hoCode": "A000000513",
+            "eventId": null,
+            "distributorName": "Pirkamaan Elokuvakeskus ry"
+          },
+          {
+            "id": "HO00000502",
+            "title": {
+              "text": "Keltaiset kirjeet",
+              "translations": [
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Gula breven"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "Gelbe briefe"
+                },
+                {
+                  "languageTag": "en",
+                  "text": "Yellow Letters"
+                }
+              ]
+            },
+            "censorRatingId": "0000000011",
+            "censorRatingNote": null,
+            "releaseDate": "2026-09-04",
+            "runtimeInMinutes": 127,
+            "trailerUrl": null,
+            "displayPriority": 50,
+            "genreIds": ["0000000002"],
+            "externalIds": {
+              "moviexchangeReleaseId": "4399c584-54b3-4dac-b70c-38850ac3161c",
+              "corporateId": null
+            },
+            "hopk": "HO00000502",
+            "hoCode": "A000000514",
+            "eventId": null,
+            "distributorName": "Oy Cinema Mondo Ltd"
+          },
+          {
+            "id": "HO00000508",
+            "title": {
+              "text": "Pikkuli ja Tähtipeura",
+              "translations": [
+                {
+                  "languageTag": "en-US",
+                  "text": "Pikkuli ja Tähtipeura"
+                },
+                {
+                  "languageTag": "en",
+                  "text": "Pikkuli and Starlight Reindeer\nPikkuli and Starli"
+                }
+              ]
+            },
+            "censorRatingId": "0000000001",
+            "censorRatingNote": null,
+            "releaseDate": "2026-10-23",
+            "runtimeInMinutes": 80,
+            "trailerUrl": null,
+            "displayPriority": 50,
+            "genreIds": ["0000000003", "0000000021", "0000000034"],
+            "externalIds": {
+              "moviexchangeReleaseId": "c8ba24c5-7310-4fe5-a359-309bbf99b6f1",
+              "corporateId": null
+            },
+            "hopk": "HO00000508",
+            "hoCode": "A000000520",
+            "eventId": null,
+            "distributorName": "Finnkinon teatterilevitys"
+          },
+          {
+            "id": "HO00000515",
+            "title": {
+              "text": "Pirjo i Sverige",
+              "translations": [
+                {
+                  "languageTag": "en-US",
+                  "text": "Pirjo i Sverige"
+                },
+                {
+                  "languageTag": "en",
+                  "text": "Pirjo in Sweden"
+                }
+              ]
+            },
+            "censorRatingId": "0000000001",
+            "censorRatingNote": null,
+            "releaseDate": "2026-10-09",
+            "runtimeInMinutes": 88,
+            "trailerUrl": null,
+            "displayPriority": 3,
+            "genreIds": ["0000000019", "0000000021"],
+            "externalIds": {
+              "moviexchangeReleaseId": "6f2fc335-4b86-4bc4-9fe3-deb5aca52ec0",
+              "corporateId": null
+            },
+            "hopk": "HO00000515",
+            "hoCode": "A000000527",
+            "eventId": null,
+            "distributorName": "Finnkinon teatterilevitys"
+          },
+          {
+            "id": "HO00000547",
+            "title": {
+              "text": "Two Seasons, Two Strangers",
+              "translations": [
+                {
+                  "languageTag": "en-US",
+                  "text": "Tabi to hibi"
+                },
+                {
+                  "languageTag": "en",
+                  "text": "Two Seasons, Two Strangers"
+                }
+              ]
+            },
+            "censorRatingId": "0000000001",
+            "censorRatingNote": null,
+            "releaseDate": "2026-10-09",
+            "runtimeInMinutes": 89,
+            "trailerUrl": null,
+            "displayPriority": 50,
+            "genreIds": ["0000000002"],
+            "externalIds": {
+              "moviexchangeReleaseId": "731ecc67-651b-49ac-876b-2ab5b7f1baba",
+              "corporateId": null
+            },
+            "hopk": "HO00000547",
+            "hoCode": "A000000559",
+            "eventId": null,
+            "distributorName": "TabiCine Oy"
+          },
+          {
+            "id": "HO00000550",
+            "title": {
+              "text": "Punainen peto",
+              "translations": [
+                {
+                  "languageTag": "en-US",
+                  "text": "Punainen peto"
+                },
+                {
+                  "languageTag": "en",
+                  "text": "Red Beast"
+                }
+              ]
+            },
+            "censorRatingId": "0000000018",
+            "censorRatingNote": null,
+            "releaseDate": "2026-10-02",
+            "runtimeInMinutes": 111,
+            "trailerUrl": null,
+            "displayPriority": 50,
+            "genreIds": ["0000000002", "0000000008", "0000000021"],
+            "externalIds": {
+              "moviexchangeReleaseId": "efc6cc74-79ab-4866-a7d3-65150f6f3300",
+              "corporateId": null
+            },
+            "hopk": "HO00000550",
+            "hoCode": "A000000562",
+            "eventId": null,
+            "distributorName": "Bright Fame Pictures"
+          },
+          {
+            "id": "HO00000553",
+            "title": {
+              "text": "Tony",
+              "translations": [
+                {
+                  "languageTag": "en-US",
+                  "text": "Tony"
+                }
+              ]
+            },
+            "censorRatingId": "0000000022",
+            "censorRatingNote": null,
+            "releaseDate": "2026-10-09",
+            "runtimeInMinutes": 109,
+            "trailerUrl": null,
+            "displayPriority": 50,
+            "genreIds": ["0000000002"],
+            "externalIds": {
+              "moviexchangeReleaseId": "cb5c54ea-71e4-449a-a3d6-129dba4f54dd",
+              "corporateId": null
+            },
+            "hopk": "HO00000553",
+            "hoCode": "A000000565",
+            "eventId": null,
+            "distributorName": "Oy Nordisk Film Ab"
+          },
+          {
+            "id": "HO00000563",
+            "title": {
+              "text": "Queen Budapest",
+              "translations": []
+            },
+            "censorRatingId": "0000000039",
+            "censorRatingNote": null,
+            "releaseDate": "2026-10-07",
+            "runtimeInMinutes": 97,
+            "trailerUrl": null,
+            "displayPriority": 50,
+            "genreIds": ["0000000011", "0000000020", "0000000026"],
+            "externalIds": {
+              "moviexchangeReleaseId": "1bb5f411-9715-4d6f-b7e1-0877dc2d079c",
+              "corporateId": null
+            },
+            "hopk": "HO00000563",
+            "hoCode": "A000000575",
+            "eventId": null,
+            "distributorName": "Trafalgar Releasing Ltd"
+          }
+        ],
+        "attributes": [
+          {
+            "id": "0000000001",
+            "name": {
+              "text": "2D",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "2D"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "2D"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "2D"
+                }
+              ]
+            },
+            "shortName": {
+              "text": "2D",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "2D"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "2D"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "2D"
+                }
+              ]
+            },
+            "description": {
+              "text": "2D-näytös",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "2D screening"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "2D screening"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "2D visning"
+                }
+              ]
+            },
+            "importantMessage": {
+              "text": "2D-näytös",
+              "translations": [
+                {
+                  "languageTag": "en-US",
+                  "text": "2D screening"
+                },
+                {
+                  "languageTag": "en",
+                  "text": "2D screening"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "2D visning"
+                }
+              ]
+            },
+            "displayPriority": 2,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000008",
+            "name": {
+              "text": "IMAX",
+              "translations": []
+            },
+            "shortName": {
+              "text": "IMAX",
+              "translations": []
+            },
+            "description": {
+              "text": "IMAX",
+              "translations": []
+            },
+            "importantMessage": {
+              "text": "IMAX",
+              "translations": []
+            },
+            "displayPriority": 1,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000010",
+            "name": {
+              "text": "iSense",
+              "translations": []
+            },
+            "shortName": {
+              "text": "iSense",
+              "translations": []
+            },
+            "description": {
+              "text": "iSense",
+              "translations": []
+            },
+            "importantMessage": {
+              "text": "iSense",
+              "translations": []
+            },
+            "displayPriority": 1,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000011",
+            "name": {
+              "text": "LUXE",
+              "translations": []
+            },
+            "shortName": {
+              "text": "LUXE",
+              "translations": []
+            },
+            "description": {
+              "text": "LUXE",
+              "translations": []
+            },
+            "importantMessage": {
+              "text": "LUXE",
+              "translations": []
+            },
+            "displayPriority": 1,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000014",
+            "name": {
+              "text": "K18 Anniskelunäytös",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "K18 - Alcohol served"
+                }
+              ]
+            },
+            "shortName": {
+              "text": "Annisk_K18",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Alc_K18"
+                }
+              ]
+            },
+            "description": {
+              "text": "Nämä näytökset ovat K18-ikärajallisia anniskelun vuoksi, sillä näytöksissä on mahdollista nauttia teatterin baarista ostettuja tai ennakkoon tilattuja alkoholijuomia. Varauduthan todistamaan ikäsi kuvallisella henkilöllisyystodistuksella salin ovella.",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "These screenings are restricted to 18+ because alcoholic beverages may be brought into the auditorium. Please be prepared to present a valid photo ID at the entrance."
+                }
+              ]
+            },
+            "importantMessage": {
+              "text": "K18-anniskelunäytös",
+              "translations": []
+            },
+            "displayPriority": 2,
+            "isPromoted": true
+          },
+          {
+            "id": "0000000016",
+            "name": {
+              "text": "Anniskelualuesali",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Alcohol licensed screening"
+                }
+              ]
+            },
+            "shortName": {
+              "text": "Anniskelu",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Acl_lic"
+                }
+              ]
+            },
+            "description": {
+              "text": "Näytöksissä on mahdollista nauttia teatterin baarista ostettuja tai ennakkoon tilattuja alkoholijuomia. Anniskelualuesalien näytöksissä noudatetaan elokuvan ikärajaa.",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "In these screenings it is possible to enjoy alcoholic beverages purchased from the cinema bar or pre‑ordered in advance. For screenings held in alcohol‑licensed auditoriums, the film’s age rating applies."
+                }
+              ]
+            },
+            "importantMessage": {
+              "text": "Anniskelualuesali",
+              "translations": []
+            },
+            "displayPriority": 3,
+            "isPromoted": true
+          },
+          {
+            "id": "0000000023",
+            "name": {
+              "text": "Ennakkonäytös",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Advance screening"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Förhandsvisning"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "Advance screening"
+                }
+              ]
+            },
+            "shortName": {
+              "text": "Ennakko",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Advance"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Förhands"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "Advance"
+                }
+              ]
+            },
+            "description": {
+              "text": "Ennakkonäytös ennen elokuvan virallista ensi-iltaa.",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Advance screening before the film’s official premiere."
+                }
+              ]
+            },
+            "importantMessage": {
+              "text": "Ennakkonäytös",
+              "translations": []
+            },
+            "displayPriority": 4,
+            "isPromoted": true
+          },
+          {
+            "id": "0000000036",
+            "name": {
+              "text": "useita kieliä",
+              "translations": [
+                {
+                  "languageTag": "sv-SE",
+                  "text": "flera språk\n"
+                },
+                {
+                  "languageTag": "en",
+                  "text": "Several languages"
+                }
+              ]
+            },
+            "shortName": {
+              "text": "SEVERAL",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "SEVERAL"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "SEVERAL"
+                }
+              ]
+            },
+            "description": {
+              "text": "Sisältää useita puhuttuja kieliä\n",
+              "translations": []
+            },
+            "importantMessage": {
+              "text": "Sisältää useita puhuttuja kieliä\n",
+              "translations": []
+            },
+            "displayPriority": 12,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000040",
+            "name": {
+              "text": "korea/japani",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Korean/Japanese"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "koreanska/japanska"
+                }
+              ]
+            },
+            "shortName": {
+              "text": "KO-JA-A",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "KO-JA-A"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "KO-JA-A"
+                }
+              ]
+            },
+            "description": {
+              "text": "Puhuttu koreaksi ja japaniksi\n\n",
+              "translations": [
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Vi talar koreanska och japanska"
+                },
+                {
+                  "languageTag": "en",
+                  "text": "Spoken in Korean and Japanese"
+                }
+              ]
+            },
+            "importantMessage": {
+              "text": "Puhuttu koreaksi ja japaniksi\n",
+              "translations": [
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Vi talar koreanska och japanska"
+                },
+                {
+                  "languageTag": "en",
+                  "text": "Spoken in Korean and Japanese"
+                }
+              ]
+            },
+            "displayPriority": 11,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000054",
+            "name": {
+              "text": "suomi/ruotsi",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Finnish/Swedish"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "finska/svenska"
+                }
+              ]
+            },
+            "shortName": {
+              "text": "FI-SE-A",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "FI-SE-A"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "FI-SE-A"
+                }
+              ]
+            },
+            "description": {
+              "text": "Puhuttu suomeksi ja ruotsiksi\n",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Spoken in Finnish and Swedish"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Vi talar finska och svenska"
+                }
+              ]
+            },
+            "importantMessage": {
+              "text": "Puhuttu suomeksi ja ruotsiksi\n",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Spoken in Finnish and Swedish"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Vi talar finska och svenska"
+                }
+              ]
+            },
+            "displayPriority": 10,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000057",
+            "name": {
+              "text": "englanti",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "English"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "engelska"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "English"
+                }
+              ]
+            },
+            "shortName": {
+              "text": "EN-A",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "EN-A"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "EN-A"
+                }
+              ]
+            },
+            "description": {
+              "text": "Puhuttu englanniksi",
+              "translations": [
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Talas på engelska\n"
+                },
+                {
+                  "languageTag": "en",
+                  "text": "Spoken in English"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "Spoken in English"
+                }
+              ]
+            },
+            "importantMessage": {
+              "text": "Puhuttu englanniksi",
+              "translations": [
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Talas på engelska\n"
+                },
+                {
+                  "languageTag": "en",
+                  "text": "Spoken in English"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "Spoken in English"
+                }
+              ]
+            },
+            "displayPriority": 11,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000059",
+            "name": {
+              "text": "Kuvaileva suomenkielinen tekstitys",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Finnish subtitles for the hearing impaired"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Endast finsk textning för hörselskadade"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "Finnish subtitles for the hearing impaired"
+                }
+              ]
+            },
+            "shortName": {
+              "text": "OCAP",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "OCAP"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "OCAP"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "OCAP"
+                }
+              ]
+            },
+            "description": {
+              "text": "Kuvaileva suomenkielinen tekstitys",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Finnish subtitles for the hearing impaired"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Endast finsk textning för hörselskadade"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "Finnish subtitles for the hearing impaired"
+                }
+              ]
+            },
+            "importantMessage": {
+              "text": "Kuvaileva suomenkielinen tekstitys",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Finnish subtitles for the hearing impaired"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Endast finsk textning för hörselskadade"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "Finnish subtitles for the hearing impaired"
+                }
+              ]
+            },
+            "displayPriority": 23,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000062",
+            "name": {
+              "text": "Event Cinema",
+              "translations": []
+            },
+            "shortName": {
+              "text": "EventCine",
+              "translations": []
+            },
+            "description": {
+              "text": "Event Cinema",
+              "translations": []
+            },
+            "importantMessage": {
+              "text": "Event Cinema",
+              "translations": []
+            },
+            "displayPriority": 4,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000064",
+            "name": {
+              "text": "englanti",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "English"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "engelska"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "English"
+                }
+              ]
+            },
+            "shortName": {
+              "text": "EN-S",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "EN-S"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "EN-S"
+                }
+              ]
+            },
+            "description": {
+              "text": "Tekstitetty englanniksi",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "English subtitles"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "textad på engelska\n"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "English subtitles"
+                }
+              ]
+            },
+            "importantMessage": {
+              "text": "Tekstitetty englanniksi",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "English subtitles"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "textad på engelska\n"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "English subtitles"
+                }
+              ]
+            },
+            "displayPriority": 21,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000065",
+            "name": {
+              "text": "suomi",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Finnish"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "finska"
+                }
+              ]
+            },
+            "shortName": {
+              "text": "FI-S",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "FI-S"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "FI-S"
+                }
+              ]
+            },
+            "description": {
+              "text": "Tekstitetty suomeksi",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Finnish subtitles"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Textad på finska"
+                }
+              ]
+            },
+            "importantMessage": {
+              "text": "Tekstitetty suomeksi",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Finnish subtitles"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Textad på finska"
+                }
+              ]
+            },
+            "displayPriority": 20,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000066",
+            "name": {
+              "text": "suomi",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Finnish"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "finska"
+                }
+              ]
+            },
+            "shortName": {
+              "text": "FI-A",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "FI-A"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "FI-A"
+                }
+              ]
+            },
+            "description": {
+              "text": "Puhuttu suomeksi",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Spoken in Finnish"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Vi talar finska"
+                }
+              ]
+            },
+            "importantMessage": {
+              "text": "Puhuttu suomeksi",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Spoken in Finnish"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Vi talar finska"
+                }
+              ]
+            },
+            "displayPriority": 10,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000068",
+            "name": {
+              "text": "ruotsi",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Swedish"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "svenska"
+                }
+              ]
+            },
+            "shortName": {
+              "text": "SE-S",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "SE-S"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "SE-S"
+                }
+              ]
+            },
+            "description": {
+              "text": "Tekstitetty ruotsiksi",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Swedish subtitles"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Textad på svenska"
+                }
+              ]
+            },
+            "importantMessage": {
+              "text": "Tekstitetty ruotsiksi",
+              "translations": [
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Textad på svenska"
+                },
+                {
+                  "languageTag": "en",
+                  "text": "Swedish subtitles"
+                }
+              ]
+            },
+            "displayPriority": 21,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000082",
+            "name": {
+              "text": "Varaus 20%",
+              "translations": []
+            },
+            "shortName": {
+              "text": "Varaus20",
+              "translations": []
+            },
+            "description": null,
+            "importantMessage": null,
+            "displayPriority": 100,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000085",
+            "name": {
+              "text": "turkki",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Turkish"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "turkiska"
+                },
+                {
+                  "languageTag": "en-US",
+                  "text": "Turkish"
+                }
+              ]
+            },
+            "shortName": {
+              "text": "TU-A",
+              "translations": []
+            },
+            "description": {
+              "text": "Puhuttu turkiksi",
+              "translations": []
+            },
+            "importantMessage": {
+              "text": "Puhuttu turkiksi",
+              "translations": []
+            },
+            "displayPriority": 11,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000087",
+            "name": {
+              "text": "Pääkaupunkiseutu",
+              "translations": []
+            },
+            "shortName": {
+              "text": "Pkseutu",
+              "translations": []
+            },
+            "description": null,
+            "importantMessage": null,
+            "displayPriority": 100,
+            "isPromoted": false
+          },
+          {
+            "id": "0000000089",
+            "name": {
+              "text": "Turku & Raisio",
+              "translations": []
+            },
+            "shortName": {
+              "text": "TKU & R",
+              "translations": []
+            },
+            "description": null,
+            "importantMessage": null,
+            "displayPriority": 100,
+            "isPromoted": false
+          }
+        ],
+        "censorRatings": [
+          {
+            "id": "0000000027",
+            "classification": {
+              "text": "16 VA",
+              "translations": []
+            },
+            "classificationDescription": {
+              "text": "16 (sis. väkivaltaa ja ahdistusta)",
+              "translations": []
+            },
+            "ageRestriction": {
+              "minimumAge": 0
+            }
+          },
+          {
+            "id": "0000000018",
+            "classification": {
+              "text": "12 VA",
+              "translations": []
+            },
+            "classificationDescription": {
+              "text": "12 (sis. väkivaltaa ja ahdistusta)",
+              "translations": []
+            },
+            "ageRestriction": {
+              "minimumAge": 0
+            }
+          },
+          {
+            "id": "0000000047",
+            "classification": {
+              "text": "12 AV",
+              "translations": []
+            },
+            "classificationDescription": {
+              "text": "12 (sis. ahdistusta ja väkivaltaa)",
+              "translations": []
+            },
+            "ageRestriction": {
+              "minimumAge": 0
+            }
+          },
+          {
+            "id": "0000000041",
+            "classification": {
+              "text": "7 AV",
+              "translations": []
+            },
+            "classificationDescription": {
+              "text": "7 (sis. ahdistusta ja väkivaltaa)",
+              "translations": []
+            },
+            "ageRestriction": {
+              "minimumAge": 0
+            }
+          },
+          {
+            "id": "0000000047",
+            "classification": {
+              "text": "12 AV",
+              "translations": []
+            },
+            "classificationDescription": {
+              "text": "12 (sis. ahdistusta ja väkivaltaa)",
+              "translations": []
+            },
+            "ageRestriction": {
+              "minimumAge": 0
+            }
+          },
+          {
+            "id": "0000000008",
+            "classification": {
+              "text": "7 VA",
+              "translations": []
+            },
+            "classificationDescription": {
+              "text": "7 (sis. väkivaltaa ja ahdistusta)",
+              "translations": []
+            },
+            "ageRestriction": {
+              "minimumAge": 0
+            }
+          },
+          {
+            "id": "0000000047",
+            "classification": {
+              "text": "12 AV",
+              "translations": []
+            },
+            "classificationDescription": {
+              "text": "12 (sis. ahdistusta ja väkivaltaa)",
+              "translations": []
+            },
+            "ageRestriction": {
+              "minimumAge": 0
+            }
+          },
+          {
+            "id": "0000000001",
+            "classification": {
+              "text": "S",
+              "translations": []
+            },
+            "classificationDescription": {
+              "text": "Sallittu",
+              "translations": []
+            },
+            "ageRestriction": {
+              "minimumAge": 0
+            }
+          },
+          {
+            "id": "0000000011",
+            "classification": {
+              "text": "12 A",
+              "translations": []
+            },
+            "classificationDescription": {
+              "text": "12 (sis. ahdistusta)",
+              "translations": []
+            },
+            "ageRestriction": {
+              "minimumAge": 0
+            }
+          },
+          {
+            "id": "0000000001",
+            "classification": {
+              "text": "S",
+              "translations": []
+            },
+            "classificationDescription": {
+              "text": "Sallittu",
+              "translations": []
+            },
+            "ageRestriction": {
+              "minimumAge": 0
+            }
+          },
+          {
+            "id": "0000000001",
+            "classification": {
+              "text": "S",
+              "translations": []
+            },
+            "classificationDescription": {
+              "text": "Sallittu",
+              "translations": []
+            },
+            "ageRestriction": {
+              "minimumAge": 0
+            }
+          },
+          {
+            "id": "0000000001",
+            "classification": {
+              "text": "S",
+              "translations": []
+            },
+            "classificationDescription": {
+              "text": "Sallittu",
+              "translations": []
+            },
+            "ageRestriction": {
+              "minimumAge": 0
+            }
+          },
+          {
+            "id": "0000000018",
+            "classification": {
+              "text": "12 VA",
+              "translations": []
+            },
+            "classificationDescription": {
+              "text": "12 (sis. väkivaltaa ja ahdistusta)",
+              "translations": []
+            },
+            "ageRestriction": {
+              "minimumAge": 0
+            }
+          },
+          {
+            "id": "0000000022",
+            "classification": {
+              "text": "16 P",
+              "translations": []
+            },
+            "classificationDescription": {
+              "text": "16 (sis. päihteitä)",
+              "translations": []
+            },
+            "ageRestriction": {
+              "minimumAge": 0
+            }
+          },
+          {
+            "id": "0000000039",
+            "classification": {
+              "text": "-",
+              "translations": []
+            },
+            "classificationDescription": {
+              "text": "Luokitteluvapaa",
+              "translations": []
+            },
+            "ageRestriction": {
+              "minimumAge": 0
+            }
+          }
+        ],
+        "genres": [
+          {
+            "id": "0000000001",
+            "name": {
+              "text": "Toiminta",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Action"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Aktion"
+                }
+              ]
+            },
+            "description": null
+          },
+          {
+            "id": "0000000002",
+            "name": {
+              "text": "Draama",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Drama"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Drama"
+                }
+              ]
+            },
+            "description": null
+          },
+          {
+            "id": "0000000003",
+            "name": {
+              "text": "Animaatio",
+              "translations": [
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Animerat"
+                },
+                {
+                  "languageTag": "en",
+                  "text": "Animation"
+                }
+              ]
+            },
+            "description": null
+          },
+          {
+            "id": "0000000007",
+            "name": {
+              "text": "Dokumentti",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Documentary"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Dokumentär"
+                }
+              ]
+            },
+            "description": null
+          },
+          {
+            "id": "0000000008",
+            "name": {
+              "text": "Elämäkerta ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Biography"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Biografi"
+                }
+              ]
+            },
+            "description": {
+              "text": "Elämäkerta ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Biography"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Biografi"
+                }
+              ]
+            }
+          },
+          {
+            "id": "0000000011",
+            "name": {
+              "text": "Event cinema",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Event Cinema"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Event Cinema"
+                }
+              ]
+            },
+            "description": {
+              "text": "Event cinema ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Event Cinema"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Event Cinema"
+                }
+              ]
+            }
+          },
+          {
+            "id": "0000000014",
+            "name": {
+              "text": "Historiallinen ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "History"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Historisk"
+                }
+              ]
+            },
+            "description": {
+              "text": "Historiallinen ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "History"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Historisk"
+                }
+              ]
+            }
+          },
+          {
+            "id": "0000000015",
+            "name": {
+              "text": "Jännitys ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Thriller"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Thriller"
+                }
+              ]
+            },
+            "description": {
+              "text": "Jännitys ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Thriller"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Thriller"
+                }
+              ]
+            }
+          },
+          {
+            "id": "0000000019",
+            "name": {
+              "text": "Komedia ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Comedy"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Komedi"
+                }
+              ]
+            },
+            "description": {
+              "text": "Komedia ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Comedy"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Komedi"
+                }
+              ]
+            }
+          },
+          {
+            "id": "0000000020",
+            "name": {
+              "text": "Konsertti ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Concert"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Konsert"
+                }
+              ]
+            },
+            "description": {
+              "text": "Konsertti ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Concert"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Konsert"
+                }
+              ]
+            }
+          },
+          {
+            "id": "0000000021",
+            "name": {
+              "text": "Kotimainen ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Domestic"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Inhemsk"
+                }
+              ]
+            },
+            "description": {
+              "text": "Kotimainen ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Domestic"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Inhemsk"
+                }
+              ]
+            }
+          },
+          {
+            "id": "0000000026",
+            "name": {
+              "text": "Musiikki ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Music"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Musik"
+                }
+              ]
+            },
+            "description": {
+              "text": "Musiikki ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Music"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Musik"
+                }
+              ]
+            }
+          },
+          {
+            "id": "0000000034",
+            "name": {
+              "text": "Perhe-elokuva ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Family"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Familj"
+                }
+              ]
+            },
+            "description": {
+              "text": "Perhe-elokuva ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Family"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Familj"
+                }
+              ]
+            }
+          },
+          {
+            "id": "0000000039",
+            "name": {
+              "text": "Seikkailu ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Adventure"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Äventyr"
+                }
+              ]
+            },
+            "description": {
+              "text": "Seikkailu ",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Adventure"
+                },
+                {
+                  "languageTag": "sv-SE",
+                  "text": "Äventyr"
+                }
+              ]
+            }
+          }
+        ],
+        "screens": [
+          {
+            "id": "1004-2",
+            "name": {
+              "text": "Sali 2",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Sali 2"
+                }
+              ]
+            }
+          },
+          {
+            "id": "1004-4",
+            "name": {
+              "text": "Sali 4",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Sali 4"
+                }
+              ]
+            }
+          },
+          {
+            "id": "1004-5",
+            "name": {
+              "text": "Sali 5",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Sali 5"
+                }
+              ]
+            }
+          },
+          {
+            "id": "1095-1",
+            "name": {
+              "text": "Sali 1",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Sali 1"
+                }
+              ]
+            }
+          },
+          {
+            "id": "1095-2",
+            "name": {
+              "text": "Sali 2",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Sali 2"
+                }
+              ]
+            }
+          },
+          {
+            "id": "1095-5",
+            "name": {
+              "text": "Sali 5",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Sali 5"
+                }
+              ]
+            }
+          },
+          {
+            "id": "1095-6",
+            "name": {
+              "text": "Sali 6",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Sali 6"
+                }
+              ]
+            }
+          },
+          {
+            "id": "1100-1",
+            "name": {
+              "text": "Sali 1",
+              "translations": []
+            }
+          },
+          {
+            "id": "1100-10",
+            "name": {
+              "text": "Sali 10",
+              "translations": []
+            }
+          },
+          {
+            "id": "1100-3",
+            "name": {
+              "text": "Sali 3",
+              "translations": []
+            }
+          },
+          {
+            "id": "1100-4",
+            "name": {
+              "text": "Sali 4",
+              "translations": []
+            }
+          },
+          {
+            "id": "1101-1",
+            "name": {
+              "text": "iSense",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "iSense"
+                }
+              ]
+            }
+          },
+          {
+            "id": "1107-1",
+            "name": {
+              "text": "LUXE",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "LUXE"
+                }
+              ]
+            }
+          },
+          {
+            "id": "1111-14",
+            "name": {
+              "text": "Sali 14",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "Sali 14"
+                }
+              ]
+            }
+          },
+          {
+            "id": "1162-1",
+            "name": {
+              "text": "IMAX",
+              "translations": [
+                {
+                  "languageTag": "en",
+                  "text": "IMAX"
+                }
+              ]
+            }
+          }
+        ],
+        "filmAdvanceBookingRules": [
+          {
+            "id": "1004-22-HO00000334",
+            "filmId": "HO00000334",
+            "siteId": "1004",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-06-15T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1095-22-HO00000334",
+            "filmId": "HO00000334",
+            "siteId": "1095",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-06-15T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1100-22-HO00000334",
+            "filmId": "HO00000334",
+            "siteId": "1100",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-06-15T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1101-22-HO00000334",
+            "filmId": "HO00000334",
+            "siteId": "1101",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-06-15T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1107-22-HO00000334",
+            "filmId": "HO00000334",
+            "siteId": "1107",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-06-15T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1111-22-HO00000334",
+            "filmId": "HO00000334",
+            "siteId": "1111",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-06-15T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1162-22-HO00000334",
+            "filmId": "HO00000334",
+            "siteId": "1162",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-06-15T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1004-4-HO00000460",
+            "filmId": "HO00000460",
+            "siteId": "1004",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-09-22T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1095-4-HO00000460",
+            "filmId": "HO00000460",
+            "siteId": "1095",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-09-22T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1100-4-HO00000460",
+            "filmId": "HO00000460",
+            "siteId": "1100",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-09-22T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1101-4-HO00000460",
+            "filmId": "HO00000460",
+            "siteId": "1101",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-09-22T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1107-4-HO00000460",
+            "filmId": "HO00000460",
+            "siteId": "1107",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-09-22T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1111-4-HO00000460",
+            "filmId": "HO00000460",
+            "siteId": "1111",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-09-22T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1162-4-HO00000460",
+            "filmId": "HO00000460",
+            "siteId": "1162",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-09-22T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1004-34-HO00000481",
+            "filmId": "HO00000481",
+            "siteId": "1004",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-09-18T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1095-34-HO00000481",
+            "filmId": "HO00000481",
+            "siteId": "1095",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-09-18T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1100-34-HO00000481",
+            "filmId": "HO00000481",
+            "siteId": "1100",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-09-18T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1101-34-HO00000481",
+            "filmId": "HO00000481",
+            "siteId": "1101",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-09-18T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1107-34-HO00000481",
+            "filmId": "HO00000481",
+            "siteId": "1107",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-09-18T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1111-34-HO00000481",
+            "filmId": "HO00000481",
+            "siteId": "1111",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-09-18T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          },
+          {
+            "id": "1162-34-HO00000481",
+            "filmId": "HO00000481",
+            "siteId": "1162",
+            "bookingPeriods": [
+              {
+                "startsAt": "2026-09-18T10:00:00+03:00",
+                "orderBookingModes": ["Paid", "Unpaid", "UnpaidConfirmed"],
+                "restriction": "None",
+                "rewardId": null
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

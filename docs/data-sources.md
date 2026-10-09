@@ -1,6 +1,6 @@
 # Data sources: Finnkino and BioRex
 
-Investigated on 2026-10-09. Markers: **[V]** = verified with our own request, **[A]** = assumed, or read from a third-party source.
+Investigated on 2026-10-09; both adapters are implemented. Markers: **[V]** = verified with our own request, **[A]** = assumed, or read from a third-party source.
 
 ---
 
@@ -111,38 +111,65 @@ Filtered out: ids 6, 15 and 16 (`xxx` name prefix, closed) and id 11 (the compan
 ### Background
 
 - Finnkino moved to **Vista Cloud** from 25 Aug 2025, and all cinemas had moved by the end of October 2025 **[A]** (Cision, Muropaketti).
-- All of `finnkino.fi` sits behind Cloudflare bot protection: `403` + `cf-mitigated: challenge` **[V]**. `robots.txt` is behind it too.
+- **Implementation:** [src/providers/finnkino/](../src/providers/finnkino/), run with `pnpm pull --provider finnkino`.
+
+### Cloudflare and the token [V]
+
+- `www.finnkino.fi` (and its `robots.txt`) answers **every non-browser client** with `403` + `cf-mitigated: challenge`, **even from a home connection** and with ordinary `Accept` headers. Headless Chrome is challenged too. Only a **visible (headed) Chrome** passes, on its own, with no captcha. This contradicts Leffavuoro's comment that only datacenter IPs are blocked.
+- `digital-api.finnkino.fi` is **not** behind the challenge. Without a token it answers `401 "No global authentication JWT supplied"`; with one, plain HTTP works with our own User-Agent.
+- The token is a JWT embedded in the front page HTML. Issuer `https://auth.moviexchange.com/`, client "Finnkino Omnia", minted at page load, **valid for exactly 12 hours**.
+- Vista's [security docs](https://developer.vista.co/digital-platform/getting-started/security) describe this token as "safe to make available to public facing clients", meant to be cached and reused. It is not a secret.
+- **Our approach** ([token.ts](../src/providers/finnkino/token.ts)): open the locally installed Chrome (Playwright, `channel: "chrome"`, `headless: false`) for a few seconds, read the token from the page, cache it in `data/cache/finnkino-token.json` (mode 600), and renew it when less than an hour is left. In practice a Chrome window appears about twice a day. **Works only on a desktop machine with Chrome, never in CI.**
 
 ### Old XML API: dead
 
 - `/xml/TheatreAreas/` and `/xml/Schedule/?area=1014` return a 403 Cloudflare challenge **[V]**.
 - Web Archive: `/xml/Schedule/` returned 200 XML until March 2025 and 404 on 4 Mar 2026 **[V]**.
-- Old ids and `/websales/show/…` links do not carry over to the new system.
 
-### Vista OCAPI (current)
+### Vista OCAPI [V]
 
-- Base: `https://digital-api.finnkino.fi/WSVistaWebClient/ocapi/v1/` (Vista tenant `ODEFI`).
-- `GET /sites` without a token **[V]**:
-  ```json
-  {
-    "status": 401,
-    "title": "Authentication Token Failed",
-    "detail": "No global authentication JWT supplied, and is required for the current call."
-  }
-  ```
-- According to [Shady-Dev/kino](https://github.com/Shady-Dev/kino) (`scripts/fetch_data.py`) **[A]**:
-  - A JWT (`eyJ…`) is extracted from the HTML of `https://www.finnkino.fi/` and sent as `Authorization: Bearer <token>`.
-  - Endpoints: `/sites` and `/showtimes/by-business-date/{YYYY-MM-DD}?siteIds=…`.
-  - Showtime: `id, filmId, siteId, screenId, attributeIds, schedule.startsAt (ISO + offset), isSoldOut`.
-  - `relatedData`: `films` (`id, title, originalTitle, releaseDate, runtimeInMinutes, genreIds, censorRatingId, synopsis, trailers`), `genres`, `screens`, `censorRatings`, `attributes`. 2D/3D, IMAX, 4DX, iSense and language/subtitle codes (e.g. `.FI-S`) are attributes.
-  - Ticket link: `https://www.finnkino.fi/lipts/valitse-paikat/?showtimeId={id}`.
-  - Cloudflare blocks datacenter IPs, so that project fetches from a home connection about 4 times a day.
-- Vista's public documentation: [developer.vista.co](https://developer.vista.co/digital-platform/getting-started/conventions). The API returns 429 responses, but the limits are not published.
-- Unknown: how far ahead schedules are available (the old XML allowed 31 days).
+Base: `https://digital-api.finnkino.fi/WSVistaWebClient/ocapi/v1` (Vista tenant `ODEFI`). Finnkino's own frontend calls `/films`, `/films/{slug}`, `/sites`, `/films/availability` and `/film-screening-dates?siteIds=…`.
+
+| Endpoint                                                 | Use                                                                                                                                                         |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/sites`                                                 | 17 sites: name, coordinates, address (`line1` street, `line2` postal code, `city`)                                                                          |
+| `/showtimes/by-business-date/{date}?siteIds=…&siteIds=…` | **The adapter uses this.** One call per day covers every site, with `relatedData` for films, attributes, ratings, genres, screens and advance booking rules |
+| `/film-screening-dates?siteIds=…`                        | Business dates with screenings: **80 dates, up to 2027-06-20** (advance sales)                                                                              |
+| `/films/availability`                                    | Gave no response to plain HTTP; not needed                                                                                                                  |
+
+**Values profiled on 2026-10-09 (2,889 showtimes, 59 films, 17 sites, 7 days):**
+
+- **Showtime:** `id` like `"1004-5832"`, `schedule.businessDate`, `schedule.startsAt`/`endsAt` already in Helsinki time with offset, `isSoldOut`, `filmId`, `siteId`, `screenId`, `attributeIds`, `requires3dGlasses`, `restrictions`. Only upcoming shows are returned for today.
+- **Sites:** every site claims `ianaTimeZoneName: "Europe/Kyiv"`. Wrong, but the same offset; ignored.
+- **Films:** `title` in Finnish with an `en-US` translation; **no original title**; `releaseDate` is the Finnish release; `runtimeInMinutes`; `externalIds` holds only a Moviexchange release id (**no TMDB or IMDb id**); synopsis and trailers (not used). **No production countries.**
+- **Qualifiers in titles:** "Nalle Puhin elokuva (dub)", "Vaiana (liveaction)", "Autot (uudelleenjulkaisu)" (re-release).
+- **Ratings** (`censorRatings[].classification`): the KAVI number followed by content letters: `S`, `7 A`, `12 VA`, `16 P`, ... (V violence, A anxiety, S sex, P substances). `Tulossa` means the rating is pending. `ageRestriction.minimumAge` is always 0, so it is useless.
+- **Genres** have trailing spaces. The genre `Event cinema` marks operas, concerts and similar.
+- **Attributes** (`shortName`):
+
+  | Attribute                                            | Meaning                                                                                                      |
+  | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+  | `FI-A`, `EN-A`, `KO-JA-A`, `FI-SE-A`, ...            | spoken language(s); `SE` = Swedish; `TU`, `MA`, `LI` = Turkish, Malayalam, Lithuanian (Finnkino's own codes) |
+  | `FI-S`, `SE-S`, `EN-S`                               | subtitles. No `-S` with a spoken language means no subtitles                                                 |
+  | `SEVERAL`                                            | several spoken languages, not listed                                                                         |
+  | `OCAP`                                               | open captions: Finnish subtitles for the hard of hearing                                                     |
+  | `2D`                                                 | always present; no 3D in the sample                                                                          |
+  | `IMAX`, `iSense`, `LUXE`                             | premium formats                                                                                              |
+  | `Annisk_K18`                                         | alcohol served, K-18                                                                                         |
+  | `Anniskelu`                                          | licensed auditorium                                                                                          |
+  | `Ennakko`, `EventCine`                               | preview, event cinema                                                                                        |
+  | `Tampere`, `Pkseutu`, `TKU & R`, `Maxim`, `Varaus20` | regional marketing groups, a site name, an internal booking setting: ignored                                 |
+
+- **Advance booking:** `restrictions: ["FilmAdvanceBookingRule"]` on 667 shows. All 82 rules had a single period with `restriction: "None"`; the period's `startsAt` is when sales open. Before that the show is not bookable.
+- **Availability:** no sold-out shows in the sample, and **no "few seats left" flag** exists.
+- **Ticket link:** `https://www.finnkino.fi/liput/valitse-paikat/?showtimeId={id}`. **Verified** by clicking a showtime on finnkino.fi, and it matches the `/liput/valitse-paikat/` route in Finnkino's JS bundle. Leffavuoro's `/lipts/…` is wrong.
+- **Film page:** `https://www.finnkino.fi/elokuvat/{slug}/{filmId}/`, e.g. `/elokuvat/the-odyssey/HO00000334/`.
 
 ### Conclusion
 
-HTML crawling does not help, since the same Cloudflare protection covers the HTML pages. The realistic route is to get the token with a (headless) browser from a residential IP and call the OCAPI JSON with it. This is fragile and legally grey. The sustainable route is to ask Finnkino (Odeon/AMC Nordic) for permission or partner access.
+Finnkino works, with one manual-ish step: a visible Chrome window on the maintainer's machine about twice a day to renew a public 12-hour token. Everything else is plain HTTP against the JSON API.
+
+The real risk is breakage, not permission: Finnkino could tighten the Cloudflare check or stop embedding the token in the page. The Cloudflare check covers the whole site (shop, login, loyalty programme) and looks like generic bot protection rather than an attempt to hide showtimes, which Finnkino publishes to sell tickets. We have not contacted Finnkino; if the service goes truly public, we notify them (and every other source) first and remove them if they object.
 
 ---
 
@@ -164,7 +191,7 @@ Reviewed on 2026-10-09: <https://github.com/Shady-Dev/kino>, site <https://leffa
 - **Scope:** about 40 adapters and 230 cinemas, including Finnkino, BioRex and practically every small cinema. Many small cinemas share ticketing platforms: eTiketti, Nexxo, Johku, MyCloudCinema, Kinola and cinema-reservations.
 - **Technology:** Python stdlib, about 21,000 lines of adapter code and about 200 test files. Data is fetched ahead of time and committed as static JSON served from GitHub Pages. Some sources are fetched from a home machine (`where="local"`), others in GitHub Actions.
 - **Maintenance:** a single developer, created 2026-08-26, very active (over 1,200 commits). Clearly AI-assisted (CLAUDE.md is 29 kB).
-- **Finnkino:** the token is passed in the `FINNKINO_TOKEN` environment variable and obtained by a private local wrapper that is **not in the repository**. The fallback is a direct fetch in which an `eyJ…` regex picks the token from the front page HTML (works from a residential IP only). Language code fixes: `SE→SV`, `TU→TR`, `MA→ML`, `LI→LT`.
+- **Finnkino:** the token is passed in the `FINNKINO_TOKEN` environment variable and obtained by a private local wrapper that is **not in the repository**. The fallback is a direct fetch in which an `eyJ…` regex picks the token from the front page HTML. In our tests that fallback is challenged even from a residential IP. Language code fixes: `SE→SV`, `TU→TR`, `MA→ML`, `LI→LT`.
 - **BioRex:** Leffavuoro reads WordPress `admin-ajax.php` (POST + a cinema selection cookie). We found a more direct route, `webshop.biorex.fi/webservices` (GET, no cookies).
 - **Data model:** shaped for the frontend and string-heavy (`len: "129"`, `lang: "EN-A, FI-S, SV-S"`). Films are matched through TMDB (`enrich_tmdb.py`, 1,670 lines), with hand-written aliases.
 - **Ethics rules (CLAUDE.md):** own User-Agent with contact details; no residential proxies, fingerprint spoofing or captcha solving; no booking or payment endpoints; ticket links are copied, never constructed.

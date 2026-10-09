@@ -8,5 +8,30 @@
     "tmdb": 1477104,
     "title": "Late Lammas -elokuva: Hämäräpuuhissa",
     "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026). No Finnish title in TMDB; 81 min, GB/FR match."
+  },
+  "finnkino:film:HO00000563": {
+    "tmdb": 142773,
+    "title": "Queen Budapest",
+    "note": "Magic – Queen in Budapest (1986) concert film; 96 vs 97 min. Too old for automatic matching without countries."
+  },
+  "finnkino:film:HO00000560": {
+    "tmdb": 920,
+    "title": "Autot (uudelleenjulkaisu)",
+    "note": "Re-release of Cars (2006); 117 vs 118 min."
+  },
+  "finnkino:film:HO00000564": {
+    "tmdb": 299534,
+    "title": "Avengers: Endgame Encore",
+    "note": "Re-release of Avengers: Endgame (2019); 181 vs 186 min (encore adds extra footage)."
+  },
+  "finnkino:film:HO00000079": {
+    "tmdb": 51162,
+    "title": "Nalle Puhin elokuva (dub)",
+    "note": "Winnie the Pooh (2011); 63 min both. TMDB's Finnish title is longer."
+  },
+  "finnkino:film:HO00000521": {
+    "tmdb": 1083381,
+    "title": "Backrooms: Everything Must Go Edition",
+    "note": "Extended cut of Backrooms (2026); 111 vs 127 min. Same film, so same poster and info."
   }
 }

@@ -127,6 +127,7 @@ describe("parseBiorex", () => {
       rating: "K-12",
       genres: ["Komedia", "Draama"],
       countries: ["Yhdysvallat"],
+      kind: "film",
     });
   });
 

@@ -39,6 +39,7 @@ const listing = (id: string, title: string, runtimeMinutes = 100): FilmListing =
   runtimeMinutes,
   genres: [],
   countries: ["Yhdysvallat"],
+  kind: "film",
 });
 
 describe("matchListings", () => {
@@ -126,5 +127,61 @@ describe("matchListings", () => {
     );
     expect(result.films).toHaveLength(1);
     expect(result.links.size).toBe(2);
+  });
+
+  it("searches without a trailing qualifier", async () => {
+    const { client, calls } = fakeTmdb([details({ id: 50, title: "Vaiana", runtime: 115 })], {
+      Vaiana: [50],
+    });
+    const result = await matchListings([listing("8", "Vaiana (liveaction)", 115)], client, {}, NOW);
+    expect(calls).toContain("search:Vaiana");
+    expect(result.links.get("biorex:film:8")?.filmId).toBe("tmdb:50");
+  });
+
+  it("links a listing to the film another provider matched with the same title and runtime", async () => {
+    const { client } = fakeTmdb(
+      [details({ id: 20, title: "PAW Patrol: The Dino Movie", runtime: 88 })],
+      {},
+    );
+    const finnkino: FilmListing = {
+      ...listing("HO1", "Ryhmä Hau: Dinoelokuva", 87),
+      id: "finnkino:film:HO1",
+      provider: "finnkino",
+      countries: [],
+    };
+    const result = await matchListings(
+      [listing("1518", "Ryhmä Hau: Dinoelokuva", 88), finnkino],
+      client,
+      { "biorex:film:1518": { tmdb: 20, title: "Ryhmä Hau: Dinoelokuva" } },
+      NOW,
+    );
+    expect(result.links.get("finnkino:film:HO1")).toEqual({ filmId: "tmdb:20", method: "sibling" });
+    expect(result.unmatched).toEqual([]);
+  });
+
+  it("does not treat a same-titled listing with a different runtime as a sibling", async () => {
+    const { client } = fakeTmdb([details({ id: 20, title: "X", runtime: 88 })], {});
+    const result = await matchListings(
+      [
+        listing("1", "Remake", 88),
+        { ...listing("HO1", "Remake", 120), id: "finnkino:film:HO1", provider: "finnkino" },
+      ],
+      client,
+      { "biorex:film:1": { tmdb: 20, title: "Remake" } },
+      NOW,
+    );
+    expect(result.links.has("finnkino:film:HO1")).toBe(false);
+    expect(result.unmatched.map((u) => u.listingId)).toEqual(["finnkino:film:HO1"]);
+  });
+
+  it("does not report an unmatched event", async () => {
+    const { client } = fakeTmdb([], {});
+    const result = await matchListings(
+      [{ ...listing("9", "Ooppera: Così Fan Tutte", 237), kind: "event" }],
+      client,
+      {},
+      NOW,
+    );
+    expect(result.unmatched).toEqual([]);
   });
 });

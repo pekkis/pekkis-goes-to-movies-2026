@@ -25,6 +25,7 @@ describe("gatherEvidence", () => {
       year: "window",
       runtime: "close",
       countries: "overlap",
+      rating: "unknown",
     });
   });
 
@@ -79,6 +80,7 @@ const ev = (overrides: Partial<Evidence>): Evidence => ({
   year: "window",
   runtime: "close",
   countries: "overlap",
+  rating: "unknown",
   ...overrides,
 });
 
@@ -110,7 +112,7 @@ describe("decide", () => {
     });
   });
 
-  it("refuses to choose between two equally good candidates", () => {
+  it("refuses to choose between two candidates nothing tells apart", () => {
     expect(decide([ev({ tmdbId: 1 }), ev({ tmdbId: 2 })])).toEqual({
       kind: "none",
       reason: "ambiguous (exact): 1, 2",
@@ -123,6 +125,16 @@ describe("decide", () => {
     expect(decide([ev({ tmdbId: 1, ...sparse }), ev({ tmdbId: 2, ...sparse })])).toMatchObject({
       kind: "none",
     });
+  });
+
+  it("breaks a tie on runtime, then on the Finnish rating (The Furious)", () => {
+    expect(
+      decide([ev({ tmdbId: 1, runtime: "near" }), ev({ tmdbId: 2, runtime: "close" })]),
+    ).toMatchObject({ kind: "match", tmdbId: 2 });
+    expect(
+      decide([ev({ tmdbId: 1, rating: "different" }), ev({ tmdbId: 2, rating: "same" })]),
+    ).toMatchObject({ kind: "match", tmdbId: 2 });
+    expect(decide([ev({ tmdbId: 1 }), ev({ tmdbId: 2 })])).toMatchObject({ kind: "none" });
   });
 
   it("explains why nothing matched", () => {

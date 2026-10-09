@@ -20,7 +20,7 @@ Goal: a precise, typed model that improves on the data model of Leffavuoro (Shad
 | `Provider`      | A chain or cinema and its ticketing platform (`mycloudcinema`, `vista-ocapi`, …)                               | `biorex`             |
 | `Venue`         | A cinema: city, address, postal code and coordinates                                                           | `biorex:venue:1`     |
 | `Auditorium`    | A screen: features (`plus`, `prime`, `imax`, …) and its own age limit                                          | `biorex:screen:57`   |
-| `FilmListing`   | The source's own film record, as is                                                                            | `biorex:film:1509`   |
+| `FilmListing`   | The source's own film record, as is; `kind` is `film` or `event`                                               | `biorex:film:1509`   |
 | `Film`          | Canonical film **from TMDB**: titles (fi/sv/en), synopses, poster, backdrop, trailers, Finnish rating, IMDb id | `tmdb:1185806`       |
 | `FilmCatalog`   | `films.json`: all `Film` records and the `unmatched` list                                                      | –                    |
 | `Screening`     | A showtime                                                                                                     | `biorex:show:436478` |
@@ -65,24 +65,27 @@ output JSON (+ JSON Schema)
 **Principle: certain or nothing.** A wrong poster is worse than a missing one. Code: [src/matching/](../src/matching/).
 
 1. **An alias** ([config/tmdb-aliases.json](../config/tmdb-aliases.json)) always wins. `"tmdb": null` means the film is not on TMDB, so it is no longer searched for.
-2. **Search** (`language=fi-FI`, which also hits translated titles) runs with the full title and with the part before the subtitle (`"Practical Magic: Lumotut sisaret"` → `"Practical Magic"`). Details are fetched for the five most likely hits.
+2. **Search** (`language=fi-FI`, which also hits translated titles) runs with the title and with the part before the subtitle (`"Practical Magic: Lumotut sisaret"` → `"Practical Magic"`). A trailing qualifier in parentheses is dropped first (`"Vaiana (liveaction)"` → `"Vaiana"`). Details are fetched for the five most likely hits.
 3. **Evidence** ([score.ts](../src/matching/score.ts)) for each candidate:
    - title: `exact` (including translations and alternative titles) / `prefix` / `none`
    - year: within current year −3…+1
    - runtime: ≤3 / ≤8 / >8 min apart
-   - production countries: the cinema's Finnish country names are mapped to ISO codes.
+   - production countries: the cinema's Finnish country names are mapped to ISO codes (Finnkino publishes none)
+   - Finnish rating: the cinema's vs. TMDB's Finnish certification (tie-breaker only).
 4. **Tiers, strongest first** (`decide`):
    - `exact`: exact title, plausible year, and runtime or countries agree.
    - `prefix`: the same title with a sequel number, a brand-new film, and both runtime and countries agree.
    - `sparse`: exact title and a new film, but TMDB has neither runtime nor countries (small Finnish films).
 
-   The strongest tier with any candidate decides. Two candidates in the same tier means no match.
+   The strongest tier with any candidate decides. Within a tier, ties are broken by preferring the only candidate whose runtime is within 3 min, then the only one whose Finnish rating agrees ("The Furious", two 2026 films). A tie that remains means no match.
 
 5. **A contradiction always rejects:** runtime differs by more than 8 minutes, or the countries do not overlap at all.
+6. **Sibling pass:** a listing still unmatched after search is linked to the film another provider's listing was already linked to, if their titles (without qualifiers) are equal and runtimes are within 3 min. This reuses aliases across providers and covers Finnkino's missing countries.
+7. **Events** (`FilmListing.kind: "event"`: operas, concerts, sports) are matched when possible but **never reported as unmatched**, since most of them are not on TMDB.
 
 Tested regression: "Ryhmä Hau: Dinoelokuva" (PAW Patrol: The Dino Movie) must **not** match "Ryhmä Hau: Mahtipennut" (2023). Another film in the same franchise is not a prefix match.
 
-Result on 2026-10-09: of BioRex's 26 films, 24 matched automatically and 2 through an alias. The aliased ones were new films that do not yet have a Finnish title on TMDB.
+Result on 2026-10-09: BioRex 26 films (24 auto, 2 alias); Finnkino 59 listings (49 auto, 5 alias, 3 sibling, 1 opera skipped). Aliases were needed for new films without a Finnish title on TMDB, re-releases ("Autot (uudelleenjulkaisu)", "Avengers: Endgame Encore"), an extended cut, and an old concert film.
 
 TMDB's terms require attribution in the UI: the TMDB logo and the notice "This product uses the TMDB API but is not endorsed or certified by TMDB".
 

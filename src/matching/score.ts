@@ -1,3 +1,4 @@
+import type { FinnishRating } from "../model/schema.ts";
 import type { MovieDetails } from "../tmdb/raw.ts";
 import { normalizeTitle, titlePrefix } from "./titles.ts";
 
@@ -7,6 +8,7 @@ export type ListingFacts = {
   /** ISO 3166-1 alpha-2 */
   countries: string[];
   year?: number;
+  rating?: FinnishRating;
 };
 
 export type Evidence = {
@@ -15,6 +17,8 @@ export type Evidence = {
   year: "window" | "listing" | "outside" | "unknown";
   runtime: "close" | "near" | "far" | "unknown";
   countries: "overlap" | "disjoint" | "unknown";
+  /** Cinema's age rating vs. TMDB's Finnish certification. Only used to break ties. */
+  rating: "same" | "different" | "unknown";
 };
 
 /** Films in cinemas are almost always recent; older ones need stronger evidence. */
@@ -81,7 +85,18 @@ export const gatherEvidence = (
         ? "overlap"
         : "disjoint";
 
-  return { tmdbId: details.id, title, year, runtime, countries };
+  const certification = details.release_dates.results
+    .find((r) => r.iso_3166_1 === "FI")
+    ?.release_dates.map((d) => d.certification?.trim())
+    .find(Boolean);
+  const rating =
+    !listing.rating || !certification
+      ? "unknown"
+      : listing.rating === certification
+        ? "same"
+        : "different";
+
+  return { tmdbId: details.id, title, year, runtime, countries, rating };
 };
 
 export type Tier = "exact" | "prefix" | "sparse";
@@ -113,10 +128,24 @@ export type Decision =
   | { kind: "match"; tmdbId: number; tier: Tier }
   | { kind: "none"; reason: string };
 
-/** The strongest tier with any candidate decides; more than one candidate there is ambiguous. */
+/**
+ * Two films with the same title in one tier ("The Furious", 2026, twice): prefer the only
+ * one whose runtime is within 3 minutes, then the only one whose Finnish rating agrees.
+ */
+const TIE_BREAKERS: ((e: Evidence) => boolean)[] = [
+  (e) => e.runtime === "close",
+  (e) => e.rating === "same",
+];
+
+/** The strongest tier with any candidate decides; an unbreakable tie there is ambiguous. */
 export const decide = (evidence: Evidence[]): Decision => {
   for (const tier of ["exact", "prefix", "sparse"] as const) {
-    const inTier = evidence.filter((e) => tierOf(e) === tier);
+    let inTier = evidence.filter((e) => tierOf(e) === tier);
+    for (const prefer of TIE_BREAKERS) {
+      if (inTier.length <= 1) break;
+      const preferred = inTier.filter(prefer);
+      if (preferred.length > 0) inTier = preferred;
+    }
     if (inTier.length === 1) return { kind: "match", tmdbId: inTier[0]!.tmdbId, tier };
     if (inTier.length > 1) {
       return {

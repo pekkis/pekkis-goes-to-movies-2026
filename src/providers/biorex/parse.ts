@@ -224,6 +224,8 @@ const parseListing = (s: RawShowtime): FilmListing => {
     ...(rating && { rating }),
     genres: splitList(s.genre),
     countries: splitList(s.countries),
+    // BioRex does not mark event cinema.
+    kind: "film",
   };
 };
 
