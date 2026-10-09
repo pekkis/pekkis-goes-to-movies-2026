@@ -1,0 +1,26 @@
+{
+  "name": "@pgtm/fetcher",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Fetches Finnish cinema showtimes, normalizes them and matches films to TMDB",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "pull": "node --env-file-if-exists=../../.env src/cli/fetch.ts",
+    "match": "node --env-file-if-exists=../../.env src/cli/match.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@date-fns/tz": "^1.5.0",
+    "date-fns": "^4.4.0",
+    "ky": "^2.1.0",
+    "p-queue": "^9.3.3",
+    "playwright": "^1.64.0",
+    "zod": "^4.6.5"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

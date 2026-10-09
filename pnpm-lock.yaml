@@ -165,6 +165,24 @@ settings:
 importers:
 
   .:
+    devDependencies:
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.4
+      oxfmt:
+        specifier: ^0.72.0
+        version: 0.72.0
+      oxlint:
+        specifier: ^1.87.0
+        version: 1.87.0
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.3
+        version: 5.0.3(@types/node@26.6.4)(vite@8.3.4(@types/node@26.6.4))
+
+  packages/fetcher:
     dependencies:
       '@date-fns/tz':
         specifier: ^1.5.0
@@ -184,22 +202,6 @@ importers:
       zod:
         specifier: ^4.6.5
         version: 4.6.5
-    devDependencies:
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.4
-      oxfmt:
-        specifier: ^0.72.0
-        version: 0.72.0
-      oxlint:
-        specifier: ^1.87.0
-        version: 1.87.0
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.3
-        version: 5.0.3(@types/node@26.6.4)(vite@8.3.4(@types/node@26.6.4))
 
 packages:
 

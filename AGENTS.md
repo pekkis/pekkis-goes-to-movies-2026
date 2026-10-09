@@ -20,7 +20,7 @@ The project is part of the user-centered design course at JAMK.
 
 - **BioRex and Finnkino adapters are done**, with tests: `pnpm pull` fetches both chains (12 + 17 cinemas) for 7 days into JSON and matches the films to TMDB.
 - **License: AGPL-3.0-or-later** ([LICENSE](LICENSE)). Everything is published as open source.
-- **Direction:** a better version of Leffavuoro (Shady-Dev/kino) in TypeScript, with a precise, typed data model and JSON output. Model: [docs/data-model.md](docs/data-model.md). The source of truth is [src/model/schema.ts](src/model/schema.ts).
+- **Direction:** a better version of Leffavuoro (Shady-Dev/kino) in TypeScript, with a precise, typed data model and JSON output. Model: [docs/data-model.md](docs/data-model.md). The source of truth is [src/model/schema.ts](packages/fetcher/src/model/schema.ts).
 - Data collection is written in TypeScript (strict). The frontend stack is still open, so do not add a UI framework until the maintainer decides.
 - No design or user research yet. The focus is on technical groundwork.
 - Data sources in scope for now: **only Finnkino and BioRex.** Other chains and independent cinemas come later.
@@ -40,29 +40,35 @@ pnpm fmt                     # oxfmt rewrites formatting
 - **`pnpm fetch` is a built-in pnpm command.** That is why the fetch script is called `pull`.
 - **Finnkino opens a visible Chrome window** for a few seconds when its 12-hour token needs renewing (about twice a day; cached in `data/cache/finnkino-token.json`). It needs Google Chrome installed and cannot run in CI. If one provider fails, the others still run and `pull` exits non-zero.
 - **`.env`** (gitignored) is loaded by Node's own `--env-file-if-exists=.env` flag. **No dotenv.**
-  - Variables are validated with Zod in [src/lib/env.ts](src/lib/env.ts) (`loadEnv()`), the only place that reads `process.env`.
+  - Variables are validated with Zod in [src/lib/env.ts](packages/fetcher/src/lib/env.ts) (`loadEnv()`), the only place that reads `process.env`.
   - `TMDB_APIKEY` (required): TMDB v4 read access token, used as a Bearer token. Never print it.
   - `CONTACT` (optional): URL or email added to the User-Agent. Never hard-code anyone's contact details.
   - [.env.example](.env.example) lists the variables with empty values. Never put real values in it.
 
 ## Layout
 
+A pnpm workspace. Shared tooling (TypeScript, oxlint, oxfmt, vitest) and settings live at the root; each package declares its own runtime dependencies. Root scripts delegate to packages (`pnpm pull` → `@pgtm/fetcher`), and `pnpm check` covers all of them.
+
 ```
-src/model/schema.ts           domain model (Zod) — all types come from here
-src/lib/                      env, http (ky + p-queue, per-host pacing), time (Helsinki times), lang (ISO 639-1), cache
-src/providers/<id>/raw.ts     schemas of the source's raw responses (looseObject: only the fields we read)
-src/providers/<id>/fetch.ts   I/O only → raw snapshot
-src/providers/<id>/parse.ts   pure function: raw snapshot → ProviderBatch
-src/providers/finnkino/token.ts  Finnkino token via headed Chrome (Playwright), cached
-src/providers/registry.ts     list of adapters; the CLI runs them
-src/tmdb/                     TMDB client (cached), raw schemas, toFilm (pure)
-src/matching/                 TMDB matching: score.ts (pure scoring), match.ts, catalog.ts (films.json)
-config/tmdb-aliases.json      hand-maintained aliases, listing id → TMDB id (committed)
-src/cli/fetch.ts, match.ts    CLIs (`pnpm pull`, `pnpm match`)
-test/fixtures/<id>/           fixtures trimmed from real responses
-test/…                        tests mirror the src layout
-data/                         fetched data (gitignored)
+package.json, pnpm-workspace.yaml, tsconfig.base.json   workspace root (packages extend tsconfig.base.json)
+.env, data/                    shared by all packages, gitignored (DATA_DIR in packages/fetcher/src/lib/paths.ts)
+docs/                          project documentation
+packages/fetcher/              @pgtm/fetcher: fetching, normalizing, TMDB matching
+  src/model/schema.ts          domain model (Zod) — all types come from here
+  src/lib/                     env, paths, http (ky + p-queue, per-host pacing), time, lang, cache
+  src/providers/<id>/raw.ts    schemas of the source's raw responses (looseObject: only the fields we read)
+  src/providers/<id>/fetch.ts  I/O only → raw snapshot
+  src/providers/<id>/parse.ts  pure function: raw snapshot → ProviderBatch
+  src/providers/finnkino/token.ts  Finnkino token via headed Chrome (Playwright), cached
+  src/providers/registry.ts    list of adapters; the CLI runs them
+  src/tmdb/                    TMDB client (cached), raw schemas, toFilm (pure)
+  src/matching/                TMDB matching: score.ts (pure scoring), match.ts, catalog.ts (films.json)
+  src/cli/fetch.ts, match.ts   CLIs (`pnpm pull`, `pnpm match`)
+  config/tmdb-aliases.json     hand-maintained aliases, listing id → TMDB id (committed)
+  test/                        tests mirror src; test/fixtures/<id>/ trimmed from real responses
 ```
+
+New packages go under `packages/<name>` with the `@pgtm/` scope, `"private": true`, and a `tsconfig.json` that extends `../../tsconfig.base.json`.
 
 **Adding an adapter:**
 
@@ -84,8 +90,8 @@ data/                         fetched data (gitignored)
 
   If a new dependency needs a build script, add it to `allowBuilds` with a reason.
 
-- **No npm or npx**: `devEngines` blocks npm, so use `pnpm exec <bin>`. Node 24 runs `.ts` files directly, so there is no build step. Use erasable TS syntax only: no `enum`, `namespace` or parameter properties.
-- **TypeScript** (strict) for type checking only (`tsc`, `noEmit`).
+- **No npm or npx**: `devEngines` blocks npm, so use `pnpm exec <bin>`. Add a runtime dependency to its package (`pnpm --filter @pgtm/fetcher add <pkg>`), shared dev tooling to the root (`pnpm add -D -w <pkg>`). Node 24 runs `.ts` files directly, so there is no build step. Use erasable TS syntax only: no `enum`, `namespace` or parameter properties.
+- **TypeScript** (strict) for type checking only (`tsc`, `noEmit`), per package via `pnpm -r typecheck`.
 - **oxlint** for linting and **oxfmt** for formatting. **No** ESLint or Prettier.
 - **vitest** for tests.
 - Runtime libraries:

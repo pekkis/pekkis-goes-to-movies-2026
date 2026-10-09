@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { loadEnv } from "../lib/env.ts";
+import { DATA_DIR } from "../lib/paths.ts";
 import { helsinkiToday } from "../lib/time.ts";
 import { runMatching } from "../matching/run.ts";
 import { ProviderBatch } from "../model/schema.ts";
@@ -21,7 +22,7 @@ const { values } = parseArgs({
     from: { type: "string" },
     days: { type: "string", default: "7" },
     venue: { type: "string", multiple: true },
-    out: { type: "string", default: "data" },
+    out: { type: "string", default: DATA_DIR },
     help: { type: "boolean", short: "h" },
   },
 });

@@ -1,6 +1,6 @@
 # Data model (v1)
 
-Goal: a precise, typed model that improves on the data model of Leffavuoro (Shady-Dev/kino). **The source of truth is [src/model/schema.ts](../src/model/schema.ts)**: Zod schemas from which the TypeScript types are inferred (`z.infer`) and from which a JSON Schema can be generated (`z.toJSONSchema`). This document explains why the model looks the way it does. Field-level details live in the code.
+Goal: a precise, typed model that improves on the data model of Leffavuoro (Shady-Dev/kino). **The source of truth is [src/model/schema.ts](../packages/fetcher/src/model/schema.ts)**: Zod schemas from which the TypeScript types are inferred (`z.infer`) and from which a JSON Schema can be generated (`z.toJSONSchema`). This document explains why the model looks the way it does. Field-level details live in the code.
 
 ## What we fix (findings from Leffavuoro's data, 7,643 showtimes, 2026-10-09)
 
@@ -37,7 +37,7 @@ Goal: a precise, typed model that improves on the data model of Leffavuoro (Shad
 - **Availability:** `available`, `few-left`, `sold-out`, `not-bookable` or `unknown`. `ticketUrl` is set only while the screening is on sale.
 - **`unmappedLabels`:** source labels the parser does not recognize (e.g. `version_hfr` or `title_extension:4DX`). They are never dropped silently.
 - **Validation in two stages:**
-  - Raw data is checked with source-specific schemas (e.g. [src/providers/biorex/raw.ts](../src/providers/biorex/raw.ts)). A broken row becomes a warning and does not abort the run.
+  - Raw data is checked with source-specific schemas (e.g. [src/providers/biorex/raw.ts](../packages/fetcher/src/providers/biorex/raw.ts)). A broken row becomes a warning and does not abort the run.
   - Finally, the whole result is checked against the `ProviderBatch` schema.
 
 ## Pipeline
@@ -62,11 +62,11 @@ output JSON (+ JSON Schema)
 
 **Posters, synopses and trailers come only from TMDB, never from cinemas.** For a film that is not matched, only the name, runtime and age rating given by the cinema are shown.
 
-**Principle: certain or nothing.** A wrong poster is worse than a missing one. Code: [src/matching/](../src/matching/).
+**Principle: certain or nothing.** A wrong poster is worse than a missing one. Code: [src/matching/](../packages/fetcher/src/matching/).
 
-1. **An alias** ([config/tmdb-aliases.json](../config/tmdb-aliases.json)) always wins. `"tmdb": null` means the film is not on TMDB, so it is no longer searched for.
+1. **An alias** ([config/tmdb-aliases.json](../packages/fetcher/config/tmdb-aliases.json)) always wins. `"tmdb": null` means the film is not on TMDB, so it is no longer searched for.
 2. **Search** (`language=fi-FI`, which also hits translated titles) runs with the title and with the part before the subtitle (`"Practical Magic: Lumotut sisaret"` → `"Practical Magic"`). A trailing qualifier in parentheses is dropped first (`"Vaiana (liveaction)"` → `"Vaiana"`). Details are fetched for the five most likely hits.
-3. **Evidence** ([score.ts](../src/matching/score.ts)) for each candidate:
+3. **Evidence** ([score.ts](../packages/fetcher/src/matching/score.ts)) for each candidate:
    - title: `exact` (including translations and alternative titles) / `prefix` / `none`
    - year: within current year −3…+1
    - runtime: ≤3 / ≤8 / >8 min apart

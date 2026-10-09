@@ -11,7 +11,7 @@ Investigated on 2026-10-09; both adapters are implemented. Markers: **[V]** = ve
 - `biorex.fi` is a WordPress site (Polylang fi/sv/en, Yoast, custom theme) **[V]**.
 - The ticket shop `webshop.biorex.fi` is AngularJS + Express **[V]**. **The platform is MyCloudCinema**: the cinema settings contain `webhook_url: https://api.biorex.mycloudcinema.com/…` **[V]**. The HTML's `<meta name="author" content="Unique X">` points to the developer (Unique X) **[A]**.
 - According to Leffavuoro, the same MyCloudCinema `/webservices` API is used by Cine Mäntsälä (`mantsala.cine.fi`) and Gilda (`*.mycloudcinema.com`) **[A]**. The adapter can therefore later become a generic MyCloudCinema adapter.
-- **Implementation:** [src/providers/biorex/](../src/providers/biorex/), run with `pnpm pull`.
+- **Implementation:** [src/providers/biorex/](../packages/fetcher/src/providers/biorex/), run with `pnpm pull`.
 - `robots.txt` allows everything (`User-agent: * / Disallow:`) **[V]**. The terms of service contain no ban on scraping.
 
 ### Webshop JSON API (no authentication, GET)
@@ -111,7 +111,7 @@ Filtered out: ids 6, 15 and 16 (`xxx` name prefix, closed) and id 11 (the compan
 ### Background
 
 - Finnkino moved to **Vista Cloud** from 25 Aug 2025, and all cinemas had moved by the end of October 2025 **[A]** (Cision, Muropaketti).
-- **Implementation:** [src/providers/finnkino/](../src/providers/finnkino/), run with `pnpm pull --provider finnkino`.
+- **Implementation:** [src/providers/finnkino/](../packages/fetcher/src/providers/finnkino/), run with `pnpm pull --provider finnkino`.
 
 ### Cloudflare and the token [V]
 
@@ -119,7 +119,7 @@ Filtered out: ids 6, 15 and 16 (`xxx` name prefix, closed) and id 11 (the compan
 - `digital-api.finnkino.fi` is **not** behind the challenge. Without a token it answers `401 "No global authentication JWT supplied"`; with one, plain HTTP works with our own User-Agent.
 - The token is a JWT embedded in the front page HTML. Issuer `https://auth.moviexchange.com/`, client "Finnkino Omnia", minted at page load, **valid for exactly 12 hours**.
 - Vista's [security docs](https://developer.vista.co/digital-platform/getting-started/security) describe this token as "safe to make available to public facing clients", meant to be cached and reused. It is not a secret.
-- **Our approach** ([token.ts](../src/providers/finnkino/token.ts)): open the locally installed Chrome (Playwright, `channel: "chrome"`, `headless: false`) for a few seconds, read the token from the page, cache it in `data/cache/finnkino-token.json` (mode 600), and renew it when less than an hour is left. In practice a Chrome window appears about twice a day. **Works only on a desktop machine with Chrome, never in CI.**
+- **Our approach** ([token.ts](../packages/fetcher/src/providers/finnkino/token.ts)): open the locally installed Chrome (Playwright, `channel: "chrome"`, `headless: false`) for a few seconds, read the token from the page, cache it in `data/cache/finnkino-token.json` (mode 600), and renew it when less than an hour is left. In practice a Chrome window appears about twice a day. **Works only on a desktop machine with Chrome, never in CI.**
 
 ### Old XML API: dead
 
