@@ -6,6 +6,7 @@ import { DATA_DIR } from "../lib/paths.ts";
 import { helsinkiToday } from "../lib/time.ts";
 import { runMatching } from "../matching/run.ts";
 import { ProviderBatch } from "@pgtm/model";
+import { finishVenues, loadVenueOverrides } from "../providers/overrides.ts";
 import { ADAPTERS, selectAdapters } from "../providers/registry.ts";
 
 const PROVIDERS = ADAPTERS.map((a) => a.id);
@@ -59,13 +60,17 @@ const writeJson = async (path: string, data: unknown) => {
   console.log(`wrote ${path}`);
 };
 
+const overrides = await loadVenueOverrides();
+
 let failures = 0;
 for (const adapter of selected ?? []) {
   try {
-    const { raw, batch } = await adapter.pull(
+    const pulled = await adapter.pull(
       { env, out: values.out },
       { from, days, ...(values.venue && { venues: values.venue }) },
     );
+    const { raw } = pulled;
+    const batch = finishVenues(pulled.batch, overrides);
     const stamp = raw.fetchedAt.replace(/[:.]/g, "-");
     await writeJson(join(values.out, "raw", adapter.id, `${stamp}.json`), raw);
     // The parser already validates rows; this guards the output contract itself.

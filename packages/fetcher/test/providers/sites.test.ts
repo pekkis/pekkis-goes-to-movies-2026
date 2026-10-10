@@ -36,6 +36,29 @@ describe("site configs", () => {
     expect(() => defineSites(NexxoSite, [minimal("a", ["Ääne koski"])])).toThrow();
   });
 
+  it("requires a source for coordinates and rejects swapped ones", () => {
+    const withGeo = (venue: object) => {
+      const site = minimal("a", ["x"]);
+      return { ...site, venues: [{ ...site.venues[0]!, ...venue }] };
+    };
+    expect(() => defineSites(NexxoSite, [withGeo({ geo: { lat: 62.2, lon: 25.7 } })])).toThrow(
+      /geoSource/,
+    );
+    expect(() =>
+      defineSites(NexxoSite, [withGeo({ geo: { lat: 25.7, lon: 62.2 }, geoSource: "manual" })]),
+    ).toThrow();
+    expect(() =>
+      defineSites(NexxoSite, [withGeo({ geo: { lat: 62.2, lon: 25.7 }, geoSource: "manual" })]),
+    ).not.toThrow();
+  });
+
+  it("every configured Nexxo venue has coordinates", () => {
+    const missing = NEXXO_SITES.flatMap((s) =>
+      s.venues.filter((v) => !v.geo).map((v) => `${s.provider}/${v.slug}`),
+    );
+    expect(missing).toEqual([]);
+  });
+
   it("selects adapters by id or platform, and rejects unknown names", () => {
     expect(selectAdapters(undefined)).toBe(ADAPTERS);
     expect(selectAdapters(["nexxo"])?.map((a) => a.id)).toEqual(NEXXO_SITES.map((s) => s.provider));

@@ -21,7 +21,8 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "check": "pnpm typecheck && pnpm lint && pnpm fmt:check && pnpm test",
-    "vendor:leffavuoro": "node scripts/vendor-leffavuoro.ts"
+    "vendor:leffavuoro": "node scripts/vendor-leffavuoro.ts",
+    "venues:locate": "pnpm --filter @pgtm/fetcher venues:locate"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",

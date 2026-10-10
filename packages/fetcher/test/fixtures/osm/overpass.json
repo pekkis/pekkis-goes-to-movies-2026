@@ -1,0 +1,106 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-10-10T08:54:21Z",
+    "timestamp_areas_base": "2026-10-09T08:14:29Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+    {
+      "type": "node",
+      "id": 194555639,
+      "lat": 62.9680845,
+      "lon": 23.0175271,
+      "tags": {
+        "addr:city": "Lapua",
+        "addr:housenumber": "1",
+        "addr:postcode": "62100",
+        "addr:street": "Vanhan paukun tie",
+        "amenity": "cinema",
+        "email": "lapua@biomarilyn.com",
+        "name": "Bio Marilyn",
+        "phone": "+358 40 1475431",
+        "screen": "1",
+        "website": "https://www.biomarilyn.com/"
+      }
+    },
+    {
+      "type": "node",
+      "id": 514273201,
+      "lat": 61.4839071,
+      "lon": 21.7965773,
+      "tags": {
+        "addr:city": "Pori",
+        "addr:housenumber": "17",
+        "addr:postcode": "28100",
+        "addr:street": "Yrjönkatu",
+        "amenity": "cinema",
+        "name": "Promenadi",
+        "operator": "Finnkino",
+        "operator:wikidata": "Q5450883",
+        "start_date": "1999",
+        "website": "https://www.finnkino.fi/cinemas/pori_promenadi/",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1685949007,
+      "lat": 62.2425428,
+      "lon": 25.7457354,
+      "tags": {
+        "addr:city": "Jyväskylä",
+        "addr:housenumber": "29-31",
+        "addr:postcode": "40100",
+        "addr:street": "Kauppakatu",
+        "amenity": "cinema",
+        "name": "Fantasia",
+        "operator": "Finnkino",
+        "operator:wikidata": "Q5450883",
+        "start_date": "1993",
+        "website": "https://www.finnkino.fi/cinemas/jyvaskyla_fantasia/",
+        "wheelchair": "yes",
+        "wikidata": "Q11859677",
+        "wikipedia": "fi:Finnkino Fantasia"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2104773059,
+      "lat": 60.4584673,
+      "lon": 26.225406,
+      "tags": {
+        "addr:city": "Loviisa",
+        "addr:housenumber": "17",
+        "addr:postcode": "07900",
+        "addr:street": "Kuningattarenkatu",
+        "amenity": "cinema",
+        "check_date:opening_hours": "2025-03-29",
+        "name": "Kino Marilyn",
+        "opening_hours:signed": "no",
+        "website": "http://www.kinomarilyn.fi/kino/",
+        "wheelchair": "no"
+      }
+    },
+    {
+      "type": "way",
+      "id": 148579739,
+      "center": {
+        "lat": 60.8664392,
+        "lon": 25.2681803
+      },
+      "tags": {
+        "addr:city": "Järvelä",
+        "addr:housenumber": "16",
+        "addr:postcode": "16600",
+        "addr:street": "Hähkäniementie",
+        "amenity": "cinema",
+        "building": "yes",
+        "name": "Järvelän Kino",
+        "payment:cash": "yes",
+        "screen": "1"
+      }
+    }
+  ]
+}

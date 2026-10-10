@@ -1,5 +1,6 @@
 import { ProviderId, type Provider } from "@pgtm/model";
 import { z } from "zod";
+import { FinnishGeo, GeoSource } from "../geo/geo.ts";
 
 /**
  * Shared shape for platform adapters that serve many cinema sites (Nexxo, eTiketti, …).
@@ -26,8 +27,19 @@ export const SiteVenue = z.object({
   name: z.string().min(1),
   city: z.string().min(1),
   shortName: z.string().optional(),
+  /** Street address, e.g. "Kauppakatu 12". */
   address: z.string().optional(),
-  postalCode: z.string().optional(),
+  postalCode: z
+    .string()
+    .regex(/^\d{5}$/)
+    .optional(),
+  /**
+   * Where the cinema is (its entrance, not the town centre). Find it with
+   * `pnpm venues:locate` and check it on openstreetmap.org before entering it.
+   */
+  geo: FinnishGeo.optional(),
+  /** Required with `geo`: where the coordinate came from (see GeoSource). */
+  geoSource: GeoSource.optional(),
 });
 export type SiteVenue = z.infer<typeof SiteVenue>;
 
@@ -54,8 +66,13 @@ export const providerOf = (
   booking,
 });
 
-/** Validates a site list: schema, unique providers, unique venue slugs per site. */
-export const defineSites = <S extends { provider: string; venues: { slug: string }[] }>(
+/** Validates a site list: schema, unique providers, unique venue slugs per site, geo sources. */
+export const defineSites = <
+  S extends {
+    provider: string;
+    venues: { slug: string; geo?: unknown; geoSource?: string | undefined }[];
+  },
+>(
   schema: z.ZodType<S>,
   sites: S[],
 ): S[] => {
@@ -67,6 +84,11 @@ export const defineSites = <S extends { provider: string; venues: { slug: string
     const slugs = site.venues.map((v) => v.slug);
     if (new Set(slugs).size !== slugs.length) {
       throw new Error(`Duplicate venue slug in ${site.provider}: ${slugs.join(", ")}`);
+    }
+    for (const venue of site.venues) {
+      if (venue.geo && !venue.geoSource) {
+        throw new Error(`${site.provider}/${venue.slug}: geo needs a geoSource`);
+      }
     }
   }
   return parsed;
