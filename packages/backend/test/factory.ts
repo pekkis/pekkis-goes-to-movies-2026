@@ -42,6 +42,10 @@ export const film = (overrides: Partial<Film> = {}): Film => ({
   overview: { en: "A film for tests." },
   posterPath: "/poster.jpg",
   trailers: [{ site: "YouTube", key: "abc", name: "Trailer" }],
+  ratings: [
+    { source: "rotten-tomatoes", score: 93, display: "93%" },
+    { source: "imdb", score: 79, display: "7.9/10", votes: 120000 },
+  ],
   fetchedAt: FETCHED_AT,
   ...overrides,
 });

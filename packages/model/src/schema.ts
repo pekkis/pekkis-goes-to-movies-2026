@@ -127,6 +127,21 @@ export type FilmListing = z.infer<typeof FilmListing>;
  * Canonical film from TMDB. Posters, synopses and trailers come only from here,
  * never from cinemas. Image paths are TMDB paths: `https://image.tmdb.org/t/p/{size}{path}`.
  */
+export const RatingSource = z.enum(["rotten-tomatoes", "metacritic", "imdb", "tmdb"]);
+export type RatingSource = z.infer<typeof RatingSource>;
+
+/** A critics' or audience score for a film, from one source. */
+export const Rating = z.object({
+  source: RatingSource,
+  /** Normalized to 0–100 for comparing and filtering: 93% -> 93, 7.9/10 -> 79. */
+  score: z.number().int().min(0).max(100),
+  /** As the source shows it: "93%", "81/100", "7.9/10". */
+  display: z.string(),
+  /** Number of votes behind an audience score (IMDb, TMDB). */
+  votes: z.number().int().nonnegative().optional(),
+});
+export type Rating = z.infer<typeof Rating>;
+
 export const Film = z.object({
   id: z.string().regex(/^tmdb:\d+$/),
   tmdbId: z.number().int().positive(),
@@ -156,6 +171,8 @@ export const Film = z.object({
       language: Lang.optional(),
     }),
   ),
+  /** Scores from TMDB and, via OMDb, Rotten Tomatoes, Metacritic and IMDb. */
+  ratings: z.array(Rating).default([]),
   fetchedAt: z.iso.datetime(),
 });
 export type Film = z.infer<typeof Film>;

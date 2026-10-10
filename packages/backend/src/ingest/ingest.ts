@@ -4,6 +4,7 @@ import type { DB } from "../db/types.ts";
 import {
   auditoriumRow,
   filmListingRow,
+  filmRatingRows,
   filmRow,
   providerRow,
   screeningRow,
@@ -45,8 +46,16 @@ const upsert = async (
   }
 };
 
+/** Upserts the films and replaces their ratings with the catalog's (a snapshot). */
 export const ingestFilms = async (db: Kysely<DB>, catalog: FilmCatalog): Promise<number> => {
-  await upsert(db, "films", catalog.films.map(filmRow));
+  await db.transaction().execute(async (trx) => {
+    await upsert(trx, "films", catalog.films.map(filmRow));
+    const ids = catalog.films.map((f) => f.id);
+    if (ids.length) await trx.deleteFrom("filmRatings").where("filmId", "in", ids).execute();
+    for (const chunk of chunks(catalog.films.flatMap(filmRatingRows))) {
+      await trx.insertInto("filmRatings").values(chunk).execute();
+    }
+  });
   return catalog.films.length;
 };
 

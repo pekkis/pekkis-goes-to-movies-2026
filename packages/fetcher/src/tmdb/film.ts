@@ -1,4 +1,4 @@
-import { FinnishRating, type Film, type Lang, type Localized } from "@pgtm/model";
+import { FinnishRating, type Film, type Lang, type Localized, type Rating } from "@pgtm/model";
 import type { MovieDetails } from "./raw.ts";
 
 export const imageUrl = (path: string, size: "w185" | "w342" | "w500" | "w780" | "original") =>
@@ -62,6 +62,19 @@ const trailers = (details: MovieDetails): Film["trailers"] =>
       ...(v.iso_639_1 && /^[a-z]{2}$/.test(v.iso_639_1) && { language: v.iso_639_1 as Lang }),
     }));
 
+/** Below this many votes a TMDB score is noise (a handful of early viewers). */
+export const MIN_TMDB_VOTES = 20;
+
+/** TMDB's own user score as a rating, when enough people voted. */
+export const tmdbRating = (details: MovieDetails): Rating[] => {
+  const average = details.vote_average;
+  const votes = details.vote_count ?? 0;
+  if (average === null || average === undefined || votes < MIN_TMDB_VOTES) return [];
+  return [
+    { source: "tmdb", score: Math.round(average * 10), display: `${average.toFixed(1)}/10`, votes },
+  ];
+};
+
 /** Pure: TMDB details -> Film. */
 export const toFilm = (details: MovieDetails, fetchedAt: string): Film => {
   const posterPath = pickPoster(details);
@@ -82,6 +95,7 @@ export const toFilm = (details: MovieDetails, fetchedAt: string): Film => {
     ...(posterPath && { posterPath }),
     ...(details.backdrop_path && { backdropPath: details.backdrop_path }),
     trailers: trailers(details),
+    ratings: tmdbRating(details),
     fetchedAt,
   };
 };

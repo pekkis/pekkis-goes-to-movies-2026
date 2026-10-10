@@ -21,7 +21,7 @@ import {
 } from "../search/showtimes.ts";
 
 const USAGE = `Usage: pnpm showtimes [--movie NAME | NAME] [--date YYYY-MM-DD] [--after HH:MM] [--before HH:MM]
-                      [--links]
+                      [--ratings] [--min-rt PERCENT] [--min-imdb SCORE] [--links]
                       [--provider ID ...] [--near LAT,LON | --address TEXT | --here] [--radius KM]
                       [--min-score 0..1]
 
@@ -34,6 +34,12 @@ Default date: today in Helsinki.
   --after     only shows starting at or after this time (shows after midnight are kept)
   --before    only shows starting before this time; earlier than --after means the next
               morning (--after 22:00 --before 02:00)
+  --ratings   show Rotten Tomatoes, Metacritic, IMDb and TMDB scores. Off by default, so
+              nobody learns what critics thought unless they ask; the filters below
+              turn it on.
+  --min-rt    only films with at least this Rotten Tomatoes score (0–100)
+  --min-imdb  only films with at least this IMDb rating (0–10, e.g. 7.5)
+              Films without that score (new, small or not on TMDB) are left out.
 
   --provider  only these providers: ids (finnkino, biorex, kinoaurora, …) or a platform
               (nexxo = every Nexxo cinema). Repeat for several.
@@ -48,6 +54,7 @@ Default date: today in Helsinki.
 Examples:
   pnpm showtimes --here --after 18:00                  what's on near me tonight
   pnpm showtimes --here --before 13:00                 morning and early afternoon shows
+  pnpm showtimes --here --after 18:00 --min-rt 85      something good tonight
   pnpm showtimes --movie odyssey --near 60.17,24.94 --radius 10 --provider finnkino
   pnpm showtimes odyssey --address "Seminaarinkatu 13, Jyväskylä" --radius 5
   pnpm showtimes odyssey --here`;
@@ -59,6 +66,9 @@ const { values, positionals } = parseArgs({
     date: { type: "string" },
     after: { type: "string" },
     before: { type: "string" },
+    ratings: { type: "boolean", default: false },
+    "min-rt": { type: "string" },
+    "min-imdb": { type: "string" },
     "min-score": { type: "string", default: String(DEFAULT_MIN_SCORE) },
     links: { type: "boolean", default: false },
     provider: { type: "string", multiple: true },
@@ -73,6 +83,10 @@ const { values, positionals } = parseArgs({
 const term = (values.movie ?? positionals.join(" ")).trim();
 const after = values.after === undefined ? undefined : parseTime(values.after);
 const before = values.before === undefined ? undefined : parseTime(values.before);
+const minRt = values["min-rt"] === undefined ? undefined : Number(values["min-rt"]);
+const minImdb = values["min-imdb"] === undefined ? undefined : Number(values["min-imdb"]);
+// Filtering by score means the user wants scores; otherwise they stay hidden.
+const withRatings = values.ratings || minRt !== undefined || minImdb !== undefined;
 const minScore = Number(values["min-score"]);
 const point = values.near === undefined ? undefined : parseLatLon(values.near);
 const radiusKm = Number(values.radius);
@@ -81,6 +95,8 @@ if (
   (values.movie !== undefined && (!term || positionals.length > 0)) ||
   (values.after !== undefined && !after) ||
   (values.before !== undefined && !before) ||
+  (minRt !== undefined && !(minRt >= 0 && minRt <= 100)) ||
+  (minImdb !== undefined && !(minImdb >= 0 && minImdb <= 10)) ||
   Number.isNaN(minScore) ||
   (values.date && !/^\d{4}-\d{2}-\d{2}$/.test(values.date)) ||
   (values.near !== undefined && !point) ||
@@ -113,6 +129,14 @@ const run = async (db: Kysely<DB>, contact?: string): Promise<number> => {
   if (after) {
     filter.after = after;
     where.push(`from ${after}`);
+  }
+  if (minRt !== undefined || minImdb !== undefined) {
+    filter.minScores = {
+      ...(minRt !== undefined && { rottenTomatoes: Math.ceil(minRt) }),
+      ...(minImdb !== undefined && { imdb: Math.round(minImdb * 10) }),
+    };
+    if (minRt !== undefined) where.push(`RT ≥ ${minRt}%`);
+    if (minImdb !== undefined) where.push(`IMDb ≥ ${minImdb}`);
   }
   if (before) {
     filter.before = before;
@@ -153,7 +177,7 @@ const run = async (db: Kysely<DB>, contact?: string): Promise<number> => {
     const films = new Set(screenings.map((s) => s.film)).size;
     console.log(
       `\n  ${screenings.length} screenings of ${films} films on ${date}${scope}\n` +
-        formatScreenings(screenings, values.links, { withFilm: true }),
+        formatScreenings(screenings, values.links, { withFilm: true, withRatings }),
     );
     return 0;
   }
@@ -166,7 +190,7 @@ const run = async (db: Kysely<DB>, contact?: string): Promise<number> => {
     let header: string | undefined;
     if (hit.kind === "film") {
       const film = await filmDetails(db, hit.id);
-      if (film) header = formatFilm(film, hit.score);
+      if (film) header = formatFilm(film, hit.score, { withRatings });
     } else {
       const listing = await listingDetails(db, hit.id);
       if (listing) header = formatListing(listing, hit.score);

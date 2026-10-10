@@ -40,6 +40,9 @@ export const MovieDetails = z.looseObject({
   release_date: z.string().nullish(),
   runtime: z.number().int().nullish(),
   popularity: z.number().nullish(),
+  /** TMDB users' score, 0–10. */
+  vote_average: z.number().nullish(),
+  vote_count: z.number().int().nullish(),
   genres: z.array(z.looseObject({ id: z.number(), name: z.string() })),
   production_countries: z.array(z.looseObject({ iso_3166_1: z.string() })),
   poster_path: z.string().nullish(),

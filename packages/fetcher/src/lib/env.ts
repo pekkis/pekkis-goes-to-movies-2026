@@ -9,6 +9,8 @@ const Env = z.object({
   TMDB_APIKEY: z.string().startsWith("eyJ", "must be a TMDB v4 read access token (eyJ…)"),
   /** URL or email put into the User-Agent so that cinemas can reach whoever runs the fetcher. */
   CONTACT: z.string().min(1).optional(),
+  /** OMDb key (omdbapi.com, free) for Rotten Tomatoes, Metacritic and IMDb scores. Optional. */
+  OMDB_APIKEY: z.string().min(1).optional(),
 });
 export type Env = z.infer<typeof Env>;
 

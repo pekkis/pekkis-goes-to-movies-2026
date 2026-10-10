@@ -55,6 +55,17 @@ export interface FilmListings {
   year: number | null;
 }
 
+export interface FilmRatings {
+  createdAt: Generated<Timestamp>;
+  display: string;
+  fetchedAt: Timestamp;
+  filmId: string;
+  score: number;
+  source: string;
+  updatedAt: Generated<Timestamp>;
+  votes: number | null;
+}
+
 export interface Films {
   backdropPath: string | null;
   countries: Generated<string[]>;
@@ -147,6 +158,7 @@ export interface Venues {
 export interface DB {
   auditoriums: Auditoriums;
   filmListings: FilmListings;
+  filmRatings: FilmRatings;
   films: Films;
   providers: Providers;
   screenings: Screenings;

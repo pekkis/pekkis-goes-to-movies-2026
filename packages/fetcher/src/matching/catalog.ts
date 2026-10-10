@@ -1,6 +1,6 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { FilmCatalog, ProviderBatch } from "@pgtm/model";
+import { FilmCatalog, ProviderBatch, type Film } from "@pgtm/model";
 import type { TmdbClient } from "../tmdb/client.ts";
 import type { Aliases } from "./aliases.ts";
 import { matchListings } from "./match.ts";
@@ -19,6 +19,8 @@ export const buildCatalog = async (
   tmdb: TmdbClient,
   aliases: Aliases,
   now: Date = new Date(),
+  /** Adds data from other sources (ratings) before the catalog is written. */
+  enrich: (films: Film[]) => Promise<Film[]> = async (films) => films,
 ): Promise<FilmCatalog> => {
   const files = (await readdir(dir)).filter((f) => f.endsWith(".json") && f !== CATALOG_FILE);
   const batches = await Promise.all(
@@ -49,7 +51,7 @@ export const buildCatalog = async (
 
   const catalog = FilmCatalog.parse({
     generatedAt: now.toISOString(),
-    films: outcome.films.sort((a, b) => a.tmdbId - b.tmdbId),
+    films: (await enrich(outcome.films)).sort((a, b) => a.tmdbId - b.tmdbId),
     unmatched: outcome.unmatched,
   });
   await writeJson(join(dir, CATALOG_FILE), catalog);

@@ -1,6 +1,7 @@
 import type { Migration } from "kysely/migration";
 import * as m0001 from "./0001_initial.ts";
 import * as m0002 from "./0002_trigram_search.ts";
+import * as m0003 from "./0003_film_ratings.ts";
 
 /**
  * Every migration, by name, in order. Imported statically so the API bundle (tsdown)
@@ -10,4 +11,5 @@ import * as m0002 from "./0002_trigram_search.ts";
 export const MIGRATIONS: Record<string, Migration> = {
   "0001_initial": m0001,
   "0002_trigram_search": m0002,
+  "0003_film_ratings": m0003,
 };

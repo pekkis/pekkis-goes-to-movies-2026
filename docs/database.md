@@ -23,14 +23,15 @@ For a nicer shell on the host, `pgcli postgres://pgtm:pgtm@localhost:5432/pgtm` 
 
 ## Tables
 
-| Table           | Holds                                                                                                        |
-| --------------- | ------------------------------------------------------------------------------------------------------------ |
-| `providers`     | chains/cinemas and their ticketing platform                                                                  |
-| `venues`        | cinemas: city, address, coordinates                                                                          |
-| `auditoriums`   | screens: features, own age limit                                                                             |
-| `films`         | canonical films from TMDB: `title_fi/sv/en`, `overview_fi/sv/en`, poster, trailers (`jsonb`), Finnish rating |
-| `film_listings` | each provider's own film record, `film_id` → `films` (NULL when unmatched), `kind` film/event                |
-| `screenings`    | showtimes, with history columns (below)                                                                      |
+| Table           | Holds                                                                                                                                                                                                                                     |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `providers`     | chains/cinemas and their ticketing platform                                                                                                                                                                                               |
+| `venues`        | cinemas: city, address, coordinates                                                                                                                                                                                                       |
+| `auditoriums`   | screens: features, own age limit                                                                                                                                                                                                          |
+| `films`         | canonical films from TMDB: `title_fi/sv/en`, `overview_fi/sv/en`, poster, trailers (`jsonb`), Finnish rating                                                                                                                              |
+| `film_ratings`  | One score per film and source (`rotten-tomatoes`, `metacritic`, `imdb`, `tmdb`): `score` 0–100, `display` as the source shows it, `votes`. Primary key `(film_id, source)`. A snapshot: ingest replaces a film's ratings with the latest. |
+| `film_listings` | each provider's own film record, `film_id` → `films` (NULL when unmatched), `kind` film/event                                                                                                                                             |
+| `screenings`    | showtimes, with history columns (below)                                                                                                                                                                                                   |
 
 Model shapes are flattened: `presentation` → `projection`, `dimension`, `formats`; `subtitles` → `subtitles_kind` + `subtitles_languages`; `price` → `price_amount_cents`, `price_currency`, `price_note`; `geo` → `lat`, `lon`. Lists are `text[]`. Enum-like values are `text`, validated by Zod at ingest (Postgres enums are painful to change). An absent ("unknown") model field is `NULL`.
 

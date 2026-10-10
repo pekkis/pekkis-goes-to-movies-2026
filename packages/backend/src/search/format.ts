@@ -1,4 +1,4 @@
-import type { FilmDetails, ListingDetails, ShowtimeRow } from "./showtimes.ts";
+import type { FilmDetails, ListingDetails, RatingRow, ShowtimeRow } from "./showtimes.ts";
 
 /** Pure text formatting for the `showtimes` CLI. */
 
@@ -12,6 +12,31 @@ const time = (d: Date) =>
   });
 
 const list = (items: string[]) => items.join(", ");
+
+const RATING_LABELS: Record<string, string> = {
+  "rotten-tomatoes": "RT",
+  metacritic: "Metacritic",
+  imdb: "IMDb",
+  tmdb: "TMDB",
+};
+
+/** 199714 -> "200k", 1497908 -> "1.5M". */
+const compactVotes = (n: number) =>
+  n >= 1_000_000
+    ? `${(n / 1_000_000).toFixed(1)}M`
+    : n >= 1000
+      ? `${Math.round(n / 1000)}k`
+      : String(n);
+
+/** "RT 93% · Metacritic 81 · IMDb 7.9 (200k) · TMDB 7.9" */
+export const formatRatings = (ratings: RatingRow[]): string =>
+  ratings
+    .map((r) => {
+      const value = r.display.replace(/\/(10|100)$/, "");
+      const votes = r.votes ? ` (${compactVotes(r.votes)})` : "";
+      return `${RATING_LABELS[r.source] ?? r.source} ${value}${r.source === "imdb" ? votes : ""}`;
+    })
+    .join(" · ");
 
 /** "EN, subs FI/SV" or "FI" or "?" */
 export const languageLabel = (
@@ -52,7 +77,7 @@ const km = (d: number) => (d < 10 ? d.toFixed(1) : d.toFixed(0));
 export const formatScreenings = (
   rows: ShowtimeRow[],
   withLinks: boolean,
-  { withFilm = false } = {},
+  { withFilm = false, withRatings = false } = {},
 ): string => {
   if (rows.length === 0) return "  No screenings found.";
   const withDistance = rows.some((r) => r.distanceKm !== null);
@@ -62,6 +87,7 @@ export const formatScreenings = (
     "City",
     "Venue",
     ...(withFilm ? ["Film"] : []),
+    ...(withFilm && withRatings ? ["RT", "IMDb"] : []),
     "Screen",
     "Language",
     "Extras",
@@ -73,6 +99,12 @@ export const formatScreenings = (
     r.city,
     r.venue,
     ...(withFilm ? [r.film] : []),
+    ...(withFilm && withRatings
+      ? [
+          r.rottenTomatoes === null ? "" : `${r.rottenTomatoes}%`,
+          r.imdb === null ? "" : (r.imdb / 10).toFixed(1),
+        ]
+      : []),
     r.screen ?? "",
     languageLabel(r),
     extras(r),
@@ -84,7 +116,12 @@ export const formatScreenings = (
     .join("\n");
 };
 
-export const formatFilm = (film: FilmDetails, score: number): string => {
+/** Ratings are opt-in: some people do not want to know what critics thought beforehand. */
+export const formatFilm = (
+  film: FilmDetails,
+  score: number,
+  { withRatings = false } = {},
+): string => {
   const title = film.titleFi ?? film.localTitle ?? film.titleEn ?? film.originalTitle;
   const year = film.releaseDate?.slice(0, 4);
   const facts = [
@@ -98,6 +135,7 @@ export const formatFilm = (film: FilmDetails, score: number): string => {
   return [
     `${title}${title !== film.originalTitle ? ` (${film.originalTitle})` : ""}  [match ${score.toFixed(2)}]`,
     `  ${facts.join(" · ")}`,
+    ...(withRatings && film.ratings.length ? [`  ${formatRatings(film.ratings)}`] : []),
     ...(film.finnishReleaseDate ? [`  Finnish premiere ${film.finnishReleaseDate}`] : []),
     `  ${film.id}${film.imdbId ? ` · https://www.imdb.com/title/${film.imdbId}/` : ""}`,
     ...(film.posterPath ? [`  Poster ${TMDB_POSTER}${film.posterPath}`] : []),
