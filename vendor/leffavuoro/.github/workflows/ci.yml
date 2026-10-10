@@ -1,0 +1,318 @@
+name: Checks
+
+# Static checks for the code paths: the client parses, generated output regenerates
+# clean, and the unit suite passes with nothing skipped and nothing leaked. The client
+# has no build step, so a syntax error in index.html's script block would otherwise ship
+# and the service worker would keep serving the last good copy to whoever pushed it.
+#
+# scripts/check_runs.py is not run here. logs.yml runs it on pushes that change a run log
+# or the checker, and running it on a code change would fail the change on a provider
+# outage.
+on:
+  # Code paths only. Data commits touch data/, logs/ and the generated pages, none of
+  # which changes whether the code is correct. Cloud pushes use GITHUB_TOKEN and do not
+  # fire `on: push`; the local half's pushes do, four times a day.
+  #
+  # `push` rather than `pull_request`: history is linear and direct-pushed, so push covers
+  # every change except a fork, which has not happened.
+  #
+  # The documents are code paths for this purpose: the suite reads them (test_ideas_index's
+  # caps on IDEAS.md, the counts README.md and docs/counts.md state, the contact address in
+  # README.md, the archive files, the privacy page under tietosuoja/, and CLAUDE.md, which
+  # test_design_contract and test_ideas_index quote), so a push touching
+  # only one of them could break the suite unseen and the next code push would take the
+  # blame (audit G3, 2026-09-25). `data/**` stays out on purpose: the local half's data
+  # commits land several times a day and must not run Checks.
+  push:
+    paths:
+      - 'index.html'
+      - 'CLAUDE.md'
+      - 'DESIGN.md'
+      - 'IDEAS.md'
+      - 'README.md'
+      - 'docs/**'
+      - 'tietosuoja/**'
+      - 'status/**'
+      - 'sw.js'
+      - 'pageview.js'
+      - 'scripts/**'
+      - 'tests/**'
+      - '.github/workflows/ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Cancelling is safe on a branch, unlike the fetch workflow: this reads committed state and
+# retries nothing, so a newer commit's verdict supersedes an older one. On main it is not:
+# the design and CACHE gates check each push's own before..after range, so a cancelled
+# main run left its commits unchecked, and a newer push's range starts after them (audit
+# G8, 2026-09-25). Each main push gets its own group and runs to the end. A cancelled
+# branch run's range is still checked, by the main push that fast-forwards over it.
+concurrency:
+  group: checks-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # On a push to main only: has this exact commit already passed the suite, the drift
+  # check and both browser engines on a push to another branch? The delivery routine
+  # fast-forwards main to a commit its branch run has just verified, and 38 of 122 runs
+  # in the week to 2026-09-24 repeated that work on the identical tree. Those three test
+  # the tip's tree alone; the JavaScript check and the design and CACHE gates read the
+  # push's own before..after range commit by commit, so they run on main regardless.
+  # The answer is `skip=true` only on positive evidence (scripts/ci_verified.py); a
+  # missing, ambiguous or failed lookup is the full run. Branch pushes never reach it.
+  verified:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    # Two API reads and a few-kB checkout; five minutes is generous.
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      skip: ${{ steps.lookup.outputs.skip }}
+    steps:
+      # The one script, not the tree: blobless and sparse, so this job reads a few kB.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: scripts/ci_verified.py
+          sparse-checkout-cone-mode: false
+      - id: lookup
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/ci_verified.py "${{ github.sha }}" "${{ github.run_id }}"
+          if [ -n "$GITHUB_STEP_SUMMARY" ]; then
+            {
+              echo "### Verified on a branch?"
+              grep '^reason=' "$GITHUB_OUTPUT" | cut -d= -f2- || true
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  check:
+    # Runs whatever `verified` answered, and when it did not run (a branch push, a
+    # dispatch) or failed: `!cancelled()` keeps a skipped or failed dependency from
+    # skipping this job, and only an explicit `skip == 'true'` skips its heavy steps.
+    needs: verified
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    # Longest run 2026-09-17 to 09-24: 2.5 min. A hung job stops here rather than at
+    # the 360-minute default.
+    timeout-minutes: 15
+    steps:
+      # Pinned to a SHA, as in the other workflows: a tag can be re-pointed, a SHA cannot.
+      # actions/checkout v7.0.1, resolved 2026-08-31, on node24.
+      #
+      # fetch-depth: 0 because test_indexnow.py reads this repo's real history: two named
+      # commits are diffed against their parents, and two cases need HEAD^ to resolve.
+      # A full clone packs to 100.6 MiB against 43.8 MiB at depth 1 (dd5abbdbc, 2026-09-25);
+      # the mirrored posters are 56.8 MiB of the 82.6 MiB tree.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      # Cheapest first, and dependency-free.
+      - name: The client's JavaScript parses
+        run: python3 scripts/check_inline_js.py
+
+      # A push touching DESIGN.md or tests/test_design_contract.py must change IDEAS.md in
+      # the same push. The script owns the range: `github.event.before` is not always a
+      # commit the checkout can see (a force-pushed branch, a created ref), and an inline
+      # `git diff before sha` died with exit 128 on 2026-09-13. See the script's docstring.
+      - name: A design contract change carries its IDEAS entry
+        if: github.event_name == 'push'
+        run: python3 scripts/check_design_push.py "${{ github.event.before }}" "${{ github.sha }}"
+
+      # The same range, asked a different question: a commit that touches index.html bumps
+      # CACHE in sw.js, so the old page cannot come back as the offline fallback. The rule
+      # was prose in CLAUDE.md alone and two of the last 120 such commits missed it. The
+      # range logic is the design gate's, imported rather than restated.
+      - name: An index.html change carries its CACHE bump
+        if: github.event_name == 'push'
+        run: python3 scripts/check_cache_bump.py "${{ github.event.before }}" "${{ github.sha }}"
+
+      # The generators are functions of the committed data, and the committed pages must
+      # regenerate byte-identical. Red means one of two things: a generator change without
+      # regenerated output (run both scripts and commit), or committed data whose pages
+      # were never rebuilt (the site serves markup that disagrees with its own JSON).
+      #
+      # The pages also depend on the day they were built for. `--date recorded` rebuilds
+      # for the day the committed sitemap carries; a plain rebuild after midnight differed
+      # in 173 of 183 files with nothing changed. Publishing (biorex.yml) uses the clock.
+      #
+      # build_counts.py belongs here because what it commits is a pure function of the
+      # tree. The two figures that move on a data run are printed by `--posters` and not
+      # committed; had they stayed in the file, this step would fail on the first push
+      # after any data run, since a data push does not match this workflow's path filter.
+      #
+      # build_venuelists.py rebuilds data/venuelists-{local,cloud}.json from the committed
+      # data/venues-*.json. Each half writes its own after its run; one that disagrees with
+      # the provider files it was built from is the drift this catches.
+      - name: Generated output is reproducible
+        if: needs.verified.outputs.skip != 'true'
+        run: |
+          python3 scripts/build_providers.py
+          python3 scripts/build_regions.py
+          python3 scripts/build_pages.py --date recorded
+          python3 scripts/build_counts.py
+          python3 scripts/build_venuelists.py
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::regenerating changed committed output"
+            git status --porcelain
+            git --no-pager diff --stat
+            exit 1
+          fi
+          echo "regenerated clean"
+
+      # Pinned exactly: the runner installs it fresh every run. Five poster tests skip
+      # without it, and the next step fails on a skip.
+      - name: Install Pillow
+        if: needs.verified.outputs.skip != 'true'
+        run: python3 -m pip install --quiet --disable-pip-version-check pillow==12.3.0
+
+      # Fail on skipped tests: every dependency is installed on the runner on purpose, so
+      # a skip means one is missing and coverage shrank. node is the other dependency;
+      # four harnesses skip without it and they are the only tests that touch index.html.
+      #
+      # Fail on ResourceWarning too. The suite leaked sockets and responses for as long as
+      # it existed, and one leak hides the next. Read from the captured log rather than
+      # with `-W error::ResourceWarning`: the socket warnings are raised during interpreter
+      # shutdown and do not reach the exit code (measured 2026-09-01).
+      #
+      # The exit code is captured so a failure is named before the step dies. `::error::`
+      # lines become check-run annotations, readable over the public API without a token;
+      # the Actions log is not, and this repo does not read Actions logs.
+      - name: Unit suite, with nothing skipped and nothing leaked
+        if: needs.verified.outputs.skip != 'true'
+        run: |
+          set +e
+          # One process per test file, one per runner CPU: the same files and the same
+          # verdict lines as `unittest discover`, in about a third of the time. The skip rule
+          # is the runner's `--fail-on-skip` as well as the grep below.
+          python3 scripts/run_tests.py --fail-on-skip > "$RUNNER_TEMP/suite.log" 2>&1
+          rc=$?
+          set -e
+          tail -60 "$RUNNER_TEMP/suite.log"
+          if [ -n "$GITHUB_STEP_SUMMARY" ]; then
+            {
+              echo '### Unit suite'
+              echo '```'
+              grep -E '^(FAIL|ERROR): |^(OK|FAILED)|^Ran ' "$RUNNER_TEMP/suite.log" || true
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          # awk rather than `grep | while read`: grep exits 1 on a green suite (no match),
+          # and under pipefail that would fail the step. awk exits 0 either way.
+          awk '/^(FAIL|ERROR): / { print "::error::" $0 }' "$RUNNER_TEMP/suite.log"
+          if [ "$rc" != 0 ]; then
+            echo "::error::the suite failed (exit $rc)"
+            exit 1
+          fi
+          if grep -qE 'skipped=' "$RUNNER_TEMP/suite.log"; then
+            echo "::error::the suite skipped tests; a dependency is missing on the runner"
+            grep -E 'skipped=' "$RUNNER_TEMP/suite.log"
+            exit 1
+          fi
+          if grep -q 'ResourceWarning' "$RUNNER_TEMP/suite.log"; then
+            echo "::error::the suite left something open"
+            grep -m5 'ResourceWarning' "$RUNNER_TEMP/suite.log"
+            exit 1
+          fi
+
+  # The venue picker and the ticket links in a real engine: tests/browser, which the
+  # unit suite above does not discover (the directory is not a package). Its own job so
+  # a browser-side failure and a pipeline failure read as two verdicts, and so the unit
+  # job stays dependency-light.
+  #
+  # Playwright is pinned exactly and drives its own build of each engine, the one
+  # `playwright install <engine>` fetches for that Playwright version, so what is under
+  # test is decided by the pin and not by whichever browser the runner image ships that
+  # week (Chrome 152 on ubuntu-24.04 as of 2026-09-14). The download is cached by
+  # Playwright version and engine; `--with-deps` installs the shared libraries the engine
+  # needs on the image.
+  #
+  # Two engines since 2026-09-19, on the maintainer's instruction, which reverses the
+  # 2026-09-18 decision recorded in docs/archive/2026-09-ops.md to leave this job in
+  # Chromium alone. That decision's reason was that extending it was a change of its own
+  # with its own failures to read; this is that change, and both engines were run against
+  # it first: 20 tests, green in each.
+  #
+  # `discover` takes no `-p`, so each leg runs every file in tests/browser, the landing
+  # page layout (test_pages_layout.py) included: a new file there is never missed. The
+  # layout had its own `pages-layout` job until 2026-09-24, which ran the same file a
+  # second time on its own runner; its summary section, its skip rule and its separate
+  # verdict per engine are kept here instead, from the one run.
+  browser:
+    needs: verified
+    if: ${{ !cancelled() && needs.verified.outputs.skip != 'true' }}
+    runs-on: ubuntu-latest
+    # Longest run 2026-09-17 to 09-24: 3.8 min, WebKit. A hung job stops here rather than
+    # at the 360-minute default.
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    name: browser (${{ matrix.engine }})
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Install Playwright
+        run: python3 -m pip install --quiet --disable-pip-version-check playwright==1.62.0
+
+      # actions/cache v6.1.0, the pin biorex.yml already carries. Keyed on the Playwright
+      # version and the engine: the pin decides which build is downloaded, and the two
+      # engines are different downloads.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ matrix.engine }}-1.62.0
+
+      - name: Install Playwright's ${{ matrix.engine }}
+        run: python3 -m playwright install --with-deps ${{ matrix.engine }}
+
+      - name: Browser suite
+        env:
+          KINO_BROWSER_ENGINE: ${{ matrix.engine }}
+        run: |
+          set +e
+          python3 -m unittest discover -s tests/browser -v > "$RUNNER_TEMP/browser.log" 2>&1
+          rc=$?
+          set -e
+          tail -40 "$RUNNER_TEMP/browser.log"
+          # Two verdicts from one run: the landing page layout apart from the app.
+          if [ -n "$GITHUB_STEP_SUMMARY" ]; then
+            {
+              echo "### App (${{ matrix.engine }})"
+              echo '```'
+              grep -E '^(FAIL|ERROR): ' "$RUNNER_TEMP/browser.log" | grep -v 'test_pages_layout\.' || echo "no failure"
+              echo '```'
+              echo "### Landing page layout (${{ matrix.engine }})"
+              echo '```'
+              grep -E '^(FAIL|ERROR): .*test_pages_layout\.' "$RUNNER_TEMP/browser.log" || echo "no failure"
+              echo '```'
+              grep -E '^(OK|FAILED)|^Ran ' "$RUNNER_TEMP/browser.log" || true
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          awk '/^(FAIL|ERROR): / { print "::error::${{ matrix.engine }}: " $0 }' "$RUNNER_TEMP/browser.log"
+          if [ "$rc" != 0 ]; then
+            echo "::error::the browser suite failed in ${{ matrix.engine }} (exit $rc)"
+            exit 1
+          fi
+          # A skip means a dependency went missing on a runner that has them all.
+          if grep -qE 'skipped=' "$RUNNER_TEMP/browser.log"; then
+            echo "::error::a browser test skipped in ${{ matrix.engine }}"
+            exit 1
+          fi
+
+      # The PNG and trace zip a failing test leaves behind, readable with
+      # `playwright show-trace`. actions/upload-artifact v6.0.0, pinned to its SHA.
+      - if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: browser-failures-${{ matrix.engine }}
+          path: tests/browser/out/
+          if-no-files-found: ignore

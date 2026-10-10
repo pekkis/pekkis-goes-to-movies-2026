@@ -66,6 +66,9 @@ package.json, pnpm-workspace.yaml, tsconfig.base.json   workspace root (packages
 compose.yaml, docker/          local services (PostgreSQL 18)
 .env, data/                    shared by all packages, gitignored
 docs/                          project documentation (database: docs/database.md)
+vendor/leffavuoro/             reference copy of Leffavuoro's code (AGPL), from our fork pekkis/kino;
+                               not built, linted or formatted. See vendor/leffavuoro/UPSTREAM.md
+scripts/vendor-leffavuoro.ts   refreshes it (`pnpm vendor:leffavuoro`)
 packages/model/                @pgtm/model: the domain model (Zod schemas + types). Source-only, no build:
                                exports src/index.ts; Node 24, vitest and Vite consume TS directly
 packages/fetcher/              @pgtm/fetcher: fetching, normalizing, TMDB matching → JSON
@@ -136,7 +139,7 @@ Detailed findings, sample payloads and references: [docs/data-sources.md](docs/d
 
 Neither needs classic HTML crawling.
 
-**Prior work:** [Leffavuoro / Shady-Dev/kino](https://github.com/Shady-Dev/kino) (AGPL-3.0) already covers about 230 cinemas. Since we are AGPL too, its adapters **may be ported**. Mark the origin at the top of a ported file, e.g. `// Ported from Shady-Dev/kino scripts/providers/etiketti.py (AGPL-3.0)`. Its published **data** (`data/*.json`, posters) is not used as a source, because the data is not covered by its license. See [docs/data-sources.md](docs/data-sources.md#prior-work-leffavuoro-shady-devkino).
+**Prior work:** [Leffavuoro / Shady-Dev/kino](https://github.com/Shady-Dev/kino) (AGPL-3.0) already covers about 230 cinemas. A code-only copy lives in [vendor/leffavuoro/](vendor/leffavuoro/UPSTREAM.md) (from our fork [pekkis/kino](https://github.com/pekkis/kino); the maintainer keeps the fork in sync, then `pnpm vendor:leffavuoro` refreshes the copy). **Read it there first** when adding a platform: `scripts/providers/<platform>.py` and `docs/research/`. Since we are AGPL too, its adapters **may be ported**. Mark the origin at the top of a ported file, e.g. `// Ported from Shady-Dev/kino scripts/providers/etiketti.py (AGPL-3.0)`. Its published **data** (`data/*.json`, posters) is not used as a source, because the data is not covered by its license. See [docs/data-sources.md](docs/data-sources.md#prior-work-leffavuoro-shady-devkino).
 
 ### TMDB
 
@@ -156,6 +159,7 @@ Neither needs classic HTML crawling.
 
 ## Rules for agents
 
+- **Vendored code:** never edit `vendor/leffavuoro/` by hand (it is overwritten on refresh), and never copy their `data/` (showtimes, posters) into this repo: it is not covered by their license.
 - **Database:** migrations are append-only; after adding one, run `pnpm migrate && pnpm db:types` and commit the regenerated `types.ts` (never edit it by hand). Tables plural, columns snake_case; TypeScript stays camelCase via `CamelCasePlugin`. The fetcher stays database-agnostic.
 
 - **User-Agent:** use an identifiable User-Agent with contact details. No residential proxies, fingerprint spoofing or captcha solving. Never call ticket purchase or payment endpoints.

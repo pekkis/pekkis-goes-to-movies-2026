@@ -1,0 +1,172 @@
+name: Fetch cloud providers
+
+on:
+  schedule:
+    - cron: '30 2,6,10,14 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+
+# One run at a time on the data files; a queued run still runs. cancel-in-progress: true
+# discarded work nothing retries: the local half publishes Kino Engel and Kino Akseli
+# posters as the cinemas' own URLs and only this workflow mirrors them, so a cancelled run
+# left those venues without posters until the next cron (seen 2026-08-30).
+concurrency:
+  group: kino-data
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    # Longest run 2026-09-17 to 09-24: 5.9 min. A hung job stops here rather than at
+    # the 360-minute default.
+    timeout-minutes: 30
+    steps:
+      # Actions and the one pip install are pinned to exact versions: a tag can be
+      # re-pointed, a SHA cannot, and this job holds a write token. actions/checkout
+      # v7.0.1 and actions/cache v6.1.0, resolved 2026-08-31, both on node24. cache v6.1.0
+      # still accepts path, key and restore-keys.
+      #
+      # ref: main rather than the default github.sha, which is resolved when the run is
+      # created. A run queued behind another would otherwise generate data on top of a
+      # base that has since moved, which caused the rebase conflicts this job used to
+      # die on.
+      #
+      # persist-credentials: false keeps the write token out of .git/config, where every
+      # later step could read it, including the ones that parse third-party pages. Only
+      # "Commit data and logs" needs it, and passes it to its own git commands (audit G10).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      # Conditional GETs need the validators to survive between runs on an ephemeral
+      # runner. A stale cache costs nothing: a mismatched validator gets the 200 it would
+      # have got anyway.
+      - name: Restore HTTP validator cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: .http-cache
+          key: http-cache-${{ github.run_id }}
+          restore-keys: http-cache-
+      - name: Build providers.json and regions.json
+        run: |
+          python3 scripts/build_providers.py
+          python3 scripts/build_regions.py
+      # One process over every cloud provider. It was a shell loop running run.py once per
+      # module, which meant no two modules ever overlapped however many hosts were idle;
+      # run_cloud.py is the same host-keyed pool, once, across the lot. The module list
+      # still comes from the registry, so adding a provider needs no edit here, and it
+      # still writes logs/run-{module}.log per module with the same summary and exit=N --
+      # read those, not the Actions logs. logs/run-cloud.log is the run's own record.
+      #
+      # Not several background `run.py` commands: they share data/films-extra.json and the
+      # lock in synmerge is a threading.Lock, which does nothing across processes.
+      #
+      # `mkdir -p logs` because a fresh checkout has the directory but this step is the
+      # first writer in the run, and the tail loop below reads it either way.
+      # A step timeout fails this step and leaves the job running, where the job's own cap
+      # cancels it and nothing after runs. run_cloud.py bounds each site (SITE_DEADLINE),
+      # so this is the backstop for everything else in the process.
+      - name: Fetch cloud providers
+        timeout-minutes: 20
+        run: |
+          set +e
+          mkdir -p logs
+          python3 scripts/providers/run_cloud.py --where cloud
+          echo "$?" > "$RUNNER_TEMP/provfail"
+          for f in logs/run-*.log; do
+            echo "--- $f"
+            tail -6 "$f"
+          done
+      # `!cancelled()` on the four steps below: a fetch step that failed or timed out has
+      # still published every site it finished, and those files are committed rather than
+      # dropped (audit C1, 2026-09-25). A cancelled run commits nothing.
+      - name: Enrich with TMDB
+        if: ${{ !cancelled() }}
+        env:
+          TMDB_TOKEN: ${{ secrets.TMDB_SECRET_TOKEN }}
+        run: |
+          set +e
+          python3 scripts/providers/enrich_tmdb.py > logs/run-enrich.log 2>&1
+          code=$?
+          echo "exit=$code" >> logs/run-enrich.log
+          echo "$code" > "$RUNNER_TEMP/enrichfail"
+          tail -3 logs/run-enrich.log
+      # Mirror posters before the pages are built, so a poster fetched on this run is
+      # same-origin in the markup this run generates. Pillow is installed for the
+      # downscale only; the module docstring explains the downscale.
+      - name: Mirror posters
+        if: ${{ !cancelled() }}
+        run: |
+          set +e
+          # Pinned exactly and by hash: the runner installs this fresh every run, in a job
+          # that commits to this repo (audit G10). The hashes are PyPI's for the CPython
+          # x86_64 manylinux wheels of 12.3.0, 3.10 to 3.15 and the free-threaded builds,
+          # so a runner Python upgrade still matches; --only-binary refuses the sdist. A
+          # bump re-reads them from https://pypi.org/pypi/pillow/<version>/json.
+          cat > "$RUNNER_TEMP/pillow.txt" <<'REQ'
+          pillow==12.3.0 \
+              --hash=sha256:f0606c8bf2cdefea14a43530f7657cbbb7ecf1c4222512492ef4a4434a9501ec \
+              --hash=sha256:23d27a3e0307ec2244cc51e7287b919aa68d097504ebe19df4e76a98a3eea5bd \
+              --hash=sha256:78cb2c6865a35ab8ff8b75fd122f6033b92a62c82801110e48ddd6c936a45d91 \
+              --hash=sha256:0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3 \
+              --hash=sha256:251bf95b67017e27b13d82f5b326234ca62d70f9cf4c2b9032de2358a3b12c7b \
+              --hash=sha256:bf16ba1b4d0b6b7c8e534936632270cf70eb00dbe09005bc345b2677b726855c \
+              --hash=sha256:6b02afb9b97f65fbca5f31db6a2a3ba21aa93030225f150fa3f249717e938fb4 \
+              --hash=sha256:cf1845d02ad822a369a49f2bb9345b1614744267682e7a03527dc3bf6eea1777
+          REQ
+          python3 -m pip install --quiet --disable-pip-version-check --require-hashes \
+            --only-binary :all: -r "$RUNNER_TEMP/pillow.txt"
+          python3 scripts/providers/mirror_posters.py > logs/run-posters.log 2>&1
+          code=$?
+          echo "exit=$code" >> logs/run-posters.log
+          echo "$code" > "$RUNNER_TEMP/mirrorfail"
+          tail -4 logs/run-posters.log
+      # Pages last: they render the JSON the steps above wrote, so posters and ratings
+      # would otherwise be a run behind. Not gated on provider failure; a stale venue
+      # still gets a page.
+      - name: Build indexable pages
+        if: ${{ !cancelled() }}
+        run: |
+          set +e
+          python3 scripts/build_pages.py > logs/run-pages.log 2>&1
+          code=$?
+          echo "exit=$code" >> logs/run-pages.log
+          echo "$code" > "$RUNNER_TEMP/pagesfail"
+          tail -3 logs/run-pages.log
+      - name: Commit data and logs
+        if: ${{ !cancelled() }}
+        env:
+          PUSH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name kino-bot && git config user.email a@b.c
+          # The header actions/checkout would have stored, set on these commands only. The
+          # repo is public, so the pull needs none; the push does.
+          b64=$(printf 'x-access-token:%s' "$PUSH_TOKEN" | base64 -w0)
+          echo "::add-mask::$b64"
+          g() { git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $b64" "$@"; }
+          git add data logs teatteri kaupunki en sv sitemap.xml
+          git diff --cached --quiet || git commit -m "Update cloud provider data"
+          pushed=0
+          for i in 1 2 3; do
+            # A conflicted rebase leaves the tree unmerged and every later attempt dies
+            # on "Pulling is not possible because you have unmerged files". Abort first.
+            git rebase --abort 2>/dev/null || true
+            # A plain rebase. -X theirs resolves every conflict in favour of this run's
+            # snapshot, which silently overwrites newer generator or provider changes on
+            # main with output from stale code. A conflict should fail the job instead.
+            if g pull --rebase --autostash -q origin main && g push -q; then
+              pushed=1; break
+            fi
+            sleep 5
+          done
+          if [ "$pushed" != 1 ]; then
+            echo "::error::could not push after 3 attempts"; exit 1
+          fi
+      # Data is committed first so a provider failure still publishes whatever worked.
+      - name: Fail if a provider failed
+        run: |
+          [ "$(cat "$RUNNER_TEMP/enrichfail")" = 0 ] || { echo "::error::enrich failed"; exit 1; }
+          [ "$(cat "$RUNNER_TEMP/provfail")" = 0 ] || { echo "::error::a provider failed"; exit 1; }
+          [ "$(cat "$RUNNER_TEMP/mirrorfail")" = 0 ] || { echo "::error::poster mirror failed"; exit 1; }
+          [ "$(cat "$RUNNER_TEMP/pagesfail")" = 0 ] || { echo "::error::page build failed"; exit 1; }

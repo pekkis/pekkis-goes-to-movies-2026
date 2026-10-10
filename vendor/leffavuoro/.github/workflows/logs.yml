@@ -1,0 +1,43 @@
+name: Check run logs
+
+# Fail on any committed run log that ended non-zero. The cloud half turns its own run red
+# on a provider failure; the local half runs outside this repo, writes exit=1 into a log,
+# pushes it and carries on, and the first symptom would be the health line going amber
+# eight hours later. Both halves commit their logs, so reading them on push gives the
+# local half the same signal without touching the wrapper.
+on:
+  push:
+    # 'logs/**', not 'run*.log': the logs moved into logs/ on 2026-09-15 and a GitHub path
+    # glob does not cross a '/', so the old pattern would match nothing and this job would
+    # simply stop firing, with no error anywhere to say so.
+    paths:
+      - 'logs/**'
+      - 'scripts/check_runs.py'
+      - '.github/workflows/logs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Only the newest push matters: this reads committed state, so cancelling an older run is
+# safe.
+concurrency:
+  group: check-run-logs
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    # Longest run 2026-09-17 to 09-24: 0.2 min. A hung job stops here rather than at
+    # the 360-minute default.
+    timeout-minutes: 5
+    steps:
+      # Pinned to a SHA like the other workflows: actions/checkout v7.0.1, resolved
+      # 2026-08-31, on node24.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        # History, bounded: check_runs.py marks each failing site new or carried since a
+        # date by reading the logs' own git history. Past this depth it says "at least".
+        with:
+          fetch-depth: 300
+      - name: Every committed run log ended exit=0
+        run: python3 scripts/check_runs.py

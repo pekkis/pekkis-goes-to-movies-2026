@@ -20,7 +20,8 @@
     "lint": "oxlint",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "check": "pnpm typecheck && pnpm lint && pnpm fmt:check && pnpm test"
+    "check": "pnpm typecheck && pnpm lint && pnpm fmt:check && pnpm test",
+    "vendor:leffavuoro": "node scripts/vendor-leffavuoro.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",

@@ -1,0 +1,67 @@
+name: IndexNow
+
+# Tell IndexNow which generated pages a push changed. Reaches Bing, Yandex, Seznam, Naver
+# and Yep; Google does not use the protocol. Showtimes are perishable and git records
+# exactly which pages moved, which is what the protocol asks for.
+#
+# Separate from the fetch workflow: build_pages.py stays offline and deterministic, and
+# biorex.yml has an unmerged branch against it.
+on:
+  # Hand-pushed page changes. A push made with GITHUB_TOKEN does not fire `on: push`, and
+  # the routine "Update cloud provider data" commits are made that way, so this trigger
+  # alone covers little.
+  push:
+    # main only: a page committed on a branch is not live, and announcing a URL that
+    # returns 404 is worse than announcing nothing.
+    branches: [main]
+    paths:
+      - 'teatteri/**'
+      - 'kaupunki/**'
+      - 'sv/**'
+      - 'en/**'
+  # The data runs arrive through this trigger instead. Not a PAT (a long-lived credential
+  # for a job that needs none) and not an edit to the fetch workflow.
+  workflow_run:
+    workflows: ["Fetch cloud providers"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# No concurrency group. Each run announces only its own range: a push's before..after, or
+# the one data commit its fetch run published (bot_commit_for_run). A newer run's list is
+# therefore not a superset of an older one's, and the `cancel-in-progress` group this had
+# until 2026-09-25 dropped the cancelled run's pages unannounced (audit G7). Queuing
+# instead would not help: GitHub cancels a pending run that a newer one replaces. Two
+# triggered runs never cover the same commit, so side by side they submit nothing twice;
+# a hand dispatch announces HEAD^..HEAD and can repeat the last one.
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    # Longest run 2026-09-17 to 09-24: 0.2 min. A hung job stops here rather than at
+    # the 360-minute default.
+    timeout-minutes: 10
+    # A fetch run on a branch publishes nothing live. The push trigger is branch-filtered
+    # above, so this only guards workflow_run; a bare branch comparison would be null on a
+    # push and skip the job.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.head_branch == 'main'
+    steps:
+      # fetch-depth: 0 because the range is the push's `before`..`after`, which can span
+      # several commits; a shallow clone would fail the diff or cover only the last one.
+      # Pinned to a SHA like the other workflows: actions/checkout v7.0.1, resolved
+      # 2026-08-31, on node24.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          # `main` explicitly. On a workflow_run event GITHUB_SHA is already the last
+          # commit on the default branch; stated here because the job depends on which
+          # history it reads.
+          ref: main
+      # The script reads the range off GITHUB_EVENT_PATH, which checkout does not provide
+      # and the runner always does.
+      - name: Submit changed pages
+        run: python3 scripts/indexnow.py
