@@ -209,6 +209,23 @@ Profiled on 2026-10-10 over 214 shows on 10 locations. Adapter: `packages/fetche
 
 ---
 
+## Film ratings: OMDb
+
+Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
+
+- **Why OMDb [V]:**
+  - Rotten Tomatoes, Metacritic and Letterboxd have no public API (scraping RT breaks its terms).
+  - OpenCritic covers video games only.
+  - OMDb returns RT, Metacritic and IMDb scores in one call, looked up by the IMDb id TMDB gives us, so there is no title guessing.
+- **API:** `GET https://www.omdbapi.com/?i={imdbId}&apikey=…`.
+  - Free key: 1,000 requests a day. Answers are cached a week in `data/cache/omdb/`, so a daily run only asks for new films.
+  - **The key is in the URL:** errors are rethrown without it, and the cache key leaves it out.
+- **First run (2026-10-10):** 47 of 67 films got scores (44 RT, 37 Metacritic, 42 IMDb). The rest are mostly new or small Finnish releases.
+- **TMDB's own score** (`vote_average`) comes with the details we already fetch. It is used only from 20 votes up, since fewer is noise.
+- **Licence:** OMDb data is CC BY-NC 4.0 (non-commercial, attribution). The RT score ultimately belongs to Rotten Tomatoes: before going truly public, it goes on the same "ask first" list as the cinemas.
+
+---
+
 ## Venue coordinates: OpenStreetMap
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/geo/`, CLI `pnpm venues:locate`.

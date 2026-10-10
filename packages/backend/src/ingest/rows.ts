@@ -12,6 +12,7 @@ export type VenueRow = Insertable<DB["venues"]>;
 export type AuditoriumRow = Insertable<DB["auditoriums"]>;
 export type FilmRow = Insertable<DB["films"]>;
 export type FilmListingRow = Insertable<DB["filmListings"]>;
+export type FilmRatingRow = Omit<Insertable<DB["filmRatings"]>, "createdAt" | "updatedAt">;
 export type ScreeningRow = Omit<
   Insertable<DB["screenings"]>,
   "firstSeenAt" | "lastSeenAt" | "removedAt" | "createdAt" | "updatedAt"
@@ -71,6 +72,16 @@ export const filmRow = (f: Film): FilmRow => ({
   trailers: JSON.stringify(f.trailers),
   fetchedAt: f.fetchedAt,
 });
+
+export const filmRatingRows = (f: Film): FilmRatingRow[] =>
+  f.ratings.map((r) => ({
+    filmId: f.id,
+    source: r.source,
+    score: r.score,
+    display: r.display,
+    votes: r.votes ?? null,
+    fetchedAt: f.fetchedAt,
+  }));
 
 export const filmListingRow = (l: FilmListing): FilmListingRow => ({
   id: l.id,

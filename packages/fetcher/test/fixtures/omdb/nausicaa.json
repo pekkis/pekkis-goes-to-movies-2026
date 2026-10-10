@@ -1,0 +1,26 @@
+{
+  "Title": "Nausicaä of the Valley of the Wind",
+  "Year": "1987",
+  "Rated": "PG",
+  "Runtime": "117 min",
+  "Ratings": [
+    {
+      "Source": "Internet Movie Database",
+      "Value": "8.0/10"
+    },
+    {
+      "Source": "Rotten Tomatoes",
+      "Value": "87%"
+    },
+    {
+      "Source": "Metacritic",
+      "Value": "86/100"
+    }
+  ],
+  "Metascore": "86",
+  "imdbRating": "8.0",
+  "imdbVotes": "199,714",
+  "imdbID": "tt0087544",
+  "Type": "movie",
+  "Response": "True"
+}
