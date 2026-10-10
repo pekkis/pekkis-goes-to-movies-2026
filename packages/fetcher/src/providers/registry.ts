@@ -11,6 +11,9 @@ import { getToken } from "./finnkino/token.ts";
 import { fetchEtiketti } from "./etiketti/fetch.ts";
 import { parseEtiketti } from "./etiketti/parse.ts";
 import { ETIKETTI_SITES, type EtikettiSite } from "./etiketti/sites.ts";
+import { fetchKinola } from "./kinola/fetch.ts";
+import { parseKinola } from "./kinola/parse.ts";
+import { KINOLA_SITES, type KinolaSite } from "./kinola/sites.ts";
 import { fetchNexxo } from "./nexxo/fetch.ts";
 import { parseNexxo } from "./nexxo/parse.ts";
 import { NEXXO_SITES, type NexxoSite } from "./nexxo/sites.ts";
@@ -63,6 +66,17 @@ const etikettiAdapter = (site: EtikettiSite): Adapter => ({
   },
 });
 
+const kinolaAdapter = (site: KinolaSite): Adapter => ({
+  id: site.provider,
+  platform: "kinola",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient({ intervalMs: 1500, ...contact(env) });
+    onlyVenues(site, venues);
+    const raw = await fetchKinola(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseKinola(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   {
     id: "biorex",
@@ -92,6 +106,7 @@ export const ADAPTERS: Adapter[] = [
   },
   ...NEXXO_SITES.map(nexxoAdapter),
   ...ETIKETTI_SITES.map(etikettiAdapter),
+  ...KINOLA_SITES.map(kinolaAdapter),
 ];
 
 /** Resolves `--provider` values: an adapter id (`kinoaurora`) or a platform (`nexxo`). */

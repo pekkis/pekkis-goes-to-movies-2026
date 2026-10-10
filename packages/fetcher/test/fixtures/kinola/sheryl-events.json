@@ -1,0 +1,96 @@
+{
+  "data": [
+    {
+      "id": "0647889f-c2e9-485c-bf90-2212b588d3e9",
+      "time": "2026-10-10T14:00:00Z",
+      "local_time": "2026-10-10T17:00:00+03:00",
+      "local_timezone": "Europe/Helsinki",
+      "note": null,
+      "program": null,
+      "venue": {
+        "id": "936dc93a-2937-4ac9-bc59-8ab5dbdb9486",
+        "name": "Marsio",
+        "address": {
+          "locality": "Helsinki",
+          "country": "FI"
+        }
+      },
+      "room": {
+        "name": "Kino Sheryl"
+      },
+      "freeSeats": 127,
+      "checkout_url": "https://sheryl.fi/checkout/0647889f-c2e9-485c-bf90-2212b588d3e9",
+      "production": {
+        "id": "1112eef5-f03c-410f-8cfa-360dbee1c5e6",
+        "visibility": "public",
+        "name": "Fallen Angels",
+        "duration": 100,
+        "year": 1995,
+        "originalName": "Fallen Angels",
+        "releaseDate": null,
+        "distributor": null,
+        "rating": "K-16",
+        "imdb_id": "tt0112913",
+        "languages": ["Cantonese", "Mandarin", "English"],
+        "subtitles": ["English"],
+        "customFields": []
+      },
+      "price_range": {
+        "min": 8,
+        "max": 11,
+        "currency": "EUR"
+      },
+      "visibility": "public",
+      "event_type": "paid"
+    },
+    {
+      "id": "c74f053e-d933-44b5-8202-15b1844093f6",
+      "time": "2026-10-25T17:00:00Z",
+      "local_time": "2026-10-25T19:00:00+02:00",
+      "local_timezone": "Europe/Helsinki",
+      "note": null,
+      "program": null,
+      "venue": {
+        "id": "936dc93a-2937-4ac9-bc59-8ab5dbdb9486",
+        "name": "Marsio",
+        "address": {
+          "locality": "Helsinki",
+          "country": "FI"
+        }
+      },
+      "room": {
+        "name": "Kino Sheryl"
+      },
+      "freeSeats": 148,
+      "checkout_url": "https://sheryl.fi/checkout/c74f053e-d933-44b5-8202-15b1844093f6",
+      "production": {
+        "id": "2ae9d7d7-a2c0-477c-9c7b-7c4012096977",
+        "visibility": "public",
+        "name": "Audition",
+        "duration": 115,
+        "year": 2000,
+        "originalName": "Ôdishon",
+        "releaseDate": null,
+        "distributor": null,
+        "rating": "K-18",
+        "imdb_id": "tt0235198",
+        "languages": ["Japanese"],
+        "subtitles": ["English"],
+        "customFields": []
+      },
+      "price_range": {
+        "min": 8,
+        "max": 11,
+        "currency": "EUR"
+      },
+      "visibility": "public",
+      "event_type": "paid"
+    }
+  ],
+  "links": {
+    "next": null
+  },
+  "meta": {
+    "total": 2
+  }
+}

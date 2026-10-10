@@ -4,6 +4,8 @@ import { normalizeTitle, titlePrefix } from "./titles.ts";
 
 export type ListingFacts = {
   title: string;
+  /** Other titles the listing goes by (the original title): an exact hit on one counts. */
+  alternateTitles?: string[];
   runtimeMinutes?: number;
   /** ISO 3166-1 alpha-2 */
   countries: string[];
@@ -52,14 +54,16 @@ export const gatherEvidence = (
   // same franchise and must not match "Ryhmä Hau: Dinoelokuva". Only brand-new films qualify.
   const isPrefixMatch = (t: string) =>
     t === normalizedPrefix || SEQUEL.test(t.slice(normalizedPrefix!.length));
-  const title = titles.includes(wanted)
-    ? "exact"
-    : normalizedPrefix &&
-        releaseYear !== undefined &&
-        releaseYear >= currentYear - 1 &&
-        titles.some((t) => t.startsWith(normalizedPrefix) && isPrefixMatch(t))
-      ? "prefix"
-      : "none";
+  const wantedAlternates = (listing.alternateTitles ?? []).map(normalizeTitle);
+  const title =
+    titles.includes(wanted) || wantedAlternates.some((t) => t && titles.includes(t))
+      ? "exact"
+      : normalizedPrefix &&
+          releaseYear !== undefined &&
+          releaseYear >= currentYear - 1 &&
+          titles.some((t) => t.startsWith(normalizedPrefix) && isPrefixMatch(t))
+        ? "prefix"
+        : "none";
 
   const year =
     releaseYear === undefined

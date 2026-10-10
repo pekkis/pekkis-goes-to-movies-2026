@@ -1,0 +1,88 @@
+{
+  "data": [
+    {
+      "id": "b243f151-89a8-4b1a-adc9-b61572a76633",
+      "time": "2026-10-24T12:00:00Z",
+      "local_time": "2026-10-24T15:00:00+03:00",
+      "local_timezone": "Europe/Helsinki",
+      "note": "Näkymätön yhteys - meedioelokuvapäivä. Klubialennus. 90-luvun maaginen suosikkielokuva, joka yhdistää upeasti huumoria, seikkailua ja suuria tunteita. Klubialennus.",
+      "program": null,
+      "venue": {
+        "id": "164e123c-2f70-43bd-a1e1-799cd927e6ba",
+        "name": "Cinema Orion"
+      },
+      "room": {
+        "name": "Cinema Orion"
+      },
+      "freeSeats": 214,
+      "checkout_url": "https://orion.kinola.ee/web/screening/b243f151-89a8-4b1a-adc9-b61572a76633",
+      "production": {
+        "id": "2df6525e-170d-4e28-9030-204a3ca9067a",
+        "visibility": "public",
+        "name": "Casper",
+        "duration": 100,
+        "year": 1995,
+        "originalName": "Casper",
+        "releaseDate": null,
+        "distributor": null,
+        "rating": "K-7",
+        "imdb_id": "tt0112642",
+        "languages": ["englanti"],
+        "subtitles": [],
+        "customFields": []
+      },
+      "price_range": {
+        "min": 10,
+        "max": 12.5,
+        "currency": "EUR"
+      },
+      "visibility": "public",
+      "event_type": "paid"
+    },
+    {
+      "id": "62231b95-54df-4860-82b3-a20f22dc6fe2",
+      "time": "2026-12-08T17:30:00Z",
+      "local_time": "2026-12-08T19:30:00+02:00",
+      "local_timezone": "Europe/Helsinki",
+      "note": "Kuukauden ranskalainen elokuva. Klubialennus. Eric Rohmerin romanttinen draama uskosta, kohtalosta ja kadonneen ensirakkauden etsimisestä.",
+      "program": null,
+      "venue": {
+        "id": "164e123c-2f70-43bd-a1e1-799cd927e6ba",
+        "name": "Cinema Orion"
+      },
+      "room": {
+        "name": "Cinema Orion"
+      },
+      "freeSeats": 211,
+      "checkout_url": "https://orion.kinola.ee/web/screening/62231b95-54df-4860-82b3-a20f22dc6fe2",
+      "production": {
+        "id": "eb4050ca-6f0f-4d24-a07a-0c13c37d6a5e",
+        "visibility": "public",
+        "name": "Talvitarina",
+        "duration": 115,
+        "year": 1992,
+        "originalName": "Conte d'hiver",
+        "releaseDate": null,
+        "distributor": null,
+        "rating": "K-7",
+        "imdb_id": "tt0104008",
+        "languages": ["ranska"],
+        "subtitles": ["englanti"],
+        "customFields": []
+      },
+      "price_range": {
+        "min": 10,
+        "max": 12.5,
+        "currency": "EUR"
+      },
+      "visibility": "public",
+      "event_type": "paid"
+    }
+  ],
+  "links": {
+    "next": null
+  },
+  "meta": {
+    "total": 2
+  }
+}

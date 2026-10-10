@@ -1,0 +1,88 @@
+{
+  "data": [
+    {
+      "id": "2718ec69-e791-4125-98f9-28704f8c2373",
+      "time": "2026-10-15T15:00:00Z",
+      "local_time": "2026-10-15T18:00:00+03:00",
+      "local_timezone": "Europe/Helsinki",
+      "note": null,
+      "program": null,
+      "venue": {
+        "id": "2f265d6e-f919-437d-bbbd-2406be5f25ba",
+        "name": "Kino Laika"
+      },
+      "room": {
+        "name": "Kino Laika"
+      },
+      "freeSeats": 106,
+      "checkout_url": "https://www.kinolaika.fi/checkout/2718ec69-e791-4125-98f9-28704f8c2373",
+      "production": {
+        "id": "d2472c92-33b5-4faa-b17a-b29029c11142",
+        "visibility": "public",
+        "name": "AKI",
+        "duration": 83,
+        "year": 2025,
+        "originalName": "AKI",
+        "releaseDate": null,
+        "distributor": null,
+        "rating": "K-12",
+        "imdb_id": null,
+        "languages": ["espanja"],
+        "subtitles": ["suomi"],
+        "customFields": []
+      },
+      "price_range": {
+        "min": 10,
+        "max": 10,
+        "currency": "EUR"
+      },
+      "visibility": "public",
+      "event_type": "paid"
+    },
+    {
+      "id": "77149743-e2a7-42ef-84bd-06b50386a01f",
+      "time": "2026-10-30T17:00:00Z",
+      "local_time": "2026-10-30T19:00:00+02:00",
+      "local_timezone": "Europe/Helsinki",
+      "note": null,
+      "program": null,
+      "venue": {
+        "id": "2f265d6e-f919-437d-bbbd-2406be5f25ba",
+        "name": "Kino Laika"
+      },
+      "room": {
+        "name": "Kino Laika"
+      },
+      "freeSeats": 0,
+      "checkout_url": "https://www.kinolaika.fi/checkout/77149743-e2a7-42ef-84bd-06b50386a01f",
+      "production": {
+        "id": "3fde3069-642c-41f2-a305-fa5bc70bac21",
+        "visibility": "public",
+        "name": "Arppa",
+        "duration": 130,
+        "year": 2025,
+        "originalName": "Arppa",
+        "releaseDate": null,
+        "distributor": null,
+        "rating": "K-18",
+        "imdb_id": null,
+        "languages": [],
+        "subtitles": [],
+        "customFields": []
+      },
+      "price_range": {
+        "min": 42.5,
+        "max": 42.5,
+        "currency": "EUR"
+      },
+      "visibility": "public",
+      "event_type": "paid"
+    }
+  ],
+  "links": {
+    "next": null
+  },
+  "meta": {
+    "total": 2
+  }
+}

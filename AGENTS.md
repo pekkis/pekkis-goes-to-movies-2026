@@ -30,7 +30,8 @@ The project is part of the user-centered design course at JAMK.
 - **Fetched data goes into PostgreSQL** (`pnpm ingest`), keeping history: screenings are never deleted. See [docs/database.md](docs/database.md).
 - Data collection is written in TypeScript (strict). The frontend stack is still open, so do not add a UI framework until the maintainer decides.
 - No design or user research yet. The focus is on technical groundwork.
-- Data sources in scope: Finnkino, BioRex, and multi-site platforms (Nexxo and eTiketti done; Johku, Kinola and others in Leffavuoro's list are candidates).
+- **Kinola is done** (2026-10-10): a public JSON API found in Kinola's open-source WordPress plugin. 6 cinemas: Kino Myyri (Vantaa; the maintainer's local, good for checking data against reality), Cinema Orion, Kino Kilta, Kino Laika, Cinema Sheryl, Kino Konepaja. Sites: [src/providers/kinola/sites.ts](packages/fetcher/src/providers/kinola/sites.ts).
+- Data sources in scope: Finnkino, BioRex, and multi-site platforms (Nexxo, eTiketti and Kinola done; Johku and others in Leffavuoro's list are candidates).
 
 ## Commands
 
@@ -107,6 +108,7 @@ packages/fetcher/              @pgtm/fetcher: fetching, normalizing, TMDB matchi
   src/providers/<platform>/sites.ts  the platform's site list (config, not code)
   src/providers/labels.ts      shared label rules: "Prefix: Title" labels, tags, version markers ("(DUB)", "SUB", ", suomeksi")
   src/providers/etiketti/      HTML adapter: fetch.ts (listing + film pages), parse.ts (cheerio, pure)
+  src/providers/kinola/        JSON adapter: {tenant}.kinola.ee/api/public/v1/events (film embedded)
   src/providers/registry.ts    list of adapters (one per site for platforms); the CLI runs them
   src/tmdb/                    TMDB client (cached), raw schemas, toFilm (pure)
   src/geo/                     geo.ts (FinnishGeo, GeoSource, distance), osm.ts (Overpass), nominatim.ts, match.ts (pure)
@@ -179,13 +181,14 @@ New packages go under `packages/<name>` with the `@pgtm/` scope, `"private": tru
 
 Detailed findings, sample payloads and references: [docs/data-sources.md](docs/data-sources.md).
 
-| Source              | Method                                                                               | Auth                                                                 | Status                                                         |
-| ------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------- |
-| BioRex              | Unofficial JSON (`webshop.biorex.fi/webservices/...`)                                | None                                                                 | ✅ Verified working                                            |
-| Finnkino            | Vista OCAPI JSON (`digital-api.finnkino.fi/WSVistaWebClient/ocapi/v1/...`)           | Public 12 h JWT from the front page; headed Chrome passes Cloudflare | ✅ Working, needs a desktop with Chrome                        |
-| Finnkino (old)      | XML API `finnkino.fi/xml/...`                                                        | –                                                                    | ❌ Retired (2025–2026)                                         |
-| Nexxo (8 sites)     | Nexxo Scope WordPress plugin JSON (`/wp-content/plugins/nexxo-scope/public_api.php`) | None                                                                 | ✅ Working; small hosts answer 403 if paced faster than ~2.5 s |
-| eTiketti (21 sites) | Server-rendered HTML: `/elokuvat/ohjelmistossa` + one page per film                  | None                                                                 | ✅ Working; ~330 pages a day, 1.5 s apart per site             |
+| Source              | Method                                                                                           | Auth                                                                 | Status                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| BioRex              | Unofficial JSON (`webshop.biorex.fi/webservices/...`)                                            | None                                                                 | ✅ Verified working                                               |
+| Finnkino            | Vista OCAPI JSON (`digital-api.finnkino.fi/WSVistaWebClient/ocapi/v1/...`)                       | Public 12 h JWT from the front page; headed Chrome passes Cloudflare | ✅ Working, needs a desktop with Chrome                           |
+| Finnkino (old)      | XML API `finnkino.fi/xml/...`                                                                    | –                                                                    | ❌ Retired (2025–2026)                                            |
+| Nexxo (8 sites)     | Nexxo Scope WordPress plugin JSON (`/wp-content/plugins/nexxo-scope/public_api.php`)             | None                                                                 | ✅ Working; small hosts answer 403 if paced faster than ~2.5 s    |
+| Kinola (6 cinemas)  | Public JSON API `{tenant}.kinola.ee/api/public/v1/events`, as Kinola's WordPress plugin reads it | None                                                                 | ✅ Working; 1 request per cinema; IMDb ids for exact TMDB matches |
+| eTiketti (21 sites) | Server-rendered HTML: `/elokuvat/ohjelmistossa` + one page per film                              | None                                                                 | ✅ Working; ~330 pages a day, 1.5 s apart per site                |
 
 eTiketti is the only HTML source: it has no public API (its `etiketti.app` API is behind Cloudflare).
 
@@ -194,6 +197,7 @@ eTiketti is the only HTML source: it has no public API (its `etiketti.app` API i
 ### TMDB
 
 - **Posters, synopses and trailers come only from TMDB, never from cinemas.** A film is linked only when the match is certain. Otherwise it stays unmatched and is fixed with an alias. Rules: [docs/data-model.md](docs/data-model.md#tmdb-matching).
+- **A provider's IMDb id (Kinola) is looked up on TMDB first** (`/find`, match method `imdb`), and its **original title** is searched and accepted as a title match too. Both are exact facts from the cinema, so they never loosen the rules.
 - Unmatched films are listed in the `pnpm match` output and in the `unmatched` list of `films.json`, with candidates. **Verify an alias on TMDB (runtime, countries, year) before adding it**, and write the reasoning in its `note`.
 - Do not loosen the matching rules without a regression test (`test/matching/score.test.ts`).
 - Event cinema (`kind: "event"`: operas, concerts) is never reported as unmatched; do not spend effort aliasing it.

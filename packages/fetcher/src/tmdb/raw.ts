@@ -11,6 +11,11 @@ export const SearchResult = z.looseObject({
 });
 export type SearchResult = z.infer<typeof SearchResult>;
 
+/** `/find/{imdb_id}?external_source=imdb_id`. */
+export const FindResponse = z.looseObject({
+  movie_results: z.array(z.looseObject({ id: z.number().int() })),
+});
+
 export const SearchResponse = z.looseObject({
   results: z.array(SearchResult),
   total_results: z.number().int(),
