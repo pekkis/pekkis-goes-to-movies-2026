@@ -1,16 +1,10 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import type { Kysely } from "kysely";
-import { FileMigrationProvider, Migrator, type MigrationResultSet } from "kysely/migration";
-import { MIGRATIONS_DIR } from "../lib/paths.ts";
+import { Migrator, type MigrationResultSet } from "kysely/migration";
+import { MIGRATIONS } from "../../migrations/index.ts";
 
 // oxlint-disable-next-line typescript/no-explicit-any -- migrations work on any schema version
 export const createMigrator = (db: Kysely<any>): Migrator =>
-  new Migrator({
-    db,
-    provider: new FileMigrationProvider({ fs, path, migrationFolder: MIGRATIONS_DIR }),
-  });
-
+  new Migrator({ db, provider: { getMigrations: async () => MIGRATIONS } });
 /** Throws on failure, after reporting which migration failed. */
 export const report = ({ error, results }: MigrationResultSet): void => {
   for (const r of results ?? []) {

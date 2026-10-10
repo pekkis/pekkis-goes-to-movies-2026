@@ -22,6 +22,7 @@ The project is part of the user-centered design course at JAMK.
 - **Nexxo is done** (2026-10-10): one platform adapter serving 8 independent cinema sites, 15 venues (Kinoset, Kino Aurora, Kino Hirvi, Bio Säde, Kino Marilyn, Kino Olympia, Järvelän Kino, Kino Metso's six towns). Sites are config: [src/providers/nexxo/sites.ts](packages/fetcher/src/providers/nexxo/sites.ts).
 - **Next: eTiketti** (server-rendered HTML, many small cinemas), on the same site-config abstraction.
 - **Every venue has coordinates** (2026-10-10), for the coming map UI. Chains supply their own; config venues get them by hand from OpenStreetMap (`pnpm venues:locate`). See "Venue coordinates" below.
+- **HTTP API** (2026-10-10): Hono in `packages/backend`, read-only, OpenAPI at `/openapi.json`, docs at `/docs`. Clients: a Flutter map app (teammate; Dart client from OpenAPI) and later React apps (typed `hc<AppType>` client). Deployed later with Docker Compose behind nginx on the maintainer's server. See [docs/api.md](docs/api.md).
 - **Backlog lives in GitHub issues** (`gh issue list`; labels `provider`, `tmdb`, `backlog`). The repo is public: write issues in English and never put secrets or personal data in them.
 - **License: AGPL-3.0-or-later** ([LICENSE](LICENSE)). Everything is published as open source.
 - **Direction:** a better version of Leffavuoro (Shady-Dev/kino) in TypeScript, with a precise, typed data model and JSON output. Model: [docs/data-model.md](docs/data-model.md). The source of truth is [packages/model/src/schema.ts](packages/model/src/schema.ts).
@@ -45,6 +46,9 @@ pnpm match                   # re-run TMDB matching only (e.g. after editing ali
 pnpm venues:locate           # suggest OSM coordinates for venues without them; flag suspicious ones
 pnpm venues:locate --address "Sahakatu 2, 32700 Huittinen"   # geocode an address (Nominatim)
 pnpm ingest                  # upsert data/normalized/*.json into Postgres
+pnpm api:dev                 # API on http://127.0.0.1:3000 with reload (docs: /docs)
+pnpm api:up                  # build the image, run migrations and the API in Docker (profile "app")
+pnpm api:down                # stop the API containers (Postgres keeps running)
 pnpm showtimes odysey        # fuzzy film search → film info + today's screenings everywhere (--date, --links, --min-score)
 pnpm test                    # all packages; backend integration tests need the database
 pnpm check                   # typecheck + lint + fmt:check + test (run before saying you are done)
@@ -62,6 +66,7 @@ Typical run: `pnpm db:up && pnpm migrate && pnpm pull && pnpm ingest`.
   - `TMDB_APIKEY` (required): TMDB v4 read access token, used as a Bearer token. Never print it.
   - `CONTACT` (optional): URL or email added to the User-Agent. Never hard-code anyone's contact details.
   - `DATABASE_URL`, `TEST_DATABASE_URL`: the Compose Postgres (local, non-secret defaults in `.env.example`). Validated in `packages/backend/src/lib/env.ts`.
+  - `PORT` (3000), `HOST` (127.0.0.1; 0.0.0.0 in the container), `CORS_ORIGINS` (`*` or a comma-separated list): the API server.
   - [.env.example](.env.example) lists the variables with empty values. Never put real values in it.
 
 ## Layout
@@ -70,12 +75,15 @@ A pnpm workspace. Shared tooling (TypeScript, oxlint, oxfmt, vitest) and setting
 
 ```
 package.json, pnpm-workspace.yaml, tsconfig.base.json   workspace root (packages extend tsconfig.base.json)
-compose.yaml, docker/          local services (PostgreSQL 18)
+compose.yaml, docker/          local services: PostgreSQL 18; profile "app" adds migrate + api
+Dockerfile, .dockerignore      API image: tsdown bundle + `pnpm deploy --prod` node_modules
 .env, data/                    shared by all packages, gitignored
 docs/                          project documentation (database: docs/database.md)
 vendor/leffavuoro/             reference copy of Leffavuoro's code (AGPL), from our fork pekkis/kino;
                                not built, linted or formatted. See vendor/leffavuoro/UPSTREAM.md
 scripts/vendor-leffavuoro.ts   refreshes it (`pnpm vendor:leffavuoro`)
+apps/fpgm/                     the Flutter map app (teammate's). Own tooling (dart format, flutter); ignored by
+                               oxfmt/oxlint and not part of the pnpm workspace. Do not edit it unasked.
 packages/model/                @pgtm/model: the domain model (Zod schemas + types). Source-only, no build:
                                exports src/index.ts; Node 24, vitest and Vite consume TS directly
 packages/fetcher/              @pgtm/fetcher: fetching, normalizing, TMDB matching → JSON
@@ -96,12 +104,16 @@ packages/fetcher/              @pgtm/fetcher: fetching, normalizing, TMDB matchi
   config/tmdb-aliases.json     hand-maintained aliases, listing id → TMDB id (committed)
   config/venue-overrides.json  hand-maintained fixes to chain venues (coordinates, addresses) (committed)
   test/                        tests mirror src; test/fixtures/<id>/ trimmed from real responses
-packages/backend/              @pgtm/backend: PostgreSQL (Kysely), migrations, ingest; later the API
-  migrations/                  Kysely migrations, plain .ts, append-only
+packages/backend/              @pgtm/backend: PostgreSQL (Kysely), migrations, ingest, HTTP API
+  migrations/                  Kysely migrations, plain .ts, append-only; listed in migrations/index.ts
   src/db/                      createDb (CamelCasePlugin), migrator, types.ts (GENERATED, do not edit)
   src/ingest/                  rows.ts (pure model → row mapping), ingest.ts (upserts, history)
   src/search/                  showtimes.ts (pg_trgm fuzzy film search, screenings), format.ts (pure text output)
-  src/cli/                     migrate, ingest, db-types, showtimes
+  src/api/                     Hono app: app.ts (wiring, docs), schemas.ts (public response shapes), params.ts, routes/
+  src/queries/                 Kysely queries returning API shapes (venues, screenings, films)
+  src/index.ts                 `AppType` for typed clients (hono/client)
+  src/cli/                     migrate, ingest, db-types, showtimes, serve (the API server)
+  tsdown.config.ts             production bundle (dist/serve.mjs, dist/migrate.mjs), for Docker only
   test/                        unit tests + integration tests against TEST_DATABASE_URL
 ```
 
@@ -147,6 +159,8 @@ New packages go under `packages/<name>` with the `@pgtm/` scope, `"private": tru
   - `p-queue`: request pacing
 - `playwright`: only for the Finnkino token, driving the installed Chrome (`channel: "chrome"`, no bundled browser download).
 - `kysely` + `pg` (backend): typed SQL; `kysely-codegen` generates the database types from the migrated schema.
+- `hono` + `@hono/node-server` + `@hono/zod-openapi` (backend API): Zod schemas give validation, OpenAPI and typed clients; `@scalar/hono-api-reference` renders `/docs`.
+- `tsdown` (backend, dev): bundles the API for the Docker image only. Development never builds: Node runs the `.ts` sources.
 - Not yet: HTML parser (coming with eTiketti), caching or search services.
 
 ## Data sources: summary
@@ -194,7 +208,8 @@ None of these needs HTML crawling; eTiketti will (it has no public API).
 ## Rules for agents
 
 - **Vendored code:** never edit `vendor/leffavuoro/` by hand (it is overwritten on refresh), and never copy their `data/` (showtimes, posters) into this repo: it is not covered by their license.
-- **Database:** migrations are append-only; after adding one, run `pnpm migrate && pnpm db:types` and commit the regenerated `types.ts` (never edit it by hand). Tables plural, columns snake_case; TypeScript stays camelCase via `CamelCasePlugin`. The fetcher stays database-agnostic.
+- **API:** responses are the public shapes in `src/api/schemas.ts`, never database rows; change them deliberately (Flutter and React clients depend on them). The API is read-only (GET only, no auth). Every route is declared with `createRoute` (so it appears in OpenAPI and the typed client) and tested with `app.request()` in `test/api/`. Keep the TMDB and OpenStreetMap attributions in the OpenAPI description.
+- **Database:** migrations are append-only and must be added to `migrations/index.ts` (a test checks); after adding one, run `pnpm migrate && pnpm db:types` and commit the regenerated `types.ts` (never edit it by hand). Tables plural, columns snake_case; TypeScript stays camelCase via `CamelCasePlugin`. The fetcher stays database-agnostic.
 
 - **User-Agent:** use an identifiable User-Agent with contact details. No residential proxies, fingerprint spoofing or captcha solving. Never call ticket purchase or payment endpoints.
 - **Politeness:** when probing external APIs, make few requests and only GETs. Do not try hard to get around Cloudflare.

@@ -1,4 +1,5 @@
-# Local services. Start with `pnpm db:up`; data persists in the named volume.
+# Local services. `pnpm db:up` starts Postgres only; `pnpm api:up` also builds and starts
+# the API (profile "app"). Data persists in the named volume.
 name: pgtm
 
 services:
@@ -19,6 +20,35 @@ services:
       interval: 2s
       timeout: 5s
       retries: 30
+
+  # One-shot: applies migrations, then exits. The API waits for it.
+  migrate:
+    profiles: [app]
+    build: .
+    image: pgtm-api
+    command: ["node", "dist/migrate.mjs"]
+    environment:
+      DATABASE_URL: postgres://pgtm:pgtm@postgres:5432/pgtm
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    profiles: [app]
+    build: .
+    image: pgtm-api
+    environment:
+      DATABASE_URL: postgres://pgtm:pgtm@postgres:5432/pgtm
+      CORS_ORIGINS: "*"
+    ports:
+      # Bound to localhost: a reverse proxy (nginx) in front publishes it.
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
 
 volumes:
   postgres:

@@ -7,3 +7,6 @@ data/
 .DS_Store
 coverage/
 *.log
+
+# Build output (API bundle for the Docker image)
+dist/
