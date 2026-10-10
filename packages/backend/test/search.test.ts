@@ -142,9 +142,8 @@ describe("screeningsFor", () => {
     const all = await screeningsFor(db, undefined, "2026-10-10");
     expect(all.length).toBeGreaterThan(1);
     expect(new Set(all.map((r) => r.film)).size).toBeGreaterThan(1);
-    expect(all.map((r) => r.startsAt.getTime())).toEqual(
-      [...all.map((r) => r.startsAt.getTime())].sort((a, b) => a - b),
-    );
+    const times = all.map((r) => r.startsAt.getTime());
+    expect(times).toEqual(times.toSorted((a, b) => a - b));
   });
 
   it("filters by start time in Helsinki", async () => {
@@ -169,6 +168,26 @@ describe("screeningsFor", () => {
     ).toEqual([]);
   });
 
+  it("filters by Rotten Tomatoes and IMDb scores (factory film: RT 93%, IMDb 7.9)", async () => {
+    const rows = await screeningsFor(db, odyssey, "2026-10-10", {
+      minScores: { rottenTomatoes: 90 },
+    });
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ rottenTomatoes: 93, imdb: 79 });
+    expect(
+      await screeningsFor(db, odyssey, "2026-10-10", { minScores: { rottenTomatoes: 94 } }),
+    ).toEqual([]);
+    expect(
+      await screeningsFor(db, odyssey, "2026-10-10", { minScores: { imdb: 79 } }),
+    ).toHaveLength(1);
+    expect(await screeningsFor(db, odyssey, "2026-10-10", { minScores: { imdb: 80 } })).toEqual([]);
+    // A listing without a TMDB film has no scores, so any minimum leaves it out.
+    const unmatched = { kind: "listing", id: "testchain:film:3", score: 1 } as const;
+    expect(await screeningsFor(db, unmatched, "2026-10-10", { minScores: { imdb: 1 } })).toEqual(
+      [],
+    );
+  });
+
   it("has no distance without a point", async () => {
     expect((await screeningsFor(db, odyssey, "2026-10-10"))[0]!.distanceKm).toBeNull();
   });
@@ -183,6 +202,13 @@ describe("screeningsFor", () => {
       [],
     );
   });
+});
+
+it("filmDetails carries ratings in a fixed source order", async () => {
+  expect((await filmDetails(db, "tmdb:1"))?.ratings).toEqual([
+    { source: "rotten-tomatoes", score: 93, display: "93%", votes: null },
+    { source: "imdb", score: 79, display: "7.9/10", votes: 120000 },
+  ]);
 });
 
 it("filmDetails falls back to the cinemas' Finnish title", async () => {

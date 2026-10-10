@@ -40,6 +40,18 @@ export const VenueRef = z
   .object({ id: z.string(), name: z.string(), city: z.string(), geo: Geo.nullable() })
   .openapi("VenueRef");
 
+export const Rating = z
+  .object({
+    /** rotten-tomatoes | metacritic | imdb | tmdb */
+    source: z.string().openapi({ example: "rotten-tomatoes" }),
+    /** 0–100 for comparing: 93% -> 93, 7.9/10 -> 79. */
+    score: z.number().int(),
+    /** As the source shows it: "93%", "81/100", "7.9/10". */
+    display: z.string().openapi({ example: "93%" }),
+    votes: z.number().int().nullable(),
+  })
+  .openapi("Rating");
+
 export const FilmSummary = z
   .object({
     /** `tmdb:…` for a film matched to TMDB, otherwise the cinema's listing id. */
@@ -54,6 +66,8 @@ export const FilmSummary = z
     runtimeMinutes: z.number().int().nullable(),
     rating: nullableString.openapi({ example: "K-12" }),
     posterUrl: nullableString,
+    /** Rotten Tomatoes, Metacritic, IMDb, TMDB, in that order; only those that exist. */
+    ratings: z.array(Rating),
   })
   .openapi("FilmSummary");
 

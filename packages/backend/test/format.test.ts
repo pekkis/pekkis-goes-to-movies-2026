@@ -17,6 +17,8 @@ const row = (overrides: Partial<ShowtimeRow> = {}): ShowtimeRow => ({
   availability: "available",
   ticketUrl: "https://tickets.example/1",
   distanceKm: null,
+  rottenTomatoes: null,
+  imdb: null,
   ...overrides,
 });
 
@@ -79,6 +81,11 @@ it("formats a film heading with the cinemas' title and the original", () => {
     overviewSv: null,
     overviewEn: "Pups and dinosaurs.",
     posterPath: "/p.jpg",
+    ratings: [
+      { source: "rotten-tomatoes", score: 86, display: "86%", votes: null },
+      { source: "imdb", score: 61, display: "6.1/10", votes: 1_497_908 },
+      { source: "tmdb", score: 70, display: "7.0/10", votes: 412 },
+    ],
   } as FilmDetails;
   const text = formatFilm(film, 1);
   expect(text.split("\n")[0]).toBe(
@@ -86,4 +93,18 @@ it("formats a film heading with the cinemas' title and the original", () => {
   );
   expect(text).toContain("2026 · 88 min · K-7 · Animaatio · CA, US");
   expect(text).toContain("https://image.tmdb.org/t/p/w500/p.jpg");
+  // Ratings are opt-in.
+  expect(text).not.toContain("RT 86%");
+  expect(formatFilm(film, 1, { withRatings: true })).toContain(
+    "RT 86% · IMDb 6.1 (1.5M) · TMDB 7.0",
+  );
+});
+
+it("adds rating columns to the all-films listing", () => {
+  const rows = [row({ rottenTomatoes: 93, imdb: 79 }), row()];
+  expect(formatScreenings(rows, false, { withFilm: true })).not.toContain("93%");
+  const text = formatScreenings(rows, false, { withFilm: true, withRatings: true });
+  expect(text.split("\n")[0]).toMatch(/Film\s+RT\s+IMDb\s+Screen/);
+  expect(text).toContain("93%");
+  expect(text).toContain("7.9");
 });

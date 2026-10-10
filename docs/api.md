@@ -92,6 +92,8 @@ if (res.ok) {
 
 ## Attribution (required in every client UI)
 
+- **Ratings are opt-in in the UI:** `ratings` is always in the data, but some people do not want to know critics' verdicts before seeing a film. Show scores only when the user asks (a toggle, or a score filter), as the CLI does.
+- **Ratings:** Rotten Tomatoes, Metacritic and IMDb scores come from OMDb (omdbapi.com, CC BY-NC 4.0: non-commercial, credit "OMDb API"). Show where each score comes from ("Rotten Tomatoes 93%"), and treat them as the sources' trademarks.
 - **TMDB:** film data and images come from TMDB. Show the TMDB logo and the notice "This product uses the TMDB API but is not endorsed or certified by TMDB."
 - **OpenStreetMap:** some venue coordinates are © OpenStreetMap contributors (ODbL). Any map tiles need their own attribution too.
 

@@ -13,6 +13,8 @@ export type ScreeningFilter = {
    * next morning, so `after 22:00, before 02:00` is one late-night window.
    */
   before?: string;
+  /** Minimum 0–100 scores per source; films without that source's score are left out. */
+  minScores?: { rottenTomatoes?: number; imdb?: number };
 };
 
 /** "2026-10-10" -> "2026-10-11". */

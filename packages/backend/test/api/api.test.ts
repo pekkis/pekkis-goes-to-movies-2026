@@ -155,6 +155,10 @@ describe("screenings", () => {
         title: "Testielokuva",
         year: 2026,
         posterUrl: "https://image.tmdb.org/t/p/w500/poster.jpg",
+        ratings: [
+          { source: "rotten-tomatoes", score: 93, display: "93%", votes: null },
+          { source: "imdb", score: 79, display: "7.9/10", votes: 120000 },
+        ],
       },
       audio: ["en"],
       subtitles: { kind: "languages", languages: ["fi", "sv"] },
@@ -176,6 +180,7 @@ describe("screenings", () => {
       runtimeMinutes: 190,
       rating: null,
       posterUrl: null,
+      ratings: [],
     });
   });
 

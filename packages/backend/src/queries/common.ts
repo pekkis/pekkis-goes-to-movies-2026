@@ -1,5 +1,6 @@
 import type { z } from "@hono/zod-openapi";
 import type { FilmSummary } from "../api/schemas.ts";
+import { sortRatings } from "../search/showtimes.ts";
 
 /** A map viewport, WGS 84. */
 export type Bbox = { minLon: number; minLat: number; maxLon: number; maxLat: number };
@@ -17,7 +18,15 @@ export const yearOf = (date: string | null): number | null =>
   date ? Number(date.slice(0, 4)) : null;
 
 /** Columns both sides of a screening's film need; `f` is null when not matched to TMDB. */
+export type RatingColumns = {
+  source: string;
+  score: number;
+  display: string;
+  votes: number | null;
+};
+
 export type FilmColumns = {
+  ratings: RatingColumns[];
   filmId: string | null;
   listingId: string;
   listingKind: string;
@@ -53,6 +62,7 @@ export const toFilmSummary = (r: FilmColumns): z.infer<typeof FilmSummary> =>
         runtimeMinutes: r.filmRuntime ?? r.listingRuntime,
         rating: r.filmRating ?? r.listingRating,
         posterUrl: posterUrl(r.filmPosterPath),
+        ratings: sortRatings(r.ratings),
       }
     : {
         id: r.listingId,
@@ -64,4 +74,5 @@ export const toFilmSummary = (r: FilmColumns): z.infer<typeof FilmSummary> =>
         runtimeMinutes: r.listingRuntime,
         rating: r.listingRating,
         posterUrl: null,
+        ratings: [],
       };

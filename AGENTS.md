@@ -21,6 +21,7 @@ The project is part of the user-centered design course at JAMK.
 - **BioRex and Finnkino adapters are done**, with tests: `pnpm pull` fetches both chains (12 + 17 cinemas) for 7 days into JSON and matches the films to TMDB.
 - **Nexxo is done** (2026-10-10): one platform adapter serving 8 independent cinema sites, 15 venues (Kinoset, Kino Aurora, Kino Hirvi, Bio Säde, Kino Marilyn, Kino Olympia, Järvelän Kino, Kino Metso's six towns). Sites are config: [src/providers/nexxo/sites.ts](packages/fetcher/src/providers/nexxo/sites.ts).
 - **Next: eTiketti** (server-rendered HTML, many small cinemas), on the same site-config abstraction.
+- **Film ratings** (2026-10-10): TMDB's own score plus Rotten Tomatoes, Metacritic and IMDb via OMDb, in `Film.ratings` and the `film_ratings` table; in the API, and in the CLI **only on request** (`--ratings`, or a `--min-…` filter): some people do not want to know critics' verdicts beforehand. Keep it opt-in.
 - **Every venue has coordinates** (2026-10-10), for the coming map UI. Chains supply their own; config venues get them by hand from OpenStreetMap (`pnpm venues:locate`). See "Venue coordinates" below.
 - **HTTP API** (2026-10-10): Hono in `packages/backend`, read-only, OpenAPI at `/openapi.json`, docs at `/docs`. Clients: a Flutter map app (teammate; Dart client from OpenAPI) and later React apps (typed `hc<AppType>` client). Deployed later with Docker Compose behind nginx on the maintainer's server. See [docs/api.md](docs/api.md).
 - **Backlog lives in GitHub issues** (`gh issue list`; labels `provider`, `tmdb`, `backlog`). The repo is public: write issues in English and never put secrets or personal data in them.
@@ -50,6 +51,7 @@ pnpm api:dev                 # API on http://127.0.0.1:3000 with reload (docs: /
 pnpm api:up                  # build the image, run migrations and the API in Docker (profile "app")
 pnpm api:down                # stop the API containers (Postgres keeps running)
 pnpm showtimes odysey        # fuzzy film search (or --movie odysey) → film info + today's screenings everywhere (--date, --after, --before, --links, --min-score)
+pnpm showtimes --here --after 18:00 --min-rt 85   # ratings filters: --min-rt (0–100), --min-imdb (0–10); --ratings shows scores
 pnpm showtimes --here --after 18:00   # no film: everything on, in start order with a Film column ("what's on near me tonight")
 pnpm showtimes --movie odysey --near 60.17,24.94 --radius 10 --provider finnkino   # only nearby venues (with distance), only some providers (ids or a platform, e.g. nexxo)
 pnpm showtimes odysey --address "Hämeenkatu 1, Tampere"   # like --near, geocoded with OSM Nominatim (cached in data/cache/geocode/)
@@ -70,6 +72,7 @@ Typical run: `pnpm db:up && pnpm migrate && pnpm pull && pnpm ingest`.
 - **`.env`** (gitignored) is loaded by Node's own `--env-file-if-exists=.env` flag. **No dotenv.**
   - Variables are validated with Zod in [src/lib/env.ts](packages/fetcher/src/lib/env.ts) (`loadEnv()`), the only place that reads `process.env`.
   - `TMDB_APIKEY` (required): TMDB v4 read access token, used as a Bearer token. Never print it.
+  - `OMDB_APIKEY` (optional): OMDb key for Rotten Tomatoes, Metacritic and IMDb scores. It travels in the URL, so OMDb errors are rethrown without the URL and the cache key leaves it out. Never print it.
   - `CONTACT` (optional): URL or email added to the User-Agent. Never hard-code anyone's contact details.
   - `DATABASE_URL`, `TEST_DATABASE_URL`: the Compose Postgres (local, non-secret defaults in `.env.example`). Validated in `packages/backend/src/lib/env.ts`.
   - `PORT` (3000), `HOST` (127.0.0.1; 0.0.0.0 in the container), `CORS_ORIGINS` (`*` or a comma-separated list): the API server.

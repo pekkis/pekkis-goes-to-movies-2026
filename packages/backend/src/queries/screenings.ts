@@ -1,5 +1,6 @@
 import type { z } from "@hono/zod-openapi";
 import { sql, type Kysely } from "kysely";
+import { jsonArrayFrom } from "kysely/helpers/postgres";
 import type { Screening } from "../api/schemas.ts";
 import type { DB } from "../db/types.ts";
 import { toHelsinkiIso } from "../lib/time.ts";
@@ -86,6 +87,14 @@ export const listScreenings = async (
       "f.rating as filmRating",
       "f.posterPath as filmPosterPath",
     ])
+    .select((eb) =>
+      jsonArrayFrom(
+        eb
+          .selectFrom("filmRatings as r")
+          .select(["r.source", "r.score", "r.display", "r.votes"])
+          .whereRef("r.filmId", "=", "s.filmId"),
+      ).as("ratings"),
+    )
     .where("s.businessDate", "=", f.date)
     .where("s.removedAt", "is", null);
 

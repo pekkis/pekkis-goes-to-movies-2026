@@ -1,4 +1,5 @@
 import { sql, type Kysely, type Selectable } from "kysely";
+import { jsonArrayFrom } from "kysely/helpers/postgres";
 import type { DB } from "../db/types.ts";
 import { nextDay, type ScreeningFilter } from "./filters.ts";
 
@@ -70,6 +71,10 @@ export type ShowtimeRow = {
   ticketUrl: string | null;
   /** Great-circle distance from the --near point; null without one. */
   distanceKm: number | null;
+  /** Rotten Tomatoes Tomatometer, 0–100; null when unknown. */
+  rottenTomatoes: number | null;
+  /** IMDb user rating, 0–100 (79 = 7.9/10); null when unknown. */
+  imdb: number | null;
 };
 
 /** Haversine distance in km from a point to the venue (`v`), in SQL. */
@@ -89,7 +94,7 @@ export const screeningsFor = async (
   db: Kysely<DB>,
   hit: Hit | undefined,
   businessDate: string,
-  { providerIds, near, after, before }: ScreeningFilter = {},
+  { providerIds, near, after, before, minScores }: ScreeningFilter = {},
 ): Promise<ShowtimeRow[]> => {
   let q = db
     .selectFrom("screenings as s")
@@ -97,8 +102,16 @@ export const screeningsFor = async (
     .innerJoin("filmListings as l", "l.id", "s.listingId")
     .leftJoin("films as f", "f.id", "s.filmId")
     .leftJoin("auditoriums as a", "a.id", "s.auditoriumId")
+    .leftJoin("filmRatings as rt", (j) =>
+      j.onRef("rt.filmId", "=", "s.filmId").on("rt.source", "=", "rotten-tomatoes"),
+    )
+    .leftJoin("filmRatings as im", (j) =>
+      j.onRef("im.filmId", "=", "s.filmId").on("im.source", "=", "imdb"),
+    )
     .select([
       "s.startsAt",
+      "rt.score as rottenTomatoes",
+      "im.score as imdb",
       sql<string>`coalesce(f.title_fi, l.title_fi, f.title_en, f.original_title, l.title_en, l.original_title, l.id)`.as(
         "film",
       ),
@@ -118,6 +131,9 @@ export const screeningsFor = async (
     .where("s.businessDate", "=", businessDate)
     .where("s.removedAt", "is", null);
   if (hit) q = q.where(hit.kind === "film" ? "s.filmId" : "s.listingId", "=", hit.id);
+  if (minScores?.rottenTomatoes !== undefined)
+    q = q.where("rt.score", ">=", minScores.rottenTomatoes);
+  if (minScores?.imdb !== undefined) q = q.where("im.score", ">=", minScores.imdb);
   if (after) {
     q = q.where(
       "s.startsAt",
@@ -140,13 +156,21 @@ export const screeningsFor = async (
 
 export type ListingDetails = Selectable<DB["filmListings"]>;
 
+export type RatingRow = { source: string; score: number; display: string; votes: number | null };
+
 export type FilmDetails = Selectable<DB["films"]> & {
   /** The Finnish title cinemas use, for films TMDB has no Finnish title for. */
   localTitle: string | null;
+  /** Rotten Tomatoes, Metacritic, IMDb, TMDB, in that order (those that exist). */
+  ratings: RatingRow[];
 };
 
-export const filmDetails = (db: Kysely<DB>, id: string): Promise<FilmDetails | undefined> =>
-  db
+const RATING_ORDER = ["rotten-tomatoes", "metacritic", "imdb", "tmdb"];
+export const sortRatings = <R extends { source: string }>(ratings: R[]): R[] =>
+  [...ratings].sort((a, b) => RATING_ORDER.indexOf(a.source) - RATING_ORDER.indexOf(b.source));
+
+export const filmDetails = async (db: Kysely<DB>, id: string): Promise<FilmDetails | undefined> => {
+  const film = await db
     .selectFrom("films as f")
     .selectAll("f")
     .select((eb) =>
@@ -159,8 +183,18 @@ export const filmDetails = (db: Kysely<DB>, id: string): Promise<FilmDetails | u
         .limit(1)
         .as("localTitle"),
     )
+    .select((eb) =>
+      jsonArrayFrom(
+        eb
+          .selectFrom("filmRatings as r")
+          .select(["r.source", "r.score", "r.display", "r.votes"])
+          .whereRef("r.filmId", "=", "f.id"),
+      ).as("ratings"),
+    )
     .where("f.id", "=", id)
     .executeTakeFirst();
+  return film && { ...film, ratings: sortRatings(film.ratings) };
+};
 
 export const listingDetails = (db: Kysely<DB>, id: string): Promise<ListingDetails | undefined> =>
   db.selectFrom("filmListings").selectAll().where("id", "=", id).executeTakeFirst();

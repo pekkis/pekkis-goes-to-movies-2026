@@ -36,6 +36,7 @@ export const getFilm = async (db: Kysely<DB>, id: string): Promise<FilmOut | und
       runtimeMinutes: film.runtimeMinutes,
       rating: film.rating,
       posterUrl: posterUrl(film.posterPath),
+      ratings: film.ratings,
       tmdbId: film.tmdbId,
       imdbId: film.imdbId,
       titles: { fi: film.titleFi ?? film.localTitle, sv: film.titleSv, en: film.titleEn },
@@ -60,6 +61,7 @@ export const getFilm = async (db: Kysely<DB>, id: string): Promise<FilmOut | und
     runtimeMinutes: listing.runtimeMinutes,
     rating: listing.rating,
     posterUrl: null,
+    ratings: [],
     tmdbId: null,
     imdbId: null,
     titles: { fi: listing.titleFi, sv: listing.titleSv, en: listing.titleEn },
@@ -83,6 +85,7 @@ const summaryOf = (film: FilmOut): z.infer<typeof FilmSummary> => ({
   runtimeMinutes: film.runtimeMinutes,
   rating: film.rating,
   posterUrl: film.posterUrl,
+  ratings: film.ratings,
 });
 
 /** Fuzzy title search (any language, typos allowed), best first. */
