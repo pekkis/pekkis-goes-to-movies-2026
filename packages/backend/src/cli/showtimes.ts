@@ -4,7 +4,12 @@ import type { DB } from "../db/types.ts";
 import { createDb } from "../db/database.ts";
 import { fromCoreLocation, fromIp, geocode, type Located } from "../geo/locate.ts";
 import { loadEnv } from "../lib/env.ts";
-import { parseLatLon, resolveProviders, type ScreeningFilter } from "../search/filters.ts";
+import {
+  parseLatLon,
+  parseTime,
+  resolveProviders,
+  type ScreeningFilter,
+} from "../search/filters.ts";
 import { formatFilm, formatListing, formatScreenings } from "../search/format.ts";
 import {
   DEFAULT_MIN_SCORE,
@@ -15,11 +20,17 @@ import {
   searchFilms,
 } from "../search/showtimes.ts";
 
-const USAGE = `Usage: pnpm showtimes <film name> [--date YYYY-MM-DD] [--min-score 0..1] [--links]
+const USAGE = `Usage: pnpm showtimes [--movie NAME | NAME] [--date YYYY-MM-DD] [--after HH:MM] [--links]
                       [--provider ID ...] [--near LAT,LON | --address TEXT | --here] [--radius KM]
+                      [--min-score 0..1]
 
-Fuzzy-searches films by any title (Finnish, Swedish, English, original, or as cinemas list them)
-and prints each match with its screenings in all venues. Default date: today in Helsinki.
+With a film: fuzzy-searches films by any title (Finnish, Swedish, English, original, or as
+cinemas list them) and prints each match with its screenings.
+Without one: every screening that matches the other options, in start order ("what's on").
+Default date: today in Helsinki.
+
+  --movie     the film to look for; a plain argument works too (pnpm showtimes odyssey)
+  --after     only shows starting at or after this time (shows after midnight are kept)
 
   --provider  only these providers: ids (finnkino, biorex, kinoaurora, …) or a platform
               (nexxo = every Nexxo cinema). Repeat for several.
@@ -32,14 +43,17 @@ and prints each match with its screenings in all venues. Default date: today in 
               via ipinfo.io (city-level, sends your IP to them).
 
 Examples:
-  pnpm showtimes odyssey --near 60.17,24.94 --radius 10 --provider finnkino
+  pnpm showtimes --here --after 18:00                  what's on near me tonight
+  pnpm showtimes --movie odyssey --near 60.17,24.94 --radius 10 --provider finnkino
   pnpm showtimes odyssey --address "Seminaarinkatu 13, Jyväskylä" --radius 5
   pnpm showtimes odyssey --here`;
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
   options: {
+    movie: { type: "string", short: "m" },
     date: { type: "string" },
+    after: { type: "string" },
     "min-score": { type: "string", default: String(DEFAULT_MIN_SCORE) },
     links: { type: "boolean", default: false },
     provider: { type: "string", multiple: true },
@@ -51,13 +65,15 @@ const { values, positionals } = parseArgs({
   },
 });
 
-const term = positionals.join(" ").trim();
+const term = (values.movie ?? positionals.join(" ")).trim();
+const after = values.after === undefined ? undefined : parseTime(values.after);
 const minScore = Number(values["min-score"]);
 const point = values.near === undefined ? undefined : parseLatLon(values.near);
 const radiusKm = Number(values.radius);
 if (
   values.help ||
-  !term ||
+  (values.movie !== undefined && (!term || positionals.length > 0)) ||
+  (values.after !== undefined && !after) ||
   Number.isNaN(minScore) ||
   (values.date && !/^\d{4}-\d{2}-\d{2}$/.test(values.date)) ||
   (values.near !== undefined && !point) ||
@@ -87,6 +103,10 @@ const run = async (db: Kysely<DB>, contact?: string): Promise<number> => {
   const date = values.date ?? (await helsinkiToday(db));
   const filter: ScreeningFilter = {};
   const where: string[] = [];
+  if (after) {
+    filter.after = after;
+    where.push(`from ${after}`);
+  }
   if (values.provider) {
     const { ids, unknown, known } = await resolveProviders(db, values.provider);
     if (unknown.length) {
@@ -116,6 +136,16 @@ const run = async (db: Kysely<DB>, contact?: string): Promise<number> => {
     where.push(`within ${radiusKm} km`);
   }
   const scope = where.length ? ` ${where.join(", ")}` : "";
+
+  if (!term) {
+    const screenings = await screeningsFor(db, undefined, date, filter);
+    const films = new Set(screenings.map((s) => s.film)).size;
+    console.log(
+      `\n  ${screenings.length} screenings of ${films} films on ${date}${scope}\n` +
+        formatScreenings(screenings, values.links, { withFilm: true }),
+    );
+    return 0;
+  }
 
   const hits = await searchFilms(db, term, { minScore });
   if (hits.length === 0) {

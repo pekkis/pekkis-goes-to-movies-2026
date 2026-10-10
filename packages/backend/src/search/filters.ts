@@ -6,6 +6,14 @@ export type ScreeningFilter = {
   /** Provider ids (as stored), already resolved from names; see resolveProviders. */
   providerIds?: string[];
   near?: { lat: number; lon: number; radiusKm: number };
+  /** "HH:MM" Helsinki time on the date; later shows (also after midnight) are kept. */
+  after?: string;
+};
+
+/** "18:00" or "9:30" -> "18:00" / "09:30"; undefined when not a time of day. */
+export const parseTime = (raw: string): string | undefined => {
+  const m = raw.trim().match(/^([01]?\d|2[0-3])[:.]([0-5]\d)$/);
+  return m ? `${m[1]!.padStart(2, "0")}:${m[2]}` : undefined;
 };
 
 /**

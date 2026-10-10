@@ -2,7 +2,7 @@ import { sql } from "kysely";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createDb } from "../src/db/database.ts";
 import { ingestBatch, ingestFilms } from "../src/ingest/ingest.ts";
-import { parseLatLon, resolveProviders } from "../src/search/filters.ts";
+import { parseLatLon, parseTime, resolveProviders } from "../src/search/filters.ts";
 import { filmDetails, screeningsFor, searchFilms } from "../src/search/showtimes.ts";
 import { batch, catalog, film, screening } from "./factory.ts";
 
@@ -138,6 +138,21 @@ describe("screeningsFor", () => {
     ).toHaveLength(1);
   });
 
+  it("lists every film's screenings without a film, with titles", async () => {
+    const all = await screeningsFor(db, undefined, "2026-10-10");
+    expect(all.length).toBeGreaterThan(1);
+    expect(new Set(all.map((r) => r.film)).size).toBeGreaterThan(1);
+    expect(all.map((r) => r.startsAt.getTime())).toEqual(
+      [...all.map((r) => r.startsAt.getTime())].sort((a, b) => a - b),
+    );
+  });
+
+  it("filters by start time in Helsinki", async () => {
+    // The fixture shows start at 18:00 Helsinki time.
+    expect(await screeningsFor(db, odyssey, "2026-10-10", { after: "18:00" })).toHaveLength(1);
+    expect(await screeningsFor(db, odyssey, "2026-10-10", { after: "18:01" })).toEqual([]);
+  });
+
   it("has no distance without a point", async () => {
     expect((await screeningsFor(db, odyssey, "2026-10-10"))[0]!.distanceKm).toBeNull();
   });
@@ -168,6 +183,13 @@ describe("filters", () => {
     expect(parseLatLon("@60.7381466,24.7742851,17z")).toEqual({ lat: 60.7381466, lon: 24.7742851 });
     expect(parseLatLon("Jyväskylä")).toBeUndefined();
     expect(parseLatLon("95,25")).toBeUndefined();
+  });
+
+  it("parses a time of day", () => {
+    expect(parseTime("18:00")).toBe("18:00");
+    expect(parseTime("9.30")).toBe("09:30");
+    expect(parseTime("24:00")).toBeUndefined();
+    expect(parseTime("tonight")).toBeUndefined();
   });
 
   it("resolves provider ids and platforms, and reports unknown names", async () => {
