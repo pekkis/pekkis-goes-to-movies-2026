@@ -14,7 +14,7 @@
       "lat": 60.73796,
       "lon": 24.77426
     },
-    "geoSource": "nominatim",
-    "note": "BioRex's API point is about 1.1 km north-east of the cinema. Geocoded from BioRex's own address (Keskuskatu 8, 11100 Riihimäki); the maintainer confirmed the location (within about 20 m). OSM has no cinema there yet. Checked 2026-10-10."
+    "geoSource": "osm:node/14052479733",
+    "note": "BioRex's API point is about 1.1 km north-east of the cinema. The maintainer added the cinema to OSM at its address (Keskuskatu 8, 11100 Riihimäki) on 2026-10-10 from local knowledge."
   }
 }
