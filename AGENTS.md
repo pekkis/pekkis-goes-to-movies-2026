@@ -21,6 +21,7 @@ The project is part of the user-centered design course at JAMK.
 - **BioRex and Finnkino adapters are done**, with tests: `pnpm pull` fetches both chains (12 + 17 cinemas) for 7 days into JSON and matches the films to TMDB.
 - **Nexxo is done** (2026-10-10): one platform adapter serving 8 independent cinema sites, 15 venues (Kinoset, Kino Aurora, Kino Hirvi, Bio Säde, Kino Marilyn, Kino Olympia, Järvelän Kino, Kino Metso's six towns). Sites are config: [src/providers/nexxo/sites.ts](packages/fetcher/src/providers/nexxo/sites.ts).
 - **Next: eTiketti** (server-rendered HTML, many small cinemas), on the same site-config abstraction.
+- **Backlog lives in GitHub issues** (`gh issue list`; labels `provider`, `tmdb`, `backlog`). The repo is public: write issues in English and never put secrets or personal data in them.
 - **License: AGPL-3.0-or-later** ([LICENSE](LICENSE)). Everything is published as open source.
 - **Direction:** a better version of Leffavuoro (Shady-Dev/kino) in TypeScript, with a precise, typed data model and JSON output. Model: [docs/data-model.md](docs/data-model.md). The source of truth is [packages/model/src/schema.ts](packages/model/src/schema.ts).
 - **Fetched data goes into PostgreSQL** (`pnpm ingest`), keeping history: screenings are never deleted. See [docs/database.md](docs/database.md).
