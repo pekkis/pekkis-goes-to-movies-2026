@@ -49,13 +49,19 @@ pnpm ingest                  # upsert data/normalized/*.json into Postgres
 pnpm api:dev                 # API on http://127.0.0.1:3000 with reload (docs: /docs)
 pnpm api:up                  # build the image, run migrations and the API in Docker (profile "app")
 pnpm api:down                # stop the API containers (Postgres keeps running)
-pnpm showtimes odysey        # fuzzy film search → film info + today's screenings everywhere (--date, --links, --min-score)
+pnpm showtimes odysey        # fuzzy film search (or --movie odysey) → film info + today's screenings everywhere (--date, --after, --before, --links, --min-score)
+pnpm showtimes --here --after 18:00   # no film: everything on, in start order with a Film column ("what's on near me tonight")
+pnpm showtimes --movie odysey --near 60.17,24.94 --radius 10 --provider finnkino   # only nearby venues (with distance), only some providers (ids or a platform, e.g. nexxo)
+pnpm showtimes odysey --address "Hämeenkatu 1, Tampere"   # like --near, geocoded with OSM Nominatim (cached in data/cache/geocode/)
+pnpm showtimes odysey --here # like --near, from this machine: CoreLocationCLI if installed, else IP lookup (ipinfo.io, approximate)
 pnpm test                    # all packages; backend integration tests need the database
 pnpm check                   # typecheck + lint + fmt:check + test (run before saying you are done)
 pnpm fmt                     # oxfmt rewrites formatting
 ```
 
 Typical run: `pnpm db:up && pnpm migrate && pnpm pull && pnpm ingest`.
+
+**`--here` on macOS** needs CoreLocationCLI for a precise position: `brew install --cask corelocationcli`, run `CoreLocationCLI --json` once, allow it in System Settings → Privacy & Security (Gatekeeper, then Location Services), and keep Wi-Fi on. Without it, `--here` falls back to IP geolocation, which sends the public IP address to ipinfo.io and is often only the ISP's town.
 
 **Routine:** `pnpm pull && pnpm ingest` is run **manually, about once a day**, on the maintainer's laptop (no scheduler; Finnkino needs a visible Chrome). Gaps between runs are normal. Programmes change most on **Tuesday and Wednesday** (Finnkino runs a large batch update then); Finnish programme weeks run Friday–Thursday, so next week's shows usually appear midweek.
 

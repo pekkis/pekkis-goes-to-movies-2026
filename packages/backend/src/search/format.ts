@@ -46,12 +46,22 @@ export const table = (header: string[], rows: string[][]): string => {
   return [line(header), line(widths.map((w) => "-".repeat(w))), ...rows.map(line)].join("\n");
 };
 
-export const formatScreenings = (rows: ShowtimeRow[], withLinks: boolean): string => {
-  if (rows.length === 0) return "  No screenings on this date.";
+/** "3.5" under 10 km, whole kilometres above. */
+const km = (d: number) => (d < 10 ? d.toFixed(1) : d.toFixed(0));
+
+export const formatScreenings = (
+  rows: ShowtimeRow[],
+  withLinks: boolean,
+  { withFilm = false } = {},
+): string => {
+  if (rows.length === 0) return "  No screenings found.";
+  const withDistance = rows.some((r) => r.distanceKm !== null);
   const header = [
     "Time",
+    ...(withDistance ? ["Km"] : []),
     "City",
     "Venue",
+    ...(withFilm ? ["Film"] : []),
     "Screen",
     "Language",
     "Extras",
@@ -59,8 +69,10 @@ export const formatScreenings = (rows: ShowtimeRow[], withLinks: boolean): strin
   ];
   const body = rows.map((r) => [
     time(r.startsAt),
+    ...(withDistance ? [r.distanceKm === null ? "" : km(r.distanceKm)] : []),
     r.city,
     r.venue,
+    ...(withFilm ? [r.film] : []),
     r.screen ?? "",
     languageLabel(r),
     extras(r),

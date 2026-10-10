@@ -4,6 +4,7 @@ import type { FilmDetails, ShowtimeRow } from "../src/search/showtimes.ts";
 
 const row = (overrides: Partial<ShowtimeRow> = {}): ShowtimeRow => ({
   startsAt: new Date("2026-10-10T17:00:00.000Z"),
+  film: "The Odyssey",
   city: "Helsinki",
   venue: "Tennispalatsi Helsinki",
   screen: "LUXE 8",
@@ -15,6 +16,7 @@ const row = (overrides: Partial<ShowtimeRow> = {}): ShowtimeRow => ({
   ageLimit: null,
   availability: "available",
   ticketUrl: "https://tickets.example/1",
+  distanceKm: null,
   ...overrides,
 });
 
@@ -39,7 +41,22 @@ it("formats screenings in Helsinki time with extras", () => {
   expect(text).toContain("LUXE bar K-18 sold-out");
   expect(text).not.toContain("tickets.example");
   expect(formatScreenings([row()], true)).toContain("https://tickets.example/1");
-  expect(formatScreenings([], false)).toBe("  No screenings on this date.");
+  expect(formatScreenings([], false)).toBe("  No screenings found.");
+});
+
+it("adds a film column for the all-films listing", () => {
+  const text = formatScreenings([row()], false, { withFilm: true });
+  expect(text.split("\n")[0]).toMatch(/Venue\s+Film\s+Screen/);
+  expect(text).toContain("The Odyssey");
+  expect(formatScreenings([row()], false)).not.toContain("Film");
+});
+
+it("adds a distance column when screenings were searched near a point", () => {
+  const text = formatScreenings([row({ distanceKm: 3.46 }), row({ distanceKm: 12.04 })], false);
+  expect(text.split("\n")[0]).toMatch(/Time\s+Km\s+City/);
+  expect(text).toContain("3.5");
+  expect(text).toContain("12");
+  expect(formatScreenings([row()], false)).not.toContain("Km");
 });
 
 it("formats a film heading with the cinemas' title and the original", () => {
