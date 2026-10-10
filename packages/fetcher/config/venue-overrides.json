@@ -1,0 +1,20 @@
+{
+  "finnkino:venue:1004": {
+    "name": "Promenadi Pori",
+    "geo": {
+      "lat": 61.483907,
+      "lon": 21.796577
+    },
+    "geoSource": "osm:node/514273201",
+    "note": "Finnkino's API puts it 3.7 km north of the centre. The OSM node has Finnkino's own address (Yrjönkatu 17, 28100 Pori) and operator Finnkino. Checked 2026-10-10."
+  },
+  "biorex:venue:8": {
+    "name": "BioRex Riihimäki",
+    "geo": {
+      "lat": 60.73796,
+      "lon": 24.77426
+    },
+    "geoSource": "nominatim",
+    "note": "BioRex's API point is about 1.1 km north-east of the cinema. Geocoded from BioRex's own address (Keskuskatu 8, 11100 Riihimäki); the maintainer confirmed the location (within about 20 m). OSM has no cinema there yet. Checked 2026-10-10."
+  }
+}

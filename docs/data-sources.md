@@ -209,6 +209,22 @@ Profiled on 2026-10-10 over 214 shows on 10 locations. Adapter: `packages/fetche
 
 ---
 
+## Venue coordinates: OpenStreetMap
+
+Set up on 2026-10-10. Code: `packages/fetcher/src/geo/`, CLI `pnpm venues:locate`.
+
+- **Overpass [V]:** one query for every cinema in Finland (`nwr["amenity"="cinema"]` inside the `ISO3166-1=FI` area, `out center tags`): 148 cinemas on 2026-10-10. Ways and relations come with a centre point. Cached for a week in `data/cache/osm/`.
+- **Nominatim [V]:** `nominatim.openstreetmap.org/search?q=…&format=jsonv2&countrycodes=fi&limit=3` for halls that OSM does not tag as cinemas (Kino Metso plays in school auditoriums and sports halls). At most one request per second, cached for a month. Addresses come from the cinema's own page.
+- **Licence:** OSM data is ODbL. Credit "© OpenStreetMap contributors" in the UI.
+- **Google Maps is not a source:** its terms forbid storing coordinates taken from it.
+- **First run, 2026-10-10:**
+  - 7 Nexxo venues matched OSM cinemas by name, city and address.
+  - 8 were geocoded from their halls' addresses. Viitasaari resolved only to the street (Koulukuja), so that point is approximate.
+  - Finnkino's own point for **Promenadi Pori** was 3.7 km off. The OSM node has Finnkino's address and operator, so an override in `config/venue-overrides.json` corrects it.
+  - **BioRex Riihimäki** is not in OSM, and BioRex's own point was about 1.1 km north-east of the cinema. An override now uses the geocoded address (Keskuskatu 8), which the maintainer confirmed on site knowledge.
+
+---
+
 ## References
 
 - [Cision: Finnkino introduces new digital services (26 Aug 2025, in Finnish)](https://news.cision.com/fi/finnkino/r/lehdistotiedote--finnkino-ottaa-kayttoon-uudet-digitaaliset-palvelut---ensimmaisena-mukana-espoon-el,c4222617)

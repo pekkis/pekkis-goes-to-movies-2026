@@ -92,6 +92,15 @@ describe("parseNexxo", () => {
     },
   );
 
+  it("takes venue address and coordinates from the config", () => {
+    const batch = parseNexxo(snapshot("kinomarilyn"), site("kinomarilyn"));
+    expect(batch.venues[0]).toMatchObject({
+      address: "Kuningattarenkatu 17",
+      postalCode: "07900",
+      geo: { lat: 60.458467, lon: 26.225406 },
+    });
+  });
+
   it("maps a regular screening", () => {
     const batch = parseNexxo(snapshot("kinomarilyn"), site("kinomarilyn"));
     expect(screening(batch, "3046")).toMatchObject({

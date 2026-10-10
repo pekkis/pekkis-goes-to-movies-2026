@@ -148,6 +148,7 @@ export const parseNexxo = (raw: NexxoRawSnapshot, site: NexxoSite): ProviderBatc
       ...(v.shortName && { shortName: v.shortName }),
       ...(v.address && { address: v.address }),
       ...(v.postalCode && { postalCode: v.postalCode }),
+      ...(v.geo && { geo: v.geo }),
     });
   }
 

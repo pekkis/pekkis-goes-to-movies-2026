@@ -81,9 +81,36 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
     programmePath: "/ohjelmisto/",
     verifiedAt: "2026-10-10",
     venues: [
-      { slug: "huittinen", locationId: "1", name: "Kino 1-2", city: "Huittinen" },
-      { slug: "loimaa", locationId: "2", name: "Kinema", city: "Loimaa" },
-      { slug: "sastamala", locationId: "3", name: "Bio Sastamala", city: "Sastamala" },
+      {
+        slug: "huittinen",
+        locationId: "1",
+        name: "Kino 1-2",
+        city: "Huittinen",
+        address: "Sahakatu 2",
+        postalCode: "32700",
+        geo: { lat: 61.180046, lon: 22.716464 },
+        geoSource: "nominatim",
+      },
+      {
+        slug: "loimaa",
+        locationId: "2",
+        name: "Kinema",
+        city: "Loimaa",
+        address: "Vesikoskenkatu 21",
+        postalCode: "32200",
+        geo: { lat: 60.85288, lon: 23.055499 },
+        geoSource: "osm:node/10984353704",
+      },
+      {
+        slug: "sastamala",
+        locationId: "3",
+        name: "Bio Sastamala",
+        city: "Sastamala",
+        address: "Puistokatu 32",
+        postalCode: "38200",
+        geo: { lat: 61.338068, lon: 22.917104 },
+        geoSource: "osm:node/287019356",
+      },
     ],
   },
   {
@@ -97,7 +124,18 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
       Filminäytös: { series: "Filminäytös" },
       Minikino: { series: "Minikino", tags: ["kids"] },
     },
-    venues: [{ slug: "jyvaskyla", locationId: "1", name: "Kino Aurora", city: "Jyväskylä" }],
+    venues: [
+      {
+        slug: "jyvaskyla",
+        locationId: "1",
+        name: "Kino Aurora",
+        city: "Jyväskylä",
+        address: "Seminaarinkatu 13",
+        postalCode: "40100",
+        geo: { lat: 62.236619, lon: 25.735002 },
+        geoSource: "nominatim",
+      },
+    ],
   },
   {
     provider: "kinohirvi",
@@ -105,7 +143,18 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
     homepage: "https://kinohirvi.fi",
     programmePath: "/",
     verifiedAt: "2026-10-10",
-    venues: [{ slug: "aanekoski", locationId: "2", name: "Kino Hirvi", city: "Äänekoski" }],
+    venues: [
+      {
+        slug: "aanekoski",
+        locationId: "2",
+        name: "Kino Hirvi",
+        city: "Äänekoski",
+        address: "Kotakennääntie 9",
+        postalCode: "44100",
+        geo: { lat: 62.601517, lon: 25.72161 },
+        geoSource: "osm:node/2184338692",
+      },
+    ],
   },
   {
     provider: "biosade",
@@ -115,7 +164,16 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
     programmePath: "/",
     verifiedAt: "2026-10-10",
     notes: "biosade.fi's own API is empty; its front page calls kinohirvi.fi's API for location 4.",
-    venues: [{ slug: "mantta", locationId: "4", name: "Bio Säde", city: "Mänttä" }],
+    venues: [
+      {
+        slug: "mantta",
+        locationId: "4",
+        name: "Bio Säde",
+        city: "Mänttä",
+        geo: { lat: 62.031704, lon: 24.626281 },
+        geoSource: "osm:node/6791996771",
+      },
+    ],
   },
   {
     provider: "kinomarilyn",
@@ -123,7 +181,18 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
     homepage: "https://kinomarilyn.fi",
     programmePath: "/esitysajat/",
     verifiedAt: "2026-10-10",
-    venues: [{ slug: "loviisa", locationId: "1", name: "Kino Marilyn", city: "Loviisa" }],
+    venues: [
+      {
+        slug: "loviisa",
+        locationId: "1",
+        name: "Kino Marilyn",
+        city: "Loviisa",
+        address: "Kuningattarenkatu 17",
+        postalCode: "07900",
+        geo: { lat: 60.458467, lon: 26.225406 },
+        geoSource: "osm:node/2104773059",
+      },
+    ],
   },
   {
     provider: "kinoolympia",
@@ -131,7 +200,16 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
     homepage: "https://kino-olympia.fi",
     programmePath: "/naytokset/",
     verifiedAt: "2026-10-10",
-    venues: [{ slug: "hanko", locationId: "1", name: "Kino Olympia", city: "Hanko" }],
+    venues: [
+      {
+        slug: "hanko",
+        locationId: "1",
+        name: "Kino Olympia",
+        city: "Hanko",
+        geo: { lat: 59.8249, lon: 22.967539 },
+        geoSource: "osm:node/357239399",
+      },
+    ],
   },
   {
     provider: "jarvelankino",
@@ -139,7 +217,18 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
     homepage: "https://jarvelankino.fi",
     programmePath: "/naytoslista/",
     verifiedAt: "2026-10-10",
-    venues: [{ slug: "jarvela", locationId: "1", name: "Järvelän Kino", city: "Kärkölä" }],
+    venues: [
+      {
+        slug: "jarvela",
+        locationId: "1",
+        name: "Järvelän Kino",
+        city: "Kärkölä",
+        address: "Hähkäniementie 16",
+        postalCode: "16600",
+        geo: { lat: 60.866439, lon: 25.26818 },
+        geoSource: "osm:way/148579739",
+      },
+    ],
   },
   {
     provider: "kinometso",
@@ -152,7 +241,9 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
       "KSEK's touring cinema: one location whose rooms are towns. Data from kinoaurora.fi " +
       "(same deployment as ksek.fi); each town has its own page. Riihivuori (room 21) is " +
       "folded into Muurame, which KSEK's site does too. Laukaa (24) and Viitasaari (10) " +
-      "were found by the unclaimed-room warning, not in Leffavuoro's list.",
+      "were found by the unclaimed-room warning, not in Leffavuoro's list. Each town " +
+      "plays in a hall (address from its town page, geocoded with Nominatim); Viitasaari " +
+      "resolved only to the street, so its point is approximate.",
     showTypes: { "Kino Metso": {}, "Kino Metso, kiinteähintainen": {} },
     titlePrefixes: { Minikino: { series: "Minikino", tags: ["kids"] } },
     venues: [
@@ -163,6 +254,10 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
         page: "/kino-metso/muurame/",
         name: "Kino Metso Muurame",
         city: "Muurame",
+        address: "Nisulantie 1",
+        postalCode: "40950",
+        geo: { lat: 62.131357, lon: 25.669218 },
+        geoSource: "nominatim",
       },
       {
         slug: "petajavesi",
@@ -171,6 +266,10 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
         page: "/kino-metso/petajavesi/",
         name: "Kino Metso Petäjävesi",
         city: "Petäjävesi",
+        address: "Miilutie 4",
+        postalCode: "41900",
+        geo: { lat: 62.257816, lon: 25.180477 },
+        geoSource: "nominatim",
       },
       {
         slug: "tikkakoski",
@@ -179,6 +278,10 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
         page: "/kino-metso/tikkakoski/",
         name: "Kino Metso Tikkakoski",
         city: "Jyväskylä",
+        address: "Koulukatu 10",
+        postalCode: "41160",
+        geo: { lat: 62.393998, lon: 25.637795 },
+        geoSource: "nominatim",
       },
       {
         slug: "vaajakoski",
@@ -187,6 +290,10 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
         page: "/kino-metso/vaajakoski/",
         name: "Kino Metso Vaajakoski",
         city: "Jyväskylä",
+        address: "Savonmäentie 9",
+        postalCode: "40800",
+        geo: { lat: 62.24967, lon: 25.873522 },
+        geoSource: "nominatim",
       },
       {
         slug: "laukaa",
@@ -195,6 +302,10 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
         page: "/kino-metso/laukaa/",
         name: "Kino Metso Laukaa",
         city: "Laukaa",
+        address: "Saralinnantie 3",
+        postalCode: "41340",
+        geo: { lat: 62.416344, lon: 25.950415 },
+        geoSource: "nominatim",
       },
       {
         slug: "viitasaari",
@@ -203,6 +314,10 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
         page: "/kino-metso/viitasaari/",
         name: "Kino Metso Viitasaari",
         city: "Viitasaari",
+        address: "Koulukuja 8",
+        postalCode: "44500",
+        geo: { lat: 63.084463, lon: 25.849328 },
+        geoSource: "nominatim",
       },
     ],
   },

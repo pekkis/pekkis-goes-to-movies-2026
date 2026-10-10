@@ -21,6 +21,7 @@ The project is part of the user-centered design course at JAMK.
 - **BioRex and Finnkino adapters are done**, with tests: `pnpm pull` fetches both chains (12 + 17 cinemas) for 7 days into JSON and matches the films to TMDB.
 - **Nexxo is done** (2026-10-10): one platform adapter serving 8 independent cinema sites, 15 venues (Kinoset, Kino Aurora, Kino Hirvi, Bio Säde, Kino Marilyn, Kino Olympia, Järvelän Kino, Kino Metso's six towns). Sites are config: [src/providers/nexxo/sites.ts](packages/fetcher/src/providers/nexxo/sites.ts).
 - **Next: eTiketti** (server-rendered HTML, many small cinemas), on the same site-config abstraction.
+- **Every venue has coordinates** (2026-10-10), for the coming map UI. Chains supply their own; config venues get them by hand from OpenStreetMap (`pnpm venues:locate`). See "Venue coordinates" below.
 - **Backlog lives in GitHub issues** (`gh issue list`; labels `provider`, `tmdb`, `backlog`). The repo is public: write issues in English and never put secrets or personal data in them.
 - **License: AGPL-3.0-or-later** ([LICENSE](LICENSE)). Everything is published as open source.
 - **Direction:** a better version of Leffavuoro (Shady-Dev/kino) in TypeScript, with a precise, typed data model and JSON output. Model: [docs/data-model.md](docs/data-model.md). The source of truth is [packages/model/src/schema.ts](packages/model/src/schema.ts).
@@ -41,6 +42,8 @@ pnpm pull --provider finnkino --days 3 --from 2026-10-10
 pnpm pull --provider biorex --venue 13   # --venue takes source ids or slugs and needs exactly one provider
 pnpm pull --provider nexxo   # a platform name selects all of its sites (kinoaurora, kinoset, …)
 pnpm match                   # re-run TMDB matching only (e.g. after editing aliases)
+pnpm venues:locate           # suggest OSM coordinates for venues without them; flag suspicious ones
+pnpm venues:locate --address "Sahakatu 2, 32700 Huittinen"   # geocode an address (Nominatim)
 pnpm ingest                  # upsert data/normalized/*.json into Postgres
 pnpm showtimes odysey        # fuzzy film search → film info + today's screenings everywhere (--date, --links, --min-score)
 pnpm test                    # all packages; backend integration tests need the database
@@ -86,9 +89,12 @@ packages/fetcher/              @pgtm/fetcher: fetching, normalizing, TMDB matchi
   src/providers/<platform>/sites.ts  the platform's site list (config, not code)
   src/providers/registry.ts    list of adapters (one per site for platforms); the CLI runs them
   src/tmdb/                    TMDB client (cached), raw schemas, toFilm (pure)
+  src/geo/                     geo.ts (FinnishGeo, GeoSource, distance), osm.ts (Overpass), nominatim.ts, match.ts (pure)
+  src/providers/overrides.ts   venue-overrides.json applied to every batch; warns about venues without geo
   src/matching/                TMDB matching: score.ts (pure scoring), match.ts, catalog.ts (films.json)
   src/cli/fetch.ts, match.ts   CLIs (`pnpm pull`, `pnpm match`)
   config/tmdb-aliases.json     hand-maintained aliases, listing id → TMDB id (committed)
+  config/venue-overrides.json  hand-maintained fixes to chain venues (coordinates, addresses) (committed)
   test/                        tests mirror src; test/fixtures/<id>/ trimmed from real responses
 packages/backend/              @pgtm/backend: PostgreSQL (Kysely), migrations, ingest; later the API
   migrations/                  Kysely migrations, plain .ts, append-only
@@ -166,6 +172,16 @@ None of these needs HTML crawling; eTiketti will (it has no public API).
 - Do not loosen the matching rules without a regression test (`test/matching/score.test.ts`).
 - Event cinema (`kind: "event"`: operas, concerts) is never reported as unmatched; do not spend effort aliasing it.
 - TMDB's terms require attribution (logo and notice) in the UI.
+
+### Venue coordinates
+
+- **Every venue needs `geo`** (the map UI depends on it). `pnpm pull` warns `venue-without-geo` otherwise; a test fails for any configured Nexxo venue without one.
+- Chains (Finnkino, BioRex) supply coordinates in their APIs. Fix wrong ones in `config/venue-overrides.json`, with a `note` saying how it was checked.
+- Config venues (Nexxo, eTiketti, …) carry `geo`, `geoSource`, `address` and `postalCode` in their `sites.ts`. Workflow: `pnpm venues:locate` suggests OSM cinemas (and flags existing points more than 300 m from any OSM cinema); halls OSM does not list as cinemas are geocoded with `--address`, using the address on the cinema's own page. **Check every point on openstreetmap.org before pasting it.**
+- `geoSource` records where a point came from: `osm:node/…`, `nominatim`, `nls` or `manual`.
+- **Never take coordinates from Google Maps**: its terms forbid storing them, even copied by hand.
+- OSM data is ODbL: the UI must credit "© OpenStreetMap contributors". Overpass and Nominatim are shared community services: requests are cached (a week and a month), Nominatim is paced at one request per second.
+- Postgres needs no geo extension: about 300 venues, `lat`/`lon` columns, bounding-box filters and haversine in SQL. Reconsider PostGIS only for polygons or routing.
 
 ### Architecture
 
