@@ -7,7 +7,11 @@ import { details } from "../tmdb/factory.ts";
 
 const NOW = new Date("2026-10-09T12:00:00.000Z");
 
-const fakeTmdb = (movies: MovieDetails[], searches: Record<string, number[]>) => {
+const fakeTmdb = (
+  movies: MovieDetails[],
+  searches: Record<string, number[]>,
+  imdb: Record<string, number> = {},
+) => {
   const calls: string[] = [];
   const byId = new Map(movies.map((m) => [m.id, m]));
   const client: TmdbClient = {
@@ -26,6 +30,10 @@ const fakeTmdb = (movies: MovieDetails[], searches: Record<string, number[]>) =>
       const movie = byId.get(id);
       if (!movie) throw new Error(`no movie ${id}`);
       return movie;
+    },
+    findByImdb: async (imdbId) => {
+      calls.push(`find:${imdbId}`);
+      return imdb[imdbId];
     },
   };
   return { client, calls };
@@ -50,6 +58,51 @@ describe("matchListings", () => {
     expect(result.links.get("biorex:film:1")).toEqual({ filmId: "tmdb:10", method: "auto" });
     expect(result.films.map((f) => f.id)).toEqual(["tmdb:10"]);
     expect(result.unmatched).toEqual([]);
+  });
+
+  it("links by the provider's IMDb id without searching", async () => {
+    const { client, calls } = fakeTmdb(
+      [details({ id: 30, title: "Casper", release_date: "1995-05-26" })],
+      {},
+      {
+        tt0112642: 30,
+      },
+    );
+    const result = await matchListings(
+      [{ ...listing("1", "Casper"), imdbId: "tt0112642" }],
+      client,
+      {},
+      NOW,
+    );
+    expect(result.links.get("biorex:film:1")).toEqual({ filmId: "tmdb:30", method: "imdb" });
+    expect(calls).toEqual(["find:tt0112642", "movie:30"]);
+  });
+
+  it("falls back to searching when TMDB does not know the IMDb id", async () => {
+    const { client } = fakeTmdb([details({ id: 10, title: "Digger" })], { Digger: [10] });
+    const result = await matchListings(
+      [{ ...listing("1", "Digger"), imdbId: "tt999" }],
+      client,
+      {},
+      NOW,
+    );
+    expect(result.links.get("biorex:film:1")).toEqual({ filmId: "tmdb:10", method: "auto" });
+  });
+
+  it("matches an old film by its original title and year", async () => {
+    // Finnish title unknown to TMDB; the original title and the listing's year are certain.
+    const { client, calls } = fakeTmdb(
+      [details({ id: 40, title: "That Darn Cat!", release_date: "1965-12-02", runtime: 116 })],
+      { "That Darn Cat!": [40] },
+    );
+    const result = await matchListings(
+      [{ ...listing("2", "Pahuksen katti", 116), originalTitle: "That Darn Cat!", year: 1965 }],
+      client,
+      {},
+      NOW,
+    );
+    expect(calls).toContain("search:That Darn Cat!");
+    expect(result.links.get("biorex:film:2")).toEqual({ filmId: "tmdb:40", method: "auto" });
   });
 
   it("uses an alias without searching", async () => {

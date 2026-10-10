@@ -1,6 +1,6 @@
 import { noCache, type JsonCache } from "../lib/cache.ts";
 import { createHttpClient, type HttpClient } from "../lib/http.ts";
-import { MovieDetails, SearchResponse, type SearchResult } from "./raw.ts";
+import { FindResponse, MovieDetails, SearchResponse, type SearchResult } from "./raw.ts";
 
 const API = "https://api.themoviedb.org/3";
 const DAY = 24 * 60 * 60 * 1000;
@@ -8,6 +8,8 @@ const DAY = 24 * 60 * 60 * 1000;
 export type TmdbClient = {
   search: (query: string) => Promise<SearchResult[]>;
   movie: (id: number) => Promise<MovieDetails>;
+  /** TMDB id for an IMDb id ("tt0112642"), if TMDB knows it. */
+  findByImdb: (imdbId: string) => Promise<number | undefined>;
 };
 
 /** TMDB allows ~40 req/s; we stay well below. */
@@ -39,5 +41,11 @@ export const createTmdbClient = (http: HttpClient, cache: JsonCache = noCache): 
       http.getJson(`${API}/movie/${id}`, params),
     );
     return MovieDetails.parse(raw);
+  },
+  findByImdb: async (imdbId) => {
+    const raw = await cache.get(`find:${imdbId}`, 7 * DAY, () =>
+      http.getJson(`${API}/find/${imdbId}`, { external_source: "imdb_id" }),
+    );
+    return FindResponse.parse(raw).movie_results[0]?.id;
   },
 });

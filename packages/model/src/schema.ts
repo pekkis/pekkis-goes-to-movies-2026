@@ -41,6 +41,7 @@ export const Platform = z.enum([
   "vista-ocapi",
   "mycloudcinema",
   "etiketti",
+  "kinola",
   "nexxo",
   "johku",
   "custom",
@@ -102,6 +103,11 @@ export const FilmListing = z.object({
   sourceId: z.string(),
   title: Localized,
   originalTitle: z.string().optional(),
+  /** When the provider states it (Kinola): makes the TMDB match exact. */
+  imdbId: z
+    .string()
+    .regex(/^tt\d+$/)
+    .optional(),
   year: z.number().int().optional(),
   runtimeMinutes: z.number().int().positive().optional(),
   rating: FinnishRating.optional(),
@@ -116,10 +122,11 @@ export const FilmListing = z.object({
   /** Canonical film (`tmdb:{id}`), set by the matching step. */
   filmId: z.string().optional(),
   /**
-   * How `filmId` was decided: `auto` (TMDB search), `alias` (config/tmdb-aliases.json) or
-   * `sibling` (same title and runtime as a listing another provider already linked).
+   * How `filmId` was decided: `auto` (TMDB search), `alias` (config/tmdb-aliases.json),
+   * `imdb` (the provider's IMDb id, looked up on TMDB) or `sibling` (same title and
+   * runtime as a listing another provider already linked).
    */
-  match: z.enum(["auto", "alias", "sibling"]).optional(),
+  match: z.enum(["auto", "alias", "imdb", "sibling"]).optional(),
 });
 export type FilmListing = z.infer<typeof FilmListing>;
 

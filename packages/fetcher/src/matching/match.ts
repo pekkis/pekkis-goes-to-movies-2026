@@ -13,7 +13,7 @@ const MAX_CANDIDATES = 5;
 export type MatchOutcome = {
   films: Film[];
   /** listing id -> decision */
-  links: Map<string, { filmId: string; method: "auto" | "alias" | "sibling" }>;
+  links: Map<string, { filmId: string; method: "auto" | "alias" | "imdb" | "sibling" }>;
   unmatched: Unmatched[];
 };
 
@@ -56,15 +56,28 @@ export const matchListings = async (
       continue;
     }
 
+    // The provider's IMDb id makes the match exact, when TMDB knows the film.
+    if (listing.imdbId) {
+      const tmdbId = await tmdb.findByImdb(listing.imdbId);
+      if (tmdbId !== undefined) {
+        links.set(listing.id, { filmId: keep(await tmdb.movie(tmdbId)), method: "imdb" });
+        continue;
+      }
+    }
+
     const clean = stripQualifiers(title);
+    const original = listing.originalTitle && stripQualifiers(listing.originalTitle);
+    const alternate =
+      original && normalizeTitle(original) !== normalizeTitle(clean) ? original : undefined;
     const facts: ListingFacts = {
       title: clean,
+      ...(alternate && { alternateTitles: [alternate] }),
       countries: toCountryCodes(listing.countries),
       ...(listing.runtimeMinutes && { runtimeMinutes: listing.runtimeMinutes }),
       ...(listing.year && { year: listing.year }),
       ...(listing.rating && { rating: listing.rating }),
     };
-    const queries = [clean, titlePrefix(clean)].filter((q): q is string => Boolean(q));
+    const queries = [clean, titlePrefix(clean), alternate].filter((q): q is string => Boolean(q));
     const hits = (await Promise.all(queries.map((q) => tmdb.search(q)))).flat();
     const ranked = rankHits(hits, currentYear).slice(0, MAX_CANDIDATES);
     const details = await Promise.all(ranked.map((hit) => tmdb.movie(hit.id)));

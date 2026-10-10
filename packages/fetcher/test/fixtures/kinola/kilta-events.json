@@ -1,0 +1,215 @@
+{
+  "data": [
+    {
+      "id": "39be45bb-2630-456c-aaf8-5e8fe7ffc79a",
+      "time": "2026-10-10T14:30:00Z",
+      "local_time": "2026-10-10T17:30:00+03:00",
+      "local_timezone": "Europe/Helsinki",
+      "note": "Anniskelunäytös K18",
+      "program": {
+        "id": "52e45c01-8149-49e1-b6c8-610c766c23e1",
+        "name": "Anniskelunäytös K18",
+        "description": "<p>Anniskelunäytöksissä voit nauttia myymälästä ostettua alkoholipistoista juomaa näytöksessä! Anniskelunäytökset ovat aina K18.</p>",
+        "customFields": []
+      },
+      "venue": {
+        "id": "9b4247af-619b-4967-8cb2-a735c67498e9",
+        "name": "Kino Kilta"
+      },
+      "room": {
+        "name": "Kino Kilta"
+      },
+      "freeSeats": 41,
+      "production": {
+        "id": "2e31b995-712a-4053-a961-f1bbb2c02b87",
+        "visibility": "public",
+        "name": "Two Seasons, Two Strangers",
+        "duration": 89,
+        "year": 2025,
+        "originalName": "旅と日々",
+        "releaseDate": "2026-10-09",
+        "distributor": "TabiCine Oy",
+        "rating": "S",
+        "imdb_id": "tt37538491",
+        "languages": ["japani", "korea"],
+        "subtitles": ["suomi", "englanti"],
+        "customFields": []
+      },
+      "price_range": {
+        "min": 8,
+        "max": 14,
+        "currency": "EUR"
+      },
+      "visibility": "public",
+      "event_type": "paid"
+    },
+    {
+      "id": "40959653-5a51-456f-98a2-1c164f81ede7",
+      "time": "2026-10-11T14:00:00Z",
+      "local_time": "2026-10-11T17:00:00+03:00",
+      "local_timezone": "Europe/Helsinki",
+      "note": "Kinokoplan syyssarja",
+      "program": null,
+      "venue": {
+        "id": "9b4247af-619b-4967-8cb2-a735c67498e9",
+        "name": "Kino Kilta"
+      },
+      "room": {
+        "name": "Kino Kilta"
+      },
+      "freeSeats": 68,
+      "production": {
+        "id": "04887779-ddde-4459-8806-42669dee01d1",
+        "visibility": "public",
+        "name": "Kinokopla: Se oli pelkkä sattuma",
+        "duration": 103,
+        "year": 2026,
+        "originalName": "یک تصادف ساده",
+        "releaseDate": "2026-03-06",
+        "distributor": "Cinemanse Oy",
+        "rating": "K-16",
+        "imdb_id": "tt36491653",
+        "languages": ["Farsi"],
+        "subtitles": ["suomi", "ruotsi"],
+        "customFields": []
+      },
+      "price_range": {
+        "min": 8,
+        "max": 13,
+        "currency": "EUR"
+      },
+      "visibility": "coming_soon",
+      "event_type": "paid"
+    },
+    {
+      "id": "5dab2762-062a-498c-8472-761267b288b3",
+      "time": "2026-10-22T16:00:00Z",
+      "local_time": "2026-10-22T19:00:00+03:00",
+      "local_timezone": "Europe/Helsinki",
+      "note": "Cinema Delirium - Anniskelunäytös K18",
+      "program": {
+        "id": "52e45c01-8149-49e1-b6c8-610c766c23e1",
+        "name": "Anniskelunäytös K18",
+        "description": "<p>Anniskelunäytöksissä voit nauttia myymälästä ostettua alkoholipistoista juomaa näytöksessä! Anniskelunäytökset ovat aina K18.</p>",
+        "customFields": []
+      },
+      "venue": {
+        "id": "9b4247af-619b-4967-8cb2-a735c67498e9",
+        "name": "Kino Kilta"
+      },
+      "room": {
+        "name": "Kino Kilta"
+      },
+      "freeSeats": 67,
+      "production": {
+        "id": "cc41a08a-5bc7-4621-8057-a1700ce7fdaa",
+        "visibility": "public",
+        "name": "Sleepaway Camp",
+        "duration": 84,
+        "year": 1983,
+        "originalName": "Sleepaway Camp",
+        "releaseDate": null,
+        "distributor": null,
+        "rating": "K-18",
+        "imdb_id": "tt0086320",
+        "languages": ["englanti"],
+        "subtitles": ["Ei teksitystä"],
+        "customFields": []
+      },
+      "price_range": {
+        "min": 12,
+        "max": 12,
+        "currency": "EUR"
+      },
+      "visibility": "public",
+      "event_type": "paid"
+    },
+    {
+      "id": "0ef2a0a9-4acd-4248-80fb-a32967e8cb63",
+      "time": "2026-12-16T17:00:00Z",
+      "local_time": "2026-12-16T19:00:00+02:00",
+      "local_timezone": "Europe/Helsinki",
+      "note": "Kultti Kilta - Anniskelunäytös K18",
+      "program": {
+        "id": "52e45c01-8149-49e1-b6c8-610c766c23e1",
+        "name": "Anniskelunäytös K18",
+        "description": "<p>Anniskelunäytöksissä voit nauttia myymälästä ostettua alkoholipistoista juomaa näytöksessä! Anniskelunäytökset ovat aina K18.</p>",
+        "customFields": []
+      },
+      "venue": {
+        "id": "9b4247af-619b-4967-8cb2-a735c67498e9",
+        "name": "Kino Kilta"
+      },
+      "room": {
+        "name": "Kino Kilta"
+      },
+      "freeSeats": 67,
+      "production": {
+        "id": "1ef8c219-bd33-41df-bd88-482bf62f5a8c",
+        "visibility": "public",
+        "name": "Tiger on the Beat",
+        "duration": 93,
+        "year": 1988,
+        "originalName": "老虎出更",
+        "releaseDate": null,
+        "distributor": null,
+        "rating": "K-18",
+        "imdb_id": "tt0095491",
+        "languages": ["Dubattu englanniksi"],
+        "subtitles": ["suomi"],
+        "customFields": []
+      },
+      "price_range": {
+        "min": 14,
+        "max": 14,
+        "currency": "EUR"
+      },
+      "visibility": "public",
+      "event_type": "paid"
+    },
+    {
+      "id": "7fee742f-e081-4e5a-b936-233cf1d7024e",
+      "time": "2026-11-08T15:00:00Z",
+      "local_time": "2026-11-08T17:00:00+02:00",
+      "local_timezone": "Europe/Helsinki",
+      "note": "Kinokoplan syyssarja",
+      "program": null,
+      "venue": {
+        "id": "9b4247af-619b-4967-8cb2-a735c67498e9",
+        "name": "Kino Kilta"
+      },
+      "room": {
+        "name": "Kino Kilta"
+      },
+      "freeSeats": 68,
+      "production": {
+        "id": "3a8ce9ef-9547-4838-a6ad-7b94d0a3ddab",
+        "visibility": "public",
+        "name": "Kinokopla: Vasenkätinen tyttö",
+        "duration": 108,
+        "year": 2026,
+        "originalName": " 左撇子女孩",
+        "releaseDate": "2026-02-27",
+        "distributor": "Oy Cinema Mondo Ltd",
+        "rating": "K-12",
+        "imdb_id": "tt27722618",
+        "languages": ["mandariinikiina", "Taiwan"],
+        "subtitles": ["suomi", "ruotsi"],
+        "customFields": []
+      },
+      "price_range": {
+        "min": 8,
+        "max": 13,
+        "currency": "EUR"
+      },
+      "visibility": "coming_soon",
+      "event_type": "paid"
+    }
+  ],
+  "links": {
+    "next": null
+  },
+  "meta": {
+    "total": 5
+  }
+}

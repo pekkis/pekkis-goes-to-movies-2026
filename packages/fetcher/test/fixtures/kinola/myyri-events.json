@@ -1,0 +1,192 @@
+{
+  "data": [
+    {
+      "id": "72d15db4-d54e-4436-aa3d-8a608c827a35",
+      "time": "2026-10-10T11:00:00Z",
+      "local_time": "2026-10-10T14:00:00+03:00",
+      "local_timezone": "Europe/Helsinki",
+      "note": "Espanjalaisen elokiuvan viikko. Vapaa pääsy!",
+      "program": {
+        "id": "0fbb087d-4a13-4805-ae09-03d763905125",
+        "name": "Muut kuin kotimaiset kielet",
+        "description": "",
+        "customFields": []
+      },
+      "venue": {
+        "id": "87976289-edfb-4ac3-b236-f884299379fb",
+        "name": "Kino Myyri",
+        "address": {
+          "locality": "Vantaa",
+          "country": "FI"
+        }
+      },
+      "room": {
+        "name": "Kino Myyri"
+      },
+      "freeSeats": 101,
+      "checkout_url": "https://www.myyrikino.fi/checkout/72d15db4-d54e-4436-aa3d-8a608c827a35",
+      "production": {
+        "id": "9f685f7e-5144-4ea6-b599-067ba0414975",
+        "visibility": "public",
+        "name": "Espanjalaisen elokuvan viikko: Campeones – Mestarit",
+        "duration": 124,
+        "year": 2018,
+        "originalName": " Campeones",
+        "releaseDate": "2026-10-10",
+        "distributor": "Korttelikinot ry",
+        "rating": "K-12",
+        "imdb_id": null,
+        "languages": ["espanja"],
+        "subtitles": ["englanti"],
+        "customFields": []
+      },
+      "price_range": {
+        "min": 0,
+        "max": 0,
+        "currency": "EUR"
+      },
+      "visibility": "public",
+      "event_type": "paid"
+    },
+    {
+      "id": "bcb92760-a77c-446d-a244-9d2b2eb9fe65",
+      "time": "2026-10-11T11:00:00Z",
+      "local_time": "2026-10-11T14:00:00+03:00",
+      "local_timezone": "Europe/Helsinki",
+      "note": "Ensi-ilta",
+      "program": null,
+      "venue": {
+        "id": "87976289-edfb-4ac3-b236-f884299379fb",
+        "name": "Kino Myyri",
+        "address": {
+          "locality": "Vantaa",
+          "country": "FI"
+        }
+      },
+      "room": {
+        "name": "Kino Myyri"
+      },
+      "freeSeats": 185,
+      "checkout_url": "https://www.myyrikino.fi/checkout/bcb92760-a77c-446d-a244-9d2b2eb9fe65",
+      "production": {
+        "id": "9928e24c-e853-49d4-8731-8618cf074ef4",
+        "visibility": "public",
+        "name": "Unohdettu saari (dub)",
+        "duration": 109,
+        "year": 2026,
+        "originalName": "Forgotten Island",
+        "releaseDate": "2026-10-09",
+        "distributor": "Finnkino Oy",
+        "rating": "K-7",
+        "imdb_id": null,
+        "languages": ["suomi"],
+        "subtitles": [],
+        "customFields": []
+      },
+      "price_range": {
+        "min": 11,
+        "max": 11,
+        "currency": "EUR"
+      },
+      "visibility": "public",
+      "event_type": "paid"
+    },
+    {
+      "id": "4d829432-1af0-4298-a1a5-784ea75da346",
+      "time": "2026-10-15T17:30:00Z",
+      "local_time": "2026-10-15T20:30:00+03:00",
+      "local_timezone": "Europe/Helsinki",
+      "note": "Premiere.\r\nSerial tickets are not valid. Tickets can not be refunded.",
+      "program": {
+        "id": "0fbb087d-4a13-4805-ae09-03d763905125",
+        "name": "Muut kuin kotimaiset kielet",
+        "description": "",
+        "customFields": []
+      },
+      "venue": {
+        "id": "87976289-edfb-4ac3-b236-f884299379fb",
+        "name": "Kino Myyri",
+        "address": {
+          "locality": "Vantaa",
+          "country": "FI"
+        }
+      },
+      "room": {
+        "name": "Kino Myyri"
+      },
+      "freeSeats": 60,
+      "checkout_url": "https://www.myyrikino.fi/checkout/4d829432-1af0-4298-a1a5-784ea75da346",
+      "production": {
+        "id": "d963e1f0-5a7c-424d-aad2-66fbc1ec1f39",
+        "visibility": "public",
+        "name": "Jailer 2",
+        "duration": 170,
+        "year": 2026,
+        "originalName": "Jailer 2",
+        "releaseDate": "2026-10-15",
+        "distributor": "Manam",
+        "rating": "Not rated",
+        "imdb_id": "tt33318732",
+        "languages": ["tamili"],
+        "subtitles": ["englanti"],
+        "customFields": []
+      },
+      "price_range": {
+        "min": 18,
+        "max": 18,
+        "currency": "EUR"
+      },
+      "visibility": "public",
+      "event_type": "paid"
+    },
+    {
+      "id": "21c74597-12de-45ef-b8e3-14349dfc47bb",
+      "time": "2026-10-23T15:00:00Z",
+      "local_time": "2026-10-23T18:00:00+03:00",
+      "local_timezone": "Europe/Helsinki",
+      "note": "Ensi-ilta",
+      "program": null,
+      "venue": {
+        "id": "87976289-edfb-4ac3-b236-f884299379fb",
+        "name": "Kino Myyri",
+        "address": {
+          "locality": "Vantaa",
+          "country": "FI"
+        }
+      },
+      "room": {
+        "name": "Kino Myyri"
+      },
+      "freeSeats": 190,
+      "checkout_url": "https://www.myyrikino.fi/checkout/21c74597-12de-45ef-b8e3-14349dfc47bb",
+      "production": {
+        "id": "18c1af93-5744-45e9-9168-02cc1a99d7d4",
+        "visibility": "public",
+        "name": "Lapin sota",
+        "duration": 158,
+        "year": 2025,
+        "originalName": "Lapin sota",
+        "releaseDate": "2026-10-23",
+        "distributor": "Oy Nordisk Film Ab",
+        "rating": "K-16",
+        "imdb_id": null,
+        "languages": ["suomi", "saksa", "saami", "ruotsi ", "englanti", "ranska"],
+        "subtitles": ["suomi", "ruotsi "],
+        "customFields": []
+      },
+      "price_range": {
+        "min": 11,
+        "max": 12.5,
+        "currency": "EUR"
+      },
+      "visibility": "public",
+      "event_type": "paid"
+    }
+  ],
+  "links": {
+    "next": null
+  },
+  "meta": {
+    "total": 4
+  }
+}

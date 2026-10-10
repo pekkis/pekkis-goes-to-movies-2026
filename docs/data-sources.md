@@ -1,6 +1,6 @@
 # Data sources
 
-Finnkino and BioRex investigated on 2026-10-09, Nexxo and eTiketti on 2026-10-10; all are implemented. Markers: **[V]** = verified with our own request, **[A]** = assumed, or read from a third-party source.
+Finnkino and BioRex investigated on 2026-10-09, Nexxo, eTiketti and Kinola on 2026-10-10; all are implemented. Markers: **[V]** = verified with our own request, **[A]** = assumed, or read from a third-party source.
 
 ---
 
@@ -276,6 +276,33 @@ Profiled on 2026-10-10 against all 21 sites (listing + 2 film pages each). Adapt
 - 6 were geocoded from addresses on the cinemas' own pages (Nominatim). Kinotar 123 resolved only to its street.
 - 3 more (Kuvalipas in Iisalmi, Ihme Kompleksi in Kankaanpää, Haapamäen Elokuvat) were geocoded from addresses the maintainer supplied, since neither the sites nor OSM had them.
 - A test fails if any eTiketti venue lacks coordinates.
+
+---
+
+## Kinola (public JSON API)
+
+Found on 2026-10-10. Adapter: `packages/fetcher/src/providers/kinola/`, cinemas in `sites.ts`.
+
+- **What Kinola is [V]:** an Estonian cinema ticketing service (kinola.ee). Each cinema is a tenant `{tenant}.kinola.ee`, and its WordPress site runs Kinola's plugin, which copies the programme from Kinola.
+- **The API [V]:** Kinola's plugin is open source ([kinola-ee/kinola-wp](https://github.com/kinola-ee/kinola-wp), `src/Api/Kinola_Api.php`). It reads `https://{tenant}.kinola.ee/api/public/v1/` ("Public API for productions, events, etc") with plain GETs and no key.
+  - `events?limit=500` returns every upcoming event with its production embedded. It is paginated (`links.next`); the plugin also passes `time_from`.
+  - Leffavuoro scrapes these sites' HTML instead; it never found the API.
+- **Requests:** one per cinema per day (all events fit in one page of 500).
+- **Event fields** (260 events of six tenants, 2026-10-10):
+  - `local_time` (with offset), `venue.name`, `room.name`, `freeSeats` (no capacity), `price_range` {min, max, EUR}.
+  - `checkout_url`: the cinema's own booking page, copied as `ticketUrl`. Orion's goes to `orion.kinola.ee/web/screening/…`. Kilta gives none (it sells elsewhere), so its shows link the programme page.
+  - `visibility`: `public` or `coming_soon` (listed, not on sale yet, giving `not-bookable`).
+  - `program.name`: a series or a category (mapped per site); `note` (free text, read only when it starts with "Ensi-ilta"/"Premiere"/"Ennakko…"); `event_type` (`paid`/`free_public`, not film vs. live act).
+- **Production fields:**
+  - `name`, `originalName`, `year`, `duration`, `distributor`.
+  - `rating`: K-*, S, `L` (Estonian all-ages, giving S), "Not rated".
+  - `languages` and `subtitles` as names: Finnish, English, adjective forms ("italialainen"), typos ("ruotsi ", "Ei teksitystä"), and "kiillottaa" (a machine translation of "Polish").
+  - `imdb_id`: Kilta gives it for nearly every film, the others sometimes.
+- **Film vs. live act:** concerts and films are both productions, and nothing structural separates them. At Kino Laika (only there, checked against its programme), productions with no language, no distributor and no IMDb id are live acts. The rule is a per-site option, because Orion has real films missing all three.
+- **Cinemas [V]:**
+  - Kino Myyri (`myyri`, Vantaa), Cinema Orion (`orion`, Helsinki), Kino Kilta (`kilta`, Turku), Kino Laika (`laika`, Karkkila), Kino Konepaja (`konepaja`, Helsinki).
+  - Cinema Sheryl (`sheryl`): the API says "Marsio, Helsinki", but Marsio is Aalto's building at Otakaari 2, Espoo.
+  - All six are in OpenStreetMap with addresses. Konepaja had no screenings when Leffavuoro looked; it now has about 47.
 
 ---
 
