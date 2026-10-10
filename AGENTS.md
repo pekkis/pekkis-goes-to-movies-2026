@@ -20,7 +20,7 @@ The project is part of the user-centered design course at JAMK.
 
 - **BioRex and Finnkino adapters are done**, with tests: `pnpm pull` fetches both chains (12 + 17 cinemas) for 7 days into JSON and matches the films to TMDB.
 - **Nexxo is done** (2026-10-10): one platform adapter serving 8 independent cinema sites, 15 venues (Kinoset, Kino Aurora, Kino Hirvi, Bio Säde, Kino Marilyn, Kino Olympia, Järvelän Kino, Kino Metso's six towns). Sites are config: [src/providers/nexxo/sites.ts](packages/fetcher/src/providers/nexxo/sites.ts).
-- **Next: eTiketti** (server-rendered HTML, many small cinemas), on the same site-config abstraction.
+- **eTiketti is done** (2026-10-10): our first HTML-scraping adapter. 21 small-cinema sites, 31 venues (Kotkan Leffat, Savon Kinot ×6, Leffabuumi, Kino Juha, Bio Grand, Cinema Niagara, Star Oulu, …), about 750 upcoming screenings. Sites are config: [src/providers/etiketti/sites.ts](packages/fetcher/src/providers/etiketti/sites.ts).
 - **Film ratings** (2026-10-10): TMDB's own score plus Rotten Tomatoes, Metacritic and IMDb via OMDb, in `Film.ratings` and the `film_ratings` table; in the API, and in the CLI **only on request** (`--ratings`, or a `--min-…` filter): some people do not want to know critics' verdicts beforehand. Keep it opt-in.
 - **Every venue has coordinates** (2026-10-10), for the coming map UI. Chains supply their own; config venues get them by hand from OpenStreetMap (`pnpm venues:locate`). See "Venue coordinates" below.
 - **HTTP API** (2026-10-10): Hono in `packages/backend`, read-only, OpenAPI at `/openapi.json`, docs at `/docs`. Clients: a Flutter map app (teammate; Dart client from OpenAPI) and later React apps (typed `hc<AppType>` client). Deployed later with Docker Compose behind nginx on the maintainer's server. See [docs/api.md](docs/api.md).
@@ -30,7 +30,7 @@ The project is part of the user-centered design course at JAMK.
 - **Fetched data goes into PostgreSQL** (`pnpm ingest`), keeping history: screenings are never deleted. See [docs/database.md](docs/database.md).
 - Data collection is written in TypeScript (strict). The frontend stack is still open, so do not add a UI framework until the maintainer decides.
 - No design or user research yet. The focus is on technical groundwork.
-- Data sources in scope: Finnkino, BioRex, and multi-site platforms (Nexxo done, eTiketti next).
+- Data sources in scope: Finnkino, BioRex, and multi-site platforms (Nexxo and eTiketti done; Johku, Kinola and others in Leffavuoro's list are candidates).
 
 ## Commands
 
@@ -69,6 +69,7 @@ Typical run: `pnpm db:up && pnpm migrate && pnpm pull && pnpm ingest`.
 
 - **`pnpm fetch` is a built-in pnpm command.** That is why the fetch script is called `pull`.
 - **Finnkino opens a visible Chrome window** for a few seconds when its 12-hour token needs renewing (about twice a day; cached in `data/cache/finnkino-token.json`). It needs Google Chrome installed and cannot run in CI. If one provider fails, the others still run and `pull` exits non-zero.
+- **`pnpm pull` runs 6 providers at a time** (each on its own host, each paced per host) and prints each provider's report as one block when it finishes. All providers take about two minutes.
 - **`.env`** (gitignored) is loaded by Node's own `--env-file-if-exists=.env` flag. **No dotenv.**
   - Variables are validated with Zod in [src/lib/env.ts](packages/fetcher/src/lib/env.ts) (`loadEnv()`), the only place that reads `process.env`.
   - `TMDB_APIKEY` (required): TMDB v4 read access token, used as a Bearer token. Never print it.
@@ -104,6 +105,8 @@ packages/fetcher/              @pgtm/fetcher: fetching, normalizing, TMDB matchi
   src/providers/adapter.ts     Adapter type (id + platform + pull), restrictToVenues
   src/providers/sites.ts       shared base for multi-site platforms: SiteBase, SiteVenue, defineSites
   src/providers/<platform>/sites.ts  the platform's site list (config, not code)
+  src/providers/labels.ts      shared label rules: "Prefix: Title" labels, tags, version markers ("(DUB)", "SUB", ", suomeksi")
+  src/providers/etiketti/      HTML adapter: fetch.ts (listing + film pages), parse.ts (cheerio, pure)
   src/providers/registry.ts    list of adapters (one per site for platforms); the CLI runs them
   src/tmdb/                    TMDB client (cached), raw schemas, toFilm (pure)
   src/geo/                     geo.ts (FinnishGeo, GeoSource, distance), osm.ts (Overpass), nominatim.ts, match.ts (pure)
@@ -170,21 +173,21 @@ New packages go under `packages/<name>` with the `@pgtm/` scope, `"private": tru
 - `kysely` + `pg` (backend): typed SQL; `kysely-codegen` generates the database types from the migrated schema.
 - `hono` + `@hono/node-server` + `@hono/zod-openapi` (backend API): Zod schemas give validation, OpenAPI and typed clients; `@scalar/hono-api-reference` renders `/docs`.
 - `tsdown` (backend, dev): bundles the API for the Docker image only. Development never builds: Node runs the `.ts` sources.
-- Not yet: HTML parser (coming with eTiketti), caching or search services.
+- `cheerio`: HTML parsing for eTiketti (CSS selectors over a spec-compliant parser). No headless browser: the pages are server-rendered.
 
 ## Data sources: summary
 
 Detailed findings, sample payloads and references: [docs/data-sources.md](docs/data-sources.md).
 
-| Source          | Method                                                                               | Auth                                                                 | Status                                                         |
-| --------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------- |
-| BioRex          | Unofficial JSON (`webshop.biorex.fi/webservices/...`)                                | None                                                                 | ✅ Verified working                                            |
-| Finnkino        | Vista OCAPI JSON (`digital-api.finnkino.fi/WSVistaWebClient/ocapi/v1/...`)           | Public 12 h JWT from the front page; headed Chrome passes Cloudflare | ✅ Working, needs a desktop with Chrome                        |
-| Finnkino (old)  | XML API `finnkino.fi/xml/...`                                                        | –                                                                    | ❌ Retired (2025–2026)                                         |
-| Nexxo (8 sites) | Nexxo Scope WordPress plugin JSON (`/wp-content/plugins/nexxo-scope/public_api.php`) | None                                                                 | ✅ Working; small hosts answer 403 if paced faster than ~2.5 s |
-| eTiketti        | Server-rendered HTML on each cinema's site                                           | None                                                                 | ⏳ Next                                                        |
+| Source              | Method                                                                               | Auth                                                                 | Status                                                         |
+| ------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------- |
+| BioRex              | Unofficial JSON (`webshop.biorex.fi/webservices/...`)                                | None                                                                 | ✅ Verified working                                            |
+| Finnkino            | Vista OCAPI JSON (`digital-api.finnkino.fi/WSVistaWebClient/ocapi/v1/...`)           | Public 12 h JWT from the front page; headed Chrome passes Cloudflare | ✅ Working, needs a desktop with Chrome                        |
+| Finnkino (old)      | XML API `finnkino.fi/xml/...`                                                        | –                                                                    | ❌ Retired (2025–2026)                                         |
+| Nexxo (8 sites)     | Nexxo Scope WordPress plugin JSON (`/wp-content/plugins/nexxo-scope/public_api.php`) | None                                                                 | ✅ Working; small hosts answer 403 if paced faster than ~2.5 s |
+| eTiketti (21 sites) | Server-rendered HTML: `/elokuvat/ohjelmistossa` + one page per film                  | None                                                                 | ✅ Working; ~330 pages a day, 1.5 s apart per site             |
 
-None of these needs HTML crawling; eTiketti will (it has no public API).
+eTiketti is the only HTML source: it has no public API (its `etiketti.app` API is behind Cloudflare).
 
 **Prior work:** [Leffavuoro / Shady-Dev/kino](https://github.com/Shady-Dev/kino) (AGPL-3.0) already covers about 230 cinemas. A code-only copy lives in [vendor/leffavuoro/](vendor/leffavuoro/UPSTREAM.md) (from our fork [pekkis/kino](https://github.com/pekkis/kino); the maintainer keeps the fork in sync, then `pnpm vendor:leffavuoro` refreshes the copy). **Read it there first** when adding a platform: `scripts/providers/<platform>.py` and `docs/research/`. Since we are AGPL too, its adapters **may be ported**. Mark the origin at the top of a ported file, e.g. `// Ported from Shady-Dev/kino scripts/providers/etiketti.py (AGPL-3.0)`. Its published **data** (`data/*.json`, posters) is not used as a source, because the data is not covered by its license. See [docs/data-sources.md](docs/data-sources.md#prior-work-leffavuoro-shady-devkino).
 
@@ -222,6 +225,7 @@ None of these needs HTML crawling; eTiketti will (it has no public API).
 
 - **User-Agent:** use an identifiable User-Agent with contact details. No residential proxies, fingerprint spoofing or captcha solving. Never call ticket purchase or payment endpoints.
 - **Politeness:** when probing external APIs, make few requests and only GETs. Do not try hard to get around Cloudflare.
+- **HTML scraping (eTiketti):** GET only; never request `/salikartta` (the booking flow): its links are copied into `ticketUrl`, never constructed or followed. Never take synopses or posters from the pages (TMDB only), and keep them out of test fixtures (they are the cinemas' text). A site fails rather than publishing a partial programme (page budget 120). Unknown place lines give `unclaimed-place` warnings: fix them in `sites.ts`, do not guess.
 - **Finnkino:** Cloudflare challenges every non-browser client (even from home) and headless Chrome. Only the token step needs a browser; never try to defeat the check by other means (no fingerprint spoofing, no captcha solving). Do not assume it works in the cloud or CI.
 - **Contacting cinemas:** we have not contacted any source and do not need to while this is a course project. **If the service ever goes truly public, we notify every cinema and chain first** (what we read, how often, that every click goes to their own ticket page) and remove any that object. Do not expect API keys from them; the realistic risk is technical breakage (e.g. Cloudflare tightening), not a missing permission.
 - **Verified vs. assumed:** always mark separately in the docs what was tested first-hand and what was inferred or read elsewhere.

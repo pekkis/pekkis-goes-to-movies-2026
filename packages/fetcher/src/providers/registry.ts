@@ -8,6 +8,9 @@ import { parseBiorex } from "./biorex/parse.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
+import { fetchEtiketti } from "./etiketti/fetch.ts";
+import { parseEtiketti } from "./etiketti/parse.ts";
+import { ETIKETTI_SITES, type EtikettiSite } from "./etiketti/sites.ts";
 import { fetchNexxo } from "./nexxo/fetch.ts";
 import { parseNexxo } from "./nexxo/parse.ts";
 import { NEXXO_SITES, type NexxoSite } from "./nexxo/sites.ts";
@@ -48,6 +51,18 @@ const nexxoAdapter = (site: NexxoSite): Adapter => ({
   },
 });
 
+const etikettiAdapter = (site: EtikettiSite): Adapter => ({
+  id: site.provider,
+  platform: "etiketti",
+  pull: async ({ env }, { from, days, venues }) => {
+    // Small sites: one page at a time, 1.5 s apart.
+    const http = createHttpClient({ intervalMs: 1500, ...contact(env) });
+    onlyVenues(site, venues); // validates --venue slugs before any request
+    const raw = await fetchEtiketti(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseEtiketti(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   {
     id: "biorex",
@@ -76,6 +91,7 @@ export const ADAPTERS: Adapter[] = [
     },
   },
   ...NEXXO_SITES.map(nexxoAdapter),
+  ...ETIKETTI_SITES.map(etikettiAdapter),
 ];
 
 /** Resolves `--provider` values: an adapter id (`kinoaurora`) or a platform (`nexxo`). */

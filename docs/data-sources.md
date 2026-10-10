@@ -1,6 +1,6 @@
 # Data sources
 
-Finnkino and BioRex investigated on 2026-10-09, Nexxo on 2026-10-10; all three adapters are implemented. Markers: **[V]** = verified with our own request, **[A]** = assumed, or read from a third-party source.
+Finnkino and BioRex investigated on 2026-10-09, Nexxo and eTiketti on 2026-10-10; all are implemented. Markers: **[V]** = verified with our own request, **[A]** = assumed, or read from a third-party source.
 
 ---
 
@@ -223,6 +223,59 @@ Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm
 - **First run (2026-10-10):** 47 of 67 films got scores (44 RT, 37 Metacritic, 42 IMDb). The rest are mostly new or small Finnish releases.
 - **TMDB's own score** (`vote_average`) comes with the details we already fetch. It is used only from 20 votes up, since fewer is noise.
 - **Licence:** OMDb data is CC BY-NC 4.0 (non-commercial, attribution). The RT score ultimately belongs to Rotten Tomatoes: before going truly public, it goes on the same "ask first" list as the cinemas.
+
+---
+
+## eTiketti (server-rendered HTML)
+
+Profiled on 2026-10-10 against all 21 sites (listing + 2 film pages each). Adapter: `packages/fetcher/src/providers/etiketti/`, sites in `sites.ts`. Origin: Leffavuoro's `scripts/providers/etiketti.py`, re-verified.
+
+### Pages [V]
+
+- **Listing:** `GET {base}/elokuvat/ohjelmistossa` links every film page as `/elokuvat/{id}/{slug}`. Niagara's listing has no `.movie-list` container, so links are found by URL pattern.
+- **Film page:** carries **all** of the film's screenings, so there is no paging and no date parameter. About 15 film pages per site, ~330 pages a day for all 21.
+- **Screening rows:** `<div class="item {location} date-D.M.YYYY">`. The second class is a location word (`kotka`, `joensuu`, `nurmijÄrvi`: oddly cased).
+  - **Kotka template (20 sites):** "LA 10.10. klo 20.00", then a details paragraph "PLACE<br>Lippu 18,00€<br>Vapaat paikat 10/22". Some rows put a tag box and an empty `<p></p>` before it, so the parser finds the paragraph by content, not position.
+  - **Niagara:** time in `.time`, price in `.show-price`, "Paikkoja vapaana: 124/127", and no place line.
+  - **Ticket link:** `/salikartta?id=N` on the cinema's own host. Copied, never requested. The id is the show id.
+- **Place lines** vary by site:
+
+  | Shape                    | Example                                                           |
+  | ------------------------ | ----------------------------------------------------------------- |
+  | `CINEMA \| ROOM`         | `STAR \| SALI 4`, `TRIO 123 \| VIP-SALI`, `BIO 1&2 REX \| DIGI 1` |
+  | `CITY \| CINEMA \| ROOM` | `JOENSUU \| TAPIO \| TAPIO 3`, `MIKKELI \| KINOLINNA \| VIP`      |
+  | `CITY \| CINEMA`         | `KERAVA \| CINE KEUDA-TALO`, `SAVONLINNA \| KUVALINNA`            |
+  | Room repeats the cinema  | `IISALMI \| KUVALIPAS \| KUVALIPAS`                               |
+  | Cinema only              | `KINO JUHA`, `VIP-SALI`                                           |
+
+  The adapter matches one part exactly to a venue's `place` and takes the part after it as the room. Savon Kinot's lines gained the city part since Leffavuoro's notes. Kotka's Kinopalatsi now prints "KINOPALATSI", and Kitee's is "KINO-HOVI".
+
+- **Film facts** are `<span class="label">` followed by text, with a colon on most sites and without on Niagara:
+  - `Kesto` ("2 h 9 min");
+  - `Kieli`: "englanti", "suomi", "Alkuperäinen" (original, which tells us nothing, so audio is left unknown);
+  - `Tekstitys`: "Suomi ja ruotsi", "Ei tekstitystä";
+  - `Ensi-ilta`: the Finnish premiere, except on Niagara where it is the original one, so it is not used;
+  - `Valmistumisvuosi` (production year, Niagara only).
+
+  Age comes from `ikarajat/fi-12.svg`. Genres are in `span.movie-genre`, or in a "Genre" label on Niagara.
+
+- **Tags** (`<span class="tag">`), on most sites:
+  - "Viimeinen näytös" → `last-screening`
+  - "Edullinen päivänäytös" → `discount`
+  - "Anniskelunäytös" → licensed; an `anniskelu.svg` icon also means licensed
+  - "Erikoisnäytös" → ignored
+  - anything else becomes a series (e.g. "Saatana saapuu valkokankaalle")
+- **Title variants:**
+  - **Version markers**, at the end, in brackets or after a comma: "(DUB)", "(Dub.)", "DUB", "DUP." (typo), "SUB", "(ORIG)", "(suomeksi)", ", englanniksi", "(på svenska)", "2D", "– ohjaajan versio". They become audio, dubbed or dimension data and are stripped, so all versions match one TMDB film.
+  - **Labels**, as a prefix or after a dash: "Ennakkonäytös:", "Vauvakino", "Ooppera:".
+- **Access:** all 21 sites answered our User-Agent with 200, including the ones that block GitHub runners. A whole-run pull took 99 s with 6 sites at a time.
+
+### Coordinates
+
+- 22 venues match OpenStreetMap cinemas.
+- 6 were geocoded from addresses on the cinemas' own pages (Nominatim). Kinotar 123 resolved only to its street.
+- 3 more (Kuvalipas in Iisalmi, Ihme Kompleksi in Kankaanpää, Haapamäen Elokuvat) were geocoded from addresses the maintainer supplied, since neither the sites nor OSM had them.
+- A test fails if any eTiketti venue lacks coordinates.
 
 ---
 
