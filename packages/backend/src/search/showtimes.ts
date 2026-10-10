@@ -1,5 +1,6 @@
 import { sql, type Kysely, type Selectable } from "kysely";
 import type { DB } from "../db/types.ts";
+import type { ScreeningFilter } from "./filters.ts";
 
 /**
  * Fuzzy film search plus the screenings of the films found.
@@ -65,15 +66,30 @@ export type ShowtimeRow = {
   ageLimit: string | null;
   availability: string;
   ticketUrl: string | null;
+  /** Great-circle distance from the --near point; null without one. */
+  distanceKm: number | null;
 };
 
-/** Screenings of a film (or of an unmatched listing) on one business date, in start order. */
-export const screeningsFor = (
+/** Haversine distance in km from a point to the venue (`v`), in SQL. */
+const distanceKm = (lat: number, lon: number) => sql<number>`(
+  2 * 6371 * asin(sqrt(
+    power(sin(radians(v.lat - ${lat}) / 2), 2)
+    + cos(radians(${lat})) * cos(radians(v.lat)) * power(sin(radians(v.lon - ${lon}) / 2), 2)
+  ))
+)`;
+
+/**
+ * Screenings of a film (or of an unmatched listing) on one business date, in start order,
+ * optionally only from some providers and within a radius (venues without coordinates are
+ * then left out).
+ */
+export const screeningsFor = async (
   db: Kysely<DB>,
   hit: Hit,
   businessDate: string,
-): Promise<ShowtimeRow[]> =>
-  db
+  { providerIds, near }: ScreeningFilter = {},
+): Promise<ShowtimeRow[]> => {
+  let q = db
     .selectFrom("screenings as s")
     .innerJoin("venues as v", "v.id", "s.venueId")
     .leftJoin("auditoriums as a", "a.id", "s.auditoriumId")
@@ -90,13 +106,15 @@ export const screeningsFor = (
       "s.ageLimit",
       "s.availability",
       "s.ticketUrl",
+      (near ? distanceKm(near.lat, near.lon) : sql<number | null>`null::float8`).as("distanceKm"),
     ])
     .where(hit.kind === "film" ? "s.filmId" : "s.listingId", "=", hit.id)
     .where("s.businessDate", "=", businessDate)
-    .where("s.removedAt", "is", null)
-    .orderBy("s.startsAt")
-    .orderBy("v.city")
-    .execute();
+    .where("s.removedAt", "is", null);
+  if (providerIds) q = q.where("s.providerId", "in", providerIds.length ? providerIds : [""]);
+  if (near) q = q.where(distanceKm(near.lat, near.lon), "<=", near.radiusKm);
+  return q.orderBy("s.startsAt").orderBy("v.city").execute();
+};
 
 export type ListingDetails = Selectable<DB["filmListings"]>;
 

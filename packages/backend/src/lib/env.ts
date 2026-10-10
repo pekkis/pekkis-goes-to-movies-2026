@@ -8,6 +8,8 @@ const Env = z.object({
   DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/, error: "must be a postgres:// URL" }),
   /** Integration tests only; a separate database so tests never touch development data. */
   TEST_DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }).optional(),
+  /** URL or email for the User-Agent of outgoing requests (geocoding). Optional. */
+  CONTACT: z.string().min(1).optional(),
   /** API server. HOST is 0.0.0.0 inside the container, localhost otherwise. */
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   HOST: z.string().default("127.0.0.1"),

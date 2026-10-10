@@ -15,6 +15,7 @@ const row = (overrides: Partial<ShowtimeRow> = {}): ShowtimeRow => ({
   ageLimit: null,
   availability: "available",
   ticketUrl: "https://tickets.example/1",
+  distanceKm: null,
   ...overrides,
 });
 
@@ -40,6 +41,14 @@ it("formats screenings in Helsinki time with extras", () => {
   expect(text).not.toContain("tickets.example");
   expect(formatScreenings([row()], true)).toContain("https://tickets.example/1");
   expect(formatScreenings([], false)).toBe("  No screenings on this date.");
+});
+
+it("adds a distance column when screenings were searched near a point", () => {
+  const text = formatScreenings([row({ distanceKm: 3.46 }), row({ distanceKm: 12.04 })], false);
+  expect(text.split("\n")[0]).toMatch(/Time\s+Km\s+City/);
+  expect(text).toContain("3.5");
+  expect(text).toContain("12");
+  expect(formatScreenings([row()], false)).not.toContain("Km");
 });
 
 it("formats a film heading with the cinemas' title and the original", () => {
