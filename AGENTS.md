@@ -46,6 +46,8 @@ pnpm fmt                     # oxfmt rewrites formatting
 
 Typical run: `pnpm db:up && pnpm migrate && pnpm pull && pnpm ingest`.
 
+**Routine:** `pnpm pull && pnpm ingest` is run **manually, about once a day**, on the maintainer's laptop (no scheduler; Finnkino needs a visible Chrome). Gaps between runs are normal. Programmes change most on **Tuesday and Wednesday** (Finnkino runs a large batch update then); Finnish programme weeks run Friday–Thursday, so next week's shows usually appear midweek.
+
 - **`pnpm fetch` is a built-in pnpm command.** That is why the fetch script is called `pull`.
 - **Finnkino opens a visible Chrome window** for a few seconds when its 12-hour token needs renewing (about twice a day; cached in `data/cache/finnkino-token.json`). It needs Google Chrome installed and cannot run in CI. If one provider fails, the others still run and `pull` exits non-zero.
 - **`.env`** (gitignored) is loaded by Node's own `--env-file-if-exists=.env` flag. **No dotenv.**
