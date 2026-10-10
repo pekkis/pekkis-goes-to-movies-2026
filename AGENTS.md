@@ -16,15 +16,17 @@ The project is part of the user-centered design course at JAMK.
 
 **The project language is English**: code, identifiers, comments, commit messages, all documentation (README, AGENTS.md, `docs/`) and discussion with the maintainer. No Finnish identifiers, ever. Finnish appears only as data: cinema and film names, Finnish country and language names in lookup tables, and test fixtures.
 
-## Status (updated 2026-10-09)
+## Status (updated 2026-10-10)
 
 - **BioRex and Finnkino adapters are done**, with tests: `pnpm pull` fetches both chains (12 + 17 cinemas) for 7 days into JSON and matches the films to TMDB.
+- **Nexxo is done** (2026-10-10): one platform adapter serving 8 independent cinema sites, 15 venues (Kinoset, Kino Aurora, Kino Hirvi, Bio Säde, Kino Marilyn, Kino Olympia, Järvelän Kino, Kino Metso's six towns). Sites are config: [src/providers/nexxo/sites.ts](packages/fetcher/src/providers/nexxo/sites.ts).
+- **Next: eTiketti** (server-rendered HTML, many small cinemas), on the same site-config abstraction.
 - **License: AGPL-3.0-or-later** ([LICENSE](LICENSE)). Everything is published as open source.
-- **Direction:** a better version of Leffavuoro (Shady-Dev/kino) in TypeScript, with a precise, typed data model and JSON output. Model: [docs/data-model.md](docs/data-model.md). The source of truth is [src/model/schema.ts](packages/fetcher/src/model/schema.ts).
+- **Direction:** a better version of Leffavuoro (Shady-Dev/kino) in TypeScript, with a precise, typed data model and JSON output. Model: [docs/data-model.md](docs/data-model.md). The source of truth is [packages/model/src/schema.ts](packages/model/src/schema.ts).
 - **Fetched data goes into PostgreSQL** (`pnpm ingest`), keeping history: screenings are never deleted. See [docs/database.md](docs/database.md).
 - Data collection is written in TypeScript (strict). The frontend stack is still open, so do not add a UI framework until the maintainer decides.
 - No design or user research yet. The focus is on technical groundwork.
-- Data sources in scope for now: **only Finnkino and BioRex.** Other chains and independent cinemas come later.
+- Data sources in scope: Finnkino, BioRex, and multi-site platforms (Nexxo done, eTiketti next).
 
 ## Commands
 
@@ -35,7 +37,8 @@ pnpm migrate                 # apply migrations (--down one step; --test the tes
 pnpm db:types                # regenerate packages/backend/src/db/types.ts after a migration
 pnpm pull                    # fetch all providers → data/raw/… + data/normalized/{provider}.json, then match to TMDB
 pnpm pull --provider finnkino --days 3 --from 2026-10-10
-pnpm pull --provider biorex --venue 13   # --venue takes source ids and needs exactly one --provider
+pnpm pull --provider biorex --venue 13   # --venue takes source ids or slugs and needs exactly one provider
+pnpm pull --provider nexxo   # a platform name selects all of its sites (kinoaurora, kinoset, …)
 pnpm match                   # re-run TMDB matching only (e.g. after editing aliases)
 pnpm ingest                  # upsert data/normalized/*.json into Postgres
 pnpm showtimes odysey        # fuzzy film search → film info + today's screenings everywhere (--date, --links, --min-score)
@@ -77,7 +80,10 @@ packages/fetcher/              @pgtm/fetcher: fetching, normalizing, TMDB matchi
   src/providers/<id>/fetch.ts  I/O only → raw snapshot
   src/providers/<id>/parse.ts  pure function: raw snapshot → ProviderBatch
   src/providers/finnkino/token.ts  Finnkino token via headed Chrome (Playwright), cached
-  src/providers/registry.ts    list of adapters; the CLI runs them
+  src/providers/adapter.ts     Adapter type (id + platform + pull), restrictToVenues
+  src/providers/sites.ts       shared base for multi-site platforms: SiteBase, SiteVenue, defineSites
+  src/providers/<platform>/sites.ts  the platform's site list (config, not code)
+  src/providers/registry.ts    list of adapters (one per site for platforms); the CLI runs them
   src/tmdb/                    TMDB client (cached), raw schemas, toFilm (pure)
   src/matching/                TMDB matching: score.ts (pure scoring), match.ts, catalog.ts (films.json)
   src/cli/fetch.ts, match.ts   CLIs (`pnpm pull`, `pnpm match`)
@@ -102,6 +108,15 @@ New packages go under `packages/<name>` with the `@pgtm/` scope, `"private": tru
 4. Write the tests.
 5. Add it to `src/providers/registry.ts`.
 
+**Multi-site platforms (Nexxo, eTiketti, …): a site is data, not code.**
+
+- One adapter per _site_ (one provider id, one `data/normalized/{site}.json`), generated from the platform's `sites.ts`. `--provider <platform>` runs them all.
+- Everything that differs between sites is a field of the site's config, validated by Zod (`defineSites` also rejects duplicate providers and venue slugs). Fixing a breakage or adding a cinema is an edit to `sites.ts`, never an `if (site === "x")` in the parser.
+- **Quirks** are named, documented options with platform defaults that a site may override (Nexxo: `showTypes`, `titlePrefixes`, `apiBase`, per-venue `roomIds`/`page`). Add a new quirk as a new optional field with a doc comment, a default, and a test.
+- Every site has `verifiedAt` (when someone last checked it against the live site, as a visitor would) and optional `notes` (why a quirk is set). Update `verifiedAt` when you re-check.
+- Parsers report what the config does not explain (e.g. Nexxo's `unclaimed-room`: a room no venue owns) as warnings instead of guessing. A warning in `pnpm pull` output is a to-do for `sites.ts`.
+- Venue slugs become ids (`{site}:venue:{slug}`): never rename one, or its history is orphaned.
+
 ## Tools and libraries
 
 - **pnpm 12** (`packageManager` and `devEngines` in package.json). Settings live in [pnpm-workspace.yaml](pnpm-workspace.yaml), not in `.npmrc`:
@@ -125,19 +140,21 @@ New packages go under `packages/<name>` with the `@pgtm/` scope, `"private": tru
   - `p-queue`: request pacing
 - `playwright`: only for the Finnkino token, driving the installed Chrome (`channel: "chrome"`, no bundled browser download).
 - `kysely` + `pg` (backend): typed SQL; `kysely-codegen` generates the database types from the migrated schema.
-- Not yet: HTML parser, caching or search services. Data is stored **as JSON files on disk for now** and **in PostgreSQL later**.
+- Not yet: HTML parser (coming with eTiketti), caching or search services.
 
 ## Data sources: summary
 
 Detailed findings, sample payloads and references: [docs/data-sources.md](docs/data-sources.md).
 
-| Source         | Method                                                                     | Auth                                                                 | Status                                  |
-| -------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------- |
-| BioRex         | Unofficial JSON (`webshop.biorex.fi/webservices/...`)                      | None                                                                 | ✅ Verified working                     |
-| Finnkino       | Vista OCAPI JSON (`digital-api.finnkino.fi/WSVistaWebClient/ocapi/v1/...`) | Public 12 h JWT from the front page; headed Chrome passes Cloudflare | ✅ Working, needs a desktop with Chrome |
-| Finnkino (old) | XML API `finnkino.fi/xml/...`                                              | –                                                                    | ❌ Retired (2025–2026)                  |
+| Source          | Method                                                                               | Auth                                                                 | Status                                                         |
+| --------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------- |
+| BioRex          | Unofficial JSON (`webshop.biorex.fi/webservices/...`)                                | None                                                                 | ✅ Verified working                                            |
+| Finnkino        | Vista OCAPI JSON (`digital-api.finnkino.fi/WSVistaWebClient/ocapi/v1/...`)           | Public 12 h JWT from the front page; headed Chrome passes Cloudflare | ✅ Working, needs a desktop with Chrome                        |
+| Finnkino (old)  | XML API `finnkino.fi/xml/...`                                                        | –                                                                    | ❌ Retired (2025–2026)                                         |
+| Nexxo (8 sites) | Nexxo Scope WordPress plugin JSON (`/wp-content/plugins/nexxo-scope/public_api.php`) | None                                                                 | ✅ Working; small hosts answer 403 if paced faster than ~2.5 s |
+| eTiketti        | Server-rendered HTML on each cinema's site                                           | None                                                                 | ⏳ Next                                                        |
 
-Neither needs classic HTML crawling.
+None of these needs HTML crawling; eTiketti will (it has no public API).
 
 **Prior work:** [Leffavuoro / Shady-Dev/kino](https://github.com/Shady-Dev/kino) (AGPL-3.0) already covers about 230 cinemas. A code-only copy lives in [vendor/leffavuoro/](vendor/leffavuoro/UPSTREAM.md) (from our fork [pekkis/kino](https://github.com/pekkis/kino); the maintainer keeps the fork in sync, then `pnpm vendor:leffavuoro` refreshes the copy). **Read it there first** when adding a platform: `scripts/providers/<platform>.py` and `docs/research/`. Since we are AGPL too, its adapters **may be ported**. Mark the origin at the top of a ported file, e.g. `// Ported from Shady-Dev/kino scripts/providers/etiketti.py (AGPL-3.0)`. Its published **data** (`data/*.json`, posters) is not used as a source, because the data is not covered by its license. See [docs/data-sources.md](docs/data-sources.md#prior-work-leffavuoro-shady-devkino).
 
@@ -151,7 +168,7 @@ Neither needs classic HTML crawling.
 
 ### Architecture
 
-- **One adapter per source** (chain, or platform: BioRex runs on MyCloudCinema) → shared model `Venue`, `Auditorium`, `FilmListing`, `Screening`.
+- **One adapter per source** (chain, or platform site: BioRex runs on MyCloudCinema, Kino Aurora on Nexxo) → shared model `Venue`, `Auditorium`, `FilmListing`, `Screening`.
 - Films from different sources are linked through TMDB (`Film`), since source ids are not shared.
 - **Fetch and parse are separate:** parsers are pure functions, tested against recorded responses without network access. The model is defined as Zod schemas. See [docs/data-model.md](docs/data-model.md).
 - Source labels the parser does not recognize are not lost: they go into `unmappedLabels`.

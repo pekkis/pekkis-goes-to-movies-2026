@@ -45,6 +45,7 @@ export const Platform = z.enum([
   "johku",
   "custom",
 ]);
+export type Platform = z.infer<typeof Platform>;
 
 export const Provider = z.object({
   id: ProviderId,

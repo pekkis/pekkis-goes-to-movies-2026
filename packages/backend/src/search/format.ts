@@ -30,7 +30,9 @@ const extras = (row: ShowtimeRow) =>
     ),
     ...(row.licensed ? ["bar"] : []),
     ...(row.ageLimit ? [row.ageLimit] : []),
-    ...(row.availability !== "available" ? [row.availability] : []),
+    ...(row.availability !== "available" && row.availability !== "unknown"
+      ? [row.availability]
+      : []),
   ].join(" ");
 
 /** Left-aligned columns, two spaces apart; long cells are not truncated. */

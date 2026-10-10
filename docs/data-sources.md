@@ -1,6 +1,6 @@
-# Data sources: Finnkino and BioRex
+# Data sources
 
-Investigated on 2026-10-09; both adapters are implemented. Markers: **[V]** = verified with our own request, **[A]** = assumed, or read from a third-party source.
+Finnkino and BioRex investigated on 2026-10-09, Nexxo on 2026-10-10; all three adapters are implemented. Markers: **[V]** = verified with our own request, **[A]** = assumed, or read from a third-party source.
 
 ---
 
@@ -170,6 +170,42 @@ Base: `https://digital-api.finnkino.fi/WSVistaWebClient/ocapi/v1` (Vista tenant 
 Finnkino works, with one manual-ish step: a visible Chrome window on the maintainer's machine about twice a day to renew a public 12-hour token. Everything else is plain HTTP against the JSON API.
 
 The real risk is breakage, not permission: Finnkino could tighten the Cloudflare check or stop embedding the token in the page. The Cloudflare check covers the whole site (shop, login, loyalty programme) and looks like generic bot protection rather than an attempt to hide showtimes, which Finnkino publishes to sell tickets. We have not contacted Finnkino; if the service goes truly public, we notify them (and every other source) first and remove them if they object.
+
+---
+
+## Nexxo (Nexxo Scope WordPress plugin)
+
+Profiled on 2026-10-10 over 214 shows on 10 locations. Adapter: `packages/fetcher/src/providers/nexxo/`, site list in `sites.ts`. Origin: Leffavuoro's `scripts/providers/nexxo.py`, re-verified.
+
+### API [V]
+
+`GET {host}/wp-content/plugins/nexxo-scope/public_api.php?action=exportdailyshows&locationid=N&days=D&lang=fi&upcoming=0`
+
+- No authentication, plain JSON. `{"shows": {"2026-10-10": [rows…]}}`, or `{"shows": []}` when the programme is empty.
+- `days` counts from **today**; there is no start date. A later `--from` asks for more days and the parser trims to the window.
+- Each row is a movie merged with a show; **every value is a string**. Fields we read: `showId`, `movieId`, `movieTitle`, `startTime` (Helsinki local, `2026-10-10 15:00:00`), `startDate`, `roomId`, `roomTitle`, `ageLimit`, `duration`, `genre`, `priceIncludingTax` (`0.00` = not set), `code_language`, `code_subtitles`, `showTypeTitle`, `release_year`, `is3D`, `isUpcoming`.
+- **Pacing:** the hosts are small WordPress sites and answer **403** when hit too often. The adapter waits 2.5 s between requests per host.
+- Seen values:
+  - `code_language`: `FI`, `EN`, `SE` (= Swedish), `IW` (= Hebrew), `OV` (original version: language unknown), and ISO codes.
+  - `code_subtitles`: `FI-SE`, `FI`, `EN`, `XX` (none), `OV` (unknown).
+  - `ageLimit`: `S`, `s`, `7`, `12`, `16`, `18`, empty, `Tapahtuma K18` (an event with an age limit; becomes the screening's `ageLimit` and marks the listing an event).
+  - `release_year`: `2026`, empty, or a range such as `1937-1949` for a shorts programme (ignored).
+  - `showTypeTitle`: `Tavallinen näytös` / `Viikko-ohjelmisto` (regular), `Konsertti`, `Taikashow`, `Muut tapahtumat` (events), otherwise festival and series names (kept as `series`).
+  - Titles: some sites put labels before a colon (`Ennakkoensi-ilta: …`, `Rauhanviikko: …`). Only prefixes listed in the config (`titlePrefixes`) are stripped; `Ryhmä Hau: Dinoelokuva` is a title.
+
+### Sites and their quirks [V]
+
+`locationId`s cannot be guessed; ask the API. One host can serve several cinemas, and a cinema's data can live on another host:
+
+- **Bio Säde** (Mänttä): biosade.fi's own API is empty; its page reads kinohirvi.fi's API, location 4 (`apiBase`).
+- **Kino Metso** (KSEK's touring cinema): location 2 on kinoaurora.fi, where each **room is a town** (`roomIds` per venue; Riihivuori, room 21, is folded into Muurame as KSEK's site does). Laukaa (24) and Viitasaari (10) were not in Leffavuoro's list; the `unclaimed-room` warning found them.
+- No seat counts (`availability: "unknown"`) and no per-show booking links in the API. **Ticket links point to the venue's programme page** (`programmePath?location=N`, or the venue's own `page`), which differs per site. Each was opened by hand on 2026-10-10 and shows the plugin's showlist.
+
+### Adding a Nexxo cinema
+
+1. Find the host (the page source mentions `nexxo-scope`) and its `locationId`s (`locationid=1,2,…` until empty).
+2. Find the programme page a visitor uses and check that `?location=N` (or the venue's own page) shows its shows.
+3. Add an entry to `sites.ts` with `verifiedAt`, run `pnpm pull --provider <id>` and read the warnings.
 
 ---
 

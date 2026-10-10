@@ -6,14 +6,17 @@ import { DATA_DIR } from "../lib/paths.ts";
 import { helsinkiToday } from "../lib/time.ts";
 import { runMatching } from "../matching/run.ts";
 import { ProviderBatch } from "@pgtm/model";
-import { ADAPTERS } from "../providers/registry.ts";
+import { ADAPTERS, selectAdapters } from "../providers/registry.ts";
 
 const PROVIDERS = ADAPTERS.map((a) => a.id);
+const PLATFORMS = [...new Set(ADAPTERS.map((a) => a.platform))];
 
 const USAGE = `Usage: pnpm pull [--provider ID ...] [--from YYYY-MM-DD] [--days N] [--venue ID ...] [--out DIR]
 
 Fetches showtimes, writes raw snapshots and normalized batches as JSON, then matches films to TMDB.
-Providers: ${PROVIDERS.join(", ")} (default: all). --venue takes source ids and needs exactly one --provider.
+Providers: ${PROVIDERS.join(", ")} (default: all).
+A platform name selects all of its providers: ${PLATFORMS.join(", ")}.
+--venue takes source ids or venue slugs and needs exactly one provider.
 Finnkino opens a Chrome window for a few seconds when its 12-hour token needs renewing.`;
 
 const { values } = parseArgs({
@@ -35,7 +38,7 @@ if (values.help) {
 // Fail before any request if the environment is incomplete.
 const env = loadEnv();
 
-const providers = values.provider ?? PROVIDERS;
+const selected = selectAdapters(values.provider);
 const from = values.from ?? helsinkiToday();
 const days = Number(values.days);
 const invalid =
@@ -43,8 +46,8 @@ const invalid =
   !Number.isInteger(days) ||
   days < 1 ||
   days > 90 ||
-  providers.some((p) => !PROVIDERS.includes(p)) ||
-  (values.venue !== undefined && providers.length !== 1);
+  selected === undefined ||
+  (values.venue !== undefined && selected.length !== 1);
 if (invalid) {
   console.error(USAGE);
   process.exit(1);
@@ -57,7 +60,7 @@ const writeJson = async (path: string, data: unknown) => {
 };
 
 let failures = 0;
-for (const adapter of ADAPTERS.filter((a) => providers.includes(a.id))) {
+for (const adapter of selected ?? []) {
   try {
     const { raw, batch } = await adapter.pull(
       { env, out: values.out },

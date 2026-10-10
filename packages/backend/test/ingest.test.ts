@@ -102,6 +102,14 @@ describe("ingestBatch", () => {
     expect(removed).toEqual([]);
   });
 
+  it("leaves venues the batch does not list alone (a partial --venue pull)", async () => {
+    await ingestBatch(db, batch([screening("1")]));
+    const partial = batch([], { fetchedAt: later(batch([]).fetchedAt, 1) });
+    partial.venues = [];
+    partial.auditoriums = [];
+    expect((await ingestBatch(db, partial)).removed).toBe(0);
+  });
+
   it("keeps listings without a film", async () => {
     const b = batch([screening("1", { filmId: undefined })]);
     b.listings = [{ ...b.listings[0]!, filmId: undefined, match: undefined }];
