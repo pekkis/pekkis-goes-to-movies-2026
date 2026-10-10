@@ -7,7 +7,11 @@ import { helsinkiToday } from "../lib/time.ts";
 import { runMatching } from "../matching/run.ts";
 import { ProviderBatch } from "@pgtm/model";
 import { finishVenues, loadVenueOverrides } from "../providers/overrides.ts";
-import { ADAPTERS, selectAdapters } from "../providers/registry.ts";
+import PQueue from "p-queue";
+import { ADAPTERS, selectAdapters, type Adapter } from "../providers/registry.ts";
+
+/** Providers pulled at the same time (each on its own host, paced per host). */
+const CONCURRENCY = 6;
 
 const PROVIDERS = ADAPTERS.map((a) => a.id);
 const PLATFORMS = [...new Set(ADAPTERS.map((a) => a.platform))];
@@ -57,13 +61,16 @@ if (invalid) {
 const writeJson = async (path: string, data: unknown) => {
   await mkdir(join(path, ".."), { recursive: true });
   await writeFile(path, `${JSON.stringify(data, null, 2)}\n`);
-  console.log(`wrote ${path}`);
 };
 
 const overrides = await loadVenueOverrides();
 
-let failures = 0;
-for (const adapter of selected ?? []) {
+/**
+ * Pulls one adapter and returns its report. Adapters run concurrently (different hosts;
+ * each adapter still paces its own host), so output is collected and printed as a block.
+ */
+const pullOne = async (adapter: Adapter): Promise<{ ok: boolean; lines: string[] }> => {
+  const lines: string[] = [];
   try {
     const pulled = await adapter.pull(
       { env, out: values.out },
@@ -78,19 +85,33 @@ for (const adapter of selected ?? []) {
     await writeJson(join(values.out, "normalized", `${adapter.id}.json`), batch);
 
     const unmapped = new Set(batch.screenings.flatMap((s) => s.unmappedLabels));
-    console.log(
+    lines.push(
       `${adapter.id}: ${batch.venues.length} venues, ${batch.listings.length} films, ` +
         `${batch.screenings.length} screenings, ${batch.warnings.length} warnings` +
         (unmapped.size ? `, unmapped labels: ${[...unmapped].join(", ")}` : ""),
     );
-    for (const warning of batch.warnings) console.warn(`  [${warning.code}] ${warning.message}`);
+    for (const warning of batch.warnings) lines.push(`  [${warning.code}] ${warning.message}`);
+    return { ok: true, lines };
   } catch (error) {
-    failures++;
-    console.error(
-      `${adapter.id}: FAILED: ${error instanceof Error ? error.message : String(error)}`,
-    );
+    lines.push(`${adapter.id}: FAILED: ${error instanceof Error ? error.message : String(error)}`);
+    return { ok: false, lines };
   }
-}
+};
+
+const queue = new PQueue({ concurrency: CONCURRENCY });
+const results = await Promise.all(
+  (selected ?? []).map((adapter) =>
+    queue.add(async () => {
+      const result = await pullOne(adapter);
+      (result.ok ? console.log : console.error)(result.lines.join("\n"));
+      return result;
+    }),
+  ),
+);
+const failures = results.filter((r) => !r.ok).length;
+console.log(
+  `pulled ${results.length - failures} of ${results.length} providers into ${values.out}`,
+);
 
 await runMatching(values.out, env);
 if (failures) process.exit(1);

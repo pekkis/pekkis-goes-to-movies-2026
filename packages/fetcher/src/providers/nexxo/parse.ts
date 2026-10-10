@@ -15,6 +15,7 @@ import {
 } from "@pgtm/model";
 import { normalizeLang } from "../../lib/lang.ts";
 import { dateWindow, FINNISH_TZ } from "../../lib/time.ts";
+import { splitTitlePrefix as splitPrefix } from "../labels.ts";
 import { providerOf } from "../sites.ts";
 import { RawShow, ShowsResponse, type NexxoRawSnapshot } from "./raw.ts";
 import {
@@ -100,12 +101,8 @@ const showTypeRule = (site: NexxoSite, title: string): ShowTypeRule | undefined 
 export const splitTitlePrefix = (
   site: NexxoSite,
   raw: string,
-): { title: string; rule?: TitlePrefixRule } => {
-  const title = raw.trim();
-  const m = title.match(/^([^:]+):\s*(.+)$/);
-  const rule = m && (site.titlePrefixes?.[m[1]!.trim()] ?? DEFAULT_TITLE_PREFIXES[m[1]!.trim()]);
-  return rule ? { title: m[2]!, rule } : { title };
-};
+): { title: string; rule?: TitlePrefixRule } =>
+  splitPrefix(raw, { ...DEFAULT_TITLE_PREFIXES, ...site.titlePrefixes });
 
 const ticketUrl = (site: NexxoSite, venue: NexxoVenue): string =>
   venue.page

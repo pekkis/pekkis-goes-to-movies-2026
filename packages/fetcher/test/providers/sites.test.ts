@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { restrictToVenues } from "../../src/providers/adapter.ts";
 import { parseNexxo } from "../../src/providers/nexxo/parse.ts";
 import type { NexxoRawSnapshot } from "../../src/providers/nexxo/raw.ts";
+import { ETIKETTI_SITES } from "../../src/providers/etiketti/sites.ts";
 import { NEXXO_SITES, NexxoSite } from "../../src/providers/nexxo/sites.ts";
 import { ADAPTERS, selectAdapters } from "../../src/providers/registry.ts";
 import { defineSites } from "../../src/providers/sites.ts";
@@ -50,6 +51,20 @@ describe("site configs", () => {
     expect(() =>
       defineSites(NexxoSite, [withGeo({ geo: { lat: 62.2, lon: 25.7 }, geoSource: "manual" })]),
     ).not.toThrow();
+  });
+
+  it("every eTiketti venue has coordinates", () => {
+    const missing = ETIKETTI_SITES.flatMap((s) =>
+      s.venues.filter((v) => !v.geo).map((v) => `${s.provider}/${v.slug}`),
+    );
+    expect(missing).toEqual([]);
+  });
+
+  it("selects every eTiketti site by platform", () => {
+    expect(selectAdapters(["etiketti"])?.map((a) => a.id)).toEqual(
+      ETIKETTI_SITES.map((s) => s.provider),
+    );
+    expect(ETIKETTI_SITES).toHaveLength(21);
   });
 
   it("every configured Nexxo venue has coordinates", () => {

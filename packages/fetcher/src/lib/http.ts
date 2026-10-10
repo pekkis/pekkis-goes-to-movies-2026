@@ -7,6 +7,8 @@ export const userAgent = (contact?: string): string =>
 
 export type HttpClient = {
   getJson: (url: string, searchParams?: Record<string, string | number>) => Promise<unknown>;
+  /** For server-rendered pages (eTiketti). */
+  getText: (url: string) => Promise<string>;
 };
 
 export type HttpClientOptions = {
@@ -53,5 +55,9 @@ export const createHttpClient = ({
   return {
     getJson: (url, searchParams) =>
       queueFor(new URL(url).host).add(() => client.get(url, { searchParams }).json<unknown>()),
+    getText: (url) =>
+      queueFor(new URL(url).host).add(() =>
+        client.get(url, { headers: { accept: "text/html,application/xhtml+xml" } }).text(),
+      ),
   };
 };

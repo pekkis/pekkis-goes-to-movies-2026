@@ -50,6 +50,7 @@ describe("fetchOmdb", () => {
           response: { status: 401 },
         });
       },
+      getText: async () => "",
     };
     const error = await fetchOmdb(failing, noCache, "SECRETKEY", "tt0087544").catch(
       (e: Error) => e,
