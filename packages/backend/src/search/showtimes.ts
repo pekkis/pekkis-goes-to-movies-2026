@@ -1,6 +1,6 @@
 import { sql, type Kysely, type Selectable } from "kysely";
 import type { DB } from "../db/types.ts";
-import type { ScreeningFilter } from "./filters.ts";
+import { nextDay, type ScreeningFilter } from "./filters.ts";
 
 /**
  * Fuzzy film search plus the screenings of the films found.
@@ -89,7 +89,7 @@ export const screeningsFor = async (
   db: Kysely<DB>,
   hit: Hit | undefined,
   businessDate: string,
-  { providerIds, near, after }: ScreeningFilter = {},
+  { providerIds, near, after, before }: ScreeningFilter = {},
 ): Promise<ShowtimeRow[]> => {
   let q = db
     .selectFrom("screenings as s")
@@ -123,6 +123,14 @@ export const screeningsFor = async (
       "s.startsAt",
       ">=",
       sql<Date>`(${businessDate}::date + ${after}::time) at time zone 'Europe/Helsinki'`,
+    );
+  }
+  if (before) {
+    const day = after && before <= after ? nextDay(businessDate) : businessDate;
+    q = q.where(
+      "s.startsAt",
+      "<",
+      sql<Date>`(${day}::date + ${before}::time) at time zone 'Europe/Helsinki'`,
     );
   }
   if (providerIds) q = q.where("s.providerId", "in", providerIds.length ? providerIds : [""]);

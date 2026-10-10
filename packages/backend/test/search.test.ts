@@ -2,7 +2,7 @@ import { sql } from "kysely";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createDb } from "../src/db/database.ts";
 import { ingestBatch, ingestFilms } from "../src/ingest/ingest.ts";
-import { parseLatLon, parseTime, resolveProviders } from "../src/search/filters.ts";
+import { nextDay, parseLatLon, parseTime, resolveProviders } from "../src/search/filters.ts";
 import { filmDetails, screeningsFor, searchFilms } from "../src/search/showtimes.ts";
 import { batch, catalog, film, screening } from "./factory.ts";
 
@@ -153,6 +153,22 @@ describe("screeningsFor", () => {
     expect(await screeningsFor(db, odyssey, "2026-10-10", { after: "18:01" })).toEqual([]);
   });
 
+  it("filters by an upper start time, also past midnight", async () => {
+    // The fixture show starts at 18:00.
+    expect(await screeningsFor(db, odyssey, "2026-10-10", { before: "18:01" })).toHaveLength(1);
+    expect(await screeningsFor(db, odyssey, "2026-10-10", { before: "18:00" })).toEqual([]);
+    expect(
+      await screeningsFor(db, odyssey, "2026-10-10", { after: "17:00", before: "19:00" }),
+    ).toHaveLength(1);
+    // before <= after: the window runs to the next morning.
+    expect(
+      await screeningsFor(db, odyssey, "2026-10-10", { after: "17:00", before: "02:00" }),
+    ).toHaveLength(1);
+    expect(
+      await screeningsFor(db, odyssey, "2026-10-10", { after: "19:00", before: "02:00" }),
+    ).toEqual([]);
+  });
+
   it("has no distance without a point", async () => {
     expect((await screeningsFor(db, odyssey, "2026-10-10"))[0]!.distanceKm).toBeNull();
   });
@@ -183,6 +199,12 @@ describe("filters", () => {
     expect(parseLatLon("@60.7381466,24.7742851,17z")).toEqual({ lat: 60.7381466, lon: 24.7742851 });
     expect(parseLatLon("Jyväskylä")).toBeUndefined();
     expect(parseLatLon("95,25")).toBeUndefined();
+  });
+
+  it("steps to the next day across months and years", () => {
+    expect(nextDay("2026-10-10")).toBe("2026-10-11");
+    expect(nextDay("2026-10-31")).toBe("2026-11-01");
+    expect(nextDay("2026-12-31")).toBe("2027-01-01");
   });
 
   it("parses a time of day", () => {

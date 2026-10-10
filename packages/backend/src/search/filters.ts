@@ -8,6 +8,18 @@ export type ScreeningFilter = {
   near?: { lat: number; lon: number; radiusKm: number };
   /** "HH:MM" Helsinki time on the date; later shows (also after midnight) are kept. */
   after?: string;
+  /**
+   * "HH:MM": only shows starting before this. Earlier than (or equal to) `after` means the
+   * next morning, so `after 22:00, before 02:00` is one late-night window.
+   */
+  before?: string;
+};
+
+/** "2026-10-10" -> "2026-10-11". */
+export const nextDay = (date: string): string => {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
 };
 
 /** "18:00" or "9:30" -> "18:00" / "09:30"; undefined when not a time of day. */

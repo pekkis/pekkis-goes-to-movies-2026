@@ -20,7 +20,8 @@ import {
   searchFilms,
 } from "../search/showtimes.ts";
 
-const USAGE = `Usage: pnpm showtimes [--movie NAME | NAME] [--date YYYY-MM-DD] [--after HH:MM] [--links]
+const USAGE = `Usage: pnpm showtimes [--movie NAME | NAME] [--date YYYY-MM-DD] [--after HH:MM] [--before HH:MM]
+                      [--links]
                       [--provider ID ...] [--near LAT,LON | --address TEXT | --here] [--radius KM]
                       [--min-score 0..1]
 
@@ -31,6 +32,8 @@ Default date: today in Helsinki.
 
   --movie     the film to look for; a plain argument works too (pnpm showtimes odyssey)
   --after     only shows starting at or after this time (shows after midnight are kept)
+  --before    only shows starting before this time; earlier than --after means the next
+              morning (--after 22:00 --before 02:00)
 
   --provider  only these providers: ids (finnkino, biorex, kinoaurora, …) or a platform
               (nexxo = every Nexxo cinema). Repeat for several.
@@ -44,6 +47,7 @@ Default date: today in Helsinki.
 
 Examples:
   pnpm showtimes --here --after 18:00                  what's on near me tonight
+  pnpm showtimes --here --before 13:00                 morning and early afternoon shows
   pnpm showtimes --movie odyssey --near 60.17,24.94 --radius 10 --provider finnkino
   pnpm showtimes odyssey --address "Seminaarinkatu 13, Jyväskylä" --radius 5
   pnpm showtimes odyssey --here`;
@@ -54,6 +58,7 @@ const { values, positionals } = parseArgs({
     movie: { type: "string", short: "m" },
     date: { type: "string" },
     after: { type: "string" },
+    before: { type: "string" },
     "min-score": { type: "string", default: String(DEFAULT_MIN_SCORE) },
     links: { type: "boolean", default: false },
     provider: { type: "string", multiple: true },
@@ -67,6 +72,7 @@ const { values, positionals } = parseArgs({
 
 const term = (values.movie ?? positionals.join(" ")).trim();
 const after = values.after === undefined ? undefined : parseTime(values.after);
+const before = values.before === undefined ? undefined : parseTime(values.before);
 const minScore = Number(values["min-score"]);
 const point = values.near === undefined ? undefined : parseLatLon(values.near);
 const radiusKm = Number(values.radius);
@@ -74,6 +80,7 @@ if (
   values.help ||
   (values.movie !== undefined && (!term || positionals.length > 0)) ||
   (values.after !== undefined && !after) ||
+  (values.before !== undefined && !before) ||
   Number.isNaN(minScore) ||
   (values.date && !/^\d{4}-\d{2}-\d{2}$/.test(values.date)) ||
   (values.near !== undefined && !point) ||
@@ -106,6 +113,10 @@ const run = async (db: Kysely<DB>, contact?: string): Promise<number> => {
   if (after) {
     filter.after = after;
     where.push(`from ${after}`);
+  }
+  if (before) {
+    filter.before = before;
+    where.push(`before ${before}${after && before <= after ? " (next day)" : ""}`);
   }
   if (values.provider) {
     const { ids, unknown, known } = await resolveProviders(db, values.provider);

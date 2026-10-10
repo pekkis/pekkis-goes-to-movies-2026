@@ -49,8 +49,9 @@ pnpm ingest                  # upsert data/normalized/*.json into Postgres
 pnpm api:dev                 # API on http://127.0.0.1:3000 with reload (docs: /docs)
 pnpm api:up                  # build the image, run migrations and the API in Docker (profile "app")
 pnpm api:down                # stop the API containers (Postgres keeps running)
-pnpm showtimes odysey        # fuzzy film search → film info + today's screenings everywhere (--date, --links, --min-score)
-pnpm showtimes odysey --near 60.17,24.94 --radius 10 --provider finnkino   # only nearby venues (with distance), only some providers (ids or a platform, e.g. nexxo)
+pnpm showtimes odysey        # fuzzy film search (or --movie odysey) → film info + today's screenings everywhere (--date, --after, --before, --links, --min-score)
+pnpm showtimes --here --after 18:00   # no film: everything on, in start order with a Film column ("what's on near me tonight")
+pnpm showtimes --movie odysey --near 60.17,24.94 --radius 10 --provider finnkino   # only nearby venues (with distance), only some providers (ids or a platform, e.g. nexxo)
 pnpm showtimes odysey --address "Hämeenkatu 1, Tampere"   # like --near, geocoded with OSM Nominatim (cached in data/cache/geocode/)
 pnpm showtimes odysey --here # like --near, from this machine: CoreLocationCLI if installed, else IP lookup (ipinfo.io, approximate)
 pnpm test                    # all packages; backend integration tests need the database
