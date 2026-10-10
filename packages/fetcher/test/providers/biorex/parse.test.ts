@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ProviderBatch } from "../../../src/model/schema.ts";
+import { ProviderBatch } from "@pgtm/model";
 import {
   parseBiorex,
   parseRating,
@@ -31,6 +31,10 @@ describe("parseBiorex", () => {
   it("produces a batch that satisfies the output schema without warnings", () => {
     expect(() => ProviderBatch.parse(batch)).not.toThrow();
     expect(batch.warnings).toEqual([]);
+  });
+
+  it("records the business dates the fetch covered", () => {
+    expect(batch.window).toEqual({ from: "2026-10-09", to: "2026-10-15" });
   });
 
   it("skips offline, company and closed cinemas", () => {

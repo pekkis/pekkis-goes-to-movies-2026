@@ -1,4 +1,4 @@
-import type { Lang } from "../model/schema.ts";
+import type { Lang } from "@pgtm/model";
 
 /**
  * Upstream language codes that are not ISO 639-1. `SE` is the ISO 3166 country code

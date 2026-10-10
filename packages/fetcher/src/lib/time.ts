@@ -1,5 +1,5 @@
 import { TZDate } from "@date-fns/tz";
-import { formatISO } from "date-fns";
+import { addDays, formatISO, parseISO } from "date-fns";
 
 export const FINNISH_TZ = "Europe/Helsinki";
 
@@ -15,3 +15,9 @@ export const toHelsinkiIso = (instant: string): string => {
 /** Today's date in Helsinki as `YYYY-MM-DD`. */
 export const helsinkiToday = (now: Date = new Date()): string =>
   formatISO(new TZDate(now, FINNISH_TZ), { representation: "date" });
+
+/** The inclusive business-date window `[from, from + days - 1]`. */
+export const dateWindow = (from: string, days: number): { from: string; to: string } => ({
+  from,
+  to: formatISO(addDays(parseISO(from), days - 1), { representation: "date" }),
+});

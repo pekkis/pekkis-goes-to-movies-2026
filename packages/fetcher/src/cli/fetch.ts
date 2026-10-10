@@ -5,7 +5,7 @@ import { loadEnv } from "../lib/env.ts";
 import { DATA_DIR } from "../lib/paths.ts";
 import { helsinkiToday } from "../lib/time.ts";
 import { runMatching } from "../matching/run.ts";
-import { ProviderBatch } from "../model/schema.ts";
+import { ProviderBatch } from "@pgtm/model";
 import { ADAPTERS } from "../providers/registry.ts";
 
 const PROVIDERS = ADAPTERS.map((a) => a.id);

@@ -267,6 +267,11 @@ export type Warning = z.infer<typeof Warning>;
 export const ProviderBatch = z.object({
   provider: Provider,
   fetchedAt: z.iso.datetime(),
+  /**
+   * Business dates the fetch covered, inclusive. A screening missing from a batch is only
+   * "removed" if its date falls inside this window; otherwise it was simply not fetched.
+   */
+  window: z.object({ from: IsoDate, to: IsoDate }),
   venues: z.array(Venue),
   auditoriums: z.array(Auditorium),
   listings: z.array(FilmListing),

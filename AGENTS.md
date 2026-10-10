@@ -21,6 +21,7 @@ The project is part of the user-centered design course at JAMK.
 - **BioRex and Finnkino adapters are done**, with tests: `pnpm pull` fetches both chains (12 + 17 cinemas) for 7 days into JSON and matches the films to TMDB.
 - **License: AGPL-3.0-or-later** ([LICENSE](LICENSE)). Everything is published as open source.
 - **Direction:** a better version of Leffavuoro (Shady-Dev/kino) in TypeScript, with a precise, typed data model and JSON output. Model: [docs/data-model.md](docs/data-model.md). The source of truth is [src/model/schema.ts](packages/fetcher/src/model/schema.ts).
+- **Fetched data goes into PostgreSQL** (`pnpm ingest`), keeping history: screenings are never deleted. See [docs/database.md](docs/database.md).
 - Data collection is written in TypeScript (strict). The frontend stack is still open, so do not add a UI framework until the maintainer decides.
 - No design or user research yet. The focus is on technical groundwork.
 - Data sources in scope for now: **only Finnkino and BioRex.** Other chains and independent cinemas come later.
@@ -28,14 +29,22 @@ The project is part of the user-centered design course at JAMK.
 ## Commands
 
 ```sh
+pnpm db:up                   # start Postgres in Docker (localhost:5432); needed by pnpm check too
+pnpm db:psql                 # psql shell inside the Postgres container
+pnpm migrate                 # apply migrations (--down one step; --test the test database)
+pnpm db:types                # regenerate packages/backend/src/db/types.ts after a migration
 pnpm pull                    # fetch all providers → data/raw/… + data/normalized/{provider}.json, then match to TMDB
 pnpm pull --provider finnkino --days 3 --from 2026-10-10
 pnpm pull --provider biorex --venue 13   # --venue takes source ids and needs exactly one --provider
 pnpm match                   # re-run TMDB matching only (e.g. after editing aliases)
-pnpm test                    # vitest, no network
+pnpm ingest                  # upsert data/normalized/*.json into Postgres
+pnpm showtimes odysey        # fuzzy film search → film info + today's screenings everywhere (--date, --links, --min-score)
+pnpm test                    # all packages; backend integration tests need the database
 pnpm check                   # typecheck + lint + fmt:check + test (run before saying you are done)
 pnpm fmt                     # oxfmt rewrites formatting
 ```
+
+Typical run: `pnpm db:up && pnpm migrate && pnpm pull && pnpm ingest`.
 
 - **`pnpm fetch` is a built-in pnpm command.** That is why the fetch script is called `pull`.
 - **Finnkino opens a visible Chrome window** for a few seconds when its 12-hour token needs renewing (about twice a day; cached in `data/cache/finnkino-token.json`). It needs Google Chrome installed and cannot run in CI. If one provider fails, the others still run and `pull` exits non-zero.
@@ -43,6 +52,7 @@ pnpm fmt                     # oxfmt rewrites formatting
   - Variables are validated with Zod in [src/lib/env.ts](packages/fetcher/src/lib/env.ts) (`loadEnv()`), the only place that reads `process.env`.
   - `TMDB_APIKEY` (required): TMDB v4 read access token, used as a Bearer token. Never print it.
   - `CONTACT` (optional): URL or email added to the User-Agent. Never hard-code anyone's contact details.
+  - `DATABASE_URL`, `TEST_DATABASE_URL`: the Compose Postgres (local, non-secret defaults in `.env.example`). Validated in `packages/backend/src/lib/env.ts`.
   - [.env.example](.env.example) lists the variables with empty values. Never put real values in it.
 
 ## Layout
@@ -51,10 +61,12 @@ A pnpm workspace. Shared tooling (TypeScript, oxlint, oxfmt, vitest) and setting
 
 ```
 package.json, pnpm-workspace.yaml, tsconfig.base.json   workspace root (packages extend tsconfig.base.json)
-.env, data/                    shared by all packages, gitignored (DATA_DIR in packages/fetcher/src/lib/paths.ts)
-docs/                          project documentation
-packages/fetcher/              @pgtm/fetcher: fetching, normalizing, TMDB matching
-  src/model/schema.ts          domain model (Zod) — all types come from here
+compose.yaml, docker/          local services (PostgreSQL 18)
+.env, data/                    shared by all packages, gitignored
+docs/                          project documentation (database: docs/database.md)
+packages/model/                @pgtm/model: the domain model (Zod schemas + types). Source-only, no build:
+                               exports src/index.ts; Node 24, vitest and Vite consume TS directly
+packages/fetcher/              @pgtm/fetcher: fetching, normalizing, TMDB matching → JSON
   src/lib/                     env, paths, http (ky + p-queue, per-host pacing), time, lang, cache
   src/providers/<id>/raw.ts    schemas of the source's raw responses (looseObject: only the fields we read)
   src/providers/<id>/fetch.ts  I/O only → raw snapshot
@@ -66,6 +78,13 @@ packages/fetcher/              @pgtm/fetcher: fetching, normalizing, TMDB matchi
   src/cli/fetch.ts, match.ts   CLIs (`pnpm pull`, `pnpm match`)
   config/tmdb-aliases.json     hand-maintained aliases, listing id → TMDB id (committed)
   test/                        tests mirror src; test/fixtures/<id>/ trimmed from real responses
+packages/backend/              @pgtm/backend: PostgreSQL (Kysely), migrations, ingest; later the API
+  migrations/                  Kysely migrations, plain .ts, append-only
+  src/db/                      createDb (CamelCasePlugin), migrator, types.ts (GENERATED, do not edit)
+  src/ingest/                  rows.ts (pure model → row mapping), ingest.ts (upserts, history)
+  src/search/                  showtimes.ts (pg_trgm fuzzy film search, screenings), format.ts (pure text output)
+  src/cli/                     migrate, ingest, db-types, showtimes
+  test/                        unit tests + integration tests against TEST_DATABASE_URL
 ```
 
 New packages go under `packages/<name>` with the `@pgtm/` scope, `"private": true`, and a `tsconfig.json` that extends `../../tsconfig.base.json`.
@@ -100,7 +119,8 @@ New packages go under `packages/<name>` with the `@pgtm/` scope, `"private": tru
   - `date-fns` + `@date-fns/tz`: time zones (Europe/Helsinki)
   - `p-queue`: request pacing
 - `playwright`: only for the Finnkino token, driving the installed Chrome (`channel: "chrome"`, no bundled browser download).
-- Not yet: HTML parser, database library. Data is stored **as JSON files on disk for now** and **in PostgreSQL later**.
+- `kysely` + `pg` (backend): typed SQL; `kysely-codegen` generates the database types from the migrated schema.
+- Not yet: HTML parser, caching or search services. Data is stored **as JSON files on disk for now** and **in PostgreSQL later**.
 
 ## Data sources: summary
 
@@ -133,6 +153,8 @@ Neither needs classic HTML crawling.
 - Fetch rarely (e.g. a few times a day) and cache. Do not hammer sources.
 
 ## Rules for agents
+
+- **Database:** migrations are append-only; after adding one, run `pnpm migrate && pnpm db:types` and commit the regenerated `types.ts` (never edit it by hand). Tables plural, columns snake_case; TypeScript stays camelCase via `CamelCasePlugin`. The fetcher stays database-agnostic.
 
 - **User-Agent:** use an identifiable User-Agent with contact details. No residential proxies, fingerprint spoofing or captcha solving. Never call ticket purchase or payment endpoints.
 - **Politeness:** when probing external APIs, make few requests and only GETs. Do not try hard to get around Cloudflare.

@@ -1,6 +1,6 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { FilmCatalog, ProviderBatch } from "../model/schema.ts";
+import { FilmCatalog, ProviderBatch } from "@pgtm/model";
 import type { TmdbClient } from "../tmdb/client.ts";
 import type { Aliases } from "./aliases.ts";
 import { matchListings } from "./match.ts";

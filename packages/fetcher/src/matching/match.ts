@@ -1,4 +1,4 @@
-import type { Film, FilmListing, Unmatched } from "../model/schema.ts";
+import type { Film, FilmListing, Unmatched } from "@pgtm/model";
 import type { TmdbClient } from "../tmdb/client.ts";
 import { toFilm } from "../tmdb/film.ts";
 import type { MovieDetails, SearchResult } from "../tmdb/raw.ts";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ProviderBatch } from "../../../src/model/schema.ts";
+import { ProviderBatch } from "@pgtm/model";
 import {
   parseFinnkino,
   parseLanguageAttribute,
@@ -26,6 +26,10 @@ describe("parseFinnkino", () => {
     expect(() => ProviderBatch.parse(batch)).not.toThrow();
     expect(batch.warnings).toEqual([]);
     expect(batch.screenings.flatMap((s) => s.unmappedLabels)).toEqual([]);
+  });
+
+  it("records the business dates the fetch covered", () => {
+    expect(batch.window).toEqual({ from: "2026-10-09", to: "2026-10-09" });
   });
 
   it("maps a venue from the site's address", () => {

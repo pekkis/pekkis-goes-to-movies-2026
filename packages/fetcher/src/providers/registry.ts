@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import type { Env } from "../lib/env.ts";
 import { createHttpClient } from "../lib/http.ts";
-import type { ProviderBatch } from "../model/schema.ts";
+import type { ProviderBatch } from "@pgtm/model";
 import { fetchBiorex } from "./biorex/fetch.ts";
 import { parseBiorex } from "./biorex/parse.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";

@@ -1,5 +1,5 @@
 import { normalizeLang } from "../../lib/lang.ts";
-import { toHelsinkiIso } from "../../lib/time.ts";
+import { dateWindow, toHelsinkiIso } from "../../lib/time.ts";
 import {
   makeId,
   type Auditorium,
@@ -15,7 +15,7 @@ import {
   type Subtitles,
   type Venue,
   type Warning,
-} from "../../model/schema.ts";
+} from "@pgtm/model";
 import { Envelope, RawCinema, RawShowtime, type BiorexRawSnapshot } from "./raw.ts";
 
 export const PROVIDER: Provider = {
@@ -318,6 +318,7 @@ export const parseBiorex = (raw: BiorexRawSnapshot): ProviderBatch => {
   return {
     provider: PROVIDER,
     fetchedAt,
+    window: dateWindow(raw.from, raw.days),
     venues: [...venues.values()],
     auditoriums: [...auditoriums.values()],
     listings: [...listings.values()],

@@ -1,0 +1,20 @@
+{
+  "name": "@pgtm/model",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared domain model (Zod schemas and inferred types)",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

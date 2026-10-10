@@ -2,20 +2,24 @@
 
 All Finnish cinema showtimes on one site. Find a film by time and place ("what's on in Tampere tonight?") or start from the film ("where and when can I see X?").
 
-For now the repository contains the data collection: BioRex showtimes are fetched, normalized into a typed model and matched to films on TMDB. The user interface comes later.
+For now the repository contains the data collection: BioRex and Finnkino showtimes are fetched, normalized into a typed model, matched to films on TMDB and stored in PostgreSQL with history. The user interface comes later.
 
 ## Usage
 
-You need Node 24, pnpm 12 and a [TMDB](https://www.themoviedb.org/settings/api) API Read Access Token.
+You need Node 24, pnpm 12, Docker, Google Chrome (for Finnkino) and a [TMDB](https://www.themoviedb.org/settings/api) API Read Access Token.
 
 ```sh
 pnpm install
 cp .env.example .env   # add TMDB_APIKEY
-pnpm pull              # fetch BioRex, normalize and match to TMDB → data/
-pnpm check             # types, lint, formatting and tests
+pnpm db:up             # PostgreSQL in Docker
+pnpm migrate           # create the schema
+pnpm pull              # fetch BioRex and Finnkino, normalize, match to TMDB → data/
+pnpm ingest            # load data/ into PostgreSQL
+pnpm showtimes odyssey # any film, fuzzily: info + today's screenings in all cinemas
+pnpm check             # types, lint, formatting and tests (needs the database)
 ```
 
-More: [AGENTS.md](AGENTS.md) (layout and conventions), [docs/data-model.md](docs/data-model.md) and [docs/data-sources.md](docs/data-sources.md).
+More: [AGENTS.md](AGENTS.md) (layout and conventions), [docs/data-model.md](docs/data-model.md), [docs/data-sources.md](docs/data-sources.md) and [docs/database.md](docs/database.md).
 
 ## Data and fair use
 

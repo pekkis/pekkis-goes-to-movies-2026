@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { matchListings } from "../../src/matching/match.ts";
-import type { FilmListing } from "../../src/model/schema.ts";
+import type { FilmListing } from "@pgtm/model";
 import type { TmdbClient } from "../../src/tmdb/client.ts";
 import type { MovieDetails, SearchResult } from "../../src/tmdb/raw.ts";
 import { details } from "../tmdb/factory.ts";

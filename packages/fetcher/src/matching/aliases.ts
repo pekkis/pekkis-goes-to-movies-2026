@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { z } from "zod";
-import { Id } from "../model/schema.ts";
+import { Id } from "@pgtm/model";
 
 /**
  * Hand-maintained overrides, committed to the repo: listing id -> TMDB id.

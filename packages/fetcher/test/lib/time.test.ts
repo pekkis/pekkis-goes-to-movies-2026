@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { helsinkiToday, toHelsinkiIso } from "../../src/lib/time.ts";
+import { dateWindow, helsinkiToday, toHelsinkiIso } from "../../src/lib/time.ts";
 
 describe("toHelsinkiIso", () => {
   it("uses +03:00 in summer time", () => {
@@ -23,5 +23,12 @@ describe("toHelsinkiIso", () => {
 describe("helsinkiToday", () => {
   it("is already the next day in Helsinki late in the UTC evening", () => {
     expect(helsinkiToday(new Date("2026-10-09T22:30:00.000Z"))).toBe("2026-10-10");
+  });
+});
+
+describe("dateWindow", () => {
+  it("is inclusive and crosses month ends", () => {
+    expect(dateWindow("2026-10-09", 1)).toEqual({ from: "2026-10-09", to: "2026-10-09" });
+    expect(dateWindow("2026-10-29", 7)).toEqual({ from: "2026-10-29", to: "2026-11-04" });
   });
 });

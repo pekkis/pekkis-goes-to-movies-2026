@@ -8,6 +8,13 @@
   "scripts": {
     "pull": "pnpm --filter @pgtm/fetcher pull",
     "match": "pnpm --filter @pgtm/fetcher match",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:psql": "docker compose exec postgres psql -U pgtm -d pgtm",
+    "migrate": "pnpm --filter @pgtm/backend migrate",
+    "db:types": "pnpm --filter @pgtm/backend db:types",
+    "ingest": "pnpm --filter @pgtm/backend ingest",
+    "showtimes": "pnpm --filter @pgtm/backend showtimes",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "lint": "oxlint",

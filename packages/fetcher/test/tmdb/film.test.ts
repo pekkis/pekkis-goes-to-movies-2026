@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Film } from "../../src/model/schema.ts";
+import { Film } from "@pgtm/model";
 import { imageUrl, toFilm } from "../../src/tmdb/film.ts";
 import { MovieDetails } from "../../src/tmdb/raw.ts";
 import { loadFixture } from "../fixtures.ts";

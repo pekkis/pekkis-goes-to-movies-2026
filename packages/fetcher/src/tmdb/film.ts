@@ -1,4 +1,4 @@
-import { FinnishRating, type Film, type Lang, type Localized } from "../model/schema.ts";
+import { FinnishRating, type Film, type Lang, type Localized } from "@pgtm/model";
 import type { MovieDetails } from "./raw.ts";
 
 export const imageUrl = (path: string, size: "w185" | "w342" | "w500" | "w780" | "original") =>

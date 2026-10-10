@@ -1,4 +1,4 @@
-import type { FinnishRating } from "../model/schema.ts";
+import type { FinnishRating } from "@pgtm/model";
 import type { MovieDetails } from "../tmdb/raw.ts";
 import { normalizeTitle, titlePrefix } from "./titles.ts";
 
