@@ -243,7 +243,7 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
       "folded into Muurame, which KSEK's site does too. Laukaa (24) and Viitasaari (10) " +
       "were found by the unclaimed-room warning, not in Leffavuoro's list. Each town " +
       "plays in a hall (address from its town page, geocoded with Nominatim); Viitasaari " +
-      "resolved only to the street, so its point is approximate.",
+      "plays at Nuorisotalon Teatteri (OSM: Viitasaaren teatteri), confirmed by the maintainer.",
     showTypes: { "Kino Metso": {}, "Kino Metso, kiinteähintainen": {} },
     titlePrefixes: { Minikino: { series: "Minikino", tags: ["kids"] } },
     venues: [
@@ -316,8 +316,8 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
         city: "Viitasaari",
         address: "Koulukuja 8",
         postalCode: "44500",
-        geo: { lat: 63.084463, lon: 25.849328 },
-        geoSource: "nominatim",
+        geo: { lat: 63.085083, lon: 25.84843 },
+        geoSource: "osm:node/5940777731",
       },
     ],
   },
