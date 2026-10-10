@@ -219,9 +219,9 @@ Set up on 2026-10-10. Code: `packages/fetcher/src/geo/`, CLI `pnpm venues:locate
 - **Google Maps is not a source:** its terms forbid storing coordinates taken from it.
 - **First run, 2026-10-10:**
   - 7 Nexxo venues matched OSM cinemas by name, city and address.
-  - 8 were geocoded from their halls' addresses. Viitasaari resolved only to the street (Koulukuja), so that point is approximate.
+  - 8 were geocoded from their halls' addresses. Kino Aurora was then added to OSM by the maintainer (node 14270115364) and now uses that node. Viitasaari resolved only to the street (Koulukuja), so that point is approximate.
   - Finnkino's own point for **Promenadi Pori** was 3.7 km off. The OSM node has Finnkino's address and operator, so an override in `config/venue-overrides.json` corrects it.
-  - **BioRex Riihimäki** is not in OSM, and BioRex's own point was about 1.1 km north-east of the cinema. An override now uses the geocoded address (Keskuskatu 8), which the maintainer confirmed on site knowledge.
+  - **BioRex Riihimäki** is not in OSM, and BioRex's own point was about 1.1 km north-east of the cinema. The maintainer added it to OSM (node 14052479733, Keskuskatu 8), and an override uses that point.
 
 ---
 
