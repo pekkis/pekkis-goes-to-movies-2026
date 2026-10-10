@@ -22,7 +22,10 @@
     "fmt:check": "oxfmt --check",
     "check": "pnpm typecheck && pnpm lint && pnpm fmt:check && pnpm test",
     "vendor:leffavuoro": "node scripts/vendor-leffavuoro.ts",
-    "venues:locate": "pnpm --filter @pgtm/fetcher venues:locate"
+    "venues:locate": "pnpm --filter @pgtm/fetcher venues:locate",
+    "api:dev": "pnpm --filter @pgtm/backend api:dev",
+    "api:up": "docker compose --profile app up -d --build --wait",
+    "api:down": "docker compose --profile app rm --stop --force api migrate"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",

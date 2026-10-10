@@ -1,0 +1,12 @@
+# Keep the build context small and free of secrets and data.
+**/node_modules
+**/dist
+data/
+vendor/
+.env
+.env.*
+.git/
+docs/
+**/test/
+packages/fetcher/*
+!packages/fetcher/package.json
