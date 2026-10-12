@@ -38,5 +38,35 @@
     "tmdb": 1465063,
     "title": "Unohdettu saari - Bortglömda Ön (på svenska)",
     "note": "Swedish-dubbed screening of Forgotten Island (2026); 109 min both."
+  },
+  "ihmekompleksi:film:3346": {
+    "tmdb": 1781923,
+    "title": "Pikku Kummitus Lapanen keppostelee",
+    "note": "Lilla spöket Laban busar vidare (2026, sv); Laban = Lapanen in Finnish. TMDB has no Finnish title, runtime or countries yet, so search cannot find it. Identified by the maintainer; Swedish release 2026-10-09 matches the Finnish run. Cinemas give 62-63 min (Kino Myyri says 45)."
+  },
+  "kinomyyri:film:761b8bf7-6443-4c0b-b95a-dbef82d28966": {
+    "tmdb": 1781923,
+    "title": "Pikku Kummitus Lapanen keppostelee",
+    "note": "Lilla spöket Laban busar vidare (2026, sv); Laban = Lapanen in Finnish. TMDB has no Finnish title, runtime or countries yet, so search cannot find it. Identified by the maintainer; Swedish release 2026-10-09 matches the Finnish run. Cinemas give 62-63 min (Kino Myyri says 45)."
+  },
+  "kinoolympia:film:439": {
+    "tmdb": 1781923,
+    "title": "Pikku Kummitus Lapanen keppostelee",
+    "note": "Lilla spöket Laban busar vidare (2026, sv); Laban = Lapanen in Finnish. TMDB has no Finnish title, runtime or countries yet, so search cannot find it. Identified by the maintainer; Swedish release 2026-10-09 matches the Finnish run. Cinemas give 62-63 min (Kino Myyri says 45)."
+  },
+  "kinopirtti:film:65": {
+    "tmdb": 1781923,
+    "title": "Pikku Kummitus Lapanen keppostelee",
+    "note": "Lilla spöket Laban busar vidare (2026, sv); Laban = Lapanen in Finnish. TMDB has no Finnish title, runtime or countries yet, so search cannot find it. Identified by the maintainer; Swedish release 2026-10-09 matches the Finnish run. Cinemas give 62-63 min (Kino Myyri says 45)."
+  },
+  "leffabuumi:film:3327": {
+    "tmdb": 1781923,
+    "title": "Pikku Kummitus Lapanen keppostelee",
+    "note": "Lilla spöket Laban busar vidare (2026, sv); Laban = Lapanen in Finnish. TMDB has no Finnish title, runtime or countries yet, so search cannot find it. Identified by the maintainer; Swedish release 2026-10-09 matches the Finnish run. Cinemas give 62-63 min (Kino Myyri says 45)."
+  },
+  "savonkinot:film:130": {
+    "tmdb": 1781923,
+    "title": "Pikku Kummitus Lapanen keppostelee",
+    "note": "Lilla spöket Laban busar vidare (2026, sv); Laban = Lapanen in Finnish. TMDB has no Finnish title, runtime or countries yet, so search cannot find it. Identified by the maintainer; Swedish release 2026-10-09 matches the Finnish run. Cinemas give 62-63 min (Kino Myyri says 45)."
   }
 }

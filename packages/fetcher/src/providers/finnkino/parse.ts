@@ -136,6 +136,7 @@ const parseScreening = (s: RawShowtime, lookup: Lookup, fetchedAt: string): Scre
   let licensed = false;
   let ageLimit: FinnishRating | undefined;
   let captions = false;
+  let noSubtitles = false;
 
   for (const attributeId of s.attributeIds) {
     const name = lookup.attributes.get(attributeId);
@@ -158,6 +159,9 @@ const parseScreening = (s: RawShowtime, lookup: Lookup, fetchedAt: string): Scre
       // Open captions: Finnish subtitles for the hard of hearing.
       captions = true;
       tags.push("accessible");
+    } else if (name === "EiText") {
+      // "ei tekstitystä": stated outright (seen first on event cinema, 2026-10-12).
+      noSubtitles = true;
     } else if (name === "SEVERAL") {
       // "Several languages": spoken languages not listed, so audio stays unknown.
     } else if (!IGNORED.has(name)) unmapped.push(name);
@@ -167,7 +171,7 @@ const parseScreening = (s: RawShowtime, lookup: Lookup, fetchedAt: string): Scre
   const subtitles: Subtitles =
     subtitleLangs.length > 0
       ? { kind: "languages", languages: [...new Set(subtitleLangs)] }
-      : audio.length > 0
+      : audio.length > 0 || noSubtitles
         ? // Finnkino lists subtitles consistently; spoken language without any means none.
           { kind: "none" }
         : { kind: "unknown" };
