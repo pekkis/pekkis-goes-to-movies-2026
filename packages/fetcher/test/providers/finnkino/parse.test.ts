@@ -144,6 +144,26 @@ describe("parseFinnkino", () => {
     expect(result.screenings).toHaveLength(batch.screenings.length);
   });
 
+  it("reads an explicit 'no subtitles' attribute, even without an audio language", () => {
+    const raw = snapshot();
+    const response = raw.showtimes["fixture"] as {
+      showtimes: { id: string; attributeIds: string[] }[];
+      relatedData: { attributes: unknown[] };
+    };
+    // As Finnkino sends it (2026-10-12).
+    response.relatedData.attributes.push({
+      id: "0000000060",
+      name: { text: "ei tekstitystä", translations: [{ languageTag: "en", text: "no subtitles" }] },
+      shortName: { text: "EiText", translations: [{ languageTag: "en", text: "XX" }] },
+    });
+    const target = response.showtimes.find((s) => s.id === "1004-5833")!;
+    target.attributeIds = ["0000000060"];
+    const parsed = show(parseFinnkino(raw), "1004-5833");
+    expect(parsed.subtitles).toEqual({ kind: "none" });
+    expect(parsed.audio).toEqual([]);
+    expect(parsed.unmappedLabels).toEqual([]);
+  });
+
   it("reports an attribute it does not know", () => {
     const raw = snapshot();
     const response = raw.showtimes["fixture"] as {
