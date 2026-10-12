@@ -49,7 +49,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 - Never print `TMDB_APIKEY` or `OMDB_APIKEY`. OMDb's key travels in the URL, so its errors are rethrown without the URL and its cache key leaves the key out; keep it that way.
 - `.env` is gitignored; [.env.example](.env.example) lists variables with **empty** values only.
 - Never commit `data/` (the cinemas' data). Never copy Leffavuoro's `data/` (not covered by its license). Never edit `vendor/leffavuoro/` by hand (it is overwritten on refresh).
-- **Update the vendor copy only with `pnpm vendor:leffavuoro`**, after syncing the pekkis/kino fork with upstream on GitHub. Never clone, download or copy their files in by other means: the script keeps `data/` out (it never even downloads it) and records the commit in `UPSTREAM.md`. Refresh before comparing our findings with theirs, then commit the diff.
+- **Update the vendor copy only with `pnpm vendor:leffavuoro --sync`**: it syncs the pekkis/kino fork with upstream (`gh repo sync`), then copies; without `--sync` it stops if the fork is behind. Never clone, download or copy their files in by other means: the script keeps `data/` out (it never even downloads it) and records the commit in `UPSTREAM.md`. Refresh before comparing our findings with theirs, then commit the diff.
 - Never hard-code anyone's contact details; the User-Agent's contact comes from `CONTACT` in `.env`.
 
 **Sources: politeness and ethics**
@@ -99,7 +99,7 @@ pnpm showtimes odysey        # film search; with no film, everything on (--here,
 pnpm api:dev / api:up / api:down   # the HTTP API on :3000 (dev with reload / Docker)
 pnpm check                   # typecheck + lint (zero warnings) + fmt:check + test
 pnpm test / typecheck / lint / fmt / fmt:check
-pnpm vendor:leffavuoro       # refresh vendor/leffavuoro from the pekkis/kino fork
+pnpm vendor:leffavuoro --sync   # sync the pekkis/kino fork with upstream, refresh vendor/leffavuoro
 ```
 
 - First run: `pnpm db:up && pnpm migrate && pnpm pull && pnpm ingest`.

@@ -3779,3 +3779,12 @@ takes lines after the heading in its own paragraph as the first screening. An un
 line inside the list still fails the site. Read 2026-10-10 the live page parsed to the
 cinema's three screenings, with rating, runtime, price and poster on each. Three mutations
 red.
+
+### Kinotour reads its own empty state (2026-10-10)
+Kinotour failed 36 committed runs from 2026-10-04 15:30 UTC with "no screening card on the
+page", because no empty programme had been seen there. The live audit of 2026-10-10 and a read
+that day found the listing empty and saying so. The adapter now raises `EmptyProgramme`
+only when the page shows all three parts of that state: the results line "Kaikki
+paikkakunnat · 0 näytöstä", an event list with nothing in it, and the shown `kt-empty`
+notice with its exact text. Zero cards without them still fails the site. Evidence:
+[empty-states.md](../research/empty-states.md). Six mutations red.

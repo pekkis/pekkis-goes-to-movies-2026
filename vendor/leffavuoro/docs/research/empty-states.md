@@ -31,6 +31,12 @@ clears withdrawn screenings".
   screenings. Besides its days, Kuopio's section holds one line, when the next week is
   published; Manttu's holds three, when the next weekend is published, the address and the
   ticket line. None opens with `Klo`, a weekday and a date, or a date.
+- **Kinotour**, the listing, live, 2026-10-10: HTTP 200 and no `kt-event` card. The results
+  line reads "Kaikki paikkakunnat · 0 näytöstä", the `kt-event-list` holds only whitespace,
+  and a `kt-empty` paragraph with no `hidden` attribute reads "Tällä valinnalla ei ole
+  tulevia näytöksiä. Katso muut paikkakunnat tai palaa pian uudelleen." Every run had
+  failed on this page since the one committed at 2026-10-04 15:30 UTC, 36 committed runs.
+  The adapter now requires all three before it raises `EmptyProgramme`.
 - **Kino Tapiola**, the committed 2026-09-05 fixture: the `filter-no-results` phrase is on
   the populated listing, for the client-side filter. It is not an empty state.
 
@@ -46,7 +52,7 @@ clears withdrawn screenings".
 ## Open questions
 
 - What these sites render with nothing on: Julia, Kino Vaakuna, Kino Kirkkonummi, the four
-  TMB cinemas, Bio-Kaari, Bio Savoy, Iso-Hannu, Kino Tapiola, Kinotour, Kuvakukko. Heureka's
+  TMB cinemas, Bio-Kaari, Bio Savoy, Iso-Hannu, Kino Tapiola, Kuvakukko. Heureka's
   paused calendar: ended runs left in place, or the planetarium items removed.
 
 ## Implementation status

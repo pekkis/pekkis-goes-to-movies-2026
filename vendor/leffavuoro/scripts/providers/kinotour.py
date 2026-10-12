@@ -37,8 +37,10 @@ What shapes the parser:
 
 **Zero cards fails the site**, and so do cards that all land in undeclared towns: a town
 key that stopped reading produces the same page, so it is no evidence the declared towns
-are empty. No empty programme has been seen here, so there is no evidence of what one
-looks like: `common.EmptyProgramme` is for the case where that evidence is in hand.
+are empty. The one exception is the page's own empty state, read 2026-10-10 with nothing
+on: the results line reads "Kaikki paikkakunnat \u00b7 0 n\u00e4yt\u00f6st\u00e4", the event list is
+empty, and the notice "T\u00e4ll\u00e4 valinnalla ei ole tulevia n\u00e4yt\u00f6ksi\u00e4. ..." is shown.
+All three have to hold for `common.EmptyProgramme`, and none of them is what finds a card.
 """
 import datetime
 import html as html_mod
@@ -46,7 +48,7 @@ import re
 import sys
 from zoneinfo import ZoneInfo
 
-from common import check_shows, fetch, get_text
+from common import EmptyProgramme, check_shows, fetch, get_text
 from synmerge import norm
 
 FI = ZoneInfo("Europe/Helsinki")
@@ -81,6 +83,15 @@ ACTION_RE = re.compile(r'class="[^"]*\bkt-event-action\b[^"]*"[^>]*>\s*<strong[^
 AMOUNT_RE = re.compile(r"\u20ac\s*(\d{1,3})(?:[.,](\d{1,2}))?|(\d{1,3})(?:[.,](\d{1,2}))?\s*\u20ac")
 RATING_RE = re.compile(r"^(K-?\d{1,2}|S)$", re.I)
 TAGS_RE = re.compile(r"<[^>]+>")
+# The page's own empty state, read 2026-10-10. The results line is for the default
+# selection, every town, so its zero is the whole programme.
+EMPTY_RESULTS = "Kaikki paikkakunnat \u00b7 0 n\u00e4yt\u00f6st\u00e4"
+EMPTY_NOTICE = ("T\u00e4ll\u00e4 valinnalla ei ole tulevia n\u00e4yt\u00f6ksi\u00e4. "
+                "Katso muut paikkakunnat tai palaa pian uudelleen.")
+RESULTS_RE = re.compile(r'<p\b[^>]*\bclass="[^"]*\bkt-results\b[^"]*"[^>]*>(.*?)</p>', re.S | re.I)
+LIST_RE = re.compile(r'<div\b[^>]*\bclass="[^"]*\bkt-event-list\b[^"]*"[^>]*>(.*?)</div>',
+                     re.S | re.I)
+NOTICE_RE = re.compile(r'<p\b([^>]*\bclass="[^"]*\bkt-empty\b[^"]*"[^>]*)>(.*?)</p>', re.S | re.I)
 
 # A town with no card is known empty, not unread, once the page filed a card under some
 # other declared town and none under a town this repo does not declare: this page is the
@@ -198,6 +209,21 @@ def rows(site, page):
     return per_venue, report
 
 
+def says_empty(page):
+    """Whether the page states in its own markup that nothing is on. -> bool
+
+    The results line counts zero for every town, the event list holds no element, and the
+    empty notice is there with its exact text and not hidden. A card markup change leaves a
+    count above zero or a list with something in it, so it cannot pass for this.
+    """
+    results = [_txt(t) for t in RESULTS_RE.findall(page or "")]
+    lists = LIST_RE.findall(page or "")
+    shown = [_txt(t) for a, t in NOTICE_RE.findall(page or "")
+             if not re.search(r"\bhidden\b", a, re.I)]
+    return (results == [EMPTY_RESULTS] and len(lists) == 1
+            and not re.search(r"<[a-z]", lists[0], re.I) and EMPTY_NOTICE in shown)
+
+
 def get(url, tries=3, timeout=30):
     """`common.get_text` with this module's own `fetch`, which its tests stub."""
     return get_text(url, fetcher=fetch, tries=tries, timeout=timeout)
@@ -206,7 +232,8 @@ def get(url, tries=3, timeout=30):
 def fetch_site(site):
     pid = site["provider"]
     url = site["base"].rstrip("/") + site["listing"]
-    per_venue, report = rows(site, get(url))
+    page = get(url)
+    per_venue, report = rows(site, page)
     published = sum(len(v) for v in per_venue.values())
     if not published and report["undeclared"]:
         named = ", ".join(f"{t} ({n})" for t, n in sorted(report["undeclared"].items()))
@@ -215,9 +242,13 @@ def fetch_site(site):
             f"list: {named}. A town key that stopped reading looks the same, so no declared "
             f"town is published empty and the previous files stand")
     if not published:
+        if says_empty(page):
+            raise EmptyProgramme(f"{url}: the page counts 0 screenings for every town and "
+                                 f"shows its own notice that nothing is coming up")
         raise RuntimeError(
-            f"{url}: no screening card on the page. No empty programme has been seen here, "
-            f"so there is no evidence of one to read this as, and the previous files stand")
+            f"{url}: no screening card on the page, and the page does not show its own "
+            f"empty state (a zero count, an empty list and the notice), so the previous "
+            f"files stand")
     check_shows(per_venue, pid, {v["id"] for v in site["venues"]})
     priced = sum(1 for v in per_venue.values() for s in v if s["price"])
     print(f"[{pid}] {published} screening(s) in {len(site['venues'])} declared town(s), "

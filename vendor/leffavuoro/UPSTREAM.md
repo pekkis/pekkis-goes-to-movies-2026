@@ -8,13 +8,14 @@ linted or formatted here.
 | --- | --- |
 | Source | https://github.com/pekkis/kino (our fork of [Shady-Dev/kino](https://github.com/Shady-Dev/kino)) |
 | Branch | `main` |
-| Commit | `a0bedad7d8b21f2a5f447fe0b44ae03d6bea83c9` |
-| Commit date | 2026-10-10T05:20:52Z |
+| Commit | `3b94faf7c8627e6e5c244748966ec37c4aad7fbe` |
+| Commit date | 2026-10-12T05:20:23Z |
 | Commit message | Update cloud provider data |
 | Vendored on | 2026-10-12 |
 
-**Update:** sync the fork with upstream on GitHub, then run `pnpm vendor:leffavuoro` and commit the
-diff. The diff shows what changed upstream since the last copy.
+**Update:** run `pnpm vendor:leffavuoro --sync` (syncs the fork with upstream on GitHub, then copies)
+and commit the diff. The diff shows what changed upstream since the last copy. Without `--sync` the
+script stops if the fork is behind upstream.
 
 ## License
 

@@ -11,6 +11,9 @@ table that day. What they exist to prove:
   agree with it.
 - **The price is the card's one amount**, and the link is the listing, since the booking
   is a button on it.
+- **Only the page's own empty state is an empty programme.** Read 2026-10-10: a zero count
+  for every town, an empty list and the shown notice. Each part is required, and zero
+  cards without them still fails the site.
 """
 import contextlib
 import io
@@ -49,6 +52,22 @@ def card(title="Hetki ennen valoa", iso="2026-10-04T13:30:00+03:00", shown="4.10
 def page(*cards):
     return ('<html><body><p class="kt-results">Kaikki paikkakunnat</p>'
             '<div class="kt-event-list">' + "".join(cards) + "</div></body></html>")
+
+
+NOTICE = ("T\u00e4ll\u00e4 valinnalla ei ole tulevia n\u00e4yt\u00f6ksi\u00e4. Katso muut paikkakunnat "
+          "tai palaa pian uudelleen.")
+
+
+def empty_page(results="Kaikki paikkakunnat \u00b7 0 n\u00e4yt\u00f6st\u00e4", listed="",
+               notice=NOTICE, hidden=False):
+    """The empty state read on 2026-10-10, cut to the parts a test varies."""
+    tail = ("" if notice is None else
+            f'<p class="kt-empty"{" hidden" if hidden else " "}>{notice}</p>')
+    return ('<html><body><div class="kt-filters"><button type="button" class="kt-city-reset" '
+            'hidden>N\u00e4yt\u00e4 kaikki paikkakunnat</button></div>'
+            f'<p class="kt-results" role="status" aria-live="polite" aria-atomic="true">'
+            f'{results}</p>\n<div class="kt-event-list">\n            {listed}</div>\n'
+            f'{tail}</body></html>')
 
 
 DECLARED = card()
@@ -114,6 +133,25 @@ class RowsTest(unittest.TestCase):
     def test_a_card_with_no_title_fails_the_site(self):
         with self.assertRaises(K.RowError):
             K.rows(SITE, page(card(title="")))
+
+
+class EmptyStateTest(unittest.TestCase):
+    def test_the_pages_own_empty_state_is_read(self):
+        self.assertTrue(K.says_empty(empty_page()))
+
+    def test_each_part_of_the_empty_state_is_required(self):
+        """A card markup change leaves a count above zero or something in the list, and a
+        town selection counts only that town."""
+        for name, html in (
+                ("a count above zero", empty_page(results="Kaikki paikkakunnat \u00b7 3 n\u00e4yt\u00f6st\u00e4")),
+                ("one town's count", empty_page(results="Naantali \u00b7 0 n\u00e4yt\u00f6st\u00e4")),
+                ("something in the list", empty_page(listed='<article class="kt-card">x</article>')),
+                ("the notice hidden", empty_page(hidden=True)),
+                ("another notice", empty_page(notice="Ohjelmisto p\u00e4ivittyy pian.")),
+                ("no notice", empty_page(notice=None)),
+                ("the populated fixture", page(DECLARED))):
+            with self.subTest(name):
+                self.assertFalse(K.says_empty(html))
 
 
 class PriceTest(unittest.TestCase):
@@ -230,7 +268,29 @@ class RunnerTest(unittest.TestCase):
                    '<td><a href="https://www.kinotour.fi/events/x/">Pirjo, K12</a></td></tr></table>')
         code, log = self.main()
         self.assertEqual(code, 1, log)
-        self.assertIn("no evidence of one", log)
+        self.assertIn("does not show its own empty state", log)
+        self.assertEqual(json.loads(
+            (run.OUT / "area-kinotour-kyro.json").read_text()), self.PREV)
+
+    def test_the_pages_own_empty_state_publishes_every_town_empty(self):
+        (run.OUT / "area-kinotour-kyro.json").write_text(json.dumps(self.PREV))
+        self.serve(empty_page())
+        code, log = self.main()
+        self.assertEqual(code, 0, log)
+        self.assertIn("0 failures", log)
+        for v in SITE["venues"]:
+            with self.subTest(venue=v["id"]):
+                body = json.loads((run.OUT / f"area-{v['id']}.json").read_text())
+                self.assertEqual(body["shows"], [])
+                self.assertNotEqual(body["generated"], self.PREV["generated"])
+        venues = json.loads((run.OUT / "venues-kinotour.json").read_text())
+        self.assertEqual(sorted(venues["pending"]), sorted(v["id"] for v in SITE["venues"]))
+
+    def test_a_zero_count_without_the_notice_fails_and_keeps_the_previous_file(self):
+        (run.OUT / "area-kinotour-kyro.json").write_text(json.dumps(self.PREV))
+        self.serve(empty_page(notice=None))
+        code, log = self.main()
+        self.assertEqual(code, 1, log)
         self.assertEqual(json.loads(
             (run.OUT / "area-kinotour-kyro.json").read_text()), self.PREV)
 
