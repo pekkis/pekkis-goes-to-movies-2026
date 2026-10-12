@@ -22,6 +22,9 @@ export const COMMON_TITLE_PREFIXES: Record<string, LabelRule> = {
   "Ennakkoensi-ilta": { tags: ["preview"] },
   Ennakkonäytös: { tags: ["preview"] },
   Vauvakino: { tags: ["baby"] },
+  Perhekino: { tags: ["kids"] },
+  Lastenkino: { tags: ["kids"] },
+  Seniorikino: { tags: ["senior"] },
   Ooppera: { tags: ["event-cinema"], event: true },
 };
 
@@ -74,6 +77,13 @@ const VERSIONS: [RegExp, Version][] = [
 export const splitVersion = (raw: string): { title: string; version: Version } => {
   let title = raw.trim();
   const version: Version = {};
+  // A leading marker: "På svenska: Bortglömda ön" (Bio Forum).
+  const lead = title.match(/^([^:]+):\s*(.+)$/);
+  const leadHit = lead && VERSIONS.find(([re]) => re.test(lead[1]!.trim()));
+  if (lead && leadHit) {
+    Object.assign(version, leadHit[1]);
+    title = lead[2]!.trim();
+  }
   for (;;) {
     // "(DUB)", "DUB", or after a comma or dash: "Unohdettu saari, englanniksi".
     const m = title.match(

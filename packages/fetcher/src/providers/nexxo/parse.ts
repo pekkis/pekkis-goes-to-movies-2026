@@ -5,17 +5,15 @@ import {
   type Auditorium,
   type FilmListing,
   type FinnishRating,
-  type Lang,
   type ProviderBatch,
   type Screening,
   type ScreeningTag,
-  type Subtitles,
   type Venue,
   type Warning,
 } from "@pgtm/model";
-import { normalizeLang } from "../../lib/lang.ts";
 import { dateWindow, FINNISH_TZ } from "../../lib/time.ts";
 import { splitTitlePrefix as splitPrefix } from "../labels.ts";
+import { codes, parseAudio, parseSubtitles, UNKNOWN_CODE } from "../language-codes.ts";
 import { providerOf } from "../sites.ts";
 import { RawShow, ShowsResponse, type NexxoRawSnapshot } from "./raw.ts";
 import {
@@ -26,44 +24,6 @@ import {
   type ShowTypeRule,
   type TitlePrefixRule,
 } from "./sites.ts";
-
-/** Nexxo codes that are not ISO 639-1 (SE is handled by normalizeLang). */
-const NEXXO_LANGS: Record<string, Lang> = { iw: "he" };
-const UNKNOWN = "OV";
-const NO_SUBTITLES = "XX";
-
-const codes = (raw: string | null | undefined) =>
-  (raw ?? "")
-    .toUpperCase()
-    .split(/[^A-Z]+/)
-    .filter(Boolean);
-
-const toLang = (code: string): Lang | undefined =>
-  NEXXO_LANGS[code.toLowerCase()] ?? normalizeLang(code);
-
-/** "FI" / "OV" -> ["fi"] / []. Unknown codes are returned for unmappedLabels. */
-export const parseAudio = (
-  raw: string | null | undefined,
-): { audio: Lang[]; unknown: string[] } => {
-  const audio: Lang[] = [];
-  const unknown: string[] = [];
-  for (const code of codes(raw).filter((c) => c !== UNKNOWN)) {
-    const lang = toLang(code);
-    if (lang) audio.push(lang);
-    else unknown.push(code);
-  }
-  return { audio, unknown };
-};
-
-/** "FI-SE" -> fi, sv; "XX" -> none; "OV" or "" -> unknown. */
-export const parseSubtitles = (raw: string | null | undefined): Subtitles => {
-  const list = codes(raw);
-  if (list.length === 0 || list.includes(UNKNOWN)) return { kind: "unknown" };
-  const langs = list.filter((c) => c !== NO_SUBTITLES).map(toLang);
-  if (langs.length === 0) return { kind: "none" };
-  if (langs.some((l) => l === undefined)) return { kind: "unknown" };
-  return { kind: "languages", languages: [...new Set(langs as Lang[])] };
-};
 
 const RATINGS: Record<string, FinnishRating> = {
   S: "S",
@@ -209,7 +169,7 @@ export const parseNexxo = (raw: NexxoRawSnapshot, site: NexxoSite): ProviderBatc
       if (
         subtitles.kind === "unknown" &&
         row.code_subtitles &&
-        !codes(row.code_subtitles).includes(UNKNOWN)
+        !codes(row.code_subtitles).includes(UNKNOWN_CODE)
       ) {
         unmapped.push(`code_subtitles:${row.code_subtitles}`);
       }
@@ -324,3 +284,5 @@ export const parseNexxo = (raw: NexxoRawSnapshot, site: NexxoSite): ProviderBatc
     warnings,
   };
 };
+
+export { parseAudio, parseSubtitles };

@@ -1,0 +1,68 @@
+{
+  "data": [
+    {
+      "id": "6713",
+      "shopId": "vihdinkino",
+      "text": "MLL-näytös: Toy Story 5 DUBATTU Lipun hinta 2€",
+      "start_date": "2026-10-13 18:00",
+      "end_date": "2026-10-13 19:42",
+      "resource_name": "Vihdin Kino",
+      "resource_capacity": "182",
+      "resource_reservations": "182",
+      "upcoming": "0",
+      "hideinternet": "0",
+      "pricing_name": "MLL-näytös",
+      "price": "2",
+      "multipleprices": "0",
+      "originaltitle": "Toy Story 5",
+      "distributor": "25",
+      "duration": "102",
+      "imdb": null,
+      "maccsboxlanguage": "FI",
+      "maccsboxsubtitles": "FI",
+      "director": "Andrew Stanton, Kenna Harris",
+      "agelimit": "K-7",
+      "storefronturl": "https://vihdinkino.fi/fi_FI/mll-naytos-toy-story-5",
+      "product": {
+        "id": "1107",
+        "name": "MLL-näytös: Toy Story 5 DUBATTU Lipun hinta 2€",
+        "canonical": "mll-naytos-toy-story-5",
+        "enable_catalog": "fi_FI",
+        "enable_collection": "fi_FI",
+        "displayedtype": "movie"
+      }
+    },
+    {
+      "id": "6715",
+      "shopId": "vihdinkino",
+      "text": "Unohdettu saari",
+      "start_date": "2026-10-12 11:00",
+      "end_date": "2026-10-12 12:49",
+      "resource_name": "Vihdin Kino",
+      "resource_capacity": "182",
+      "resource_reservations": "2",
+      "upcoming": "0",
+      "hideinternet": "0",
+      "pricing_name": "Normaali elokuva 12",
+      "price": "12",
+      "multipleprices": "0",
+      "originaltitle": "Unohdettu saari",
+      "distributor": "8",
+      "duration": "109",
+      "imdb": null,
+      "maccsboxlanguage": "FI",
+      "maccsboxsubtitles": "XX",
+      "director": "Joel Crawford ja Januel Mercado",
+      "agelimit": "K-7",
+      "storefronturl": "https://vihdinkino.fi/fi_FI/unohdettu-saari",
+      "product": {
+        "id": "1104",
+        "name": "Unohdettu saari",
+        "canonical": "unohdettu-saari",
+        "enable_catalog": "fi_FI",
+        "enable_collection": "fi_FI",
+        "displayedtype": "movie"
+      }
+    }
+  ]
+}

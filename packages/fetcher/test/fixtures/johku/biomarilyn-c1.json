@@ -1,0 +1,68 @@
+{
+  "data": [
+    {
+      "id": "10158",
+      "shopId": "biomarilyn",
+      "text": "Kerro Kaikille",
+      "start_date": "2026-10-15 17:00",
+      "end_date": "2026-10-15 18:52",
+      "resource_name": "Bio Marilyn",
+      "resource_capacity": "105",
+      "resource_reservations": "0",
+      "upcoming": "0",
+      "hideinternet": "0",
+      "pricing_name": "Elokuva 14",
+      "price": "14",
+      "multipleprices": "0",
+      "originaltitle": "Kerro kaikille",
+      "distributor": "22",
+      "duration": "112",
+      "imdb": "37355471",
+      "maccsboxlanguage": "DE",
+      "maccsboxsubtitles": "XX",
+      "director": "Alli Haapasalo",
+      "agelimit": "K-12",
+      "storefronturl": "https://biomarilyn.johku.com/fi_FI/kerro-kaikille",
+      "product": {
+        "id": "1056",
+        "name": "Kerro Kaikille",
+        "canonical": "kerro-kaikille",
+        "enable_catalog": "fi_FI",
+        "enable_collection": "fi_FI",
+        "displayedtype": "movie"
+      }
+    },
+    {
+      "id": "10161",
+      "shopId": "biomarilyn",
+      "text": "Unohdettu Saari",
+      "start_date": "2026-10-12 17:00",
+      "end_date": "2026-10-12 18:49",
+      "resource_name": "Bio Marilyn",
+      "resource_capacity": "105",
+      "resource_reservations": "3",
+      "upcoming": "0",
+      "hideinternet": "0",
+      "pricing_name": "Elokuva 12",
+      "price": "12",
+      "multipleprices": "0",
+      "originaltitle": "Forgotten Island",
+      "distributor": "8",
+      "duration": "109",
+      "imdb": "36583977",
+      "maccsboxlanguage": null,
+      "maccsboxsubtitles": null,
+      "director": "Januel Mercado, Joel Crawford",
+      "agelimit": "K-7",
+      "storefronturl": "https://biomarilyn.johku.com/fi_FI/unohdettu-saari",
+      "product": {
+        "id": "1055",
+        "name": "Unohdettu Saari",
+        "canonical": "unohdettu-saari",
+        "enable_catalog": "fi_FI",
+        "enable_collection": "fi_FI",
+        "displayedtype": "movie"
+      }
+    }
+  ]
+}

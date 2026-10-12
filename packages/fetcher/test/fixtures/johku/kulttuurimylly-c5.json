@@ -1,0 +1,36 @@
+{
+  "data": [
+    {
+      "id": "1089",
+      "shopId": "kulttuurimylly",
+      "text": "Joulupallo – Lumoava koko perheen joulutarina ",
+      "start_date": "2026-11-27 18:00",
+      "end_date": "2026-11-27 18:30",
+      "resource_name": "Feeniks-sali (Teatteri)",
+      "resource_capacity": "90",
+      "resource_reservations": "4",
+      "upcoming": "0",
+      "hideinternet": "0",
+      "pricing_name": "Teatteri 16 €",
+      "price": "16",
+      "multipleprices": "0",
+      "originaltitle": null,
+      "distributor": null,
+      "duration": "30",
+      "imdb": null,
+      "maccsboxlanguage": null,
+      "maccsboxsubtitles": null,
+      "director": null,
+      "agelimit": "S",
+      "storefronturl": "https://kulttuurimylly.johku.com/fi_FI/joulupallo-2",
+      "product": {
+        "id": "15",
+        "name": "Joulupallo, Maria Baric Company",
+        "canonical": "joulupallo-2",
+        "enable_catalog": "fi_FI;en_US;sv_SE;de_DE;ru_RU;it_IT",
+        "enable_collection": null,
+        "displayedtype": "theater"
+      }
+    }
+  ]
+}
