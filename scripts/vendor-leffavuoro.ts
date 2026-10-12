@@ -9,8 +9,10 @@ import { parseArgs } from "node:util";
  * AGPL-3.0) taken from our fork. Only code and docs are copied; their data (showtimes,
  * posters) is not covered by their license and must never be committed here.
  *
- *   pnpm vendor:leffavuoro [--repo URL] [--ref BRANCH]
+ *   pnpm vendor:leffavuoro [--sync] [--repo URL] [--ref BRANCH] [--upstream OWNER/NAME]
  *
+ * The fork must be in sync with upstream first: the script checks with `gh` and stops if
+ * the fork is behind. `--sync` syncs it on GitHub (`gh repo sync`) before copying.
  * Uses a shallow, sparse, blobless clone, so data/ is never even downloaded.
  */
 
@@ -42,11 +44,40 @@ const { values } = parseArgs({
   options: {
     repo: { type: "string", default: "https://github.com/pekkis/kino.git" },
     ref: { type: "string", default: "main" },
+    upstream: { type: "string", default: "Shady-Dev/kino" },
+    sync: { type: "boolean", default: false },
   },
 });
 
 const git = (args: string[], cwd?: string) =>
   execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] }).trim();
+
+const gh = (args: string[]) =>
+  execFileSync("gh", args, { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] }).trim();
+
+/** "https://github.com/pekkis/kino.git" -> "pekkis/kino". */
+const fork = values.repo.match(/github\.com[/:]([^/]+\/[^/]+?)(?:\.git)?$/)?.[1];
+if (!fork) throw new Error(`--repo must be a GitHub repository: ${values.repo}`);
+
+/** Commits upstream has that the fork lacks. */
+const behindBy = () => {
+  const [owner, name] = values.upstream.split("/");
+  const compare = `repos/${fork}/compare/${values.ref}...${owner}:${name}:${values.ref}`;
+  return Number(gh(["api", compare, "--jq", ".ahead_by"]));
+};
+
+if (values.sync) {
+  console.log(`syncing ${fork} with ${values.upstream}…`);
+  gh(["repo", "sync", fork, "--source", values.upstream, "--branch", values.ref]);
+}
+const behind = behindBy();
+if (behind > 0) {
+  console.error(
+    `${fork} is ${behind} commits behind ${values.upstream}: sync it first ` +
+      `(pnpm vendor:leffavuoro --sync, or "Sync fork" on GitHub).`,
+  );
+  process.exit(1);
+}
 
 const exists = (path: string) =>
   stat(path).then(
@@ -96,8 +127,9 @@ linted or formatted here.
 | Commit message | ${subject} |
 | Vendored on | ${new Date().toISOString().slice(0, 10)} |
 
-**Update:** sync the fork with upstream on GitHub, then run \`pnpm vendor:leffavuoro\` and commit the
-diff. The diff shows what changed upstream since the last copy.
+**Update:** run \`pnpm vendor:leffavuoro --sync\` (syncs the fork with upstream on GitHub, then copies)
+and commit the diff. The diff shows what changed upstream since the last copy. Without \`--sync\` the
+script stops if the fork is behind upstream.
 
 ## License
 
