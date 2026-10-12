@@ -1,6 +1,6 @@
 # Data sources
 
-Finnkino and BioRex investigated on 2026-10-09, Nexxo, eTiketti and Kinola on 2026-10-10; all are implemented. Markers: **[V]** = verified with our own request, **[A]** = assumed, or read from a third-party source.
+Finnkino and BioRex investigated on 2026-10-09, Nexxo, eTiketti and Kinola on 2026-10-10, Johku on 2026-10-12; all are implemented. Markers: **[V]** = verified with our own request, **[A]** = assumed, or read from a third-party source.
 
 ---
 
@@ -303,6 +303,37 @@ Found on 2026-10-10. Adapter: `packages/fetcher/src/providers/kinola/`, cinemas 
   - Kino Myyri (`myyri`, Vantaa), Cinema Orion (`orion`, Helsinki), Kino Kilta (`kilta`, Turku), Kino Laika (`laika`, Karkkila), Kino Konepaja (`konepaja`, Helsinki).
   - Cinema Sheryl (`sheryl`): the API says "Marsio, Helsinki", but Marsio is Aalto's building at Otakaari 2, Espoo.
   - All six are in OpenStreetMap with addresses. Konepaja had no screenings when Leffavuoro looked; it now has about 47.
+
+---
+
+## Johku (storefront schedule JSON)
+
+Found on 2026-10-12. Adapter: `packages/fetcher/src/providers/johku/`, cinemas in `sites.ts`.
+
+- **What Johku is:** a Finnish shop and booking platform (johku.com). Some cinemas' whole site is a Johku storefront, a Nuxt app.
+- **The endpoint [V]:**
+  - The storefront's code builds `https://{host}/api/{shop}/fi_FI/showschedule.json?details=true&storefront=true&version=fi_FI&from={date}&category={n}` (Leffavuoro read this in the bundle).
+  - It adds `X-ApiKey` only for a signed-in user, so the anonymous call is the one a visitor's page would make.
+  - Called anonymously with our User-Agent on 2026-10-12, it answered 200 with JSON on all seven storefronts.
+  - Leffavuoro reads the same data from the `__NUXT_DATA__` copy embedded in the front page instead.
+- **Finding the parameters:** the front page's `__NUXT_DATA__` names `storefront-{shop}-fi_FI` and one `showschedule-fi_FI-f{date}-c{category}` per programme block.
+- **Not used:** sites that embed the Johku widget (Kino Engel, Kino Tapiola) or load shows through `/api/auth/widget-session` (KuvaTähti) need the widget's `X-ApiKey`. We do not use it.
+- **Entry fields:**
+  - `text` (title as written, with labels: "Perhekino:", "Seniorikino:", "Vauvakino:", "På svenska:", "MLL-näytös:");
+  - `start_date` (Helsinki local, "2026-10-14 19:00") and `resource_name` (the hall);
+  - **`resource_capacity` and `resource_reservations`**, which give sold-out and few-left;
+  - `price` (the base ticket; `multipleprices` = 1 when other ticket types exist);
+  - `originaltitle`, `duration`, `agelimit`, `director`, `imdb` (empty so far);
+  - Maccs Box codes `maccsboxlanguage` / `maccsboxsubtitles` (FI, OV, FI-SE, XX, as on Nexxo);
+  - `storefronturl` (the film's booking page, copied as `ticketUrl`).
+- **Left out:**
+  - `upcoming` = 1 entries: coming soon, with no time yet (Bio Marilyn lists 20).
+  - Entries with no price, no age limit and no language. Kinokulma's hall hire ("Salivaraus"), closure notice ("Olemme vapaalla") and a private booking all look like this, while every film has at least one of the three. `product.displayedtype` is "movie" for all of them, so it does not help.
+  - Kulttuurimylly's block 5, which is theatre ("Feeniks-sali (Teatteri)"); only its cinema block 2 is read.
+- **Cinemas [V]:**
+  - Bio Marilyn (Lapua, blocks 1 and 9, sharing some shows), Vihdin Kino (Vihti), Bio Forum (Tammisaari, Raasepori), Kinokulma (Oulainen), Kino Hannikainen (Nurmes), Kino Virta (Kalajoki, `kinovirta.johku.com`).
+  - Kino Kulttuurimylly (Helsinki, Myllypuro): new since Leffavuoro's sweep, when its programme was paused.
+- **First run:** 85 screenings a week. All 61 film listings matched TMDB (56 by search, 5 by sibling).
 
 ---
 

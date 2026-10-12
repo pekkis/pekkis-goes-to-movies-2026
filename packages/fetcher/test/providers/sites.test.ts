@@ -3,6 +3,7 @@ import { restrictToVenues } from "../../src/providers/adapter.ts";
 import { parseNexxo } from "../../src/providers/nexxo/parse.ts";
 import type { NexxoRawSnapshot } from "../../src/providers/nexxo/raw.ts";
 import { ETIKETTI_SITES } from "../../src/providers/etiketti/sites.ts";
+import { JOHKU_SITES } from "../../src/providers/johku/sites.ts";
 import { KINOLA_SITES } from "../../src/providers/kinola/sites.ts";
 import { NEXXO_SITES, NexxoSite } from "../../src/providers/nexxo/sites.ts";
 import { ADAPTERS, selectAdapters } from "../../src/providers/registry.ts";
@@ -66,6 +67,11 @@ describe("site configs", () => {
     expect(selectAdapters(["kinola"])?.map((a) => a.id)).toEqual(
       KINOLA_SITES.map((s) => s.provider),
     );
+  });
+
+  it("every Johku venue has coordinates, and --provider johku selects all sites", () => {
+    expect(JOHKU_SITES.flatMap((s) => s.venues.filter((v) => !v.geo))).toEqual([]);
+    expect(selectAdapters(["johku"])?.map((a) => a.id)).toEqual(JOHKU_SITES.map((s) => s.provider));
   });
 
   it("selects every eTiketti site by platform", () => {

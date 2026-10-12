@@ -20,6 +20,7 @@ describe("splitVersion", () => {
     ["Unohdettu saari, englanniksi", "Unohdettu saari", { dubbed: false, audio: "en" }],
     ["Unohdettu saari DUP.", "Unohdettu saari", { dubbed: true, audio: "fi" }],
     ["Amadeus – ohjaajan versio", "Amadeus", {}],
+    ["På svenska: Bortglömda ön", "Bortglömda ön", { dubbed: true, audio: "sv" }],
   ])("%s", (raw, title, version) => {
     expect(splitVersion(raw)).toEqual({ title, version });
   });

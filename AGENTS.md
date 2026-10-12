@@ -31,7 +31,8 @@ The project is part of the user-centered design course at JAMK.
 - Data collection is written in TypeScript (strict). The frontend stack is still open, so do not add a UI framework until the maintainer decides.
 - No design or user research yet. The focus is on technical groundwork.
 - **Kinola is done** (2026-10-10): a public JSON API found in Kinola's open-source WordPress plugin. 6 cinemas: Kino Myyri (Vantaa; the maintainer's local, good for checking data against reality), Cinema Orion, Kino Kilta, Kino Laika, Cinema Sheryl, Kino Konepaja. Sites: [src/providers/kinola/sites.ts](packages/fetcher/src/providers/kinola/sites.ts).
-- Data sources in scope: Finnkino, BioRex, and multi-site platforms (Nexxo, eTiketti and Kinola done; Johku and others in Leffavuoro's list are candidates).
+- **Johku is done** (2026-10-12): the storefronts' own anonymous schedule endpoint (JSON). 7 cinemas: Bio Marilyn, Vihdin Kino, Bio Forum, Kinokulma, Kino Hannikainen, Kino Virta, Kino Kulttuurimylly. Sites: [src/providers/johku/sites.ts](packages/fetcher/src/providers/johku/sites.ts).
+- Data sources in scope: Finnkino, BioRex, and multi-site platforms (Nexxo, eTiketti, Kinola and Johku done; others in Leffavuoro's list are candidates).
 
 ## Commands
 
@@ -109,6 +110,8 @@ packages/fetcher/              @pgtm/fetcher: fetching, normalizing, TMDB matchi
   src/providers/labels.ts      shared label rules: "Prefix: Title" labels, tags, version markers ("(DUB)", "SUB", ", suomeksi")
   src/providers/etiketti/      HTML adapter: fetch.ts (listing + film pages), parse.ts (cheerio, pure)
   src/providers/kinola/        JSON adapter: {tenant}.kinola.ee/api/public/v1/events (film embedded)
+  src/providers/johku/         JSON adapter: {storefront}/api/{shop}/fi_FI/showschedule.json per programme block
+  src/providers/language-codes.ts  "FI", "OV", "FI-SE", "XX" codes (Nexxo, Johku's Maccs Box fields)
   src/providers/registry.ts    list of adapters (one per site for platforms); the CLI runs them
   src/tmdb/                    TMDB client (cached), raw schemas, toFilm (pure)
   src/geo/                     geo.ts (FinnishGeo, GeoSource, distance), osm.ts (Overpass), nominatim.ts, match.ts (pure)
@@ -181,14 +184,15 @@ New packages go under `packages/<name>` with the `@pgtm/` scope, `"private": tru
 
 Detailed findings, sample payloads and references: [docs/data-sources.md](docs/data-sources.md).
 
-| Source              | Method                                                                                           | Auth                                                                 | Status                                                            |
-| ------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| BioRex              | Unofficial JSON (`webshop.biorex.fi/webservices/...`)                                            | None                                                                 | ✅ Verified working                                               |
-| Finnkino            | Vista OCAPI JSON (`digital-api.finnkino.fi/WSVistaWebClient/ocapi/v1/...`)                       | Public 12 h JWT from the front page; headed Chrome passes Cloudflare | ✅ Working, needs a desktop with Chrome                           |
-| Finnkino (old)      | XML API `finnkino.fi/xml/...`                                                                    | –                                                                    | ❌ Retired (2025–2026)                                            |
-| Nexxo (8 sites)     | Nexxo Scope WordPress plugin JSON (`/wp-content/plugins/nexxo-scope/public_api.php`)             | None                                                                 | ✅ Working; small hosts answer 403 if paced faster than ~2.5 s    |
-| Kinola (6 cinemas)  | Public JSON API `{tenant}.kinola.ee/api/public/v1/events`, as Kinola's WordPress plugin reads it | None                                                                 | ✅ Working; 1 request per cinema; IMDb ids for exact TMDB matches |
-| eTiketti (21 sites) | Server-rendered HTML: `/elokuvat/ohjelmistossa` + one page per film                              | None                                                                 | ✅ Working; ~330 pages a day, 1.5 s apart per site                |
+| Source              | Method                                                                                                                  | Auth                                                                 | Status                                                                        |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| BioRex              | Unofficial JSON (`webshop.biorex.fi/webservices/...`)                                                                   | None                                                                 | ✅ Verified working                                                           |
+| Finnkino            | Vista OCAPI JSON (`digital-api.finnkino.fi/WSVistaWebClient/ocapi/v1/...`)                                              | Public 12 h JWT from the front page; headed Chrome passes Cloudflare | ✅ Working, needs a desktop with Chrome                                       |
+| Finnkino (old)      | XML API `finnkino.fi/xml/...`                                                                                           | –                                                                    | ❌ Retired (2025–2026)                                                        |
+| Nexxo (8 sites)     | Nexxo Scope WordPress plugin JSON (`/wp-content/plugins/nexxo-scope/public_api.php`)                                    | None                                                                 | ✅ Working; small hosts answer 403 if paced faster than ~2.5 s                |
+| Kinola (6 cinemas)  | Public JSON API `{tenant}.kinola.ee/api/public/v1/events`, as Kinola's WordPress plugin reads it                        | None                                                                 | ✅ Working; 1 request per cinema; IMDb ids for exact TMDB matches             |
+| Johku (7 cinemas)   | Storefront schedule JSON `{host}/api/{shop}/fi_FI/showschedule.json`, anonymous, as the storefront's own code builds it | None (never the widget `X-ApiKey`)                                   | ✅ Working; 1 request per programme block; seats from capacity − reservations |
+| eTiketti (21 sites) | Server-rendered HTML: `/elokuvat/ohjelmistossa` + one page per film                                                     | None                                                                 | ✅ Working; ~330 pages a day, 1.5 s apart per site                            |
 
 eTiketti is the only HTML source: it has no public API (its `etiketti.app` API is behind Cloudflare).
 
@@ -229,6 +233,7 @@ eTiketti is the only HTML source: it has no public API (its `etiketti.app` API i
 
 - **User-Agent:** use an identifiable User-Agent with contact details. No residential proxies, fingerprint spoofing or captcha solving. Never call ticket purchase or payment endpoints.
 - **Politeness:** when probing external APIs, make few requests and only GETs. Do not try hard to get around Cloudflare.
+- **Johku:** only storefronts whose own code reads the schedule anonymously. Never sites that embed the Johku widget or load shows through `/api/auth/widget-session` with an `X-ApiKey` (Kino Engel, Kino Tapiola, KuvaTähti): that key is not ours to use.
 - **HTML scraping (eTiketti):** GET only; never request `/salikartta` (the booking flow): its links are copied into `ticketUrl`, never constructed or followed. Never take synopses or posters from the pages (TMDB only), and keep them out of test fixtures (they are the cinemas' text). A site fails rather than publishing a partial programme (page budget 120). Unknown place lines give `unclaimed-place` warnings: fix them in `sites.ts`, do not guess.
 - **Finnkino:** Cloudflare challenges every non-browser client (even from home) and headless Chrome. Only the token step needs a browser; never try to defeat the check by other means (no fingerprint spoofing, no captcha solving). Do not assume it works in the cloud or CI.
 - **Contacting cinemas:** we have not contacted any source and do not need to while this is a course project. **If the service ever goes truly public, we notify every cinema and chain first** (what we read, how often, that every click goes to their own ticket page) and remove any that object. Do not expect API keys from them; the realistic risk is technical breakage (e.g. Cloudflare tightening), not a missing permission.

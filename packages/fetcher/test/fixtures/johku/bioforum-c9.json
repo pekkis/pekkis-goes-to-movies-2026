@@ -1,0 +1,36 @@
+{
+  "data": [
+    {
+      "id": "1931",
+      "shopId": "bioforum",
+      "text": "På svenska: Bortglömda ön",
+      "start_date": "2026-10-12 15:30",
+      "end_date": "2026-10-12 17:19",
+      "resource_name": "Bio Forum",
+      "resource_capacity": "54",
+      "resource_reservations": "3",
+      "upcoming": "0",
+      "hideinternet": "0",
+      "pricing_name": "Elokuvalippu 13",
+      "price": "13",
+      "multipleprices": "0",
+      "originaltitle": "Forgotten Island",
+      "distributor": null,
+      "duration": "109",
+      "imdb": null,
+      "maccsboxlanguage": null,
+      "maccsboxsubtitles": null,
+      "director": "Joel Crawford, Januel Mercado",
+      "agelimit": "K-7",
+      "storefronturl": "https://bioforum.fi/fi_FI/pa-svenska-bortglomda-on",
+      "product": {
+        "id": "435",
+        "name": "På svenska: Bortglömda ön",
+        "canonical": "pa-svenska-bortglomda-on",
+        "enable_catalog": "fi_FI;sv_SE",
+        "enable_collection": "fi_FI;sv_SE",
+        "displayedtype": "movie"
+      }
+    }
+  ]
+}

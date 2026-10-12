@@ -1,0 +1,68 @@
+{
+  "data": [
+    {
+      "id": "10158",
+      "shopId": "biomarilyn",
+      "text": "Kerro Kaikille",
+      "start_date": "2026-10-15 17:00",
+      "end_date": "2026-10-15 18:52",
+      "resource_name": "Bio Marilyn",
+      "resource_capacity": "105",
+      "resource_reservations": "0",
+      "upcoming": "0",
+      "hideinternet": "0",
+      "pricing_name": "Elokuva 14",
+      "price": "14",
+      "multipleprices": "0",
+      "originaltitle": "Kerro kaikille",
+      "distributor": "22",
+      "duration": "112",
+      "imdb": "37355471",
+      "maccsboxlanguage": "DE",
+      "maccsboxsubtitles": "XX",
+      "director": "Alli Haapasalo",
+      "agelimit": "K-12",
+      "storefronturl": "https://biomarilyn.johku.com/fi_FI/kerro-kaikille",
+      "product": {
+        "id": "1056",
+        "name": "Kerro Kaikille",
+        "canonical": "kerro-kaikille",
+        "enable_catalog": "fi_FI",
+        "enable_collection": "fi_FI",
+        "displayedtype": "movie"
+      }
+    },
+    {
+      "id": "10048",
+      "shopId": "biomarilyn",
+      "text": "Whalefall",
+      "start_date": "2026-10-16 00:00",
+      "end_date": "2026-10-17 00:00",
+      "resource_name": "Bio Marilyn",
+      "resource_capacity": "105",
+      "resource_reservations": "0",
+      "upcoming": "1",
+      "hideinternet": "0",
+      "pricing_name": "Elokuva 15",
+      "price": "15",
+      "multipleprices": "0",
+      "originaltitle": "Whalefall",
+      "distributor": "25",
+      "duration": "98",
+      "imdb": "28535715",
+      "maccsboxlanguage": "OV",
+      "maccsboxsubtitles": "FI-SE",
+      "director": "Brian Duffield",
+      "agelimit": null,
+      "storefronturl": "https://biomarilyn.johku.com/fi_FI/whalefall",
+      "product": {
+        "id": "1058",
+        "name": "Whalefall",
+        "canonical": "whalefall",
+        "enable_catalog": "fi_FI",
+        "enable_collection": "fi_FI",
+        "displayedtype": "movie"
+      }
+    }
+  ]
+}

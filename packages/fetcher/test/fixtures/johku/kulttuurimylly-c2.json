@@ -1,0 +1,68 @@
+{
+  "data": [
+    {
+      "id": "1081",
+      "shopId": "kulttuurimylly",
+      "text": "Perhekino: Unohdettu Saari",
+      "start_date": "2026-10-13 15:00",
+      "end_date": "2026-10-13 16:49",
+      "resource_name": "Feeniks-sali (Kino Kulttuurimylly)",
+      "resource_capacity": "70",
+      "resource_reservations": "0",
+      "upcoming": "0",
+      "hideinternet": "0",
+      "pricing_name": "Elokuva 10 €",
+      "price": "10",
+      "multipleprices": "0",
+      "originaltitle": "Forgotten Island",
+      "distributor": "8",
+      "duration": "109",
+      "imdb": "36583977",
+      "maccsboxlanguage": "FI",
+      "maccsboxsubtitles": "XX",
+      "director": "Januel Mercado, Joel Crawford",
+      "agelimit": "K-7",
+      "storefronturl": "https://kulttuurimylly.johku.com/fi_FI/perhekino-unohdettu-saari",
+      "product": {
+        "id": "593",
+        "name": "Perhekino: Unohdettu Saari",
+        "canonical": "perhekino-unohdettu-saari",
+        "enable_catalog": "fi_FI;en_US;sv_SE",
+        "enable_collection": "fi_FI;en_US;sv_SE",
+        "displayedtype": "movie"
+      }
+    },
+    {
+      "id": "1074",
+      "shopId": "kulttuurimylly",
+      "text": "Seniorikino: Presidentin Kyyditys",
+      "start_date": "2026-10-15 14:00",
+      "end_date": "2026-10-15 15:27",
+      "resource_name": "Feeniks-sali (Kino Kulttuurimylly)",
+      "resource_capacity": "70",
+      "resource_reservations": "7",
+      "upcoming": "0",
+      "hideinternet": "0",
+      "pricing_name": "Elokuva 9,00€",
+      "price": "9",
+      "multipleprices": "0",
+      "originaltitle": "Presidentin kyyditys",
+      "distributor": "18",
+      "duration": "87",
+      "imdb": "39373791",
+      "maccsboxlanguage": "OV",
+      "maccsboxsubtitles": "SE",
+      "director": "Samuli Valkama",
+      "agelimit": "K-12",
+      "storefronturl": "https://kulttuurimylly.johku.com/fi_FI/seniorikino-presidentin-kyyditys",
+      "product": {
+        "id": "599",
+        "name": "Seniorikino: Presidentin Kyyditys",
+        "canonical": "seniorikino-presidentin-kyyditys",
+        "enable_catalog": "fi_FI;en_US;sv_SE",
+        "enable_collection": "fi_FI;en_US;sv_SE",
+        "displayedtype": "movie"
+      }
+    }
+  ]
+}
