@@ -31,6 +31,8 @@ import {
   type FinnkinoRawSnapshot,
   type Text,
 } from "./raw.ts";
+import { own } from "../../lib/records.ts";
+import { byStartThenId } from "../parsing.ts";
 
 export const PROVIDER: Provider = {
   id: "finnkino",
@@ -50,7 +52,7 @@ export const ticketUrl = (showtimeId: string): string =>
 const FINNKINO_LANGS: Record<string, Lang> = { tu: "tr", ma: "ml", li: "lt" };
 
 const toLang = (code: string): Lang | undefined =>
-  FINNKINO_LANGS[code.toLowerCase()] ?? normalizeLang(code);
+  own(FINNKINO_LANGS, code.toLowerCase()) ?? normalizeLang(code);
 
 /** "KO-JA-A" -> spoken Korean and Japanese; "SE-S" -> Swedish subtitles. */
 export const parseLanguageAttribute = (
@@ -74,7 +76,7 @@ const RATINGS: Record<string, FinnishRating> = {
 /** "16 VA" -> "K-16" (letters describe content); "Tulossa" (pending) -> undefined. */
 export const parseRating = (classification: string | undefined): FinnishRating | undefined => {
   const age = classification?.trim().match(/^(S|7|12|16|18)\b/)?.[1];
-  return age ? RATINGS[age] : undefined;
+  return age ? own(RATINGS, age) : undefined;
 };
 
 const FORMATS: Record<string, Feature> = {
@@ -120,7 +122,9 @@ const availability = (s: RawShowtime, lookup: Lookup, fetchedAt: string): Availa
   if (s.restrictions.includes("FilmAdvanceBookingRule")) {
     // The rule says when sales open (all restrictions were "None" when profiled).
     const rule = lookup.rules.get(ruleKey(s.siteId, s.filmId));
-    const opens = rule?.bookingPeriods.map((p) => Date.parse(p.startsAt)).sort((a, b) => a - b)[0];
+    const opens = rule?.bookingPeriods
+      .map((p) => Date.parse(p.startsAt))
+      .toSorted((a, b) => a - b)[0];
     if (opens !== undefined && opens > Date.parse(fetchedAt)) return "not-bookable";
   }
   return "available";
@@ -149,8 +153,8 @@ const parseScreening = (s: RawShowtime, lookup: Lookup, fetchedAt: string): Scre
       (language.role === "audio" ? audio : subtitleLangs).push(...language.languages);
     } else if (name === "2D") dimension = "2d";
     else if (name === "3D") dimension = "3d";
-    else if (name in FORMATS) formats.push(FORMATS[name]!);
-    else if (name in TAGS) tags.push(TAGS[name]!);
+    else if (own(FORMATS, name)) formats.push(own(FORMATS, name)!);
+    else if (own(TAGS, name)) tags.push(own(TAGS, name)!);
     else if (name === "Annisk_K18") {
       licensed = true;
       ageLimit = "K-18";
@@ -370,9 +374,7 @@ export const parseFinnkino = (raw: FinnkinoRawSnapshot): ProviderBatch => {
     venues: [...venues.values()],
     auditoriums: [...auditoriums.values()],
     listings: [...listings.values()],
-    screenings: [...screenings.values()].sort(
-      (a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt) || a.id.localeCompare(b.id),
-    ),
+    screenings: [...screenings.values()].toSorted(byStartThenId),
     warnings,
   };
 };

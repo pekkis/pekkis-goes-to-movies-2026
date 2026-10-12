@@ -1,5 +1,3 @@
-import { TZDate } from "@date-fns/tz";
-import { formatISO } from "date-fns";
 import {
   makeId,
   type Auditorium,
@@ -11,10 +9,11 @@ import {
   type Venue,
   type Warning,
 } from "@pgtm/model";
-import { dateWindow, FINNISH_TZ } from "../../lib/time.ts";
-import { splitTitlePrefix as splitPrefix } from "../labels.ts";
+import { dateWindow, helsinkiShowTime, parseLocalDateTime } from "../../lib/time.ts";
+import { splitTitlePrefix as splitPrefix, splitVersion } from "../labels.ts";
 import { codes, parseAudio, parseSubtitles, UNKNOWN_CODE } from "../language-codes.ts";
-import { providerOf } from "../sites.ts";
+import { byStartThenId, toCents } from "../parsing.ts";
+import { providerOf, toVenue } from "../sites.ts";
 import { RawShow, ShowsResponse, type NexxoRawSnapshot } from "./raw.ts";
 import {
   DEFAULT_SHOW_TYPES,
@@ -24,6 +23,7 @@ import {
   type ShowTypeRule,
   type TitlePrefixRule,
 } from "./sites.ts";
+import { own } from "../../lib/records.ts";
 
 const RATINGS: Record<string, FinnishRating> = {
   S: "S",
@@ -46,16 +46,14 @@ export const parseAge = (
 
 /** "2026-10-10 15:00:00" (Helsinki) -> ISO with offset. */
 export const toIso = (local: string): string | undefined => {
-  const m = local.trim().match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})(?::(\d{2}))?$/);
-  if (!m) return undefined;
-  const [y, mo, d, h, mi, s] = m.slice(1).map((part) => Number(part ?? 0)) as number[];
-  return formatISO(new TZDate(y!, mo! - 1, d!, h!, mi!, s!, FINNISH_TZ));
+  const parts = parseLocalDateTime(local);
+  return parts && helsinkiShowTime(parts)?.startsAt;
 };
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const showTypeRule = (site: NexxoSite, title: string): ShowTypeRule | undefined =>
-  site.showTypes?.[title] ?? DEFAULT_SHOW_TYPES[title];
+  own(site.showTypes, title) ?? own(DEFAULT_SHOW_TYPES, title);
 
 /** "Ennakkoensi-ilta: Pikkuli" -> { title: "Pikkuli", rule } when the prefix is configured. */
 export const splitTitlePrefix = (
@@ -96,17 +94,7 @@ export const parseNexxo = (raw: NexxoRawSnapshot, site: NexxoSite): ProviderBatc
   >();
 
   for (const v of site.venues) {
-    venues.set(v.slug, {
-      id: makeId(P, "venue", v.slug),
-      provider: P,
-      sourceId: v.page ? `${v.locationId}:${v.slug}` : v.locationId,
-      name: v.name,
-      city: v.city,
-      ...(v.shortName && { shortName: v.shortName }),
-      ...(v.address && { address: v.address }),
-      ...(v.postalCode && { postalCode: v.postalCode }),
-      ...(v.geo && { geo: v.geo }),
-    });
+    venues.set(v.slug, toVenue(P, v, v.page ? `${v.locationId}:${v.slug}` : v.locationId));
   }
 
   for (const [locationId, payload] of Object.entries(raw.payloads)) {
@@ -177,23 +165,28 @@ export const parseNexxo = (raw: NexxoRawSnapshot, site: NexxoSite): ProviderBatc
       if (row.ageLimit?.trim() && !age.rating && !age.ageLimit)
         unmapped.push(`ageLimit:${row.ageLimit}`);
 
-      const { title, rule: prefix } = splitTitlePrefix(site, row.movieTitle);
+      const { title: unprefixed, rule: prefix } = splitTitlePrefix(site, row.movieTitle);
+      const { title, version } = splitVersion(unprefixed);
       const tags: ScreeningTag[] = [...(prefix?.tags ?? [])];
       const series: string[] = prefix?.series ? [prefix.series] : [];
-      let isEvent = false;
+      let isEvent = prefix?.event ?? false;
+      let licensed = prefix?.licensed ?? false;
       const showType = row.showTypeTitle?.trim();
       if (showType) {
         const rule = showTypeRule(site, showType);
         if (rule) {
           tags.push(...(rule.tags ?? []));
+          if (rule.series) series.push(rule.series);
           isEvent ||= rule.event ?? false;
+          licensed ||= rule.licensed ?? false;
         } else {
           series.push(showType);
         }
       }
       if (age.ageLimit && /tapahtuma/i.test(row.ageLimit ?? "")) isEvent = true;
 
-      const price = Number(row.priceIncludingTax);
+      // "0.00" means the price is not set.
+      const price = toCents(row.priceIncludingTax, { zeroIsFree: false });
       const venueId = makeId(P, "venue", venue.slug);
       const auditoriumId = row.roomId
         ? makeId(P, "screen", `${locationId}-${row.roomId}`)
@@ -243,16 +236,16 @@ export const parseNexxo = (raw: NexxoRawSnapshot, site: NexxoSite): ProviderBatc
           dimension: row.is3D === "1" ? "3d" : "2d",
           formats: [],
         },
-        audio,
+        audio: version.audio ? [version.audio] : audio,
+        ...(version.dubbed !== undefined && { dubbed: version.dubbed }),
         subtitles,
         ...(age.ageLimit && { ageLimit: age.ageLimit }),
         tags: [...new Set(tags)],
         series,
         // Nexxo publishes no seat counts.
         availability: "unknown",
-        ...(price > 0 && {
-          price: { amountCents: Math.round(price * 100), currency: "EUR" as const },
-        }),
+        ...(price !== undefined && { price: { amountCents: price, currency: "EUR" as const } }),
+        ...(licensed && { licensed: true }),
         // No per-show booking link: the venue's programme page (verified per site).
         ticketUrl: ticketUrl(site, venue),
         unmappedLabels: unmapped,
@@ -278,9 +271,7 @@ export const parseNexxo = (raw: NexxoRawSnapshot, site: NexxoSite): ProviderBatc
     venues: [...venues.values()],
     auditoriums: [...auditoriums.values()],
     listings: [...listings.values()],
-    screenings: [...screenings.values()].sort(
-      (a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt) || a.id.localeCompare(b.id),
-    ),
+    screenings: [...screenings.values()].toSorted(byStartThenId),
     warnings,
   };
 };

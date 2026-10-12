@@ -21,7 +21,7 @@ const later = (iso: string, hours: number) =>
 describe("ingestBatch", () => {
   it("inserts everything and round-trips through CamelCasePlugin", async () => {
     const result = await ingestBatch(db, batch([screening("1"), screening("2")]));
-    expect(result).toEqual({ inserted: 2, updated: 0, removed: 0 });
+    expect(result).toEqual({ inserted: 2, updated: 0, removed: 0, removalsSkipped: false });
 
     const row = await db
       .selectFrom("screenings")
@@ -47,7 +47,7 @@ describe("ingestBatch", () => {
       db,
       batch([screening("1", { availability: "sold-out" })], { fetchedAt: next }),
     );
-    expect(result).toEqual({ inserted: 0, updated: 1, removed: 0 });
+    expect(result).toEqual({ inserted: 0, updated: 1, removed: 0, removalsSkipped: false });
 
     const row = await db.selectFrom("screenings").selectAll().executeTakeFirstOrThrow();
     expect(row.availability).toBe("sold-out");
@@ -100,6 +100,24 @@ describe("ingestBatch", () => {
       .where("removedAt", "is not", null)
       .execute();
     expect(removed).toEqual([]);
+  });
+
+  it("infers no removals from an incomplete batch (part of the source failed to parse)", async () => {
+    await ingestBatch(db, batch([screening("1"), screening("2")]));
+    const broken = batch([screening("1")], { fetchedAt: later(batch([]).fetchedAt, 6) });
+    broken.warnings = [{ code: "invalid-response", message: "location 2 did not parse" }];
+    expect(await ingestBatch(db, broken)).toMatchObject({ removed: 0, removalsSkipped: true });
+    const second = await db
+      .selectFrom("screenings")
+      .select("removedAt")
+      .where("sourceId", "=", "2")
+      .executeTakeFirstOrThrow();
+    expect(second.removedAt).toBeNull();
+
+    // Deliberate skips do not make a batch incomplete.
+    const skipped = batch([screening("1")], { fetchedAt: later(batch([]).fetchedAt, 7) });
+    skipped.warnings = [{ code: "unclaimed-room", message: "room 24 belongs to no venue" }];
+    expect(await ingestBatch(db, skipped)).toMatchObject({ removed: 1, removalsSkipped: false });
   });
 
   it("leaves venues the batch does not list alone (a partial --venue pull)", async () => {

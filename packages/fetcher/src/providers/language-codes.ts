@@ -1,5 +1,6 @@
 import type { Lang, Subtitles } from "@pgtm/model";
 import { normalizeLang } from "../lib/lang.ts";
+import { own } from "../lib/records.ts";
 
 /**
  * Language codes as Finnish ticketing systems write them (Nexxo, Johku's Maccs Box fields):
@@ -19,7 +20,7 @@ export const codes = (raw: string | null | undefined) =>
     .filter(Boolean);
 
 const toLang = (code: string): Lang | undefined =>
-  EXTRA_CODES[code.toLowerCase()] ?? normalizeLang(code);
+  own(EXTRA_CODES, code.toLowerCase()) ?? normalizeLang(code);
 
 /** "FI" / "OV" -> ["fi"] / []. Unknown codes are returned for unmappedLabels. */
 export const parseAudio = (

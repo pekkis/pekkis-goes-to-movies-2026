@@ -17,7 +17,7 @@
     "showtimes": "pnpm --filter @pgtm/backend showtimes",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
-    "lint": "oxlint",
+    "lint": "oxlint --deny-warnings",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "check": "pnpm typecheck && pnpm lint && pnpm fmt:check && pnpm test",

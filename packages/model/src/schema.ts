@@ -130,10 +130,6 @@ export const FilmListing = z.object({
 });
 export type FilmListing = z.infer<typeof FilmListing>;
 
-/**
- * Canonical film from TMDB. Posters, synopses and trailers come only from here,
- * never from cinemas. Image paths are TMDB paths: `https://image.tmdb.org/t/p/{size}{path}`.
- */
 export const RatingSource = z.enum(["rotten-tomatoes", "metacritic", "imdb", "tmdb"]);
 export type RatingSource = z.infer<typeof RatingSource>;
 
@@ -149,6 +145,10 @@ export const Rating = z.object({
 });
 export type Rating = z.infer<typeof Rating>;
 
+/**
+ * Canonical film from TMDB. Posters, synopses and trailers come only from here,
+ * never from cinemas. Image paths are TMDB paths: `https://image.tmdb.org/t/p/{size}{path}`.
+ */
 export const Film = z.object({
   id: z.string().regex(/^tmdb:\d+$/),
   tmdbId: z.number().int().positive(),
@@ -304,3 +304,17 @@ export const ProviderBatch = z.object({
   warnings: z.array(Warning),
 });
 export type ProviderBatch = z.infer<typeof ProviderBatch>;
+
+/**
+ * Warning codes that mean part of the source could not be read (a payload or a row failed
+ * validation, a row named an unknown venue or film, the API reported an error). Codes for
+ * deliberate skips (`unclaimed-*`, `venue-without-*`) are not among them.
+ */
+export const DATA_MISSING_WARNING = /^(invalid-|unknown-|result-code$)/;
+
+/**
+ * A batch with data-missing warnings is incomplete: screenings absent from it may simply
+ * not have been read, so nothing may be inferred as removed from it.
+ */
+export const isIncomplete = (batch: Pick<ProviderBatch, "warnings">): boolean =>
+  batch.warnings.some((w) => DATA_MISSING_WARNING.test(w.code));

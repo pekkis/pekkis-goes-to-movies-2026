@@ -2,6 +2,7 @@ import type { Film, Rating } from "@pgtm/model";
 import { z } from "zod";
 import type { JsonCache } from "../lib/cache.ts";
 import type { HttpClient } from "../lib/http.ts";
+import { own } from "../lib/records.ts";
 
 /**
  * OMDb (omdbapi.com): Rotten Tomatoes, Metacritic and IMDb scores by IMDb id, which TMDB
@@ -41,7 +42,7 @@ export const parseOmdb = (raw: unknown): Rating[] => {
   if (!parsed.success || parsed.data.Response !== "True") return [];
   const votes = Number((parsed.data.imdbVotes ?? "").replace(/,/g, ""));
   return (parsed.data.Ratings ?? []).flatMap((r) => {
-    const source = SOURCES[r.Source];
+    const source = own(SOURCES, r.Source);
     const score = normalizeScore(r.Value);
     if (!source || score === undefined) return [];
     return [
@@ -71,6 +72,8 @@ export const fetchOmdb = async (
       return await http.getJson(OMDB_URL, { i: imdbId, apikey: apiKey });
     } catch (error) {
       const status = (error as { response?: { status?: number } }).response?.status;
+      // No `cause`: the original error quotes the URL, which carries the API key.
+      // oxlint-disable-next-line eslint/preserve-caught-error
       throw new Error(
         `OMDb request for ${imdbId} failed${status ? ` (HTTP ${status})` : ""}` +
           (status === 401 ? ": invalid key, or the daily limit (1,000) is used up" : ""),

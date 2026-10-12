@@ -1,5 +1,3 @@
-import { formatISO, parseISO, subHours } from "date-fns";
-import { TZDate } from "@date-fns/tz";
 import {
   makeId,
   type Availability,
@@ -15,11 +13,13 @@ import {
   type Warning,
 } from "@pgtm/model";
 import { normalizeLang } from "../../lib/lang.ts";
-import { dateWindow, FINNISH_TZ } from "../../lib/time.ts";
+import { dateWindow, helsinkiShowTimeAt } from "../../lib/time.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { providerOf } from "../sites.ts";
+import { availabilityFromSeats, byStartThenId, slugify, tally, toCents } from "../parsing.ts";
+import { providerOf, toVenue } from "../sites.ts";
 import { EventsPage, KinolaEvent, type KinolaRawSnapshot } from "./raw.ts";
 import type { KinolaSite } from "./sites.ts";
+import { own } from "../../lib/records.ts";
 
 const RATINGS: Record<string, FinnishRating> = {
   S: "S",
@@ -69,11 +69,10 @@ export const parseSubtitleList = (
 };
 
 /** Free seats only (no capacity in the API): sold out, or available. */
-export const availabilityOf = (e: Pick<KinolaEvent, "freeSeats" | "visibility">): Availability => {
-  if (e.visibility === "coming_soon") return "not-bookable";
-  if (e.freeSeats === null || e.freeSeats === undefined) return "unknown";
-  return e.freeSeats === 0 ? "sold-out" : "available";
-};
+export const availabilityOf = (e: Pick<KinolaEvent, "freeSeats" | "visibility">): Availability =>
+  e.visibility === "coming_soon"
+    ? "not-bookable"
+    : availabilityFromSeats({ free: e.freeSeats ?? undefined });
 
 /** Conservative note reading: only notes that start with the label. */
 export const noteTags = (note: string | null | undefined): ScreeningTag[] => {
@@ -85,12 +84,6 @@ export const noteTags = (note: string | null | undefined): ScreeningTag[] => {
 
 const euros = (n: number) => `${n.toFixed(2).replace(".", ",").replace(",00", "")} €`;
 
-/** Shows before 05:00 belong to the previous day's programme. */
-const businessDateOf = (localTime: string) => {
-  const local = new TZDate(parseISO(localTime), FINNISH_TZ);
-  return formatISO(local.getHours() < 5 ? subHours(local, 5) : local, { representation: "date" });
-};
-
 /** Pure: API pages + site config -> normalized batch. Broken events become warnings. */
 export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderBatch => {
   const P = site.provider;
@@ -98,17 +91,7 @@ export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderB
   const warnings: Warning[] = [];
   const prefixRules = { ...COMMON_TITLE_PREFIXES, ...site.titlePrefixes };
 
-  const venues: Venue[] = site.venues.map((v) => ({
-    id: makeId(P, "venue", v.slug),
-    provider: P,
-    sourceId: v.kinolaName,
-    name: v.name,
-    city: v.city,
-    ...(v.shortName && { shortName: v.shortName }),
-    ...(v.address && { address: v.address }),
-    ...(v.postalCode && { postalCode: v.postalCode }),
-    ...(v.geo && { geo: v.geo }),
-  }));
+  const venues: Venue[] = site.venues.map((v) => toVenue(P, v, v.kinolaName));
   const auditoriums = new Map<string, Auditorium>();
   const listings = new Map<string, FilmListing>();
   const screenings = new Map<string, Screening>();
@@ -136,10 +119,19 @@ export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderB
     const e = parsed.data;
     const venue = site.venues.find((v) => v.kinolaName === e.venue.name);
     if (!venue) {
-      unclaimed.set(e.venue.name, (unclaimed.get(e.venue.name) ?? 0) + 1);
+      tally(unclaimed, e.venue.name);
       continue;
     }
-    const businessDate = businessDateOf(e.local_time);
+    const showTime = helsinkiShowTimeAt(e.local_time);
+    if (!showTime) {
+      warnings.push({
+        code: "invalid-start",
+        message: `Unreadable local_time "${e.local_time}"`,
+        context: { id: e.id },
+      });
+      continue;
+    }
+    const { startsAt, businessDate } = showTime;
     if (businessDate < window.from || businessDate > window.to) continue;
 
     const p = e.production;
@@ -150,7 +142,7 @@ export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderB
     unmapped.push(...audio.unknown.map((n) => `language:${n}`));
     const subs = parseSubtitleList(p.subtitles);
     unmapped.push(...subs.unknown.map((n) => `subtitles:${n}`));
-    const rating = p.rating ? RATINGS[p.rating.trim()] : undefined;
+    const rating = p.rating ? own(RATINGS, p.rating.trim()) : undefined;
     if (p.rating && !rating && p.rating !== "Not rated") unmapped.push(`rating:${p.rating}`);
     const imdbId = p.imdb_id?.trim().match(/^tt\d+$/)?.[0];
     const bare = !p.languages?.some((l) => l.trim()) && !p.distributor?.trim() && !imdbId;
@@ -180,7 +172,7 @@ export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderB
     let licensed = false;
     const program = e.program?.name.trim();
     if (program) {
-      const rule = site.programs?.[program];
+      const rule = own(site.programs, program);
       if (!rule) series.push(program);
       else {
         tags.push(...(rule.tags ?? []));
@@ -193,13 +185,14 @@ export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderB
     const room = e.room?.name.trim();
     const auditoriumId =
       room && room !== venue.kinolaName
-        ? makeId(P, "screen", `${venue.slug}-${room.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`)
+        ? makeId(P, "screen", `${venue.slug}-${slugify(room)}`)
         : undefined;
     if (auditoriumId && !auditoriums.has(auditoriumId)) {
       auditoriums.set(auditoriumId, { id: auditoriumId, venueId, name: room!, features: [] });
     }
 
-    const price = e.price_range?.currency === "EUR" ? e.price_range : undefined;
+    const range = e.price_range?.currency === "EUR" ? e.price_range : undefined;
+    const cents = range && toCents(range.min, { zeroIsFree: true });
     const id = makeId(P, "show", e.id);
     screenings.set(id, {
       id,
@@ -208,7 +201,7 @@ export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderB
       venueId,
       ...(auditoriumId && { auditoriumId }),
       listingId,
-      startsAt: e.local_time,
+      startsAt,
       businessDate,
       presentation: { projection: "digital", dimension: version.dimension ?? "2d", formats: [] },
       audio: version.audio ? [version.audio] : audio.langs,
@@ -220,13 +213,14 @@ export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderB
       series: [...new Set(series)],
       ...(licensed && { licensed: true }),
       availability: availabilityOf(e),
-      ...(price && {
-        price: {
-          amountCents: Math.round(price.min * 100),
-          currency: "EUR" as const,
-          ...(price.max > price.min && { note: `${euros(price.min)}–${euros(price.max)}` }),
-        },
-      }),
+      ...(range &&
+        cents !== undefined && {
+          price: {
+            amountCents: cents,
+            currency: "EUR" as const,
+            ...(range.max > range.min && { note: `${euros(range.min)}–${euros(range.max)}` }),
+          },
+        }),
       // Copied from the API, never constructed; without one, the programme page.
       ticketUrl: e.checkout_url?.startsWith("https://")
         ? e.checkout_url
@@ -244,17 +238,15 @@ export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderB
     });
   }
 
-  const shown = new Set([...screenings.values()].map((s) => s.listingId));
+  // Listings are created only for screenings inside the window.
   return {
     provider: providerOf(site, "kinola", "buy"),
     fetchedAt: raw.fetchedAt,
     window,
     venues,
     auditoriums: [...auditoriums.values()],
-    listings: [...listings.values()].filter((l) => shown.has(l.id)),
-    screenings: [...screenings.values()].sort(
-      (a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt) || a.id.localeCompare(b.id),
-    ),
+    listings: [...listings.values()],
+    screenings: [...screenings.values()].toSorted(byStartThenId),
     warnings,
   };
 };

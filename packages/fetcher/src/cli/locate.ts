@@ -63,7 +63,7 @@ if (values.address) {
 }
 
 const venues: LocatableVenue[] = [];
-for (const file of (await readdir(values.dir)).filter((f) => f.endsWith(".json")).sort()) {
+for (const file of (await readdir(values.dir)).filter((f) => f.endsWith(".json")).toSorted()) {
   if (file === "films.json") continue;
   const batch = ProviderBatch.safeParse(JSON.parse(await readFile(join(values.dir, file), "utf8")));
   if (batch.success) venues.push(...batch.data.venues);

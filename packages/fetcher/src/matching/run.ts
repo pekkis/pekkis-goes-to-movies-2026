@@ -3,14 +3,14 @@ import { createDiskCache } from "../lib/cache.ts";
 import { createHttpClient } from "../lib/http.ts";
 import { addOmdbRatings, fetchOmdb } from "../ratings/omdb.ts";
 import { createTmdbClient, createTmdbHttp } from "../tmdb/client.ts";
-import type { Env } from "../lib/env.ts";
+import { requireTmdbKey, type Env } from "../lib/env.ts";
 import { loadAliases } from "./aliases.ts";
 import { buildCatalog } from "./catalog.ts";
 
 /** Matches all normalized batches under `{out}/normalized` and prints what stayed unmatched. */
 export const runMatching = async (out: string, env: Env) => {
   const tmdb = createTmdbClient(
-    createTmdbHttp(env.TMDB_APIKEY, env.CONTACT),
+    createTmdbHttp(requireTmdbKey(env), env.CONTACT),
     createDiskCache(join(out, "cache", "tmdb")),
   );
   const omdbKey = env.OMDB_APIKEY;

@@ -1,3 +1,16 @@
 {
-  "ignorePatterns": ["vendor/**", "apps/fpgm/**"]
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "ignorePatterns": ["vendor/**", "apps/fpgm/**"],
+  "overrides": [
+    {
+      "files": ["**/test/**"],
+      "rules": {
+        "unicorn/consistent-function-scoping": "off"
+      }
+    }
+  ]
 }

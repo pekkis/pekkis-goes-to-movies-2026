@@ -1,5 +1,5 @@
-import { ScreeningTag } from "@pgtm/model";
 import { z } from "zod";
+import { COMMON_TITLE_PREFIXES, LabelRule } from "../labels.ts";
 import { defineSites, SiteBase, SiteVenue } from "../sites.ts";
 
 /**
@@ -19,11 +19,8 @@ import { defineSites, SiteBase, SiteVenue } from "../sites.ts";
  * - `{}`: ignore (regular screening, or a label only meaningful inside the cinema)
  * - `tags`: screening tags; `event: true` also marks the film listing as an event
  */
-export const ShowTypeRule = z.object({
-  tags: z.array(ScreeningTag).optional(),
-  event: z.boolean().optional(),
-});
-export type ShowTypeRule = z.infer<typeof ShowTypeRule>;
+export const ShowTypeRule = LabelRule;
+export type ShowTypeRule = LabelRule;
 
 /** Platform defaults; a site's `showTypes` overrides or extends them. */
 export const DEFAULT_SHOW_TYPES: Record<string, ShowTypeRule> = {
@@ -34,21 +31,10 @@ export const DEFAULT_SHOW_TYPES: Record<string, ShowTypeRule> = {
   "Muut tapahtumat": { tags: ["event-cinema"], event: true },
 };
 
-/**
- * A known "Prefix: Title" label. The prefix is stripped from the title (so TMDB matching
- * sees the film's own name) and becomes tags and/or a series. Only listed prefixes are
- * touched: "Ryhmä Hau: Dinoelokuva" is a title, not a label.
- */
-export const TitlePrefixRule = z.object({
-  tags: z.array(ScreeningTag).optional(),
-  series: z.string().optional(),
-});
-export type TitlePrefixRule = z.infer<typeof TitlePrefixRule>;
-
-export const DEFAULT_TITLE_PREFIXES: Record<string, TitlePrefixRule> = {
-  "Ennakkoensi-ilta": { tags: ["preview"] },
-  Ennakkonäytös: { tags: ["preview"] },
-};
+/** "Prefix: Title" labels: the shared rules (labels.ts), extended per site. */
+export const TitlePrefixRule = LabelRule;
+export type TitlePrefixRule = LabelRule;
+export const DEFAULT_TITLE_PREFIXES: Record<string, LabelRule> = COMMON_TITLE_PREFIXES;
 
 export const NexxoVenue = SiteVenue.extend({
   /** The plugin's `locationid`. Several venues may share one. */

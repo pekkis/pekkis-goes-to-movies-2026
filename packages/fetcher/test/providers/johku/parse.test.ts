@@ -1,11 +1,6 @@
 import { ProviderBatch } from "@pgtm/model";
 import { describe, expect, it } from "vitest";
-import {
-  availabilityOf,
-  isPublicScreening,
-  parseJohku,
-  startOf,
-} from "../../../src/providers/johku/parse.ts";
+import { isPublicScreening, parseJohku } from "../../../src/providers/johku/parse.ts";
 import type { JohkuRawSnapshot } from "../../../src/providers/johku/raw.ts";
 import { JOHKU_SITES, type JohkuSite } from "../../../src/providers/johku/sites.ts";
 import { loadFixture } from "../../fixtures.ts";
@@ -40,25 +35,6 @@ const show = (batch: ProviderBatch, sourceId: string) => {
 };
 
 describe("field parsers", () => {
-  it("reads Helsinki local times, after-midnight shows on the previous day", () => {
-    expect(startOf("2026-10-14 19:00")).toEqual({
-      startsAt: "2026-10-14T19:00:00+03:00",
-      businessDate: "2026-10-14",
-    });
-    expect(startOf("2026-10-30 00:30")).toEqual({
-      startsAt: "2026-10-30T00:30:00+02:00",
-      businessDate: "2026-10-29",
-    });
-    expect(startOf("14.10.2026 19:00")).toBeUndefined();
-  });
-
-  it("computes availability from capacity and reservations", () => {
-    expect(availabilityOf(113, 3)).toBe("available");
-    expect(availabilityOf(100, 95)).toBe("few-left");
-    expect(availabilityOf(60, 60)).toBe("sold-out");
-    expect(availabilityOf(undefined, 3)).toBe("unknown");
-  });
-
   it("tells screenings from hall hire, closures and private bookings", () => {
     expect(isPublicScreening({ price: "13", agelimit: "S", maccsboxlanguage: "FI" })).toBe(true);
     // A free screening still has film data.
@@ -88,7 +64,7 @@ describe("parseJohku", () => {
 
   it("maps a Kinokulma screening and leaves out hall hire, closures and private bookings", () => {
     const batch = parse("kinokulma", [1]);
-    expect(batch.listings.map((l) => l.title.fi).sort()).toEqual(["Digger", "Pirjo i Sverige"]);
+    expect(batch.listings.map((l) => l.title.fi).toSorted()).toEqual(["Digger", "Pirjo i Sverige"]);
     expect(show(batch, "6457")).toMatchObject({
       id: "kinokulma:show:6457",
       venueId: "kinokulma:venue:oulainen",
@@ -111,7 +87,7 @@ describe("parseJohku", () => {
 
   it("skips coming-soon entries and publishes a show in two blocks once", () => {
     const batch = parse("biomarilyn", [1, 9]);
-    expect(batch.screenings.map((s) => s.sourceId).sort()).toEqual(["10158", "10161"]);
+    expect(batch.screenings.map((s) => s.sourceId).toSorted()).toEqual(["10158", "10161"]);
     expect(batch.listings.find((l) => l.title.fi === "Unohdettu Saari")?.originalTitle).toBe(
       "Forgotten Island",
     );
@@ -138,7 +114,7 @@ describe("parseJohku", () => {
     const batch = parse("kulttuurimylly", [2]);
     expect(show(batch, "1081")).toMatchObject({ tags: ["kids"] });
     expect(show(batch, "1074")).toMatchObject({ tags: ["senior"] });
-    expect(batch.listings.map((l) => l.title.fi).sort()).toEqual([
+    expect(batch.listings.map((l) => l.title.fi).toSorted()).toEqual([
       "Presidentin Kyyditys",
       "Unohdettu Saari",
     ]);
@@ -166,6 +142,9 @@ describe("parseJohku", () => {
       snapshot("kinokulma", [1], { schedules: { "1": { data: [{ id: "1" }] }, "2": "<html>" } }),
       site("kinokulma"),
     );
-    expect(batch.warnings.map((w) => w.code).sort()).toEqual(["invalid-entry", "invalid-response"]);
+    expect(batch.warnings.map((w) => w.code).toSorted()).toEqual([
+      "invalid-entry",
+      "invalid-response",
+    ]);
   });
 });

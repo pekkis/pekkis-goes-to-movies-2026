@@ -1,9 +1,6 @@
-import { TZDate } from "@date-fns/tz";
-import { formatISO, subDays } from "date-fns";
 import {
   makeId,
   type Auditorium,
-  type Availability,
   type FilmListing,
   type FinnishRating,
   type Lang,
@@ -16,16 +13,18 @@ import {
 } from "@pgtm/model";
 import { load, type CheerioAPI } from "cheerio";
 import { normalizeLang } from "../../lib/lang.ts";
-import { dateWindow, FINNISH_TZ } from "../../lib/time.ts";
+import { dateWindow, helsinkiShowTime } from "../../lib/time.ts";
 import {
   COMMON_TITLE_PREFIXES,
   splitTitlePrefix,
   splitVersion,
   type LabelRule,
 } from "../labels.ts";
-import { providerOf } from "../sites.ts";
+import { availabilityFromSeats, byStartThenId, slugify, tally, toCents } from "../parsing.ts";
+import { providerOf, toVenue } from "../sites.ts";
 import { ExtractedFilm, ExtractedShow, type EtikettiRawSnapshot } from "./raw.ts";
 import { baseOf, DEFAULT_TAGS, type EtikettiSite, type EtikettiVenue } from "./sites.ts";
+import { own } from "../../lib/records.ts";
 
 // --- Listing ------------------------------------------------------------------------
 
@@ -115,7 +114,7 @@ export const extractFilmPage = (
       // The details paragraph: "PLACE<br>Lippu 15,00€<br>Vapaat paikat 27/35".
       const details = row
         .find("p")
-        .filter((_, p) => DETAILS.test($(p).text()))
+        .filter((_index, para) => DETAILS.test($(para).text()))
         .first();
       const firstLine = details.length
         ? fragmentText(($(details).html() ?? "").split(/<br\s*\/?>/i)[0] ?? "")
@@ -137,7 +136,7 @@ export const extractFilmPage = (
         ...(seats && { seatsFree: Number(seats[1]), seatsTotal: Number(seats[2]) }),
         tags: row
           .find(".tag")
-          .map((_, t) => text($(t).text()))
+          .map((_index, tag) => text($(tag).text()))
           .get()
           .filter(Boolean),
         licensedIcon: row.find("img[src*='anniskelu']").length > 0,
@@ -159,13 +158,6 @@ const RATINGS: Record<string, FinnishRating> = {
 };
 
 const norm = (s: string) => s.normalize("NFC").toLowerCase().replace(/\s+/g, " ").trim();
-
-const slugify = (s: string) =>
-  norm(s)
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
 
 /** "2 h 9 min" -> 129, "95 min" -> 95. */
 export const parseDuration = (raw: string | undefined): number | undefined => {
@@ -205,13 +197,6 @@ export const parseSubtitles = (
     : { subtitles: { kind: "unknown" }, unknown: raw };
 };
 
-/** Seats left -> availability. Under a tenth left is "few-left". */
-export const availabilityOf = (free?: number, total?: number): Availability => {
-  if (free === undefined || total === undefined) return "unknown";
-  if (free === 0) return "sold-out";
-  return free / total < 0.1 ? "few-left" : "available";
-};
-
 /**
  * Which venue a place line belongs to, and the room. The venue is the part equal to a
  * venue's `place`; the room is the part after it, unless it repeats the venue
@@ -244,22 +229,11 @@ export const roomName = (raw: string): string => {
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 };
 
-/** "15,00" -> 1500 cents. */
-const cents = (raw: string | undefined) => {
-  const n = raw ? Number(raw.replace(",", ".")) : NaN;
-  return Number.isFinite(n) && n > 0 ? Math.round(n * 100) : undefined;
-};
-
-/** Calendar date + time in Helsinki; shows before 05:00 belong to the previous day's programme. */
-const startOf = (date: string, time: string) => {
-  const [d, m, y] = date.split(".").map(Number) as [number, number, number];
-  const [hh, mm] = time.split(":").map(Number) as [number, number];
-  const start = new TZDate(y, m - 1, d, hh, mm, 0, FINNISH_TZ);
-  const business = hh < 5 ? subDays(start, 1) : start;
-  return {
-    startsAt: formatISO(start),
-    businessDate: formatISO(business, { representation: "date" }),
-  };
+/** "10.10.2026" + "18:40" -> show time; undefined for an impossible date. */
+const showTimeOf = (date: string, time: string) => {
+  const [day, month, year] = date.split(".").map(Number) as [number, number, number];
+  const [hour, minute] = time.split(":").map(Number) as [number, number];
+  return helsinkiShowTime({ year, month, day, hour, minute });
 };
 
 /** Pure: raw snapshot + site config -> normalized batch. Broken pages and rows become warnings. */
@@ -271,17 +245,7 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
   const tagRules = { ...DEFAULT_TAGS, ...site.tags };
   const prefixRules = { ...COMMON_TITLE_PREFIXES, ...site.titlePrefixes };
 
-  const venues: Venue[] = site.venues.map((v) => ({
-    id: makeId(P, "venue", v.slug),
-    provider: P,
-    sourceId: v.slug,
-    name: v.name,
-    city: v.city,
-    ...(v.shortName && { shortName: v.shortName }),
-    ...(v.address && { address: v.address }),
-    ...(v.postalCode && { postalCode: v.postalCode }),
-    ...(v.geo && { geo: v.geo }),
-  }));
+  const venues: Venue[] = site.venues.map((v) => toVenue(P, v, v.slug));
   const auditoriums = new Map<string, Auditorium>();
   const listings: FilmListing[] = [];
   const screenings = new Map<string, Screening>();
@@ -307,7 +271,7 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
     if (subs.unknown) unmapped.push(`Tekstitys:${subs.unknown}`);
     const audio = version.audio ? [version.audio] : languageFact.audio;
     const year = facts["Valmistumisvuosi"]?.match(/^\d{4}$/)?.[0];
-    const rating = f.age ? RATINGS[f.age] : undefined;
+    const rating = f.age ? own(RATINGS, f.age) : undefined;
     if (f.age && !rating) unmapped.push(`age:${f.age}`);
 
     const listingId = makeId(P, "film", f.sourceId);
@@ -324,17 +288,26 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
       const where = resolvePlace(site.venues, s.place);
       if (!where) {
         const key = s.place ?? "(no place line)";
-        unclaimed.set(key, (unclaimed.get(key) ?? 0) + 1);
+        tally(unclaimed, key);
         continue;
       }
-      const { startsAt, businessDate } = startOf(s.date, s.time);
+      const showTime = showTimeOf(s.date, s.time);
+      if (!showTime) {
+        warnings.push({
+          code: "invalid-start",
+          message: `Impossible date ${s.date} ${s.time}`,
+          context: { path },
+        });
+        continue;
+      }
+      const { startsAt, businessDate } = showTime;
       if (businessDate < window.from || businessDate > window.to) continue;
 
       const tags: ScreeningTag[] = [...(prefix?.tags ?? [])];
       const series: string[] = prefix?.series ? [prefix.series] : [];
       let licensed = s.licensedIcon;
       for (const tag of s.tags) {
-        const rule: LabelRule | undefined = tagRules[tag];
+        const rule: LabelRule | undefined = own(tagRules, tag);
         if (!rule) {
           series.push(tag);
           continue;
@@ -358,12 +331,13 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
         });
       }
 
+      // Without a booking link there is no show id: derive one (no colons: ids forbid them).
       const showId =
         s.ticketPath?.match(/id=(\d+)/)?.[1] ??
-        `${f.sourceId}-${s.date}-${s.time}-${where.venue.slug}`;
+        `${f.sourceId}-${s.date}-${s.time.replace(":", "")}-${where.venue.slug}`;
       const id = makeId(P, "show", showId);
       if (screenings.has(id)) continue; // Niagara prints each row twice
-      const price = cents(s.priceText);
+      const price = toCents(s.priceText, { zeroIsFree: false });
       screenings.set(id, {
         id,
         provider: P,
@@ -377,11 +351,10 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
         audio,
         ...(version.dubbed !== undefined && { dubbed: version.dubbed }),
         subtitles: subs.subtitles,
-        ...(rating && { ageLimit: rating }),
         tags: [...new Set(tags)],
         series: [...new Set(series)],
         ...(licensed && { licensed: true }),
-        availability: availabilityOf(s.seatsFree, s.seatsTotal),
+        availability: availabilityFromSeats({ free: s.seatsFree, capacity: s.seatsTotal }),
         ...(price && { price: { amountCents: price, currency: "EUR" as const } }),
         // Copied from the page, never constructed or requested.
         ticketUrl: s.ticketPath ? `${base}${s.ticketPath}` : `${base}${path}`,
@@ -422,9 +395,7 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
     venues,
     auditoriums: [...auditoriums.values()],
     listings,
-    screenings: [...screenings.values()].sort(
-      (a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt) || a.id.localeCompare(b.id),
-    ),
+    screenings: [...screenings.values()].toSorted(byStartThenId),
     warnings,
   };
 };

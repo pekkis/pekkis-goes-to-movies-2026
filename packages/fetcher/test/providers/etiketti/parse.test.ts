@@ -3,7 +3,6 @@ import { join } from "node:path";
 import { ProviderBatch } from "@pgtm/model";
 import { describe, expect, it } from "vitest";
 import {
-  availabilityOf,
   extractFilmPage,
   filmLinks,
   isEmptyProgramme,
@@ -89,13 +88,6 @@ describe("field parsers", () => {
       subtitles: { kind: "unknown" },
       unknown: "klingon",
     });
-  });
-
-  it("maps free seats to availability", () => {
-    expect(availabilityOf(0, 100)).toBe("sold-out");
-    expect(availabilityOf(9, 100)).toBe("few-left");
-    expect(availabilityOf(10, 100)).toBe("available");
-    expect(availabilityOf(undefined, undefined)).toBe("unknown");
   });
 
   it("tidies all-caps room names, keeping acronyms", () => {
@@ -272,6 +264,20 @@ describe("parseEtiketti", () => {
     const batch = parseEtiketti(snapshot({ "/elokuvat/3298/digger": page }), site("kotkanleffat"));
     expect(batch.listings[0]?.title).toEqual({ fi: "Digger" });
     expect(batch.screenings[0]).toMatchObject({ tags: ["preview"], audio: ["fi"], dubbed: true });
+  });
+
+  it("derives a valid id for a row without a booking link, and links the film page", () => {
+    const page = html("kotka-digger").replace(
+      /<a class="button-screening" href="\/salikartta\?id=56589">/,
+      "<a>",
+    );
+    const batch = parseEtiketti(snapshot({ "/elokuvat/3298/digger": page }), site("kotkanleffat"));
+    expect(() => ProviderBatch.parse(batch)).not.toThrow();
+    const derived = batch.screenings.find((s) => !/^\d+$/.test(s.sourceId));
+    expect(derived).toMatchObject({
+      sourceId: "3298-10.10.2026-2000-trio-123",
+      ticketUrl: "https://kotkanleffat.fi/elokuvat/3298/digger",
+    });
   });
 
   it("turns a broken film page into a warning", () => {

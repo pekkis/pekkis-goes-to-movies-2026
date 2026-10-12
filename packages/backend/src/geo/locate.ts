@@ -52,6 +52,7 @@ export const fromCoreLocation = async (): Promise<Located | undefined> => {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
     throw new Error(
       `CoreLocationCLI failed (is Location Services allowed for your terminal?): ${(error as Error).message}`,
+      { cause: error },
     );
   }
 };

@@ -1,4 +1,4 @@
-import { ProviderId, type Provider } from "@pgtm/model";
+import { makeId, ProviderId, type Provider, type Venue } from "@pgtm/model";
 import { z } from "zod";
 import { FinnishGeo, GeoSource } from "../geo/geo.ts";
 
@@ -64,6 +64,19 @@ export const providerOf = (
   homepage: site.homepage,
   platform,
   booking,
+});
+
+/** A configured venue as the model's Venue; `sourceId` is how the platform names it. */
+export const toVenue = (provider: string, v: SiteVenue, sourceId: string): Venue => ({
+  id: makeId(provider, "venue", v.slug),
+  provider,
+  sourceId,
+  name: v.name,
+  city: v.city,
+  ...(v.shortName && { shortName: v.shortName }),
+  ...(v.address && { address: v.address }),
+  ...(v.postalCode && { postalCode: v.postalCode }),
+  ...(v.geo && { geo: v.geo }),
 });
 
 /** Validates a site list: schema, unique providers, unique venue slugs per site, geo sources. */

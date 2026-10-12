@@ -51,7 +51,7 @@ export const buildCatalog = async (
 
   const catalog = FilmCatalog.parse({
     generatedAt: now.toISOString(),
-    films: (await enrich(outcome.films)).sort((a, b) => a.tmdbId - b.tmdbId),
+    films: (await enrich(outcome.films)).toSorted((a, b) => a.tmdbId - b.tmdbId),
     unmatched: outcome.unmatched,
   });
   await writeJson(join(dir, CATALOG_FILE), catalog);

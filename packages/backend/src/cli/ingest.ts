@@ -45,7 +45,8 @@ try {
   for (const { file, batch } of batches) {
     const result = await ingestBatch(db, batch);
     console.log(
-      `${batch.provider.id} (${file}): ${result.inserted} new, ${result.updated} updated, ${result.removed} removed screenings`,
+      `${batch.provider.id} (${file}): ${result.inserted} new, ${result.updated} updated, ${result.removed} removed screenings` +
+        (result.removalsSkipped ? " (incomplete batch: removals not inferred)" : ""),
     );
   }
 } finally {

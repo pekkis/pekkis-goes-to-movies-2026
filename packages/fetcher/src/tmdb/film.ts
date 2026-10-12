@@ -28,7 +28,7 @@ const localized = (details: MovieDetails, field: "title" | "overview"): Localize
 
 const finnishRelease = (details: MovieDetails) => {
   const fi = details.release_dates.results.find((r) => r.iso_3166_1 === "FI");
-  const dates = [...(fi?.release_dates ?? [])].sort((a, b) =>
+  const dates = [...(fi?.release_dates ?? [])].toSorted((a, b) =>
     a.release_date.localeCompare(b.release_date),
   );
   const certification = dates.map((d) => d.certification?.trim()).find(Boolean);
@@ -45,7 +45,7 @@ const pickPoster = (details: MovieDetails): string | undefined => {
   for (const lang of ["fi", "en", null]) {
     const best = details.images.posters
       .filter((p) => p.iso_639_1 === lang)
-      .sort((a, b) => (b.vote_average ?? 0) - (a.vote_average ?? 0))[0];
+      .toSorted((a, b) => (b.vote_average ?? 0) - (a.vote_average ?? 0))[0];
     if (best) return best.file_path;
   }
   return details.poster_path ?? undefined;
@@ -54,7 +54,7 @@ const pickPoster = (details: MovieDetails): string | undefined => {
 const trailers = (details: MovieDetails): Film["trailers"] =>
   details.videos.results
     .filter((v) => v.site === "YouTube" && v.type === "Trailer")
-    .sort((a, b) => Number(b.official ?? false) - Number(a.official ?? false))
+    .toSorted((a, b) => Number(b.official ?? false) - Number(a.official ?? false))
     .map((v) => ({
       site: "YouTube" as const,
       key: v.key,

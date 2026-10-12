@@ -30,7 +30,7 @@ For a nicer shell on the host, `pgcli postgres://pgtm:pgtm@localhost:5432/pgtm` 
 | `auditoriums`   | screens: features, own age limit                                                                                                                                                                                                          |
 | `films`         | canonical films from TMDB: `title_fi/sv/en`, `overview_fi/sv/en`, poster, trailers (`jsonb`), Finnish rating                                                                                                                              |
 | `film_ratings`  | One score per film and source (`rotten-tomatoes`, `metacritic`, `imdb`, `tmdb`): `score` 0–100, `display` as the source shows it, `votes`. Primary key `(film_id, source)`. A snapshot: ingest replaces a film's ratings with the latest. |
-| `film_listings` | each provider's own film record, `film_id` → `films` (NULL when unmatched), `kind` film/event                                                                                                                                             |
+| `film_listings` | each provider's own film record, `film_id` → `films` (NULL when unmatched), `kind` film/event, `imdb_id` when the source gives one                                                                                                        |
 | `screenings`    | showtimes, with history columns (below)                                                                                                                                                                                                   |
 
 Model shapes are flattened: `presentation` → `projection`, `dimension`, `formats`; `subtitles` → `subtitles_kind` + `subtitles_languages`; `price` → `price_amount_cents`, `price_currency`, `price_note`; `geo` → `lat`, `lon`. Lists are `text[]`. Enum-like values are `text`, validated by Zod at ingest (Postgres enums are painful to change). An absent ("unknown") model field is `NULL`.
@@ -42,7 +42,8 @@ Screenings are **never deleted**, so the data accumulates over time.
 - `first_seen_at`: the first fetch that contained the screening.
 - `last_seen_at`: the latest fetch that contained it. Fields such as `availability` are updated each time.
 - `removed_at`: set when a later fetch **covered the screening's business date** (`ProviderBatch.window`) but no longer listed it, while it was still in the future (cancelled or rescheduled). Cleared if it reappears.
-- Past screenings and dates outside the fetched window are never marked removed.
+- Past screenings and dates outside the fetched window are never marked removed. Only the batch's own venues are considered.
+- An **incomplete** batch (a data-missing warning, `isIncomplete` in the model) marks nothing removed: a failed payload must not look like a cancelled programme. `pnpm ingest` then prints "(incomplete batch: removals not inferred)".
 
 "Current programme" is `where removed_at is null and starts_at > now()`.
 
@@ -58,11 +59,13 @@ Ingest is idempotent: running it twice on the same files inserts and removes not
 
 The backend's integration tests run against `TEST_DATABASE_URL` (`pgtm_test`). Before each run the schema is dropped and rebuilt from the migrations. **`pnpm check` therefore needs `pnpm db:up` first.**
 
+`pgtm_test` is created by an init script when the Postgres volume is first created. On an older volume, create it once: `pnpm db:psql -c "create database pgtm_test"`.
+
 ## Fuzzy search
 
 `pnpm showtimes <name>` ([packages/backend/src/search](../packages/backend/src/search/)) uses the `pg_trgm` extension (migration `0002`). A film's score is the best `word_similarity` over its TMDB titles (fi/sv/en/original) and the titles cinemas list it under; listings without a TMDB film are searched by their own titles. Default threshold 0.5 (`--min-score`): typos like "odysey" score about 0.67, and unrelated titles stay below 0.45.
 
-Options: `--date YYYY-MM-DD` (default: today in Helsinki), `--links` (ticket URLs), `--min-score`.
+All options (time and place filters, ratings): [cli.md](cli.md#pnpm-showtimes-search-the-programme).
 
 ## Example
 

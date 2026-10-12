@@ -81,7 +81,7 @@ describe("meta", () => {
   it("serves an OpenAPI document with every route", async () => {
     const { status, body } = await get("/openapi.json");
     expect(status).toBe(200);
-    expect(Object.keys(body.paths).sort()).toEqual([
+    expect(Object.keys(body.paths).toSorted()).toEqual([
       "/v1/films/search",
       "/v1/films/{id}",
       "/v1/films/{id}/screenings",

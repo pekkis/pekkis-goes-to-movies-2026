@@ -1,7 +1,7 @@
 import type { Kysely } from "kysely";
 import type { DB } from "../db/types.ts";
 
-/** Optional narrowing of a film's screenings (the `showtimes` CLI's --provider and --near). */
+/** Optional narrowing of screenings (the `showtimes` CLI's --provider, --near, --after and --before). */
 export type ScreeningFilter = {
   /** Provider ids (as stored), already resolved from names; see resolveProviders. */
   providerIds?: string[];
@@ -58,6 +58,6 @@ export const resolveProviders = async (
   const ids = providers
     .filter((p) => wanted.includes(p.id) || wanted.includes(p.platform))
     .map((p) => p.id);
-  const known = [...new Set(providers.flatMap((p) => [p.id, p.platform]))].sort();
+  const known = [...new Set(providers.flatMap((p) => [p.id, p.platform]))].toSorted();
   return { ids, unknown: wanted.filter((n) => !known.includes(n)), known };
 };
