@@ -11,7 +11,7 @@ linted or formatted here.
 | Commit | `a0bedad7d8b21f2a5f447fe0b44ae03d6bea83c9` |
 | Commit date | 2026-10-10T05:20:52Z |
 | Commit message | Update cloud provider data |
-| Vendored on | 2026-10-10 |
+| Vendored on | 2026-10-12 |
 
 **Update:** sync the fork with upstream on GitHub, then run `pnpm vendor:leffavuoro` and commit the
 diff. The diff shows what changed upstream since the last copy.
