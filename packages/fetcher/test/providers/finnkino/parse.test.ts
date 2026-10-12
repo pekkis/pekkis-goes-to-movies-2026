@@ -137,7 +137,7 @@ describe("parseFinnkino", () => {
     const response = raw.showtimes["fixture"] as { showtimes: unknown[] };
     response.showtimes.push({ id: "broken" });
     const result = parseFinnkino({ ...raw, showtimes: { ...raw.showtimes, bad: { nope: 1 } } });
-    expect(result.warnings.map((w) => w.code).sort()).toEqual([
+    expect(result.warnings.map((w) => w.code).toSorted()).toEqual([
       "invalid-showtime",
       "invalid-showtimes",
     ]);

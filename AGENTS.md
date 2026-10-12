@@ -1,242 +1,191 @@
 # AGENTS.md – Pekkis goes to movies
 
-Instructions and context for AI agents (and humans) working in this repository.
+Instructions for AI agents (and humans) working in this repository. Rules first, then how the code is built, then reference. Details live in `docs/`: [development.md](docs/development.md) (principles, testing, warnings, recipes), [data-sources.md](docs/data-sources.md), [data-model.md](docs/data-model.md), [database.md](docs/database.md), [api.md](docs/api.md), [cli.md](docs/cli.md).
 
 ## What this is
 
-"Pekkis goes to movies" gathers the showtimes of all Finnish cinemas under one site.
-Users can look for something to watch from two directions:
+"Pekkis goes to movies" gathers the showtimes of all Finnish cinemas under one site. Users look for something to watch from two directions:
 
 - **Time and place first**: "what's playing in Tampere tonight after 6 pm?"
 - **Film first**: "where and when can I see film X?"
 
-The project is part of the user-centered design course at JAMK.
+It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-later** ([LICENSE](LICENSE)); the repository is public.
+
+## Current state
+
+- **Data:** 88 venues in 63 cities from 44 providers on six source types:
+  - two chains: Finnkino (Vista OCAPI) and BioRex (MyCloudCinema);
+  - four multi-site platforms: Nexxo, eTiketti, Kinola and Johku.
+
+  Fetched into JSON (`pnpm pull`), matched to TMDB, stored with history in PostgreSQL (`pnpm ingest`).
+
+- **Interfaces:**
+  - the `showtimes` CLI;
+  - a read-only HTTP API (Hono, OpenAPI);
+  - a Flutter map app by a teammate in `apps/fpgm` (an early scaffold);
+  - React apps later.
+
+  Do not add a UI framework to the workspace until the maintainer decides.
+
+- **Not started here:** design and user research. The course work happens outside this repository.
+- **Backlog:** GitHub issues (`gh issue list`; labels `provider`, `tmdb`, `geo`, `backlog`).
+- **Prior work:** [Leffavuoro / Shady-Dev/kino](https://github.com/Shady-Dev/kino) (AGPL-3.0, about 230 cinemas). A code-only copy is in [vendor/leffavuoro/](vendor/leffavuoro/UPSTREAM.md). Read it first when adding a platform; its adapters may be ported (credit them in the site file's header), its `data/` may not be used.
 
 ## Language
 
-**The project language is English**: code, identifiers, comments, commit messages, all documentation (README, AGENTS.md, `docs/`) and discussion with the maintainer. No Finnish identifiers, ever. Finnish appears only as data: cinema and film names, Finnish country and language names in lookup tables, and test fixtures.
+**English** for code, identifiers, comments, commit messages, documentation and discussion with the maintainer. No Finnish identifiers, ever. Finnish appears only as data: cinema and film names, Finnish words in lookup tables, test fixtures.
 
-## Status (updated 2026-10-10)
+## Rules for agents
 
-- **BioRex and Finnkino adapters are done**, with tests: `pnpm pull` fetches both chains (12 + 17 cinemas) for 7 days into JSON and matches the films to TMDB.
-- **Nexxo is done** (2026-10-10): one platform adapter serving 8 independent cinema sites, 15 venues (Kinoset, Kino Aurora, Kino Hirvi, Bio Säde, Kino Marilyn, Kino Olympia, Järvelän Kino, Kino Metso's six towns). Sites are config: [src/providers/nexxo/sites.ts](packages/fetcher/src/providers/nexxo/sites.ts).
-- **eTiketti is done** (2026-10-10): our first HTML-scraping adapter. 21 small-cinema sites, 31 venues (Kotkan Leffat, Savon Kinot ×6, Leffabuumi, Kino Juha, Bio Grand, Cinema Niagara, Star Oulu, …), about 750 upcoming screenings. Sites are config: [src/providers/etiketti/sites.ts](packages/fetcher/src/providers/etiketti/sites.ts).
-- **Film ratings** (2026-10-10): TMDB's own score plus Rotten Tomatoes, Metacritic and IMDb via OMDb, in `Film.ratings` and the `film_ratings` table; in the API, and in the CLI **only on request** (`--ratings`, or a `--min-…` filter): some people do not want to know critics' verdicts beforehand. Keep it opt-in.
-- **Every venue has coordinates** (2026-10-10), for the coming map UI. Chains supply their own; config venues get them by hand from OpenStreetMap (`pnpm venues:locate`). See "Venue coordinates" below.
-- **HTTP API** (2026-10-10): Hono in `packages/backend`, read-only, OpenAPI at `/openapi.json`, docs at `/docs`. Clients: a Flutter map app (teammate; Dart client from OpenAPI) and later React apps (typed `hc<AppType>` client). Deployed later with Docker Compose behind nginx on the maintainer's server. See [docs/api.md](docs/api.md).
-- **Backlog lives in GitHub issues** (`gh issue list`; labels `provider`, `tmdb`, `backlog`). The repo is public: write issues in English and never put secrets or personal data in them.
-- **License: AGPL-3.0-or-later** ([LICENSE](LICENSE)). Everything is published as open source.
-- **Direction:** a better version of Leffavuoro (Shady-Dev/kino) in TypeScript, with a precise, typed data model and JSON output. Model: [docs/data-model.md](docs/data-model.md). The source of truth is [packages/model/src/schema.ts](packages/model/src/schema.ts).
-- **Fetched data goes into PostgreSQL** (`pnpm ingest`), keeping history: screenings are never deleted. See [docs/database.md](docs/database.md).
-- Data collection is written in TypeScript (strict). The frontend stack is still open, so do not add a UI framework until the maintainer decides.
-- No design or user research yet. The focus is on technical groundwork.
-- **Kinola is done** (2026-10-10): a public JSON API found in Kinola's open-source WordPress plugin. 6 cinemas: Kino Myyri (Vantaa; the maintainer's local, good for checking data against reality), Cinema Orion, Kino Kilta, Kino Laika, Cinema Sheryl, Kino Konepaja. Sites: [src/providers/kinola/sites.ts](packages/fetcher/src/providers/kinola/sites.ts).
-- **Johku is done** (2026-10-12): the storefronts' own anonymous schedule endpoint (JSON). 7 cinemas: Bio Marilyn, Vihdin Kino, Bio Forum, Kinokulma, Kino Hannikainen, Kino Virta, Kino Kulttuurimylly. Sites: [src/providers/johku/sites.ts](packages/fetcher/src/providers/johku/sites.ts).
-- Data sources in scope: Finnkino, BioRex, and multi-site platforms (Nexxo, eTiketti, Kinola and Johku done; others in Leffavuoro's list are candidates).
+**Process**
+
+- **Git:** `main` is protected (no direct pushes, force pushes or deletion, for everyone). Work on a branch, open a PR with `gh pr create`; no approval needed. **Commit only when the maintainer asks.**
+- **`pnpm check` must pass** (typecheck, lint with **zero warnings**, format, tests) before you say you are done or open a PR.
+- **Keep docs true:** update this file and `docs/` in the same change that makes them stale. Mark in docs what was verified first-hand ([V]) and what was assumed or read elsewhere ([A]).
+- **Issues are public:** English, no secrets, no personal data.
+
+**Secrets and data**
+
+- Never print `TMDB_APIKEY` or `OMDB_APIKEY`. OMDb's key travels in the URL, so its errors are rethrown without the URL and its cache key leaves the key out; keep it that way.
+- `.env` is gitignored; [.env.example](.env.example) lists variables with **empty** values only.
+- Never commit `data/` (the cinemas' data). Never copy Leffavuoro's `data/` (not covered by its license). Never edit `vendor/leffavuoro/` by hand (it is overwritten on refresh).
+- Never hard-code anyone's contact details; the User-Agent's contact comes from `CONTACT` in `.env`.
+
+**Sources: politeness and ethics**
+
+- Identifiable User-Agent. GET only. Few, paced requests (see per-adapter pacing in the registry). No residential proxies, fingerprint spoofing or captcha solving; do not try hard to get around Cloudflare.
+- Never call ticket purchase, booking or payment endpoints. Ticket links are **copied** from the source into `ticketUrl`, never constructed and never requested (eTiketti's `/salikartta`, Kinola's and Johku's `/checkout/…`).
+- **Johku:** only storefronts whose own code reads the schedule anonymously. Never a widget's `X-ApiKey` (Kino Engel, Kino Tapiola, KuvaTähti).
+- **Finnkino:** only the token step uses a (visible) browser; never defeat Cloudflare by other means. It does not run in CI or the cloud.
+- **Posters, synopses and trailers come only from TMDB**, never from cinemas, and cinemas' texts stay out of test fixtures.
+- **Coordinates never from Google Maps** (its terms forbid storing them). OpenStreetMap (ODbL, credit "© OpenStreetMap contributors"), Nominatim (1 request/s, cached), the cinema's own pages, or the maintainer.
+- **Contacting cinemas:** not needed while this is a course project. **Before the service goes truly public, every cinema and chain is notified first** (what we read, how often, that every click goes to their ticket page), and any that object are removed.
+
+**Data correctness**
+
+- **Certain or nothing:** a film is linked to TMDB only when the match is certain; otherwise it stays unmatched and gets an alias (verified on TMDB, reasoning in its `note`). Never loosen matching without a regression test in `test/matching/score.test.ts`.
+- **Unknown stays unknown:** an absent field (NULL in the database), never a guess. Labels the parser does not understand go to `unmappedLabels`; rows the config does not explain become **warnings**, which are to-dos for `sites.ts`.
+- Venue slugs are part of ids (`{provider}:venue:{slug}`): never rename one, or its history is orphaned.
+- **Ratings are opt-in** in every UI (the CLI shows them only with `--ratings` or a score filter): some people do not want critics' verdicts beforehand.
+- **API:** responses are the public shapes in `packages/backend/src/api/schemas.ts`, never database rows; change them deliberately (Flutter and React clients depend on them). Read-only, no auth. Keep the TMDB, OMDb and OpenStreetMap attributions in the OpenAPI description.
+- **Database:** migrations are append-only and listed in `migrations/index.ts` (a test checks). After one, run `pnpm migrate && pnpm db:types` and commit the regenerated `types.ts` (never edit it by hand). The fetcher stays database-agnostic.
+
+## How the code is built
+
+The principles the code follows; [docs/development.md](docs/development.md) explains each with examples.
+
+- **Fetch and parse are separate.** `fetch.ts` does I/O only and returns a raw snapshot (archived under `data/raw/`); `parse.ts` is a **pure** function from snapshot to `ProviderBatch`, tested against trimmed real responses without network.
+- **Zod at every boundary:** raw responses (`raw.ts`, loose objects with only the fields we read), the model (`@pgtm/model`), env, CLI input, API requests and responses. Parsers `safeParse` each item and turn failures into `invalid-*` warnings.
+- **A site is data, not code.** Multi-site platforms have one adapter per site, generated from the platform's `sites.ts`. Everything that differs between sites is a Zod-validated config field (named quirks with platform defaults, `verifiedAt`, `notes`), never an `if (site === "x")`.
+- **Shared meaning, shared code:** Helsinki time and the programme day (`lib/time.ts`), prices, seats, room ids and ordering (`providers/parsing.ts`), labels and version markers (`providers/labels.ts`), language codes (`providers/language-codes.ts`), venues from config (`providers/sites.ts`). A new parser uses these instead of its own copy.
+- **Incomplete batches infer no removals:** data-missing warnings (`invalid-*`, `unknown-*`, `result-code`; `isIncomplete` in the model) stop ingest from marking absent screenings as removed.
+- **Native TypeScript first.** Node 24 runs `.ts` directly (no build step, except the API's Docker bundle). Erasable syntax only: no `enum`, `namespace` or parameter properties. Prefer built-ins (`toSorted`, `Object.groupBy`, `Set` methods, iterator helpers) over utility libraries; lookup tables keyed by outside text use `own()` (`lib/records.ts`).
+- `strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`: optional fields are spread in only when set (`...(x && { x })`).
 
 ## Commands
 
 ```sh
-pnpm db:up                   # start Postgres in Docker (localhost:5432); needed by pnpm check too
-pnpm db:psql                 # psql shell inside the Postgres container
+pnpm db:up / db:down         # Postgres in Docker (localhost:5432); pnpm check needs it too
 pnpm migrate                 # apply migrations (--down one step; --test the test database)
 pnpm db:types                # regenerate packages/backend/src/db/types.ts after a migration
-pnpm pull                    # fetch all providers → data/raw/… + data/normalized/{provider}.json, then match to TMDB
-pnpm pull --provider finnkino --days 3 --from 2026-10-10
-pnpm pull --provider biorex --venue 13   # --venue takes source ids or slugs and needs exactly one provider
-pnpm pull --provider nexxo   # a platform name selects all of its sites (kinoaurora, kinoset, …)
-pnpm match                   # re-run TMDB matching only (e.g. after editing aliases)
-pnpm venues:locate           # suggest OSM coordinates for venues without them; flag suspicious ones
-pnpm venues:locate --address "Sahakatu 2, 32700 Huittinen"   # geocode an address (Nominatim)
-pnpm ingest                  # upsert data/normalized/*.json into Postgres
-pnpm api:dev                 # API on http://127.0.0.1:3000 with reload (docs: /docs)
-pnpm api:up                  # build the image, run migrations and the API in Docker (profile "app")
-pnpm api:down                # stop the API containers (Postgres keeps running)
-pnpm showtimes odysey        # fuzzy film search (or --movie odysey) → film info + today's screenings everywhere (--date, --after, --before, --links, --min-score)
-pnpm showtimes --here --after 18:00 --min-rt 85   # ratings filters: --min-rt (0–100), --min-imdb (0–10); --ratings shows scores
-pnpm showtimes --here --after 18:00   # no film: everything on, in start order with a Film column ("what's on near me tonight")
-pnpm showtimes --movie odysey --near 60.17,24.94 --radius 10 --provider finnkino   # only nearby venues (with distance), only some providers (ids or a platform, e.g. nexxo)
-pnpm showtimes odysey --address "Hämeenkatu 1, Tampere"   # like --near, geocoded with OSM Nominatim (cached in data/cache/geocode/)
-pnpm showtimes odysey --here # like --near, from this machine: CoreLocationCLI if installed, else IP lookup (ipinfo.io, approximate)
-pnpm test                    # all packages; backend integration tests need the database
-pnpm check                   # typecheck + lint + fmt:check + test (run before saying you are done)
-pnpm fmt                     # oxfmt rewrites formatting
+pnpm db:psql                 # psql inside the container
+pnpm pull                    # fetch every provider, 6 at a time, then match films to TMDB (~2 min)
+pnpm pull --provider nexxo   # a provider id or a platform name; --days, --from, --venue: docs/cli.md
+pnpm match                   # re-run TMDB matching only (after editing aliases)
+pnpm ingest                  # upsert data/normalized/*.json into Postgres, keeping history
+pnpm venues:locate           # suggest OSM coordinates; --address geocodes an address
+pnpm showtimes odysey        # film search; with no film, everything on (--here, --after, …: docs/cli.md)
+pnpm api:dev / api:up / api:down   # the HTTP API on :3000 (dev with reload / Docker)
+pnpm check                   # typecheck + lint (zero warnings) + fmt:check + test
+pnpm test / typecheck / lint / fmt / fmt:check
+pnpm vendor:leffavuoro       # refresh vendor/leffavuoro from the pekkis/kino fork
 ```
 
-Typical run: `pnpm db:up && pnpm migrate && pnpm pull && pnpm ingest`.
+- First run: `pnpm db:up && pnpm migrate && pnpm pull && pnpm ingest`.
+- **`pnpm fetch` is built into pnpm**, which is why the fetch script is `pull`.
+- **Finnkino opens a visible Chrome window** for a few seconds when its 12-hour token needs renewing (cached in `data/cache/finnkino-token.json`).
 
-**`--here` on macOS** needs CoreLocationCLI for a precise position: `brew install --cask corelocationcli`, run `CoreLocationCLI --json` once, allow it in System Settings → Privacy & Security (Gatekeeper, then Location Services), and keep Wi-Fi on. Without it, `--here` falls back to IP geolocation, which sends the public IP address to ipinfo.io and is often only the ISP's town.
+**Daily routine:** the maintainer runs `pnpm pull && pnpm ingest` by hand, about once a day (no scheduler: Finnkino needs a visible Chrome, and the laptop is often closed). Programmes change most on Tuesday and Wednesday; programme weeks run Friday to Thursday. Afterwards, check the run as listed in [docs/development.md](docs/development.md#after-the-daily-run):
 
-**Routine:** `pnpm pull && pnpm ingest` is run **manually, about once a day**, on the maintainer's laptop (no scheduler; Finnkino needs a visible Chrome). Gaps between runs are normal. Programmes change most on **Tuesday and Wednesday** (Finnkino runs a large batch update then); Finnish programme weeks run Friday–Thursday, so next week's shows usually appear midweek.
+- warnings and unmapped labels;
+- unmatched films;
+- providers whose count dropped;
+- removals.
 
-- **`pnpm fetch` is a built-in pnpm command.** That is why the fetch script is called `pull`.
-- **Finnkino opens a visible Chrome window** for a few seconds when its 12-hour token needs renewing (about twice a day; cached in `data/cache/finnkino-token.json`). It needs Google Chrome installed and cannot run in CI. If one provider fails, the others still run and `pull` exits non-zero.
-- **`pnpm pull` runs 6 providers at a time** (each on its own host, each paced per host) and prints each provider's report as one block when it finishes. All providers take about two minutes.
-- **`.env`** (gitignored) is loaded by Node's own `--env-file-if-exists=.env` flag. **No dotenv.**
-  - Variables are validated with Zod in [src/lib/env.ts](packages/fetcher/src/lib/env.ts) (`loadEnv()`), the only place that reads `process.env`.
-  - `TMDB_APIKEY` (required): TMDB v4 read access token, used as a Bearer token. Never print it.
-  - `OMDB_APIKEY` (optional): OMDb key for Rotten Tomatoes, Metacritic and IMDb scores. It travels in the URL, so OMDb errors are rethrown without the URL and the cache key leaves it out. Never print it.
-  - `CONTACT` (optional): URL or email added to the User-Agent. Never hard-code anyone's contact details.
-  - `DATABASE_URL`, `TEST_DATABASE_URL`: the Compose Postgres (local, non-secret defaults in `.env.example`). Validated in `packages/backend/src/lib/env.ts`.
-  - `PORT` (3000), `HOST` (127.0.0.1; 0.0.0.0 in the container), `CORS_ORIGINS` (`*` or a comma-separated list): the API server.
-  - [.env.example](.env.example) lists the variables with empty values. Never put real values in it.
+**Environment (`.env`, loaded by Node's `--env-file-if-exists`, no dotenv; validated by `loadEnv()` in each package):**
+
+- `TMDB_APIKEY`: TMDB v4 read token. Needed by `pull` and `match`.
+- `OMDB_APIKEY`: optional; enables Rotten Tomatoes, Metacritic and IMDb scores.
+- `CONTACT`: optional; goes into the User-Agent.
+- `DATABASE_URL`, `TEST_DATABASE_URL`.
+- `PORT`, `HOST`, `CORS_ORIGINS`: for the API.
 
 ## Layout
 
-A pnpm workspace. Shared tooling (TypeScript, oxlint, oxfmt, vitest) and settings live at the root; each package declares its own runtime dependencies. Root scripts delegate to packages (`pnpm pull` → `@pgtm/fetcher`), and `pnpm check` covers all of them.
-
 ```
-package.json, pnpm-workspace.yaml, tsconfig.base.json   workspace root (packages extend tsconfig.base.json)
-compose.yaml, docker/          local services: PostgreSQL 18; profile "app" adds migrate + api
-Dockerfile, .dockerignore      API image: tsdown bundle + `pnpm deploy --prod` node_modules
-.env, data/                    shared by all packages, gitignored
-docs/                          project documentation (database: docs/database.md)
-vendor/leffavuoro/             reference copy of Leffavuoro's code (AGPL), from our fork pekkis/kino;
-                               not built, linted or formatted. See vendor/leffavuoro/UPSTREAM.md
-scripts/vendor-leffavuoro.ts   refreshes it (`pnpm vendor:leffavuoro`)
-apps/fpgm/                     the Flutter map app (teammate's). Own tooling (dart format, flutter); ignored by
-                               oxfmt/oxlint and not part of the pnpm workspace. Do not edit it unasked.
-packages/model/                @pgtm/model: the domain model (Zod schemas + types). Source-only, no build:
-                               exports src/index.ts; Node 24, vitest and Vite consume TS directly
-packages/fetcher/              @pgtm/fetcher: fetching, normalizing, TMDB matching → JSON
-  src/lib/                     env, paths, http (ky + p-queue, per-host pacing), time, lang, cache
-  src/providers/<id>/raw.ts    schemas of the source's raw responses (looseObject: only the fields we read)
-  src/providers/<id>/fetch.ts  I/O only → raw snapshot
-  src/providers/<id>/parse.ts  pure function: raw snapshot → ProviderBatch
-  src/providers/finnkino/token.ts  Finnkino token via headed Chrome (Playwright), cached
-  src/providers/adapter.ts     Adapter type (id + platform + pull), restrictToVenues
-  src/providers/sites.ts       shared base for multi-site platforms: SiteBase, SiteVenue, defineSites
-  src/providers/<platform>/sites.ts  the platform's site list (config, not code)
-  src/providers/labels.ts      shared label rules: "Prefix: Title" labels, tags, version markers ("(DUB)", "SUB", ", suomeksi")
-  src/providers/etiketti/      HTML adapter: fetch.ts (listing + film pages), parse.ts (cheerio, pure)
-  src/providers/kinola/        JSON adapter: {tenant}.kinola.ee/api/public/v1/events (film embedded)
-  src/providers/johku/         JSON adapter: {storefront}/api/{shop}/fi_FI/showschedule.json per programme block
-  src/providers/language-codes.ts  "FI", "OV", "FI-SE", "XX" codes (Nexxo, Johku's Maccs Box fields)
-  src/providers/registry.ts    list of adapters (one per site for platforms); the CLI runs them
-  src/tmdb/                    TMDB client (cached), raw schemas, toFilm (pure)
-  src/geo/                     geo.ts (FinnishGeo, GeoSource, distance), osm.ts (Overpass), nominatim.ts, match.ts (pure)
-  src/providers/overrides.ts   venue-overrides.json applied to every batch; warns about venues without geo
-  src/matching/                TMDB matching: score.ts (pure scoring), match.ts, catalog.ts (films.json)
-  src/cli/fetch.ts, match.ts   CLIs (`pnpm pull`, `pnpm match`)
-  config/tmdb-aliases.json     hand-maintained aliases, listing id → TMDB id (committed)
-  config/venue-overrides.json  hand-maintained fixes to chain venues (coordinates, addresses) (committed)
-  test/                        tests mirror src; test/fixtures/<id>/ trimmed from real responses
-packages/backend/              @pgtm/backend: PostgreSQL (Kysely), migrations, ingest, HTTP API
-  migrations/                  Kysely migrations, plain .ts, append-only; listed in migrations/index.ts
-  src/db/                      createDb (CamelCasePlugin), migrator, types.ts (GENERATED, do not edit)
-  src/ingest/                  rows.ts (pure model → row mapping), ingest.ts (upserts, history)
-  src/search/                  showtimes.ts (pg_trgm fuzzy film search, screenings), format.ts (pure text output)
-  src/api/                     Hono app: app.ts (wiring, docs), schemas.ts (public response shapes), params.ts, routes/
-  src/queries/                 Kysely queries returning API shapes (venues, screenings, films)
-  src/index.ts                 `AppType` for typed clients (hono/client)
-  src/cli/                     migrate, ingest, db-types, showtimes, serve (the API server)
-  tsdown.config.ts             production bundle (dist/serve.mjs, dist/migrate.mjs), for Docker only
-  test/                        unit tests + integration tests against TEST_DATABASE_URL
+package.json, pnpm-workspace.yaml, tsconfig.base.json   workspace root; .oxlintrc.json, .oxfmtrc.json
+compose.yaml, docker/           Postgres 18 (+ pgtm_test via docker/postgres/init); profile "app": migrate + api
+Dockerfile, .dockerignore       API image: tsdown bundle + `pnpm deploy --prod` node_modules
+.env, data/                     gitignored: secrets; raw/, normalized/, cache/ (tmdb, omdb, osm, geocode, token)
+docs/                           development, data-sources, data-model, database, api, cli
+vendor/leffavuoro/, scripts/    Leffavuoro reference copy (not built, linted or formatted) and its refresher
+apps/fpgm/                      the teammate's Flutter app: own tooling, not in the pnpm workspace; do not edit unasked
+packages/model/                 @pgtm/model: src/schema.ts, the domain model (Zod + types) and its rules; source-only
+packages/fetcher/               @pgtm/fetcher: fetch, normalize, match → data/normalized/*.json
+  src/lib/                      env, paths, http (ky + p-queue, per-host pacing), time, lang, cache, records
+  src/providers/adapter.ts      Adapter (id, platform, pull), restrictToVenues
+  src/providers/registry.ts     every adapter (one per site on platforms), pacing, selectAdapters
+  src/providers/sites.ts        SiteBase, SiteVenue, defineSites, toVenue: the multi-site base
+  src/providers/parsing.ts      toCents, availabilityFromSeats, slugify, byStartThenId, tally
+  src/providers/labels.ts       LabelRule, title prefixes, version markers
+  src/providers/language-codes.ts   FI / OV / FI-SE / XX codes (Nexxo, Johku)
+  src/providers/overrides.ts    config/venue-overrides.json for chain venues; venue-without-geo warnings
+  src/providers/<source>/       raw.ts, fetch.ts, parse.ts; sites.ts on platforms; finnkino/token.ts
+                                (biorex, finnkino, nexxo, etiketti [HTML, cheerio], kinola, johku)
+  src/matching/                 TMDB matching: score.ts (pure), match.ts, titles.ts, aliases.ts, catalog.ts, run.ts
+  src/tmdb/, src/ratings/       TMDB client and toFilm; OMDb ratings
+  src/geo/                      Finland bounds and sources, Overpass, Nominatim, OSM matching (venues:locate)
+  src/cli/                      fetch (pull), match, locate (venues:locate)
+  config/                       tmdb-aliases.json, venue-overrides.json (hand-maintained, committed)
+  test/                         mirrors src; fixtures/<source>/ trimmed real responses; fixtures.ts (loadFixture)
+packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, search CLI, HTTP API
+  migrations/                   append-only; index.ts lists them all
+  src/db/                       createDb (CamelCasePlugin, timeouts), migrator, types.ts (GENERATED)
+  src/ingest/                   rows.ts (pure model → rows), ingest.ts (upserts, history, removals)
+  src/search/, src/geo/         showtimes CLI: fuzzy search, filters, formatting; --here / --address
+  src/api/, src/queries/        Hono app (schemas.ts = public shapes, routes/); Kysely queries for it
+  src/cli/                      migrate, ingest, db-types, showtimes, serve
+  test/                         unit + integration tests against TEST_DATABASE_URL (global-setup rebuilds it)
 ```
 
-New packages go under `packages/<name>` with the `@pgtm/` scope, `"private": true`, and a `tsconfig.json` that extends `../../tsconfig.base.json`.
+## Testing
 
-**Adding an adapter:**
+[docs/development.md](docs/development.md#testing) has the details. In short:
 
-1. Profile real data before writing the parser. Record the values you find in `docs/data-sources.md`.
-2. Write `raw.ts`, `fetch.ts` and `parse.ts`.
-3. Build fixtures that cover the different cases.
-4. Write the tests.
-5. Add it to `src/providers/registry.ts`.
+- **Parsers:** run against trimmed real responses in `test/fixtures/<source>/`. Keep one example per case; remove synopses, posters, images and personal data. Assert the output passes `ProviderBatch.parse` with no warnings, then assert each case.
+- **Field parsers** (times across DST, language codes, labels) get table tests.
+- **Every bug fix gets a test that fails without it.**
+- **No network in tests.** HTTP clients are faked through the `HttpClient` type.
+- **Backend tests** need Postgres (`pnpm db:up`) and run serially against `pgtm_test`, which global setup rebuilds from the migrations.
+- **API routes** are tested in-process with `app.request()`. A typed-client test (`hc<AppType>`) guards the client types.
 
-**Multi-site platforms (Nexxo, eTiketti, …): a site is data, not code.**
+## Tools
 
-- One adapter per _site_ (one provider id, one `data/normalized/{site}.json`), generated from the platform's `sites.ts`. `--provider <platform>` runs them all.
-- Everything that differs between sites is a field of the site's config, validated by Zod (`defineSites` also rejects duplicate providers and venue slugs). Fixing a breakage or adding a cinema is an edit to `sites.ts`, never an `if (site === "x")` in the parser.
-- **Quirks** are named, documented options with platform defaults that a site may override (Nexxo: `showTypes`, `titlePrefixes`, `apiBase`, per-venue `roomIds`/`page`). Add a new quirk as a new optional field with a doc comment, a default, and a test.
-- Every site has `verifiedAt` (when someone last checked it against the live site, as a visitor would) and optional `notes` (why a quirk is set). Update `verifiedAt` when you re-check.
-- Parsers report what the config does not explain (e.g. Nexxo's `unclaimed-room`: a room no venue owns) as warnings instead of guessing. A warning in `pnpm pull` output is a to-do for `sites.ts`.
-- Venue slugs become ids (`{site}:venue:{slug}`): never rename one, or its history is orphaned.
-
-## Tools and libraries
-
-- **pnpm 12** (`packageManager` and `devEngines` in package.json). Settings live in [pnpm-workspace.yaml](pnpm-workspace.yaml), not in `.npmrc`:
-  - `minimumReleaseAge`: 1 day
+- **pnpm 12**, configured in `pnpm-workspace.yaml`:
+  - `minimumReleaseAge` 1 day
   - `trustPolicy: no-downgrade`
   - `blockExoticSubdeps`
   - `strictDepBuilds`
-  - `allowBuilds`: empty
+  - an empty `allowBuilds` (add an entry with a reason if a dependency needs a build script)
   - `engineStrict`
-
-  If a new dependency needs a build script, add it to `allowBuilds` with a reason.
-
-- **No npm or npx**: `devEngines` blocks npm, so use `pnpm exec <bin>`. Add a runtime dependency to its package (`pnpm --filter @pgtm/fetcher add <pkg>`), shared dev tooling to the root (`pnpm add -D -w <pkg>`). Node 24 runs `.ts` files directly, so there is no build step. Use erasable TS syntax only: no `enum`, `namespace` or parameter properties.
-- **TypeScript** (strict) for type checking only (`tsc`, `noEmit`), per package via `pnpm -r typecheck`.
-- **oxlint** for linting and **oxfmt** for formatting. **No** ESLint or Prettier.
-- **vitest** for tests.
-- Runtime libraries:
-  - `ky`: HTTP
-  - `zod` v4: schemas, types and JSON Schema
-  - `date-fns` + `@date-fns/tz`: time zones (Europe/Helsinki)
-  - `p-queue`: request pacing
-- `playwright`: only for the Finnkino token, driving the installed Chrome (`channel: "chrome"`, no bundled browser download).
-- `kysely` + `pg` (backend): typed SQL; `kysely-codegen` generates the database types from the migrated schema.
-- `hono` + `@hono/node-server` + `@hono/zod-openapi` (backend API): Zod schemas give validation, OpenAPI and typed clients; `@scalar/hono-api-reference` renders `/docs`.
-- `tsdown` (backend, dev): bundles the API for the Docker image only. Development never builds: Node runs the `.ts` sources.
-- `cheerio`: HTML parsing for eTiketti (CSS selectors over a spec-compliant parser). No headless browser: the pages are server-rendered.
-
-## Data sources: summary
-
-Detailed findings, sample payloads and references: [docs/data-sources.md](docs/data-sources.md).
-
-| Source              | Method                                                                                                                  | Auth                                                                 | Status                                                                        |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| BioRex              | Unofficial JSON (`webshop.biorex.fi/webservices/...`)                                                                   | None                                                                 | ✅ Verified working                                                           |
-| Finnkino            | Vista OCAPI JSON (`digital-api.finnkino.fi/WSVistaWebClient/ocapi/v1/...`)                                              | Public 12 h JWT from the front page; headed Chrome passes Cloudflare | ✅ Working, needs a desktop with Chrome                                       |
-| Finnkino (old)      | XML API `finnkino.fi/xml/...`                                                                                           | –                                                                    | ❌ Retired (2025–2026)                                                        |
-| Nexxo (8 sites)     | Nexxo Scope WordPress plugin JSON (`/wp-content/plugins/nexxo-scope/public_api.php`)                                    | None                                                                 | ✅ Working; small hosts answer 403 if paced faster than ~2.5 s                |
-| Kinola (6 cinemas)  | Public JSON API `{tenant}.kinola.ee/api/public/v1/events`, as Kinola's WordPress plugin reads it                        | None                                                                 | ✅ Working; 1 request per cinema; IMDb ids for exact TMDB matches             |
-| Johku (7 cinemas)   | Storefront schedule JSON `{host}/api/{shop}/fi_FI/showschedule.json`, anonymous, as the storefront's own code builds it | None (never the widget `X-ApiKey`)                                   | ✅ Working; 1 request per programme block; seats from capacity − reservations |
-| eTiketti (21 sites) | Server-rendered HTML: `/elokuvat/ohjelmistossa` + one page per film                                                     | None                                                                 | ✅ Working; ~330 pages a day, 1.5 s apart per site                            |
-
-eTiketti is the only HTML source: it has no public API (its `etiketti.app` API is behind Cloudflare).
-
-**Prior work:** [Leffavuoro / Shady-Dev/kino](https://github.com/Shady-Dev/kino) (AGPL-3.0) already covers about 230 cinemas. A code-only copy lives in [vendor/leffavuoro/](vendor/leffavuoro/UPSTREAM.md) (from our fork [pekkis/kino](https://github.com/pekkis/kino); the maintainer keeps the fork in sync, then `pnpm vendor:leffavuoro` refreshes the copy). **Read it there first** when adding a platform: `scripts/providers/<platform>.py` and `docs/research/`. Since we are AGPL too, its adapters **may be ported**. Mark the origin at the top of a ported file, e.g. `// Ported from Shady-Dev/kino scripts/providers/etiketti.py (AGPL-3.0)`. Its published **data** (`data/*.json`, posters) is not used as a source, because the data is not covered by its license. See [docs/data-sources.md](docs/data-sources.md#prior-work-leffavuoro-shady-devkino).
-
-### TMDB
-
-- **Posters, synopses and trailers come only from TMDB, never from cinemas.** A film is linked only when the match is certain. Otherwise it stays unmatched and is fixed with an alias. Rules: [docs/data-model.md](docs/data-model.md#tmdb-matching).
-- **A provider's IMDb id (Kinola) is looked up on TMDB first** (`/find`, match method `imdb`), and its **original title** is searched and accepted as a title match too. Both are exact facts from the cinema, so they never loosen the rules.
-- Unmatched films are listed in the `pnpm match` output and in the `unmatched` list of `films.json`, with candidates. **Verify an alias on TMDB (runtime, countries, year) before adding it**, and write the reasoning in its `note`.
-- Do not loosen the matching rules without a regression test (`test/matching/score.test.ts`).
-- Event cinema (`kind: "event"`: operas, concerts) is never reported as unmatched; do not spend effort aliasing it.
-- TMDB's terms require attribution (logo and notice) in the UI.
-
-### Venue coordinates
-
-- **Every venue needs `geo`** (the map UI depends on it). `pnpm pull` warns `venue-without-geo` otherwise; a test fails for any configured Nexxo venue without one.
-- Chains (Finnkino, BioRex) supply coordinates in their APIs. Fix wrong ones in `config/venue-overrides.json`, with a `note` saying how it was checked.
-- Config venues (Nexxo, eTiketti, …) carry `geo`, `geoSource`, `address` and `postalCode` in their `sites.ts`. Workflow: `pnpm venues:locate` suggests OSM cinemas (and flags existing points more than 300 m from any OSM cinema); halls OSM does not list as cinemas are geocoded with `--address`, using the address on the cinema's own page. **Check every point on openstreetmap.org before pasting it.**
-- `geoSource` records where a point came from: `osm:node/…`, `nominatim`, `nls` or `manual`.
-- **Never take coordinates from Google Maps**: its terms forbid storing them, even copied by hand.
-- OSM data is ODbL: the UI must credit "© OpenStreetMap contributors". Overpass and Nominatim are shared community services: requests are cached (a week and a month), Nominatim is paced at one request per second.
-- Postgres needs no geo extension: about 300 venues, `lat`/`lon` columns, bounding-box filters and haversine in SQL. Reconsider PostGIS only for polygons or routing.
-
-### Architecture
-
-- **One adapter per source** (chain, or platform site: BioRex runs on MyCloudCinema, Kino Aurora on Nexxo) → shared model `Venue`, `Auditorium`, `FilmListing`, `Screening`.
-- Films from different sources are linked through TMDB (`Film`), since source ids are not shared.
-- **Fetch and parse are separate:** parsers are pure functions, tested against recorded responses without network access. The model is defined as Zod schemas. See [docs/data-model.md](docs/data-model.md).
-- Source labels the parser does not recognize are not lost: they go into `unmappedLabels`.
-- Fetch rarely (e.g. a few times a day) and cache. Do not hammer sources.
-
-## Rules for agents
-
-- **Vendored code:** never edit `vendor/leffavuoro/` by hand (it is overwritten on refresh), and never copy their `data/` (showtimes, posters) into this repo: it is not covered by their license.
-- **API:** responses are the public shapes in `src/api/schemas.ts`, never database rows; change them deliberately (Flutter and React clients depend on them). The API is read-only (GET only, no auth). Every route is declared with `createRoute` (so it appears in OpenAPI and the typed client) and tested with `app.request()` in `test/api/`. Keep the TMDB and OpenStreetMap attributions in the OpenAPI description.
-- **Database:** migrations are append-only and must be added to `migrations/index.ts` (a test checks); after adding one, run `pnpm migrate && pnpm db:types` and commit the regenerated `types.ts` (never edit it by hand). Tables plural, columns snake_case; TypeScript stays camelCase via `CamelCasePlugin`. The fetcher stays database-agnostic.
-
-- **User-Agent:** use an identifiable User-Agent with contact details. No residential proxies, fingerprint spoofing or captcha solving. Never call ticket purchase or payment endpoints.
-- **Politeness:** when probing external APIs, make few requests and only GETs. Do not try hard to get around Cloudflare.
-- **Johku:** only storefronts whose own code reads the schedule anonymously. Never sites that embed the Johku widget or load shows through `/api/auth/widget-session` with an `X-ApiKey` (Kino Engel, Kino Tapiola, KuvaTähti): that key is not ours to use.
-- **HTML scraping (eTiketti):** GET only; never request `/salikartta` (the booking flow): its links are copied into `ticketUrl`, never constructed or followed. Never take synopses or posters from the pages (TMDB only), and keep them out of test fixtures (they are the cinemas' text). A site fails rather than publishing a partial programme (page budget 120). Unknown place lines give `unclaimed-place` warnings: fix them in `sites.ts`, do not guess.
-- **Finnkino:** Cloudflare challenges every non-browser client (even from home) and headless Chrome. Only the token step needs a browser; never try to defeat the check by other means (no fingerprint spoofing, no captcha solving). Do not assume it works in the cloud or CI.
-- **Contacting cinemas:** we have not contacted any source and do not need to while this is a course project. **If the service ever goes truly public, we notify every cinema and chain first** (what we read, how often, that every click goes to their own ticket page) and remove any that object. Do not expect API keys from them; the realistic risk is technical breakage (e.g. Cloudflare tightening), not a missing permission.
-- **Verified vs. assumed:** always mark separately in the docs what was tested first-hand and what was inferred or read elsewhere.
-- **Git workflow:** `main` is protected (ruleset "Protect main", 2026-10-10): no direct pushes, force pushes or deletion, for everyone including admins. Work on a branch, open a pull request (`gh pr create`) and merge it; no approval is required. Run `pnpm check` before opening a PR. Commit only when the maintainer asks.
-- **Keep this file up to date:** update `AGENTS.md` when the stack, architecture or data sources change.
+- **No npm or npx:** `devEngines` blocks them; use `pnpm exec`.
+- **Adding dependencies:** a runtime dependency goes to its package (`pnpm --filter @pgtm/fetcher add …`), shared dev tooling to the root (`-D -w`).
+- **Checks:** TypeScript (strict, `noEmit`), oxlint (correctness and suspicious categories, warnings fail), oxfmt and vitest. No ESLint or Prettier.
+- **Libraries:**
+  - `zod` v4, `ky`, `p-queue`, `date-fns` + `@date-fns/tz`;
+  - `cheerio` (eTiketti HTML);
+  - `playwright` (Finnkino token only, the installed Chrome);
+  - `kysely` + `pg` (+ `kysely-codegen`);
+  - `hono` + `@hono/zod-openapi` + `@scalar/hono-api-reference`;
+  - `tsdown` (Docker bundle only).
+- **No general utility library** (remeda, lodash, es-toolkit). Node 24's built-ins cover what the code needs (see development.md).

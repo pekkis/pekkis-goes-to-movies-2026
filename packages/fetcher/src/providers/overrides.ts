@@ -5,7 +5,7 @@ import { FinnishGeo, GeoSource } from "../geo/geo.ts";
 
 /**
  * Hand-maintained fixes to venue data a provider gets wrong or leaves out (committed).
- * Config-based platforms (Nexxo, eTiketti) put these in their sites.ts instead; this is
+ * Config-based platforms (Nexxo, eTiketti, Kinola, Johku) put these in their sites.ts instead; this is
  * for chains whose venues come from their API. Counterpart of tmdb-aliases.json.
  */
 export const VenueOverrides = z.record(

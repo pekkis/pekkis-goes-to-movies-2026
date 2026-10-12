@@ -1,5 +1,6 @@
 import { ScreeningTag, type Lang } from "@pgtm/model";
 import { z } from "zod";
+import { own } from "../lib/records.ts";
 
 /**
  * How a cinema's free-text label (a show type, a tag, a title prefix) maps onto the model.
@@ -38,11 +39,11 @@ export const splitTitlePrefix = (
 ): { title: string; rule?: LabelRule } => {
   const title = raw.trim();
   const prefix = title.match(/^([^:]+):\s*(.+)$/);
-  const prefixRule = prefix ? rules[prefix[1]!.trim()] : undefined;
+  const prefixRule = prefix ? own(rules, prefix[1]!.trim()) : undefined;
   if (prefix && prefixRule) return { title: prefix[2]!.trim(), rule: prefixRule };
   // The same labels after a dash at the end: "Pirjo i Sverige – Vauvakino".
   const suffix = title.match(/^(.+?)\s+[–-]\s+([^–-]+)$/);
-  const suffixRule = suffix ? rules[suffix[2]!.trim()] : undefined;
+  const suffixRule = suffix ? own(rules, suffix[2]!.trim()) : undefined;
   if (suffix && suffixRule) return { title: suffix[1]!.trim(), rule: suffixRule };
   return { title };
 };

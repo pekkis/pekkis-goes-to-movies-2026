@@ -126,6 +126,14 @@ describe("parseNexxo", () => {
     });
   });
 
+  it("strips version markers from titles like every platform", () => {
+    const batch = parseNexxo(snapshot("kinomarilyn"), site("kinomarilyn"));
+    expect(batch.listings.find((l) => l.sourceId === "563")?.title).toEqual({
+      fi: "Unohdettu saari - Bortglömda Ön",
+    });
+    expect(screening(batch, "3046")).toMatchObject({ audio: ["sv"], dubbed: true });
+  });
+
   it("applies show type rules: events, ignored labels, and series for unknown ones", () => {
     const batch = parseNexxo(snapshot("kinomarilyn"), site("kinomarilyn"));
     expect(screening(batch, "2210").tags).toEqual(["event-cinema"]);

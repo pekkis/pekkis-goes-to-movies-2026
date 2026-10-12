@@ -11,6 +11,14 @@ pg.types.setTypeParser(pg.types.builtins.DATE, (value) => value);
  */
 export const createDb = (connectionString: string): Kysely<DB> =>
   new Kysely<DB>({
-    dialect: new PostgresDialect({ pool: new pg.Pool({ connectionString, max: 5 }) }),
+    dialect: new PostgresDialect({
+      pool: new pg.Pool({
+        connectionString,
+        max: 5,
+        // Fail fast instead of hanging API requests when the database is away or stuck.
+        connectionTimeoutMillis: 5_000,
+        statement_timeout: 15_000,
+      }),
+    }),
     plugins: [new CamelCasePlugin()],
   });

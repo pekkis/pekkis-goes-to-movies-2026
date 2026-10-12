@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { filmRow, screeningRow, venueRow } from "../src/ingest/rows.ts";
+import { filmListingRow, filmRow, screeningRow, venueRow } from "../src/ingest/rows.ts";
 import { batch, film, screening } from "./factory.ts";
 
 it("maps a screening to a flat row, unknowns as NULL", () => {
@@ -46,4 +46,17 @@ it("flattens localized texts into columns and serializes trailers", () => {
 
 it("maps venue coordinates", () => {
   expect(venueRow(batch([]).venues[0]!)).toMatchObject({ lat: 62.24, lon: 25.75, address: null });
+});
+
+it("keeps a listing's original title and IMDb id", () => {
+  const listing = {
+    ...batch([]).listings[0]!,
+    originalTitle: "Conte d'hiver",
+    imdbId: "tt0104008",
+  };
+  expect(filmListingRow(listing)).toMatchObject({
+    originalTitle: "Conte d'hiver",
+    imdbId: "tt0104008",
+  });
+  expect(filmListingRow(batch([]).listings[0]!)).toMatchObject({ imdbId: null });
 });

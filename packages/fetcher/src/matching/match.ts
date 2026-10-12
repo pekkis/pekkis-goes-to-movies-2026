@@ -20,12 +20,23 @@ export type MatchOutcome = {
 const yearOf = (date: string | null | undefined) =>
   date ? Number(date.slice(0, 4)) || undefined : undefined;
 
+/** 1 for a film from the last three years, else 0. */
+const isRecent = (h: SearchResult, currentYear: number) =>
+  (yearOf(h.release_date) ?? 0) >= currentYear - 3 ? 1 : 0;
+
 /** Recent films first, then by popularity, so the details budget goes to likely hits. */
 const rankHits = (hits: SearchResult[], currentYear: number): SearchResult[] =>
-  [...new Map(hits.map((h) => [h.id, h])).values()].sort((a, b) => {
-    const recent = (h: SearchResult) => ((yearOf(h.release_date) ?? 0) >= currentYear - 3 ? 1 : 0);
-    return recent(b) - recent(a) || (b.popularity ?? 0) - (a.popularity ?? 0);
-  });
+  [...new Map(hits.map((h) => [h.id, h])).values()].toSorted(
+    (a, b) =>
+      isRecent(b, currentYear) - isRecent(a, currentYear) ||
+      (b.popularity ?? 0) - (a.popularity ?? 0),
+  );
+
+/** Normalized title without qualifiers: listings sharing it may be the same film. */
+const siblingKey = (listing: FilmListing) => {
+  const title = listing.title.fi ?? listing.title.en ?? listing.title.sv;
+  return title ? normalizeTitle(stripQualifiers(title)) : undefined;
+};
 
 export const matchListings = async (
   listings: FilmListing[],
@@ -102,10 +113,6 @@ export const matchListings = async (
   // Sibling pass: a listing another provider already linked, with the same title and
   // nearly the same runtime, is the same film. Catches what one provider's data cannot
   // prove on its own (e.g. Finnkino publishes no production countries) and reuses aliases.
-  const siblingKey = (listing: FilmListing) => {
-    const title = listing.title.fi ?? listing.title.en ?? listing.title.sv;
-    return title ? normalizeTitle(stripQualifiers(title)) : undefined;
-  };
   const linked = listings.filter((l) => links.has(l.id));
   const stillUnmatched: Unmatched[] = [];
   for (const entry of unmatched) {

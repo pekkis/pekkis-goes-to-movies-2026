@@ -55,7 +55,7 @@ export const candidatesFor = (
       return { cinema, nameScore, sameCity };
     })
     .filter((c) => c.nameScore >= MIN_NAME_SCORE || c.sameCity)
-    .sort(
+    .toSorted(
       (a, b) =>
         b.nameScore +
         (b.sameCity ? SAME_CITY_BONUS : 0) -

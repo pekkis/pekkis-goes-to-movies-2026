@@ -137,7 +137,7 @@ describe("parseBiorex", () => {
 
   it("sorts screenings by start time", () => {
     const times = batch.screenings.map((s) => Date.parse(s.startsAt));
-    expect(times).toEqual([...times].sort((a, b) => a - b));
+    expect(times).toEqual([...times].toSorted((a, b) => a - b));
   });
 });
 

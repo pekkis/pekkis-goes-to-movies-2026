@@ -1,9 +1,6 @@
-import { TZDate } from "@date-fns/tz";
-import { formatISO, subDays } from "date-fns";
 import {
   makeId,
   type Auditorium,
-  type Availability,
   type FilmListing,
   type FinnishRating,
   type ProviderBatch,
@@ -12,12 +9,14 @@ import {
   type Venue,
   type Warning,
 } from "@pgtm/model";
-import { dateWindow, FINNISH_TZ } from "../../lib/time.ts";
+import { dateWindow, helsinkiShowTime, parseLocalDateTime } from "../../lib/time.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
 import { codes, parseAudio, parseSubtitles, UNKNOWN_CODE } from "../language-codes.ts";
-import { providerOf } from "../sites.ts";
+import { availabilityFromSeats, byStartThenId, slugify, tally, toCents } from "../parsing.ts";
+import { providerOf, toVenue } from "../sites.ts";
 import { JohkuEntry, ScheduleResponse, type JohkuRawSnapshot } from "./raw.ts";
 import type { JohkuSite } from "./sites.ts";
+import { own } from "../../lib/records.ts";
 
 const RATINGS: Record<string, FinnishRating> = {
   S: "S",
@@ -47,25 +46,11 @@ const inCatalogue = (e: JohkuEntry) =>
     (v) => v === 1 || v === "1" || String(v ?? "").includes("fi_FI"),
   );
 
-/** Seats taken vs. capacity. Under a tenth left is "few-left". */
-export const availabilityOf = (capacity?: number, taken?: number): Availability => {
-  if (capacity === undefined || taken === undefined || capacity <= 0) return "unknown";
-  const free = capacity - taken;
-  if (free <= 0) return "sold-out";
-  return free / capacity < 0.1 ? "few-left" : "available";
-};
-
-/** "2026-10-14 19:00" (Helsinki) -> ISO with offset, and the programme day. */
-export const startOf = (local: string) => {
-  const m = local.trim().match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/);
-  if (!m) return undefined;
-  const [y, mo, d, h, mi] = m.slice(1).map(Number) as [number, number, number, number, number];
-  const start = new TZDate(y, mo - 1, d, h, mi, 0, FINNISH_TZ);
-  const business = h < 5 ? subDays(start, 1) : start;
-  return {
-    startsAt: formatISO(start),
-    businessDate: formatISO(business, { representation: "date" }),
-  };
+/** Capacity minus seats taken; unknown without both. */
+const freeSeats = (e: JohkuEntry) => {
+  const capacity = num(e.resource_capacity);
+  const taken = num(e.resource_reservations);
+  return capacity === undefined || taken === undefined ? {} : { free: capacity - taken, capacity };
 };
 
 /** Pure: schedules + site config -> normalized batch. Broken entries become warnings. */
@@ -75,17 +60,7 @@ export const parseJohku = (raw: JohkuRawSnapshot, site: JohkuSite): ProviderBatc
   const warnings: Warning[] = [];
   const prefixRules = { ...COMMON_TITLE_PREFIXES, ...site.titlePrefixes };
 
-  const venues: Venue[] = site.venues.map((v) => ({
-    id: makeId(P, "venue", v.slug),
-    provider: P,
-    sourceId: v.resource,
-    name: v.name,
-    city: v.city,
-    ...(v.shortName && { shortName: v.shortName }),
-    ...(v.address && { address: v.address }),
-    ...(v.postalCode && { postalCode: v.postalCode }),
-    ...(v.geo && { geo: v.geo }),
-  }));
+  const venues: Venue[] = site.venues.map((v) => toVenue(P, v, v.resource));
   const auditoriums = new Map<string, Auditorium>();
   const listings = new Map<string, FilmListing>();
   const screenings = new Map<string, Screening>();
@@ -120,10 +95,11 @@ export const parseJohku = (raw: JohkuRawSnapshot, site: JohkuSite): ProviderBatc
       const venue = site.venues.find((v) => v.resource === e.resource_name);
       if (!venue) {
         const hall = e.resource_name ?? "(no hall)";
-        unclaimed.set(hall, (unclaimed.get(hall) ?? 0) + 1);
+        tally(unclaimed, hall);
         continue;
       }
-      const start = startOf(e.start_date);
+      const local = parseLocalDateTime(e.start_date);
+      const start = local && helsinkiShowTime(local);
       if (!start) {
         warnings.push({
           code: "invalid-start",
@@ -151,7 +127,7 @@ export const parseJohku = (raw: JohkuRawSnapshot, site: JohkuSite): ProviderBatc
       ) {
         unmapped.push(`subtitles:${e.maccsboxsubtitles}`);
       }
-      const rating = blank(e.agelimit) ? undefined : RATINGS[e.agelimit!.trim()];
+      const rating = blank(e.agelimit) ? undefined : own(RATINGS, e.agelimit!.trim());
       if (!blank(e.agelimit) && !rating) unmapped.push(`agelimit:${e.agelimit}`);
       const imdbId = e.imdb?.trim().match(/^tt\d+$/)?.[0];
 
@@ -178,16 +154,7 @@ export const parseJohku = (raw: JohkuRawSnapshot, site: JohkuSite): ProviderBatc
       const venueId = makeId(P, "venue", venue.slug);
       const hall = e.resource_name!;
       const auditoriumId =
-        hall !== venue.name
-          ? makeId(
-              P,
-              "screen",
-              `${venue.slug}-${hall
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, "-")
-                .replace(/^-|-$/g, "")}`,
-            )
-          : undefined;
+        hall !== venue.name ? makeId(P, "screen", `${venue.slug}-${slugify(hall)}`) : undefined;
       if (auditoriumId && !auditoriums.has(auditoriumId)) {
         auditoriums.set(auditoriumId, {
           id: auditoriumId,
@@ -199,7 +166,7 @@ export const parseJohku = (raw: JohkuRawSnapshot, site: JohkuSite): ProviderBatc
       }
 
       const tags: ScreeningTag[] = [...(prefix?.tags ?? [])];
-      const price = num(e.price);
+      const price = toCents(e.price, { zeroIsFree: true });
       const url = e.storefronturl?.trim();
       screenings.set(id, {
         id,
@@ -216,10 +183,10 @@ export const parseJohku = (raw: JohkuRawSnapshot, site: JohkuSite): ProviderBatc
         subtitles,
         tags: [...new Set(tags)],
         series: prefix?.series ? [prefix.series] : [],
-        availability: availabilityOf(num(e.resource_capacity), num(e.resource_reservations)),
+        availability: availabilityFromSeats(freeSeats(e)),
         ...(price !== undefined && {
           price: {
-            amountCents: Math.round(price * 100),
+            amountCents: price,
             currency: "EUR" as const,
             ...((e.multipleprices === "1" || e.multipleprices === 1) && {
               note: "other ticket types available",
@@ -242,17 +209,15 @@ export const parseJohku = (raw: JohkuRawSnapshot, site: JohkuSite): ProviderBatc
     });
   }
 
-  const shown = new Set([...screenings.values()].map((s) => s.listingId));
+  // Listings are created only for screenings inside the window.
   return {
     provider: providerOf(site, "johku", "buy"),
     fetchedAt: raw.fetchedAt,
     window,
     venues,
     auditoriums: [...auditoriums.values()],
-    listings: [...listings.values()].filter((l) => shown.has(l.id)),
-    screenings: [...screenings.values()].sort(
-      (a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt) || a.id.localeCompare(b.id),
-    ),
+    listings: [...listings.values()],
+    screenings: [...screenings.values()].toSorted(byStartThenId),
     warnings,
   };
 };

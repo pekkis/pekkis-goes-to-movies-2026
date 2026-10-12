@@ -167,7 +167,7 @@ export type FilmDetails = Selectable<DB["films"]> & {
 
 const RATING_ORDER = ["rotten-tomatoes", "metacritic", "imdb", "tmdb"];
 export const sortRatings = <R extends { source: string }>(ratings: R[]): R[] =>
-  [...ratings].sort((a, b) => RATING_ORDER.indexOf(a.source) - RATING_ORDER.indexOf(b.source));
+  [...ratings].toSorted((a, b) => RATING_ORDER.indexOf(a.source) - RATING_ORDER.indexOf(b.source));
 
 export const filmDetails = async (db: Kysely<DB>, id: string): Promise<FilmDetails | undefined> => {
   const film = await db

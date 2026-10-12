@@ -1,7 +1,8 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
-import { loadEnv } from "../lib/env.ts";
+import { isValid, parseISO } from "date-fns";
+import { loadEnv, requireTmdbKey } from "../lib/env.ts";
 import { DATA_DIR } from "../lib/paths.ts";
 import { helsinkiToday } from "../lib/time.ts";
 import { runMatching } from "../matching/run.ts";
@@ -42,12 +43,14 @@ if (values.help) {
 
 // Fail before any request if the environment is incomplete.
 const env = loadEnv();
+requireTmdbKey(env);
 
 const selected = selectAdapters(values.provider);
 const from = values.from ?? helsinkiToday();
 const days = Number(values.days);
 const invalid =
   !/^\d{4}-\d{2}-\d{2}$/.test(from) ||
+  !isValid(parseISO(from)) ||
   !Number.isInteger(days) ||
   days < 1 ||
   days > 90 ||
@@ -113,5 +116,15 @@ console.log(
   `pulled ${results.length - failures} of ${results.length} providers into ${values.out}`,
 );
 
-await runMatching(values.out, env);
-if (failures) process.exit(1);
+// Matching needs at least one fresh batch, and a TMDB outage must not hide what was pulled.
+if (failures < results.length) {
+  try {
+    await runMatching(values.out, env);
+  } catch (error) {
+    console.error(
+      `tmdb: matching FAILED: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    process.exitCode = 1;
+  }
+}
+if (failures) process.exitCode = 1;

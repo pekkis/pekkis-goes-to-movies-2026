@@ -1,3 +1,5 @@
+import { own } from "../lib/records.ts";
+
 /** Country names as Finnish cinemas write them -> ISO 3166-1 alpha-2. */
 const FINNISH_COUNTRY_NAMES: Record<string, string> = {
   alankomaat: "NL",
@@ -46,7 +48,7 @@ const FINNISH_COUNTRY_NAMES: Record<string, string> = {
 export const toCountryCodes = (names: string[]): string[] => [
   ...new Set(
     names.flatMap((name) => {
-      const code = FINNISH_COUNTRY_NAMES[name.trim().toLowerCase()];
+      const code = own(FINNISH_COUNTRY_NAMES, name.trim().toLowerCase());
       return code ? [code] : [];
     }),
   ),

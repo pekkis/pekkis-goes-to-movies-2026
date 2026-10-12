@@ -17,6 +17,8 @@ import {
   type Warning,
 } from "@pgtm/model";
 import { Envelope, RawCinema, RawShowtime, type BiorexRawSnapshot } from "./raw.ts";
+import { own } from "../../lib/records.ts";
+import { byStartThenId } from "../parsing.ts";
 
 export const PROVIDER: Provider = {
   id: "biorex",
@@ -98,7 +100,7 @@ export const parseScreenName = (
   if (/\bluxe\b/i.test(name)) features.push("luxe");
   if (/\bimax\b/i.test(name)) features.push("imax");
   const age = name.match(/\(K-(18|16|12|7)\)/)?.[1];
-  const ageLimit = age ? RATINGS[age] : undefined;
+  const ageLimit = age ? own(RATINGS, age) : undefined;
   return ageLimit ? { features, ageLimit } : { features };
 };
 
@@ -322,9 +324,7 @@ export const parseBiorex = (raw: BiorexRawSnapshot): ProviderBatch => {
     venues: [...venues.values()],
     auditoriums: [...auditoriums.values()],
     listings: [...listings.values()],
-    screenings: [...screenings.values()].sort(
-      (a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt) || a.id.localeCompare(b.id),
-    ),
+    screenings: [...screenings.values()].toSorted(byStartThenId),
     warnings,
   };
 };

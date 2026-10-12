@@ -91,6 +91,7 @@ export const filmListingRow = (l: FilmListing): FilmListingRow => ({
   titleSv: l.title.sv ?? null,
   titleEn: l.title.en ?? null,
   originalTitle: l.originalTitle ?? null,
+  imdbId: l.imdbId ?? null,
   year: l.year ?? null,
   runtimeMinutes: l.runtimeMinutes ?? null,
   rating: l.rating ?? null,

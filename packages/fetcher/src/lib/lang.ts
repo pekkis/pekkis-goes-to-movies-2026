@@ -1,4 +1,5 @@
 import type { Lang } from "@pgtm/model";
+import { own } from "./records.ts";
 
 /**
  * Upstream language codes that are not ISO 639-1. `SE` is the ISO 3166 country code
@@ -126,12 +127,14 @@ const fromAdjective = (key: string) => key.replace(/l(?:ainen|äinen)$/, "");
 export const normalizeLang = (input: string): Lang | undefined => {
   const key = input.trim().toLowerCase();
   if (key === "") return undefined;
-  if (key in NON_ISO) return NON_ISO[key];
-  if (key in FINNISH_NAMES) return FINNISH_NAMES[key];
-  if (key in ENGLISH_NAMES) return ENGLISH_NAMES[key];
-  if (key in OTHER_NAMES) return OTHER_NAMES[key];
+  const named =
+    own(NON_ISO, key) ??
+    own(FINNISH_NAMES, key) ??
+    own(ENGLISH_NAMES, key) ??
+    own(OTHER_NAMES, key);
+  if (named) return named;
   const stem = fromAdjective(key);
-  if (stem !== key) return FINNISH_NAMES[stem] ?? OTHER_NAMES[stem];
+  if (stem !== key) return own(FINNISH_NAMES, stem) ?? own(OTHER_NAMES, stem);
   if (/^[a-z]{2}$/.test(key)) return key;
   return undefined;
 };

@@ -1,12 +1,15 @@
 import { z } from "zod";
 
 /**
- * Environment variables, validated. `.env` is loaded by Node itself
- * (`--env-file-if-exists=.env` in the package scripts); no dotenv needed.
+ * Environment variables, validated. The repository root's `.env` is loaded by Node itself
+ * (`--env-file-if-exists=../../.env` in the package scripts); no dotenv needed.
  */
 const Env = z.object({
   /** TMDB v4 read access token, used as a Bearer token. */
-  TMDB_APIKEY: z.string().startsWith("eyJ", "must be a TMDB v4 read access token (eyJ…)"),
+  TMDB_APIKEY: z
+    .string()
+    .startsWith("eyJ", "must be a TMDB v4 read access token (eyJ…)")
+    .optional(),
   /** URL or email put into the User-Agent so that cinemas can reach whoever runs the fetcher. */
   CONTACT: z.string().min(1).optional(),
   /** OMDb key (omdbapi.com, free) for Rotten Tomatoes, Metacritic and IMDb scores. Optional. */
@@ -22,4 +25,11 @@ export const loadEnv = (source: NodeJS.ProcessEnv = process.env): Env => {
     throw new Error(`Invalid environment (check .env):\n${problems.join("\n")}`);
   }
   return result.data;
+};
+
+/** The TMDB token, for commands that match films (pull, match). Fails with a clear message. */
+export const requireTmdbKey = (env: Env): string => {
+  if (!env.TMDB_APIKEY)
+    throw new Error("TMDB_APIKEY is not set (check .env): film matching needs it");
+  return env.TMDB_APIKEY;
 };

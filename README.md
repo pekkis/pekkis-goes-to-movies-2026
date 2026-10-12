@@ -2,7 +2,13 @@
 
 All Finnish cinema showtimes on one site. Find a film by time and place ("what's on in Tampere tonight?") or start from the film ("where and when can I see X?").
 
-For now the repository contains the data collection: BioRex and Finnkino showtimes are fetched, normalized into a typed model, matched to films on TMDB and stored in PostgreSQL with history. The user interface comes later.
+For now the repository contains the data collection and an API:
+
+- **Sources:** showtimes from Finnkino, BioRex and small cinemas on the Nexxo, eTiketti, Kinola and Johku platforms (88 venues in 63 towns).
+- **Processing:** the showtimes are normalized into a typed model, matched to films on TMDB (with optional Rotten Tomatoes, Metacritic and IMDb scores via OMDb), and stored in PostgreSQL with history.
+- **Access:** a read-only HTTP API and a command-line search serve the data.
+
+The user interface (a map app) is in progress.
 
 ## Usage
 
@@ -10,16 +16,23 @@ You need Node 24, pnpm 12, Docker, Google Chrome (for Finnkino) and a [TMDB](htt
 
 ```sh
 pnpm install
-cp .env.example .env   # add TMDB_APIKEY
+cp .env.example .env   # add TMDB_APIKEY (and optionally OMDB_APIKEY)
 pnpm db:up             # PostgreSQL in Docker
 pnpm migrate           # create the schema
-pnpm pull              # fetch BioRex and Finnkino, normalize, match to TMDB → data/
+pnpm pull              # fetch every source, normalize, match to TMDB → data/ (about 2 min)
 pnpm ingest            # load data/ into PostgreSQL
 pnpm showtimes odyssey # any film, fuzzily: info + today's screenings in all cinemas
+pnpm showtimes --address "Tampere" --after 18:00   # what's on tonight near a place
+pnpm api:dev           # HTTP API on http://127.0.0.1:3000 (docs at /docs)
 pnpm check             # types, lint, formatting and tests (needs the database)
 ```
 
-More: [AGENTS.md](AGENTS.md) (layout and conventions), [docs/data-model.md](docs/data-model.md), [docs/data-sources.md](docs/data-sources.md) and [docs/database.md](docs/database.md).
+More:
+
+- [AGENTS.md](AGENTS.md): rules, layout and conventions
+- [docs/development.md](docs/development.md): principles, testing and recipes
+- [docs/cli.md](docs/cli.md): every command and option
+- [docs/data-model.md](docs/data-model.md), [docs/data-sources.md](docs/data-sources.md), [docs/database.md](docs/database.md) and [docs/api.md](docs/api.md)
 
 ## Data and fair use
 
@@ -30,7 +43,8 @@ More: [AGENTS.md](AGENTS.md) (layout and conventions), [docs/data-model.md](docs
 ## Acknowledgements
 
 - [Leffavuoro / Shady-Dev/kino](https://github.com/Shady-Dev/kino) (AGPL-3.0) served as a map of the ticketing platforms.
-- Film data and images come from [TMDB](https://www.themoviedb.org/).
+- Film data and images come from [TMDB](https://www.themoviedb.org/); ratings from [OMDb](https://www.omdbapi.com/).
+- Venue coordinates come from [OpenStreetMap](https://www.openstreetmap.org/) (© OpenStreetMap contributors, ODbL).
 
   This product uses the TMDB API but is not endorsed or certified by TMDB.
 

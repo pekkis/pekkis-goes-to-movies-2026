@@ -1,4 +1,4 @@
-import type { FilmCatalog, ProviderBatch } from "@pgtm/model";
+import { isIncomplete, type FilmCatalog, type ProviderBatch } from "@pgtm/model";
 import { sql, type Kysely, type Transaction } from "kysely";
 import type { DB } from "../db/types.ts";
 import {
@@ -59,7 +59,13 @@ export const ingestFilms = async (db: Kysely<DB>, catalog: FilmCatalog): Promise
   return catalog.films.length;
 };
 
-export type BatchResult = { inserted: number; updated: number; removed: number };
+export type BatchResult = {
+  inserted: number;
+  updated: number;
+  removed: number;
+  /** True when the batch was incomplete and removals were not inferred (see isIncomplete). */
+  removalsSkipped: boolean;
+};
 
 /**
  * Upserts one provider's batch in a transaction. Screenings keep history:
@@ -102,6 +108,9 @@ export const ingestBatch = (db: Kysely<DB>, batch: ProviderBatch): Promise<Batch
       }
     }
 
+    // Part of the source failed to parse: absence proves nothing this time.
+    if (isIncomplete(batch)) return { inserted, updated, removed: 0, removalsSkipped: true };
+
     const removed = await trx
       .updateTable("screenings")
       .set({ removedAt: seenAt, updatedAt: sql<Date>`now()` })
@@ -114,5 +123,5 @@ export const ingestBatch = (db: Kysely<DB>, batch: ProviderBatch): Promise<Batch
       .where(sql<boolean>`not (id = any(${batch.screenings.map((s) => s.id)}::text[]))`)
       .executeTakeFirst();
 
-    return { inserted, updated, removed: Number(removed.numUpdatedRows) };
+    return { inserted, updated, removed: Number(removed.numUpdatedRows), removalsSkipped: false };
   });

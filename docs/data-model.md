@@ -1,6 +1,6 @@
 # Data model (v1)
 
-Goal: a precise, typed model that improves on the data model of Leffavuoro (Shady-Dev/kino). **The source of truth is [src/model/schema.ts](../packages/fetcher/src/model/schema.ts)**: Zod schemas from which the TypeScript types are inferred (`z.infer`) and from which a JSON Schema can be generated (`z.toJSONSchema`). This document explains why the model looks the way it does. Field-level details live in the code.
+Goal: a precise, typed model that improves on the data model of Leffavuoro (Shady-Dev/kino). **The source of truth is [packages/model/src/schema.ts](../packages/model/src/schema.ts)** (`@pgtm/model`): Zod schemas from which the TypeScript types are inferred (`z.infer`). The fetcher produces it, and the backend ingests it. This document explains why the model looks the way it does. Field-level details live in the code.
 
 ## What we fix (findings from Leffavuoro's data, 7,643 showtimes, 2026-10-09)
 
@@ -15,22 +15,23 @@ Goal: a precise, typed model that improves on the data model of Leffavuoro (Shad
 
 ## Entities
 
-| Entity          | What                                                                                                           | Example id           |
-| --------------- | -------------------------------------------------------------------------------------------------------------- | -------------------- |
-| `Provider`      | A chain or cinema and its ticketing platform (`mycloudcinema`, `vista-ocapi`, …)                               | `biorex`             |
-| `Venue`         | A cinema: city, address, postal code and coordinates                                                           | `biorex:venue:1`     |
-| `Auditorium`    | A screen: features (`plus`, `prime`, `imax`, …) and its own age limit                                          | `biorex:screen:57`   |
-| `FilmListing`   | The source's own film record, as is; `kind` is `film` or `event`                                               | `biorex:film:1509`   |
-| `Film`          | Canonical film **from TMDB**: titles (fi/sv/en), synopses, poster, backdrop, trailers, Finnish rating, IMDb id | `tmdb:1185806`       |
-| `FilmCatalog`   | `films.json`: all `Film` records and the `unmatched` list                                                      | –                    |
-| `Screening`     | A showtime                                                                                                     | `biorex:show:436478` |
-| `ProviderBatch` | Everything one adapter run produces, including warnings                                                        | –                    |
+| Entity          | What                                                                                                                      | Example id           |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| `Provider`      | A chain or cinema and its ticketing platform (`mycloudcinema`, `vista-ocapi`, …)                                          | `biorex`             |
+| `Venue`         | A cinema: city, address, postal code and coordinates                                                                      | `biorex:venue:1`     |
+| `Auditorium`    | A screen: features (`plus`, `prime`, `imax`, …) and its own age limit                                                     | `biorex:screen:57`   |
+| `FilmListing`   | The source's own film record, as is; `kind` is `film` or `event`; `imdbId` when the source gives one (Kinola, Johku)      | `biorex:film:1509`   |
+| `Film`          | Canonical film **from TMDB**: titles (fi/sv/en), synopses, poster, backdrop, trailers, Finnish rating, IMDb id, `ratings` | `tmdb:1185806`       |
+| `Rating`        | One score on a film: `source` (`rotten-tomatoes`, `metacritic`, `imdb`, `tmdb`), `score` 0–100, `display`, `votes`        | –                    |
+| `FilmCatalog`   | `films.json`: all `Film` records and the `unmatched` list                                                                 | –                    |
+| `Screening`     | A showtime                                                                                                                | `biorex:show:436478` |
+| `ProviderBatch` | Everything one adapter run produces: `fetchedAt`, the date `window` it covers, and warnings                               | –                    |
 
 ### Design decisions
 
 - **Ids have the form `{provider}:{kind}:{sourceId}`.** They are unique across entity types too: BioRex film 1509 and showtime 1509 cannot be confused.
 - **Times:** `startsAt` and `endsAt` are Helsinki wall-clock times with an offset (`2026-10-09T20:00:00+03:00`). `businessDate` is the cinema's business day, so a show after midnight belongs to the previous day. `fetchedAt` is UTC.
-- **Languages** are lowercase ISO 639-1 codes. An empty `audio` means the language is unknown. `dubbed: true | false` tells a dubbed version from the original; the field is absent when unknown.
+- **Languages** are lowercase ISO 639-1 codes (plus `zxx` for no dialogue). An empty `audio` means the language is unknown. `dubbed: true | false` tells a dubbed version from the original; the field is absent when unknown.
 - **Subtitles** are a discriminated union: `none`, `languages`, `unknown-language` (Leffavuoro's "XX-S") or `unknown`.
 - **"Unknown" is expressed by omitting the field, never with an empty string or `false`.** For example, `licensed` (alcohol service) is absent when we do not know. The TS option `exactOptionalPropertyTypes` enforces this.
 - **Age limits:** the film's classification is `FilmListing.rating` (and `Film.rating` from TMDB). Limits set by the screen or the screening are `Auditorium.ageLimit` and `Screening.ageLimit`; for example, BioRex's REX screens are K-18.
@@ -51,11 +52,12 @@ validate (Zod)  →  a broken row does not abort the run: it is reported and ski
       ↓
 match (TMDB)  →  films.json, filmId on listings and screenings
       ↓
-output JSON (+ JSON Schema)
+output JSON  →  pnpm ingest  →  PostgreSQL (history kept)
 ```
 
 - **Fetch and parse are separate.** Parsers are pure functions, tested against recorded responses without network access. This is the biggest structural difference from Leffavuoro.
-- Every adapter returns `ProviderBatch { provider, venues, auditoriums, listings, screenings, warnings }`.
+- Every adapter returns `ProviderBatch { provider, fetchedAt, window, venues, auditoriums, listings, screenings, warnings }`.
+- A batch with a data-missing warning (`invalid-*`, `unknown-*`, `result-code`) is **incomplete** (`isIncomplete`): ingest stores it but infers no removed screenings from it. Codes: [development.md](development.md#warning-codes).
 - `unmappedLabels` and `warnings` make visible what the parser does not understand yet. New values are added to the mappings together with tests.
 
 ## TMDB matching
@@ -65,6 +67,7 @@ output JSON (+ JSON Schema)
 **Principle: certain or nothing.** A wrong poster is worse than a missing one. Code: [src/matching/](../packages/fetcher/src/matching/).
 
 1. **An alias** ([config/tmdb-aliases.json](../packages/fetcher/config/tmdb-aliases.json)) always wins. `"tmdb": null` means the film is not on TMDB, so it is no longer searched for.
+   **An IMDb id from the cinema** (Kinola, Johku) is looked up with TMDB's `/find` next (match method `imdb`). The cinema's **original title** is searched too and counts as a title match. Both are facts from the source, so they do not loosen the rules below.
 2. **Search** (`language=fi-FI`, which also hits translated titles) runs with the title and with the part before the subtitle (`"Practical Magic: Lumotut sisaret"` → `"Practical Magic"`). A trailing qualifier in parentheses is dropped first (`"Vaiana (liveaction)"` → `"Vaiana"`). Details are fetched for the five most likely hits.
 3. **Evidence** ([score.ts](../packages/fetcher/src/matching/score.ts)) for each candidate:
    - title: `exact` (including translations and alternative titles) / `prefix` / `none`
@@ -95,11 +98,11 @@ TMDB's terms require attribution in the UI: the TMDB logo and the notice "This p
   - the raw snapshot to `data/raw/{provider}/{timestamp}.json`
   - the normalized `ProviderBatch` to `data/normalized/{provider}.json` (with `filmId`s after matching)
   - the film catalog to `data/normalized/films.json`
-  - the TMDB cache to `data/cache/tmdb/` (searches 1 day, films 7 days).
+  - caches under `data/cache/`: TMDB (searches 1 day, films 7 days), OMDb ratings, the Finnkino token, OSM and Nominatim (a week and a month).
 
   `data/` is gitignored, because the data belongs to the cinemas.
 
-- **Later:** PostgreSQL. The entities and namespaced ids are designed to work directly as primary keys.
+- **Then** `pnpm ingest` loads the batches into PostgreSQL, keeping history. The namespaced ids are the primary keys. See [database.md](database.md).
 
 ## Open questions
 

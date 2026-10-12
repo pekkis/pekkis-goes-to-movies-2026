@@ -41,6 +41,7 @@ export interface FilmListings {
   filmId: string | null;
   genres: Generated<string[]>;
   id: string;
+  imdbId: string | null;
   kind: string;
   match: string | null;
   originalTitle: string | null;

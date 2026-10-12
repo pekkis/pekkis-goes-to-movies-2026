@@ -195,7 +195,10 @@ describe("parseKinola", () => {
     const page = loadFixture("kinola", "sheryl-events.json") as { data: Record<string, unknown>[] };
     const moved = { ...page, data: [{ ...page.data[0]!, venue: { name: "Väre" } }, { id: "x" }] };
     const batch = parseKinola(snapshot("sheryl", { pages: [moved] }), site("sheryl"));
-    expect(batch.warnings.map((w) => w.code).sort()).toEqual(["invalid-event", "unclaimed-venue"]);
+    expect(batch.warnings.map((w) => w.code).toSorted()).toEqual([
+      "invalid-event",
+      "unclaimed-venue",
+    ]);
     expect(batch.screenings).toEqual([]);
   });
 });
