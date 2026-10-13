@@ -189,6 +189,11 @@ describe("screenings", () => {
     expect(ids(body)).toEqual(["5", "2", "3"]);
   });
 
+  it("filters by city, case-insensitively", async () => {
+    const { body } = await get("/v1/screenings?date=2026-10-10&city=helsinki");
+    expect(ids(body)).toEqual(["4"]);
+  });
+
   it("filters by viewport and film", async () => {
     expect(
       ids((await get("/v1/screenings?date=2026-10-10&bbox=24.5,60.1,25.3,60.4")).body),

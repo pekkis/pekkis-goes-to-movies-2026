@@ -10,3 +10,6 @@ docs/
 **/test/
 packages/fetcher/*
 !packages/fetcher/package.json
+apps/fpgm/
+apps/web-front/*
+!apps/web-front/package.json

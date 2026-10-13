@@ -1,0 +1,42 @@
+---
+import { INDEXING } from "astro:env/server";
+import "../styles/reset.css.ts";
+import { fi } from "../lib/text.ts";
+import { sprinkles } from "../styles/sprinkles.css.ts";
+import * as css from "./Base.css.ts";
+
+type Props = { title: string; description?: string };
+const { title, description = fi.tagline } = Astro.props;
+// Filters (?date=) are variations of one page: the canonical URL leaves them out.
+const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
+---
+
+<!doctype html>
+<html lang={Astro.currentLocale ?? "fi"}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {INDEXING !== "on" && <meta name="robots" content="noindex, nofollow" />}
+  </head>
+  <body>
+    <div class={css.page}>
+      <header class={sprinkles({ paddingY: "md" })}>
+        <a class={css.brand} href="/fi/">{fi.siteName}</a>
+      </header>
+      <main><slot /></main>
+      <footer class={css.footer}>
+        <p>{fi.sourceNote}</p>
+        <p class={sprinkles({ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "sm" })}>
+          <a href="https://www.themoviedb.org/">
+            <img src="/tmdb-logo.svg" alt="TMDB" width="110" height="14" />
+          </a>
+          {fi.tmdbNotice}
+        </p>
+        <p>{fi.osmNotice}</p>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,38 @@
+---
+import { DateNav } from "../../../components/DateNav.tsx";
+import { ScreeningList } from "../../../components/ScreeningList.tsx";
+import Base from "../../../layouts/Base.astro";
+import { loadCityPage } from "../../../lib/pages.ts";
+import { fi } from "../../../lib/text.ts";
+import { addDays, formatDay } from "../../../lib/time.ts";
+import { sprinkles } from "../../../styles/sprinkles.css.ts";
+
+const page = await loadCityPage(
+  Astro.locals.api,
+  Astro.params.city ?? "",
+  Astro.url.searchParams.get("date"),
+);
+if (!page) Astro.response.status = 404;
+---
+
+{
+  page ? (
+    <Base title={`${fi.whatsOn(page.city.name)} – ${formatDay(page.date)}`}>
+      <h1>{fi.whatsOn(page.city.name)}</h1>
+      <p class={sprinkles({ marginBottom: "md" })}>
+        {formatDay(page.date)} · {fi.screenings(page.screenings.length)}
+      </p>
+      <nav class={sprinkles({ display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: "md", marginBottom: "md" })}>
+        <a href={`?date=${addDays(page.date, -1)}`}>‹ {fi.previousDay}</a>
+        <DateNav client:load date={page.date} />
+        <a href={`?date=${addDays(page.date, 1)}`}>{fi.nextDay} ›</a>
+      </nav>
+      {page.screenings.length ? <ScreeningList screenings={page.screenings} /> : <p>{fi.noScreenings}</p>}
+    </Base>
+  ) : (
+    <Base title={fi.notFound}>
+      <h1>{fi.notFound}</h1>
+      <p><a href="/fi/">{fi.cities}</a></p>
+    </Base>
+  )
+}

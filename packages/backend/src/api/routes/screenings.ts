@@ -16,6 +16,11 @@ const list = createRoute({
     query: z.object({
       date: dateParam,
       bbox: bboxParam,
+      city: z
+        .string()
+        .min(1)
+        .optional()
+        .openapi({ description: "Venue city, case-insensitive.", example: "Tampere" }),
       venue: z.string().optional().openapi({ description: "Venue id." }),
       film: z.string().optional().openapi({ description: "Film id (tmdb:…) or listing id." }),
       after: afterParam,
@@ -41,6 +46,7 @@ export const screeningRoutes = (db: Kysely<DB>) =>
     const page = await listScreenings(db, {
       date,
       bbox: q.bbox ? parseBbox(q.bbox) : undefined,
+      city: q.city,
       venueId: q.venue,
       filmId: q.film,
       after: q.after,

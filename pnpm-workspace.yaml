@@ -2,6 +2,8 @@
 
 packages:
   - packages/*
+  # Not apps/*: apps/fpgm is the Flutter app, outside the pnpm workspace.
+  - apps/web-front
 
 # --- Supply chain ---------------------------------------------------------
 # Do not install versions younger than one day (minutes). Most malicious
@@ -9,12 +11,22 @@ packages:
 minimumReleaseAge: 1440
 # Refuse a package whose publish trust level dropped (e.g. lost provenance).
 trustPolicy: no-downgrade
+# Exact versions exempted after checking them by hand (approved by the maintainer):
+# - semver@6.3.1: the 2023 ReDoS backport to 6.x, published by the npm CLI team three days
+#   after 7.5.4, the first release signed by npm's automation; hence the "downgrade".
+#   Needed by @babel/core via @vanilla-extract/integration. Checked 2026-10-13.
+trustPolicyExclude:
+  - semver@6.3.1
 # Transitive dependencies may not come from git repos or tarball URLs.
 blockExoticSubdeps: true
 # Fail the install when a dependency wants to run a build script that is not allowed below.
 strictDepBuilds: true
-# Dependencies allowed to run install scripts. None needed so far.
-allowBuilds: {}
+# Dependencies allowed (true) or refused (false) to run install scripts.
+allowBuilds:
+  # Vanilla Extract compiles .css.ts files with esbuild (via @vanilla-extract/integration).
+  esbuild: true
+  # Astro's optional image service. Unused: posters come from TMDB's CDN, so no build.
+  sharp: false
 
 # --- Consistency ----------------------------------------------------------
 # Enforce package.json "engines" (node >= 24).
