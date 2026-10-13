@@ -248,6 +248,34 @@ Profiled on 2026-10-10 over 214 shows on 10 locations. Adapter: `packages/fetche
 
 ---
 
+## TMB Cinema (one HTML template, four cinemas)
+
+Probed 2026-10-13, one GET per site. Adapter: `packages/fetcher/src/providers/tmb/`, sites in `sites.ts`. Origin: Leffavuoro's `scripts/providers/tmb.py`, re-verified.
+
+- **Who:** TMB Cinema Oy runs Kino-Toijala (Akaa), Kino-Sampo (Valkeakoski), KinoMania (Pieksämäki) and Elokuvateatteri Elo (Heinola), each on its own site built on one template ("Mediapalvelu W3D").
+- **Four cinemas, not mirrors** **[A, Leffavuoro]**: their programmes coincide, but each has its own booking ids.
+- **The programme:** `GET {base}/?lista=1`, the list view **[V]**:
+  - each row is `<small>KE&nbsp;14.10.2026 klo&nbsp;13:30[, sali&nbsp;1]</small>`, followed by `<h2><a href="?ohjelmisto={id}">Title</a></h2>` and a rating image `/files/images/ikaraja_N.png`;
+  - the year is always there. Halls appear only at KinoMania and Elo.
+- **Date-only rows** ("23.10.2026", no weekday or time) **[V]**: announcements, not screenings; skipped.
+- **A weekday that contradicts its date** is rejected with a warning: the template must have changed.
+- **Rating images** **[V]**:
+  - `_2` K-7, `_3` K-12 and `_4` K-16 were checked by Leffavuoro against other cinemas' ratings of the same films;
+  - `_1` is S: we checked it on 2026-10-13 ("Pirjo i Sverige" is S at 13 other cinemas, "Pikkuli ja Tähtipeura" at 6), and it also appears on operas and ballets;
+  - `_0` is titled "Ikärajaa ei ole määritetty" (no rating set);
+  - `_5` (one festival screening) is reported as an unmapped label.
+- **Labels in titles** **[V]**: "(Ennakkonäytös)" / "(Ennakkonäytös!)" (preview), "(Puhumme suomea!)" (Finnish dub, also without the space), "Ooppera:", "Baletti:" (events), "Akaan elokuvajuhla 2026:" (series, in Toijala's config). They're read by the shared label rules in `labels.ts`, which now also take labels in parentheses at the end.
+- **No screening ids in the list:** a screening's id is film, minute and hall: `867-202610141330`, `847-202610141745-1`.
+- **Ticket links:** the film's public page `?ohjelmisto={id}`, which lists its screenings with the site's own booking buttons. Never `?varaa=` (the seat-reservation action). So booking is `reserve`.
+- **Not read:** the film pages, which state runtime, genre and a price per screening, at about one request per film per site. Possible later; TMDB gives the runtime anyway.
+- **Coordinates** **[V]**:
+  - Toijala and Sampo: OSM nodes with the cinemas' own addresses;
+  - KinoMania: an OSM node about 45 m from the Kauppakatu 5–7 address points;
+  - **Elo: none yet.** OSM has no cinema in Heinola, and Nominatim knows Kauppakatu but not number 16. `pnpm pull` warns until it's set.
+- **First run:** 19 + 19 + 26 + 26 screenings, about 9 of every 10 films matched, no warnings apart from Elo's coordinates.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

@@ -9,6 +9,9 @@ import { MYCLOUDCINEMA_SITES, type MyCloudCinemaSite } from "./mycloudcinema/sit
 import { fetchGilda } from "./gilda/fetch.ts";
 import { parseGilda } from "./gilda/parse.ts";
 import { GILDA_SITES, type GildaSite } from "./gilda/sites.ts";
+import { fetchTmb } from "./tmb/fetch.ts";
+import { parseTmb } from "./tmb/parse.ts";
+import { TMB_SITES, type TmbSite } from "./tmb/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -124,9 +127,22 @@ const gildaAdapter = (site: GildaSite): Adapter => ({
   },
 });
 
+/** TMB Cinema: one list page per site. */
+const tmbAdapter = (site: TmbSite): Adapter => ({
+  id: site.provider,
+  platform: "tmb",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchTmb(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseTmb(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
+  ...TMB_SITES.map(tmbAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",

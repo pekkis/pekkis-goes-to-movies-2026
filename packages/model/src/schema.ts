@@ -44,6 +44,7 @@ export const Platform = z.enum([
   "kinola",
   "nexxo",
   "johku",
+  "tmb",
   "custom",
 ]);
 export type Platform = z.infer<typeof Platform>;

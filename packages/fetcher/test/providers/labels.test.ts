@@ -21,6 +21,12 @@ describe("splitVersion", () => {
     ["Unohdettu saari DUP.", "Unohdettu saari", { dubbed: true, audio: "fi" }],
     ["Amadeus – ohjaajan versio", "Amadeus", {}],
     ["På svenska: Bortglömda ön", "Bortglömda ön", { dubbed: true, audio: "sv" }],
+    // TMB writes it with or without the space.
+    [
+      "Pikkuli ja Tähtipeura(Puhumme suomea!)",
+      "Pikkuli ja Tähtipeura",
+      { dubbed: true, audio: "fi" },
+    ],
   ])("%s", (raw, title, version) => {
     expect(splitVersion(raw)).toEqual({ title, version });
   });
@@ -57,5 +63,25 @@ describe("splitTitlePrefix", () => {
     expect(splitTitlePrefix("Ryhmä Hau: Dinoelokuva", COMMON_TITLE_PREFIXES)).toEqual({
       title: "Ryhmä Hau: Dinoelokuva",
     });
+  });
+
+  it("reads the same labels in parentheses at the end (TMB)", () => {
+    expect(
+      splitTitlePrefix(
+        "Late Lammas -elokuva: Hämäräpuuhissa (Ennakkonäytös)",
+        COMMON_TITLE_PREFIXES,
+      ),
+    ).toEqual({ title: "Late Lammas -elokuva: Hämäräpuuhissa", rule: { tags: ["preview"] } });
+    expect(
+      splitTitlePrefix("Pikkuli ja Tähtipeura (Ennakkonäytös!)", COMMON_TITLE_PREFIXES).title,
+    ).toBe("Pikkuli ja Tähtipeura");
+    expect(splitTitlePrefix("Baletti: Pähkinänsärkijä", COMMON_TITLE_PREFIXES).rule?.event).toBe(
+      true,
+    );
+    // Unknown parentheses stay: they may be part of the title.
+    expect(
+      splitTitlePrefix("Madama Butterfly (Bregenz festival / Puccini)", COMMON_TITLE_PREFIXES)
+        .title,
+    ).toBe("Madama Butterfly (Bregenz festival / Puccini)");
   });
 });

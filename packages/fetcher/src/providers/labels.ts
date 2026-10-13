@@ -27,11 +27,13 @@ export const COMMON_TITLE_PREFIXES: Record<string, LabelRule> = {
   Lastenkino: { tags: ["kids"] },
   Seniorikino: { tags: ["senior"] },
   Ooppera: { tags: ["event-cinema"], event: true },
+  Baletti: { tags: ["event-cinema"], event: true },
 };
 
 /**
  * "Ennakkonäytös: Pikkuli" -> { title: "Pikkuli", rule } when the prefix has a rule.
  * Only listed prefixes are touched: "Ryhmä Hau: Dinoelokuva" is a title, not a label.
+ * The same labels at the end: "Pirjo i Sverige – Vauvakino", "Pikkuli (Ennakkonäytös!)".
  */
 export const splitTitlePrefix = (
   raw: string,
@@ -49,6 +51,12 @@ export const splitTitlePrefix = (
   if (suffix && suffixRule) {
     return { title: suffix[1]!.trim(), rule: suffixRule };
   }
+  // In parentheses at the end, an exclamation mark allowed: "(Ennakkonäytös!)" (TMB).
+  const paren = title.match(/^(.+?)\s*\(([^()]+?)!?\)$/);
+  const parenRule = paren ? own(rules, paren[2]!.trim()) : undefined;
+  if (paren && parenRule) {
+    return { title: paren[1]!.trim(), rule: parenRule };
+  }
   return { title };
 };
 
@@ -63,7 +71,7 @@ export type Version = {
 const VERSIONS: [RegExp, Version][] = [
   [
     // "DUP." is a typo seen in the wild for DUB.
-    /^(?:dub|dup|dubattu|suomeksi|suomeksi puhuttu|puhuttu suomeksi)\.?$/i,
+    /^(?:dub|dup|dubattu|suomeksi|suomeksi puhuttu|puhuttu suomeksi|puhumme suomea!?)\.?$/i,
     { dubbed: true, audio: "fi" },
   ],
   [/^(?:på svenska|ruotsiksi)$/i, { dubbed: true, audio: "sv" }],
