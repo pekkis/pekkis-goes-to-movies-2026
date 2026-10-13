@@ -83,8 +83,7 @@ export const TMB_SITES: TmbSite[] = defineSites(TmbSite, [
     homepage: "https://elokuvat-elo.info",
     base: "https://elokuvat-elo.info",
     verifiedAt: V,
-    notes:
-      "No coordinates yet: OSM has no cinema here and Nominatim knows Kauppakatu but not number 16.",
+    notes: "OSM has no cinema here; the coordinates are the maintainer's (2026-10-13).",
     venues: [
       {
         slug: "heinola",
@@ -92,6 +91,8 @@ export const TMB_SITES: TmbSite[] = defineSites(TmbSite, [
         city: "Heinola",
         address: "Kauppakatu 16",
         postalCode: "18100",
+        geo: { lat: 61.2040297, lon: 26.0374029 },
+        geoSource: "manual",
       },
     ],
   },

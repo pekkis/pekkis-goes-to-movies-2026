@@ -271,7 +271,7 @@ Probed 2026-10-13, one GET per site. Adapter: `packages/fetcher/src/providers/tm
 - **Coordinates** **[V]**:
   - Toijala and Sampo: OSM nodes with the cinemas' own addresses;
   - KinoMania: an OSM node about 45 m from the Kauppakatu 5–7 address points;
-  - **Elo: none yet.** OSM has no cinema in Heinola, and Nominatim knows Kauppakatu but not number 16. `pnpm pull` warns until it's set.
+  - Elo: OSM has no cinema in Heinola and Nominatim can't place Kauppakatu 16, so the point is the maintainer's (`manual`, 2026-10-13).
 - **First run:** 19 + 19 + 26 + 26 screenings, about 9 of every 10 films matched, no warnings apart from Elo's coordinates.
 
 ---
@@ -290,7 +290,7 @@ Probed 2026-10-13, one GET per site. Adapter: `packages/fetcher/src/providers/ci
 - **Dubbed and subtitled runs are separate films** (separate WordPress posts), so the listing id is the film page's slug.
 - **Halls:** "Vip 4" and "Premium 5" are kept as names, not features.
 - **The reservation link** is the cinema's own page, copied, never requested.
-- **Coordinates** **[V]**: Piispanristi and Laitila from OSM. **Kino Lumo has none yet**: no OSM cinema matched in Salo.
+- **Coordinates** **[V]**: all three from OSM. Kino Lumo is mapped as "Elokuvateatteri Lumo" at its own address (Savipajankatu 2B, Salo).
 - **First run:** 126 + 82 + 16 screenings this week, 24 of 25 films matched at Piispanristi, no unmapped labels.
 
 ---
