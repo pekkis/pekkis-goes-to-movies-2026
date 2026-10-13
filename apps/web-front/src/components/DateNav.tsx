@@ -1,5 +1,5 @@
 import { fi } from "../lib/text.ts";
-import { addDays } from "../lib/time.ts";
+import { addDays } from "@pgtm/model/time";
 import { button } from "../styles/recipes/button.css.ts";
 import * as css from "./DateNav.css.ts";
 

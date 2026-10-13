@@ -8,7 +8,7 @@ import { advanceMinutes, freezeClockAt, renderWithClock } from "../clock.tsx";
 freezeClockAt();
 
 const Label = ({ startsAt }: { startsAt: string }) => <p>{useShowStatus(startsAt).label}</p>;
-const Time = () => <p>{useNow().toISOString()}</p>;
+const Time = () => <p>{useNow().toString()}</p>;
 
 describe("the clock", () => {
   it("ticks once a minute: a show's label follows the time", () => {
@@ -27,7 +27,7 @@ describe("the clock", () => {
           <Time />
         </ClockIsland>,
       );
-    expect(at("2026-10-13T09:00:00.000Z")).toContain("2026-10-13T09:00:00.000Z");
-    expect(at("2026-10-13T17:30:00.000Z")).toContain("2026-10-13T17:30:00.000Z");
+    expect(at("2026-10-13T09:00:00Z")).toContain("2026-10-13T09:00:00Z");
+    expect(at("2026-10-13T17:30:00Z")).toContain("2026-10-13T17:30:00Z");
   });
 });

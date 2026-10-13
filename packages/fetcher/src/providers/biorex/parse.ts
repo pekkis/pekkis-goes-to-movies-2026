@@ -1,5 +1,5 @@
 import { normalizeLang } from "../../lib/lang.ts";
-import { dateWindow, toHelsinkiIso } from "../../lib/time.ts";
+import { dateWindow, toHelsinkiIso } from "@pgtm/model/time";
 import {
   makeId,
   type Auditorium,

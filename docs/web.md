@@ -42,7 +42,7 @@ request → src/middleware.ts      sets locals.api (API_URL), noindex + cache he
 - **Server first:** an island is rendered on the server, so the HTML is complete and correct before any JavaScript runs, for search engines, slow phones and people without JavaScript. Hydrate with `client:idle` unless the UI must react at once.
 - **Static where nothing changes:** `DateNav` is a plain GET form with the browser's own `<input type="date">`. Phones show their system picker, and accessibility comes from the browser.
 - **React Aria was tried and dropped (2026-10-13).** Its `DatePicker` island cost about 77 kB gzipped on top of React: translations for 34 languages, which its locale plugin trims to 61 kB, and every calendar system, which `DatePicker` can't drop. For a date choice, the native input is enough. Revisit per widget (film search, map filters), weighing what a library adds on top of React.
-- **Times are formatted in `Europe/Helsinki` explicitly** (`src/lib/time.ts`), so server and browser always agree whatever their own time zones.
+- **Dates and times are Temporal** (`@pgtm/model/time` for the logic, shared with the backend and fetcher). `src/lib/temporal.ts` loads `temporal-polyfill` (about 20 kB gzipped) only where `Temporal` is missing, which today means Safari. It's checked in Chrome both natively and with `Temporal` removed. Formatting is `Intl` in `src/lib/time.ts`, in `Europe/Helsinki` explicitly with a 23-hour clock, so server and browser, native and polyfill print the same (`00.30`, never `0.30`).
 - **UI text** is in `src/lib/text.ts` (Finnish), ready to move to an i18n catalogue (Lingui is the plan). Routes are under `/fi/`; `sv` and `en` are configured but have no pages yet.
 
 ## Visual style: grey mockup

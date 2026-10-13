@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { collapseStarted, showStatus } from "../../src/lib/show-status.ts";
 
-const NOW = new Date("2026-10-13T12:00:00+03:00");
+const NOW = Temporal.Instant.from("2026-10-13T12:00:00+03:00");
 const at = (time: string) => `2026-10-13T${time}:00+03:00`;
 
 describe("showStatus", () => {
@@ -34,7 +34,7 @@ describe("collapseStarted", () => {
   });
 
   it("shows everything when nothing is left to come", () => {
-    const late = new Date("2026-10-13T23:00:00+03:00");
+    const late = Temporal.Instant.from("2026-10-13T23:00:00+03:00");
     expect(collapseStarted(shows, late)).toEqual({ collapsed: [], shown: shows });
   });
 });

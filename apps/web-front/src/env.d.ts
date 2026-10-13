@@ -5,7 +5,7 @@ declare namespace App {
     /** Our API client; set per request by the middleware, by tests directly. */
     api: import("./lib/api.ts").Api;
     /** The request's time: which shows have started, start soon or later. Tests fix it. */
-    now: Date;
+    now: Temporal.Instant;
   }
 }
 

@@ -14,6 +14,7 @@
     "@astrojs/node": "^11.1.7",
     "@astrojs/react": "^7.0.1",
     "@pgtm/backend": "workspace:*",
+    "@pgtm/model": "workspace:*",
     "@vanilla-extract/css": "^1.21.3",
     "@vanilla-extract/dynamic": "^2.1.5",
     "@vanilla-extract/recipes": "^0.5.7",
@@ -25,6 +26,7 @@
     "maplibre-gl": "^6.14.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "temporal-polyfill": "^1.0.5",
     "zod": "^4.6.6"
   },
   "devDependencies": {

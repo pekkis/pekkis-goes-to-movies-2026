@@ -1,3 +1,4 @@
+import { minutesUntil } from "@pgtm/model/time";
 import { fi } from "./text.ts";
 
 /** A show counts as "soon" this many minutes before it starts. */
@@ -15,15 +16,13 @@ export type ShowStatus = {
   ticketsOpen: boolean;
 };
 
-const MINUTE = 60_000;
-
 /**
  * Where a show stands at `now`. Compares instants, so shows after midnight and other days
  * just work: a past day's shows have all started, a future day's are all later. Used by
- * the server when rendering and by the browser script that keeps an open page current.
+ * the server when rendering and by the islands that keep an open page current.
  */
-export const showStatus = (startsAt: string | Date, now: Date): ShowStatus => {
-  const minutes = Math.ceil((new Date(startsAt).getTime() - now.getTime()) / MINUTE);
+export const showStatus = (startsAt: string, now: Temporal.Instant): ShowStatus => {
+  const minutes = minutesUntil(startsAt, now);
   if (minutes <= 0) {
     return {
       state: "started",
@@ -43,7 +42,7 @@ export const showStatus = (startsAt: string | Date, now: Date): ShowStatus => {
  */
 export const collapseStarted = <S extends { startsAt: string }>(
   screenings: readonly S[],
-  now: Date,
+  now: Temporal.Instant,
 ): { collapsed: S[]; shown: S[] } => {
   const started = screenings.filter((s) => showStatus(s.startsAt, now).state === "started");
   const coming = screenings.filter((s) => showStatus(s.startsAt, now).state !== "started");

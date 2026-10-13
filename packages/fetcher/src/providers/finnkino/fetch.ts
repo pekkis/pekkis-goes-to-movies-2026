@@ -1,4 +1,4 @@
-import { addDays, formatISO, parseISO } from "date-fns";
+import { addDays } from "@pgtm/model/time";
 import type { HttpClient } from "../../lib/http.ts";
 import { RawSite, SitesResponse, type FinnkinoRawSnapshot } from "./raw.ts";
 
@@ -14,9 +14,7 @@ export type FetchOptions = {
 };
 
 export const businessDates = (from: string, days: number): string[] =>
-  Array.from({ length: days }, (_, i) =>
-    formatISO(addDays(parseISO(from), i), { representation: "date" }),
-  );
+  Array.from({ length: days }, (_, i) => addDays(from, i));
 
 /**
  * I/O only. `http` must already carry the token (see token.ts). One request for the

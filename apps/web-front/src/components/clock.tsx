@@ -1,18 +1,20 @@
+import "../lib/temporal.ts";
+import { currentInstant } from "@pgtm/model/time";
 import { atom, Provider, useAtomValue } from "jotai";
 import { useHydrateAtoms } from "jotai/utils";
 import type { ReactNode } from "react";
 import { showStatus, type ShowStatus } from "../lib/show-status.ts";
 
 /** The current time. While anything reads it, it ticks once a minute. */
-export const nowAtom = atom(new Date());
+export const nowAtom = atom(currentInstant());
 nowAtom.onMount = (setNow) => {
-  setNow(new Date());
-  const timer = setInterval(() => setNow(new Date()), 60_000);
+  setNow(currentInstant());
+  const timer = setInterval(() => setNow(currentInstant()), 60_000);
   return () => clearInterval(timer);
 };
 
 const StartAt = ({ now, children }: { now: string; children: ReactNode }) => {
-  useHydrateAtoms([[nowAtom, new Date(now)]]);
+  useHydrateAtoms([[nowAtom, Temporal.Instant.from(now)]]);
   return children;
 };
 
@@ -29,7 +31,7 @@ export const ClockIsland = ({ now, children }: { now: string; children: ReactNod
 );
 
 /** The current time, ticking once a minute. */
-export const useNow = (): Date => useAtomValue(nowAtom);
+export const useNow = (): Temporal.Instant => useAtomValue(nowAtom);
 
 /** A show's live status: started, soon or later; its label; whether tickets are sold. */
 export const useShowStatus = (startsAt: string): ShowStatus => showStatus(startsAt, useNow());

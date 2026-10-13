@@ -3,7 +3,7 @@ import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { beforeAll, describe, expect, it } from "vitest";
 import { createApi } from "../../src/lib/api.ts";
 import MapPage from "../../src/pages/fi/kartta.astro";
-import { fakeFetch, NOON, venue } from "../fixtures.ts";
+import { fakeFetch, NOON_INSTANT, venue } from "../fixtures.ts";
 
 let container: AstroContainer;
 beforeAll(async () => {
@@ -24,7 +24,7 @@ describe("map page", () => {
     );
     const res = await container.renderToResponse(MapPage, {
       request: new Request("http://web/fi/kartta"),
-      locals: { api, now: NOON },
+      locals: { api, now: NOON_INSTANT },
     });
     const html = await res.text();
     expect(res.status).toBe(200);

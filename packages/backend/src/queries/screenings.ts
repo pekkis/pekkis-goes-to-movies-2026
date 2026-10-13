@@ -3,7 +3,7 @@ import { sql, type Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import type { Screening } from "../api/schemas.ts";
 import type { DB } from "../db/types.ts";
-import { toHelsinkiIso } from "../lib/time.ts";
+import { toHelsinkiIso } from "@pgtm/model/time";
 import { geoOf, toFilmSummary, type Bbox } from "./common.ts";
 
 type ScreeningOut = z.infer<typeof Screening>;

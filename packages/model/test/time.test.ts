@@ -1,12 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
+  addDays,
+  currentInstant,
   dateWindow,
+  daysBetween,
   helsinkiShowTime,
   helsinkiShowTimeAt,
   helsinkiToday,
+  isIsoDate,
+  minutesUntil,
   parseLocalDateTime,
   toHelsinkiIso,
-} from "../../src/lib/time.ts";
+} from "../src/time.ts";
 
 describe("toHelsinkiIso", () => {
   it("uses +03:00 in summer time", () => {
@@ -81,5 +86,61 @@ describe("helsinkiShowTime", () => {
       startsAt: "2026-10-10T14:00:00+03:00",
       businessDate: "2026-10-10",
     });
+  });
+});
+
+describe("calendar dates", () => {
+  it.each([
+    ["2026-10-31", 1, "2026-11-01"],
+    ["2026-03-01", -1, "2026-02-28"],
+    ["2028-02-28", 1, "2028-02-29"],
+    ["2026-10-25", 1, "2026-10-26"], // across the end of summer time
+  ])("addDays(%s, %d) = %s", (date, days, expected) => {
+    expect(addDays(date, days)).toBe(expected);
+  });
+
+  it("counts calendar days between dates, in either direction", () => {
+    expect(daysBetween("2026-10-13", "2026-10-20")).toBe(7);
+    expect(daysBetween("2026-10-20", "2026-10-13")).toBe(-7);
+    expect(daysBetween("2026-03-28", "2026-03-30")).toBe(2); // across the start of summer time
+  });
+
+  it.each([
+    ["2026-10-13", true],
+    ["2028-02-29", true],
+    ["2026-02-31", false],
+    ["13.10.2026", false],
+    ["2026-1-3", false],
+    ["", false],
+  ])("isIsoDate(%j) is %s", (value, expected) => {
+    expect(isIsoDate(value)).toBe(expected);
+  });
+});
+
+describe("instants", () => {
+  it("formats a database Date in Helsinki like an ISO string", () => {
+    expect(toHelsinkiIso(new Date("2026-10-09T17:00:00.000Z"))).toBe("2026-10-09T20:00:00+03:00");
+    expect(() => toHelsinkiIso(new Date("nope"))).toThrow(RangeError);
+  });
+
+  it("rejects the hour the clock skips when summer time starts (2027-03-28 03:00→04:00)", () => {
+    const at = (hour: number) =>
+      helsinkiShowTime({ year: 2027, month: 3, day: 28, hour, minute: 30 });
+    expect(at(3)).toBeUndefined();
+    expect(at(4)?.startsAt).toBe("2027-03-28T04:30:00+03:00");
+  });
+
+  it("counts minutes until an instant, rounding up", () => {
+    const now = Temporal.Instant.from("2026-10-13T09:00:00Z");
+    expect(minutesUntil("2026-10-13T12:30:00+03:00", now)).toBe(30);
+    expect(minutesUntil("2026-10-13T12:00:30+03:00", now)).toBe(1);
+    expect(minutesUntil("2026-10-13T11:45:00+03:00", now)).toBe(-15);
+  });
+
+  it("reads the current instant through Date.now(), so fake timers control it", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-13T09:00:00Z"));
+    expect(currentInstant().toString()).toBe("2026-10-13T09:00:00Z");
+    vi.useRealTimers();
   });
 });

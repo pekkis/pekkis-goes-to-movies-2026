@@ -13,7 +13,7 @@ import {
   type Warning,
 } from "@pgtm/model";
 import { normalizeLang } from "../../lib/lang.ts";
-import { dateWindow, helsinkiShowTimeAt } from "../../lib/time.ts";
+import { dateWindow, helsinkiShowTimeAt } from "@pgtm/model/time";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
 import { availabilityFromSeats, byStartThenId, slugify, tally, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";

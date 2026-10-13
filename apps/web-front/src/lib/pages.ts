@@ -1,6 +1,6 @@
 import { dayScreenings, listVenues, type Api, type Screening, type Venue } from "./api.ts";
 import { resolveCity, type City } from "./cities.ts";
-import { isIsoDate } from "./time.ts";
+import { isIsoDate } from "@pgtm/model/time";
 import { resolveVenue } from "./venues.ts";
 
 /** A valid `?date=`, or undefined: a malformed one falls back to the API's today. */
