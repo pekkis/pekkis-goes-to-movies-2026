@@ -10,3 +10,6 @@ coverage/
 
 # Build output (API bundle for the Docker image)
 dist/
+
+# Astro generated types (astro sync)
+.astro/

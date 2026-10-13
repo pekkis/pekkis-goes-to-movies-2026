@@ -1,6 +1,6 @@
 # AGENTS.md – Pekkis goes to movies
 
-Instructions for AI agents (and humans) working in this repository. Rules first, then how the code is built, then reference. Details live in `docs/`: [development.md](docs/development.md) (principles, testing, warnings, recipes), [data-sources.md](docs/data-sources.md), [data-model.md](docs/data-model.md), [database.md](docs/database.md), [api.md](docs/api.md), [cli.md](docs/cli.md).
+Instructions for AI agents (and humans) working in this repository. Rules first, then how the code is built, then reference. Details live in `docs/`: [development.md](docs/development.md) (principles, testing, warnings, recipes), [data-sources.md](docs/data-sources.md), [data-model.md](docs/data-model.md), [database.md](docs/database.md), [api.md](docs/api.md), [cli.md](docs/cli.md), [web.md](docs/web.md).
 
 ## What this is
 
@@ -23,9 +23,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
   - the `showtimes` CLI;
   - a read-only HTTP API (Hono, OpenAPI);
   - a Flutter map app by a teammate in `apps/fpgm` (an early scaffold);
-  - React apps later.
-
-  Do not add a UI framework to the workspace until the maintainer decides.
+  - the public website in `apps/web-front`: Astro (SSR) + React + Vanilla Extract. City pages, venue pages and a venue map (MapLibre). See [docs/web.md](docs/web.md).
 
 - **Not started here:** design and user research. The course work happens outside this repository.
 - **Backlog:** GitHub issues (`gh issue list`; labels `provider`, `tmdb`, `geo`, `backlog`).
@@ -67,6 +65,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 - **Certain or nothing:** a film is linked to TMDB only when the match is certain; otherwise it stays unmatched and gets an alias (verified on TMDB, reasoning in its `note`). Never loosen matching without a regression test in `test/matching/score.test.ts`.
 - **Unknown stays unknown:** an absent field (NULL in the database), never a guess. Labels the parser does not understand go to `unmappedLabels`; rows the config does not explain become **warnings**, which are to-dos for `sites.ts`.
 - Venue slugs are part of ids (`{provider}:venue:{slug}`): never rename one, or its history is orphaned.
+- **The website stays out of search engines** (`noindex` meta and `X-Robots-Tag`) until every cinema has been notified; only that production deployment sets `INDEXING=on`. Every page credits TMDB (logo and notice) and OpenStreetMap, and OMDb wherever scores show.
 - **Ratings are opt-in** in every UI (the CLI shows them only with `--ratings` or a score filter): some people do not want critics' verdicts beforehand.
 - **API:** responses are the public shapes in `packages/backend/src/api/schemas.ts`, never database rows; change them deliberately (Flutter and React clients depend on them). Read-only, no auth. Keep the TMDB, OMDb and OpenStreetMap attributions in the OpenAPI description.
 - **Database:** migrations are append-only and listed in `migrations/index.ts` (a test checks). After one, run `pnpm migrate && pnpm db:types` and commit the regenerated `types.ts` (never edit it by hand). The fetcher stays database-agnostic.
@@ -97,6 +96,7 @@ pnpm ingest                  # upsert data/normalized/*.json into Postgres, keep
 pnpm venues:locate           # suggest OSM coordinates; --address geocodes an address
 pnpm showtimes odysey        # film search; with no film, everything on (--here, --after, …: docs/cli.md)
 pnpm api:dev / api:up / api:down   # the HTTP API on :3000 (dev with reload / Docker)
+pnpm web:dev / web:build     # the website on :4321 (API_URL points it at the API)
 pnpm check                   # typecheck + lint (zero warnings) + fmt:check + test
 pnpm test / typecheck / lint / fmt / fmt:check
 pnpm vendor:leffavuoro --sync   # sync the pekkis/kino fork with upstream, refresh vendor/leffavuoro
@@ -131,6 +131,11 @@ Dockerfile, .dockerignore       API image: tsdown bundle + `pnpm deploy --prod` 
 docs/                           development, data-sources, data-model, database, api, cli
 vendor/leffavuoro/, scripts/    Leffavuoro reference copy (not built, linted or formatted) and its refresher
 apps/fpgm/                      the teammate's Flutter app: own tooling, not in the pnpm workspace; do not edit unasked
+apps/web-front/                 @pgtm/web-front: the website (Astro SSR, React, Vanilla Extract); see docs/web.md
+  src/pages/, src/layouts/      thin .astro routes and layout; logic lives in src/lib/
+  src/components/               React components: static by default, islands only with client:*
+  src/styles/                   theme contract + tokens, sprinkles, reset, recipes/
+  src/lib/                      typed API client (hc<AppType>), page loaders, cities, time, text (Finnish UI text)
 packages/model/                 @pgtm/model: src/schema.ts, the domain model (Zod + types) and its rules; source-only
 packages/fetcher/               @pgtm/fetcher: fetch, normalize, match → data/normalized/*.json
   src/lib/                      env, paths, http (ky + p-queue, per-host pacing), time, lang, cache, records
@@ -169,6 +174,7 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
 - **No network in tests.** HTTP clients are faked through the `HttpClient` type.
 - **Backend tests** need Postgres (`pnpm db:up`) and run serially against `pgtm_test`, which global setup rebuilds from the migrations.
 - **API routes** are tested in-process with `app.request()`. A typed-client test (`hc<AppType>`) guards the client types.
+- **Website:** page loaders and helpers get unit tests with a fake `fetch`; React components get Testing Library tests (`// @vitest-environment happy-dom`); pages render through Astro's Container API with a fake API in `locals`.
 
 ## Tools
 
@@ -177,7 +183,8 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
   - `trustPolicy: no-downgrade`
   - `blockExoticSubdeps`
   - `strictDepBuilds`
-  - an empty `allowBuilds` (add an entry with a reason if a dependency needs a build script)
+  - `allowBuilds`: `esbuild` allowed (Vanilla Extract), `sharp` refused (unused); add an entry with a reason if a dependency needs a build script
+  - `trustPolicyExclude`: exact versions checked by hand, each with its reason (only with the maintainer's approval)
   - `engineStrict`
 - **No npm or npx:** `devEngines` blocks them; use `pnpm exec`.
 - **Adding dependencies:** a runtime dependency goes to its package (`pnpm --filter @pgtm/fetcher add …`), shared dev tooling to the root (`-D -w`).
@@ -188,5 +195,7 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
   - `playwright` (Finnkino token only, the installed Chrome);
   - `kysely` + `pg` (+ `kysely-codegen`);
   - `hono` + `@hono/zod-openapi` + `@scalar/hono-api-reference`;
-  - `tsdown` (Docker bundle only).
+  - `tsdown` (Docker bundle only);
+  - website: `astro` (+ `@astrojs/node`, `@astrojs/react`), `react`, `@vanilla-extract/*` (css, vite-plugin, sprinkles, recipes, dynamic), `hono/client`, `maplibre-gl` (the map page only, with OpenFreeMap tiles). No client-side UI library: pages ship no JavaScript except the map, and any new script is measured first (docs/web.md).
+- **Website caveats:** `astro check` does not support TypeScript 7 yet, so `tsc` checks the `.ts`/`.tsx` files and `.astro` files stay thin. oxlint checks `.astro` frontmatter; oxfmt does not format `.astro` files.
 - **No general utility library** (remeda, lodash, es-toolkit). Node 24's built-ins cover what the code needs (see development.md).

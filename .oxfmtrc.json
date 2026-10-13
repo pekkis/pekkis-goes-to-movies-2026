@@ -1,3 +1,8 @@
 {
-  "ignorePatterns": ["vendor/**", "apps/fpgm/**"]
+  "ignorePatterns": [
+    "vendor/**",
+    "apps/fpgm/**",
+    "apps/web-front/.astro/**",
+    "apps/web-front/dist/**"
+  ]
 }

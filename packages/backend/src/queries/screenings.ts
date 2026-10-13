@@ -12,6 +12,8 @@ export type ScreeningFilter = {
   /** Business date, YYYY-MM-DD. */
   date: string;
   bbox?: Bbox | undefined;
+  /** Venue city, case-insensitive (as in listVenues). */
+  city?: string | undefined;
   venueId?: string | undefined;
   /** A TMDB film id (`tmdb:…`) or a listing id. */
   filmId?: string | undefined;
@@ -105,6 +107,8 @@ export const listScreenings = async (
       .where("v.lon", ">=", f.bbox.minLon)
       .where("v.lon", "<=", f.bbox.maxLon);
   }
+  const city = f.city?.toLowerCase();
+  if (city) q = q.where((eb) => eb(eb.fn("lower", ["v.city"]), "=", city));
   if (f.venueId) q = q.where("s.venueId", "=", f.venueId);
   if (f.filmId) {
     const id = f.filmId;

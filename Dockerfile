@@ -13,6 +13,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/model/package.json packages/model/
 COPY packages/backend/package.json packages/backend/
 COPY packages/fetcher/package.json packages/fetcher/
+# Every workspace importer, so the frozen install matches the lockfile.
+COPY apps/web-front/package.json apps/web-front/
 RUN pnpm install --frozen-lockfile --filter @pgtm/backend...
 
 COPY tsconfig.base.json ./

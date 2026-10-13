@@ -1,0 +1,17 @@
+---
+import Base from "../../layouts/Base.astro";
+import { listVenues } from "../../lib/api.ts";
+import { citiesOf } from "../../lib/cities.ts";
+import { fi } from "../../lib/text.ts";
+import { sprinkles } from "../../styles/sprinkles.css.ts";
+
+const cities = citiesOf(await listVenues(Astro.locals.api));
+---
+
+<Base title={fi.siteName}>
+  <p class={sprinkles({ marginBottom: "lg" })}>{fi.tagline}</p>
+  <h1 class={sprinkles({ marginBottom: "md" })}>{fi.cities}</h1>
+  <ul role="list" class={sprinkles({ display: "flex", flexWrap: "wrap", gap: "sm" })}>
+    {cities.map((c) => <li><a href={`/fi/kaupungit/${c.slug}`}>{c.name}</a></li>)}
+  </ul>
+</Base>

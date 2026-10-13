@@ -1,0 +1,58 @@
+---
+import Base from "../../layouts/Base.astro";
+import { listVenues } from "../../lib/api.ts";
+import { citiesOf, citySlug } from "../../lib/cities.ts";
+import * as css from "../../lib/map/map.css.ts";
+import { venuesToGeoJson } from "../../lib/map/geojson.ts";
+import { fi } from "../../lib/text.ts";
+import { venuePath } from "../../lib/venues.ts";
+import { sprinkles } from "../../styles/sprinkles.css.ts";
+
+const venues = await listVenues(Astro.locals.api);
+const byCity = Map.groupBy(venues, (v) => v.city);
+const cities = citiesOf(venues);
+---
+
+<Base title={fi.mapTitle}>
+  <h1 class={sprinkles({ marginBottom: "md" })}>{fi.mapTitle}</h1>
+  <!-- Hidden until the script draws the map: without JavaScript, the list below is the page. -->
+  <div
+    id="venue-map"
+    class={css.map}
+    role="region"
+    aria-label={fi.mapLabel}
+    data-venues={JSON.stringify(venuesToGeoJson(venues))}
+    hidden
+  >
+  </div>
+  <h2 class={sprinkles({ marginBottom: "sm" })}>{fi.venuesByCity}</h2>
+  <dl>
+    {
+      cities.map((c) => (
+        <>
+          <dt class={sprinkles({ marginTop: "sm" })}>
+            <a href={`/fi/kaupungit/${citySlug(c.name)}`}>{c.name}</a>
+          </dt>
+          <dd>
+            <ul role="list" class={sprinkles({ display: "flex", flexWrap: "wrap", gap: "md" })}>
+              {(byCity.get(c.name) ?? []).map((v) => (
+                <li>
+                  <a href={venuePath(v)}>{v.name}</a>
+                </li>
+              ))}
+            </ul>
+          </dd>
+        </>
+      ))
+    }
+  </dl>
+  <script>
+    import { mountVenueMap } from "../../lib/map/venue-map.ts";
+
+    const el = document.getElementById("venue-map");
+    if (el?.dataset.venues) {
+      el.hidden = false;
+      mountVenueMap(el, JSON.parse(el.dataset.venues));
+    }
+  </script>
+</Base>
