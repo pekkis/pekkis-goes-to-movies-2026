@@ -39,7 +39,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
           <a href="/fi/kartta">{fi.map}</a>
         </nav>
       </header>
-      <main><slot /></main>
+      <main class={css.main}><slot /></main>
       <footer class={css.footer}>
         <p>{fi.sourceNote}</p>
         <p class={sprinkles({ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "sm" })}>

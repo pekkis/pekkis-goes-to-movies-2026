@@ -1,18 +1,20 @@
 import { recipe, type RecipeVariants } from "@vanilla-extract/recipes";
-import { space, vars } from "../theme.css.ts";
+import { vars } from "../theme.css.ts";
 
 /** The pattern for components: a base style plus named variants. */
 export const button = recipe({
   base: {
     display: "inline-flex",
     alignItems: "center",
-    gap: space.xs,
-    border: "1px solid transparent",
-    borderRadius: "0.375rem",
+    gap: vars.space.xs,
+    border: `${vars.border.width} solid transparent`,
     font: "inherit",
     cursor: "pointer",
     textDecoration: "none",
-    ":focus-visible": { outline: `2px solid ${vars.color.accent}`, outlineOffset: "2px" },
+    ":focus-visible": {
+      outline: `${vars.border.focusWidth} solid ${vars.color.accent}`,
+      outlineOffset: vars.border.focusWidth,
+    },
   },
   variants: {
     tone: {
@@ -24,8 +26,8 @@ export const button = recipe({
       },
     },
     size: {
-      sm: { padding: `${space.xs} ${space.sm}`, fontSize: "0.875rem" },
-      md: { padding: `${space.sm} ${space.md}` },
+      sm: { padding: `${vars.space.xs} ${vars.space.sm}`, fontSize: vars.font.size.sm },
+      md: { padding: `${vars.space.sm} ${vars.space.md}` },
     },
   },
   defaultVariants: { tone: "primary", size: "md" },

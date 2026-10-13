@@ -25,6 +25,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
   - a Flutter map app by a teammate in `apps/fpgm` (an early scaffold);
   - the public website in `apps/web-front`: Astro (SSR) + React + Vanilla Extract. City pages, venue pages and a venue map (MapLibre). See [docs/web.md](docs/web.md).
 
+- **Visual style: a grey mockup, on purpose.** There is no visual identity yet; it comes after user testing. See the rule below.
 - **Not started here:** design and user research. The course work happens outside this repository.
 - **Backlog:** GitHub issues (`gh issue list`; labels `provider`, `tmdb`, `geo`, `backlog`).
 - **Prior work:** [Leffavuoro / Shady-Dev/kino](https://github.com/Shady-Dev/kino) (AGPL-3.0, about 230 cinemas). A code-only copy is in [vendor/leffavuoro/](vendor/leffavuoro/UPSTREAM.md). Read it first when adding a platform; its adapters may be ported (credit them in the site file's header), its `data/` may not be used.
@@ -38,7 +39,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 **Process**
 
 - **Git:** `main` is protected (no direct pushes, force pushes or deletion, for everyone). Work on a branch, open a PR with `gh pr create`; no approval needed. **Commit only when the maintainer asks.**
-- **`pnpm check` must pass** (typecheck, lint with **zero warnings**, format, tests) before you say you are done or open a PR.
+- **`pnpm check` must pass** (typecheck, lint with **zero warnings**, format, the website build, tests) before you say you are done or open a PR.
 - **Keep docs true:** update this file and `docs/` in the same change that makes them stale. Mark in docs what was verified first-hand ([V]) and what was assumed or read elsewhere ([A]).
 - **Issues are public:** English, no secrets, no personal data.
 
@@ -59,6 +60,22 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 - **Posters, synopses and trailers come only from TMDB**, never from cinemas, and cinemas' texts stay out of test fixtures.
 - **Coordinates never from Google Maps** (its terms forbid storing them). OpenStreetMap (ODbL, credit "© OpenStreetMap contributors"), Nominatim (1 request/s, cached), the cinema's own pages, or the maintainer.
 - **Contacting cinemas:** not needed while this is a course project. **Before the service goes truly public, every cinema and chain is notified first** (what we read, how often, that every click goes to their ticket page), and any that object are removed.
+
+**Visual style (until user testing)**
+
+- **The website is a grey wireframe built of boxes.** It has no visual identity until user testing gives us one, so testers react to structure and content, not looks.
+- **Allowed:** neutral greys only (the theme tokens in `src/styles/theme.css.ts`); plain rectangles with borders; system font; underlined links.
+- **Not allowed:** brand or accent colors, rounded corners, shadows, gradients, illustrations, icons for decoration, custom fonts, animation.
+- **Information is never carried by color alone:** use text, borders, weight and layout.
+- **Required third-party content stays as it is:** the TMDB logo, map tiles (grey styles), attributions.
+- When the visual identity arrives, it replaces the token values and recipes, not the components.
+
+**User interface (website)**
+
+- **Mobile first:** the phone layout is the default; wider layouts are added with `min-width` conditions.
+- **Container queries, always when possible:** components adapt to their container, not the viewport (`minWidth()` from `src/styles/containers.ts`, sprinkles `wide`/`widest`). Viewport `@media` only where a container can't work.
+- **The design system is the Vanilla Extract theme** (`src/styles/theme.css.ts`), the single source of truth. Every color, space, font size and weight, border and fixed size is a token. Components use `vars`, sprinkles and recipes, never literal values; a new value goes into the theme first.
+- Details: [docs/web.md](docs/web.md#user-interface-rules).
 
 **Data correctness**
 
@@ -97,7 +114,7 @@ pnpm venues:locate           # suggest OSM coordinates; --address geocodes an ad
 pnpm showtimes odysey        # film search; with no film, everything on (--here, --after, …: docs/cli.md)
 pnpm api:dev / api:up / api:down   # the HTTP API on :3000 (dev with reload / Docker)
 pnpm web:dev / web:build     # the website on :4321 (API_URL points it at the API)
-pnpm check                   # typecheck + lint (zero warnings) + fmt:check + test
+pnpm check                   # typecheck + lint (zero warnings) + fmt:check + web build + test
 pnpm test / typecheck / lint / fmt / fmt:check
 pnpm vendor:leffavuoro --sync   # sync the pekkis/kino fork with upstream, refresh vendor/leffavuoro
 ```
@@ -134,7 +151,7 @@ apps/fpgm/                      the teammate's Flutter app: own tooling, not in 
 apps/web-front/                 @pgtm/web-front: the website (Astro SSR, React, Vanilla Extract); see docs/web.md
   src/pages/, src/layouts/      thin .astro routes and layout; logic lives in src/lib/
   src/components/               React components: static by default, islands only with client:*
-  src/styles/                   theme contract + tokens, sprinkles, reset, recipes/
+  src/styles/                   design system: theme.css.ts (all tokens), containers.ts, sprinkles, reset, recipes/
   src/lib/                      typed API client (hc<AppType>), page loaders, cities, time, text (Finnish UI text)
 packages/model/                 @pgtm/model: src/schema.ts, the domain model (Zod + types) and its rules; source-only
 packages/fetcher/               @pgtm/fetcher: fetch, normalize, match → data/normalized/*.json

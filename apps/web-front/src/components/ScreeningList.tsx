@@ -28,7 +28,7 @@ const Availability = ({ value }: { value: string }) =>
 
 /** A day's screenings. Rendered on the server as static HTML: no client directive. */
 export const ScreeningList = ({ screenings }: { screenings: readonly Screening[] }) => (
-  <ol role="list">
+  <ol role="list" className={css.list}>
     {screenings.map((s) => {
       const languages = languageLine(s);
       return (

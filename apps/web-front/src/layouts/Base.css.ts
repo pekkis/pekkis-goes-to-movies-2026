@@ -1,14 +1,25 @@
 import { style } from "@vanilla-extract/css";
-import { space, vars } from "../styles/theme.css.ts";
+import { vars } from "../styles/theme.css.ts";
 
-export const page = style({ maxWidth: "56rem", margin: "0 auto", padding: `0 ${space.md}` });
+export const page = style({
+  maxWidth: vars.size.page,
+  margin: "0 auto",
+  padding: `0 ${vars.space.md}`,
+});
 
-export const brand = style({ fontWeight: 800, textDecoration: "none", color: vars.color.text });
+/** The page's content area is the container that responsive sprinkles query. */
+export const main = style({ containerType: "inline-size" });
+
+export const brand = style({
+  fontWeight: vars.font.weight.heavy,
+  textDecoration: "none",
+  color: vars.color.text,
+});
 
 export const footer = style({
-  marginTop: space.xl,
-  padding: `${space.lg} 0`,
-  borderTop: `1px solid ${vars.color.border}`,
+  marginTop: vars.space.xl,
+  padding: `${vars.space.lg} 0`,
+  borderTop: `${vars.border.width} solid ${vars.color.border}`,
   color: vars.color.textMuted,
-  fontSize: "0.8125rem",
+  fontSize: vars.font.size.sm,
 });

@@ -45,13 +45,36 @@ request → src/middleware.ts      sets locals.api (API_URL), noindex + cache he
 - **Times are formatted in `Europe/Helsinki` explicitly** (`src/lib/time.ts`), so server and browser always agree whatever their own time zones.
 - **UI text** is in `src/lib/text.ts` (Finnish), ready to move to an i18n catalogue (Lingui is the plan). Routes are under `/fi/`; `sv` and `en` are configured but have no pages yet.
 
+## Visual style: grey mockup
+
+**Until user testing, the website is a grey wireframe made of boxes** (AGENTS.md has the rule). There's no visual identity yet, and we don't want testers judging colors and polish when we ask about structure and content.
+
+- **Neutral greys only:** the `vars.color` tokens; `accent` is a dark grey (light grey in dark mode). Links are recognized by their underline.
+- **Boxes:** plain rectangles with visible 1 px borders. No `borderRadius`, `boxShadow`, gradients or decorative images.
+- **System font** and plain sizes. No icons for decoration, no animation.
+- **Never color alone for meaning:** sold-out, few-left and the like are words.
+- **Exceptions, required as is:** the TMDB logo and notice, and the map tiles (OpenFreeMap's grey `positron` and `dark` styles). MapLibre's pins and clusters use the grey `accent` token.
+- **Later:** the visual identity changes token values and recipes, not components. That's why components never use raw colors.
+
+## User interface rules
+
+1. **Mobile first.** The phone layout is the default style; wider layouts are added with `min-width` conditions. Design and test at phone width (about 390 px) first.
+2. **Container queries, always when possible.** A component adapts to the space it's given, not to the screen. So it works the same in a page column, a sidebar or a popup.
+   - Use `@container (min-width: …)` from `src/styles/containers.ts` (`minWidth("wide")`).
+   - Responsive sprinkles (`wide`, `widest`) query the nearest container; `main` is one.
+   - A component whose layout changes declares its own container (`containerType: "inline-size"`, like `ScreeningList`).
+   - Viewport `@media` queries only where a container can't work. User preferences (`prefers-color-scheme`, `prefers-reduced-motion`) aren't layout and are fine.
+3. **The design system is the Vanilla Extract theme, and the theme is the source of truth.** Every design value is a token in `src/styles/theme.css.ts`: color, spacing, font sizes and weights, borders and fixed sizes. Container widths live in `containers.ts`. Components and pages use `vars` (or sprinkles and recipes built on them), never literal colors, rem/px sizes or fonts. A new value goes into the theme first. When the visual identity arrives, it changes the theme, not the components.
+
 ## Styling pattern
 
-- **`src/styles/theme.css.ts`:** `createThemeContract` defines the color tokens (`vars`). Light and dark values are set globally, following `prefers-color-scheme`, and `<html data-theme="light|dark">` overrides that. It also holds the spacing scale and breakpoints.
-- **`sprinkles.css.ts`:** atomic layout, spacing and color classes on those tokens, with `mobile`, `tablet` and `desktop` conditions. Use sprinkles for layout in pages.
+- **`src/styles/theme.css.ts`:** `createThemeContract` defines every token (`vars`). Only the colors differ between light and dark mode; light and dark follow `prefers-color-scheme`, and `<html data-theme="light|dark">` overrides that.
+- **`src/styles/containers.ts`:** the container widths (`wide` 40 rem, `widest` 64 rem) and `minWidth()`. It's a plain module because `.css.ts` files may only export data (a function there fails the build), and because CSS can't use custom properties in container conditions.
+- **`sprinkles.css.ts`:** atomic layout, spacing and color classes on the tokens, with `narrow` (the default), `wide` and `widest` container conditions. Use sprinkles for layout in pages.
 - **`recipes/`:** components with variants (`button({ tone, size })`). New shared components follow that pattern.
-- **Per-component styles** live next to the component (`ScreeningList.css.ts`) and read `vars`, never raw colors.
-- **Vanilla Extract only, for `.astro` files too.** A style is just a class-name string, so `.astro` files use it as `class={css.page}` (`Base.astro` ↔ `Base.css.ts`), and React components as `className=`. No Astro `<style>` blocks and no inline colors: everything goes through the same tokens, so dark mode and spacing stay consistent.
+- **Per-component styles** live next to the component (`ScreeningList.css.ts`) and read `vars` only.
+- **Vanilla Extract only, for `.astro` files too.** A style is just a class-name string, so `.astro` files use it as `class={css.page}` (`Base.astro` ↔ `Base.css.ts`), and React components as `className=`. No Astro `<style>` blocks and no inline styles.
+- **`pnpm check` builds the website**, because some Vanilla Extract errors only show at build time.
 
 ## The map (`/fi/kartta`)
 

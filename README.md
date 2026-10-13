@@ -8,7 +8,15 @@ For now the repository contains the data collection and an API:
 - **Processing:** the showtimes are normalized into a typed model, matched to films on TMDB (with optional Rotten Tomatoes, Metacritic and IMDb scores via OMDb), and stored in PostgreSQL with history.
 - **Access:** a read-only HTTP API and a command-line search serve the data.
 
-The user interface (a map app) is in progress.
+The website (`apps/web-front`: city and venue pages, and a venue map) is in progress, and so is a Flutter map app.
+
+**The website looks like a grey mockup on purpose.** We have no visual identity yet; it will come out of user testing. Until then the UI is a wireframe: neutral greys, plain bordered boxes, no brand colors, rounded corners, shadows or decoration. Testers can then react to structure and content rather than to looks. When the identity is designed, it replaces the theme tokens, not the pages.
+
+**User interface rules:**
+
+- **mobile first**;
+- **container queries** wherever possible, so components adapt to the space they get, not to the screen;
+- **one design system:** the Vanilla Extract theme is the source of truth for every color, size and font. See [docs/web.md](docs/web.md#user-interface-rules).
 
 ## Usage
 
