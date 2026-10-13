@@ -196,6 +196,6 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
   - `kysely` + `pg` (+ `kysely-codegen`);
   - `hono` + `@hono/zod-openapi` + `@scalar/hono-api-reference`;
   - `tsdown` (Docker bundle only);
-  - website: `astro` (+ `@astrojs/node`, `@astrojs/react`), `react`, `@vanilla-extract/*` (css, vite-plugin, sprinkles, recipes, dynamic), `react-aria-components` (+ `@internationalized/date`), `hono/client`.
+  - website: `astro` (+ `@astrojs/node`, `@astrojs/react`), `react`, `@vanilla-extract/*` (css, vite-plugin, sprinkles, recipes, dynamic), `hono/client`. No client-side UI library yet: pages ship no JavaScript, and any island is measured first (docs/web.md).
 - **Website caveats:** `astro check` does not support TypeScript 7 yet, so `tsc` checks the `.ts`/`.tsx` files and `.astro` files stay thin. oxlint checks `.astro` frontmatter; oxfmt does not format `.astro` files.
 - **No general utility library** (remeda, lodash, es-toolkit). Node 24's built-ins cover what the code needs (see development.md).

@@ -24,7 +24,7 @@ if (!page) Astro.response.status = 404;
       </p>
       <nav class={sprinkles({ display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: "md", marginBottom: "md" })}>
         <a href={`?date=${addDays(page.date, -1)}`}>‹ {fi.previousDay}</a>
-        <DateNav client:load date={page.date} />
+        <DateNav date={page.date} />
         <a href={`?date=${addDays(page.date, 1)}`}>{fi.nextDay} ›</a>
       </nav>
       {page.screenings.length ? <ScreeningList screenings={page.screenings} /> : <p>{fi.noScreenings}</p>}

@@ -4,13 +4,12 @@ The public website: server-rendered pages that search engines can index, from ou
 
 ## Stack and why
 
-| Need                | Choice                                                        | Why                                                                                                                                                                                                                       |
-| ------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Framework           | **Astro 7**, `output: "server"`, `@astrojs/node` (standalone) | SSR for indexing. Pages ship no JavaScript unless a component asks for it. Vite and Vitest, like the rest of the workspace. Chosen over TanStack Start (whose server components are experimental) and Next.js (not Vite). |
-| Components          | **React 19** via `@astrojs/react`                             | The team's component language. Astro renders React to static HTML; only `client:*` components hydrate.                                                                                                                    |
-| Styling             | **Vanilla Extract**: `css`, `sprinkles`, `recipes`, `dynamic` | Typed, zero-runtime CSS: static files at build time, nothing to hydrate.                                                                                                                                                  |
-| Interactive widgets | **React Aria Components**                                     | Unstyled and accessible, with Finnish dates and times (`I18nProvider locale="fi-FI"`).                                                                                                                                    |
-| API access          | `hc<AppType>` from `hono/client`                              | Types come from `@pgtm/backend` with no code generation.                                                                                                                                                                  |
+| Need       | Choice                                                        | Why                                                                                                                                                                                                                       |
+| ---------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework  | **Astro 7**, `output: "server"`, `@astrojs/node` (standalone) | SSR for indexing. Pages ship no JavaScript unless a component asks for it. Vite and Vitest, like the rest of the workspace. Chosen over TanStack Start (whose server components are experimental) and Next.js (not Vite). |
+| Components | **React 19** via `@astrojs/react`                             | The team's component language. Astro renders React to static HTML; only `client:*` components hydrate.                                                                                                                    |
+| Styling    | **Vanilla Extract**: `css`, `sprinkles`, `recipes`, `dynamic` | Typed, zero-runtime CSS: static files at build time, nothing to hydrate.                                                                                                                                                  |
+| API access | `hc<AppType>` from `hono/client`                              | Types come from `@pgtm/backend` with no code generation.                                                                                                                                                                  |
 
 ## How a page works
 
@@ -22,8 +21,10 @@ request → src/middleware.ts      sets locals.api (API_URL), noindex + cache he
 ```
 
 - **`.astro` files stay thin.** Logic goes in `src/lib/` as plain TypeScript, where `tsc` and unit tests reach it.
-- **Islands only where interaction needs them.** On the city page, `ScreeningList` is static HTML, and `DateNav` is the one island.
-- **Progressive enhancement:** an island first renders something that works without JavaScript. `DateNav` server-renders a plain GET form; after hydration it swaps in React Aria's `DatePicker`.
+- **No JavaScript unless a feature needs it.** The city page ships none: `ScreeningList` is static HTML, and `DateNav` is a plain GET form with the browser's own `<input type="date">`. Phones show their system picker, and accessibility comes from the browser.
+- **Islands only where interaction needs them**, and their size is measured before they're added. React's client runtime alone is about 69 kB gzipped, loaded by the first island on a page.
+- **Progressive enhancement:** an island first renders something that works without JavaScript.
+- **React Aria was tried and dropped (2026-10-13).** Its `DatePicker` island cost about 77 kB gzipped on top of React: translations for 34 languages, which its locale plugin trims to 61 kB, and every calendar system, which `DatePicker` can't drop. For a date choice, the native input is enough. Revisit per widget (film search, map filters): Ark UI, react-day-picker, or Preact islands.
 - **Times are formatted in `Europe/Helsinki` explicitly** (`src/lib/time.ts`), so server and browser always agree whatever their own time zones.
 - **UI text** is in `src/lib/text.ts` (Finnish), ready to move to an i18n catalogue (Lingui is the plan). Routes are under `/fi/`; `sv` and `en` are configured but have no pages yet.
 
@@ -74,7 +75,6 @@ pnpm web:build && node apps/web-front/dist/server/entry.mjs   # production serve
 
 - **Typecheck:** `astro check` doesn't support TypeScript 7. `tsc` checks the `.ts`/`.tsx` files (`src/env.d.ts` declares `*.astro` modules), and the `.astro` templates themselves go unchecked.
 - **Formatting and linting:** oxfmt doesn't format `.astro` files. oxlint does check their frontmatter.
-- **Bundle size:** React Aria's date picker is the largest piece of JavaScript (the island chunk is about 245 kB before compression). That's fine for now; consider `client:idle`, or a lighter picker, later.
 
 ## Next
 

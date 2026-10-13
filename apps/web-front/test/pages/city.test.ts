@@ -9,7 +9,6 @@ let container: AstroContainer;
 beforeAll(async () => {
   container = await AstroContainer.create();
   container.addServerRenderer({ renderer: reactRenderer, name: "@astrojs/react" });
-  container.addClientRenderer({ name: "@astrojs/react", entrypoint: "@astrojs/react/client.js" });
 });
 
 const api = createApi(
@@ -37,8 +36,9 @@ describe("city page", () => {
     expect(html).toContain("Unohdettu saari");
     expect(html).toContain('href="https://kino.example/liput/1"');
     expect(html).toMatch(/<meta name="robots" content="noindex, nofollow">/);
-    // Only the date picker hydrates; the list is plain HTML.
-    expect(html.match(/<astro-island/g)).toHaveLength(1);
+    // No islands: the page is plain HTML and loads no JavaScript.
+    expect(html).not.toContain("<astro-island");
+    expect(html).toMatch(/<input [^>]*type="date"/);
     expect(html).toContain('href="?date=2026-10-14"');
     // TMDB's terms: logo and notice on every page.
     expect(html).toContain('src="/tmdb-logo.svg"');
