@@ -3,8 +3,18 @@ import type { Env } from "../lib/env.ts";
 import { createHttpClient } from "../lib/http.ts";
 import { helsinkiToday } from "@pgtm/model/time";
 import { restrictToVenues, type Adapter } from "./adapter.ts";
-import { fetchBiorex } from "./biorex/fetch.ts";
-import { parseBiorex } from "./biorex/parse.ts";
+import { fetchMyCloudCinema } from "./mycloudcinema/fetch.ts";
+import { parseMyCloudCinema } from "./mycloudcinema/parse.ts";
+import { MYCLOUDCINEMA_SITES, type MyCloudCinemaSite } from "./mycloudcinema/sites.ts";
+import { fetchGilda } from "./gilda/fetch.ts";
+import { parseGilda } from "./gilda/parse.ts";
+import { GILDA_SITES, type GildaSite } from "./gilda/sites.ts";
+import { fetchTmb } from "./tmb/fetch.ts";
+import { parseTmb } from "./tmb/parse.ts";
+import { TMB_SITES, type TmbSite } from "./tmb/sites.ts";
+import { fetchCinemahouse } from "./cinemahouse/fetch.ts";
+import { parseCinemahouse } from "./cinemahouse/parse.ts";
+import { CINEMAHOUSE_SITES, type CinemahouseSite } from "./cinemahouse/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -93,20 +103,62 @@ const johkuAdapter = (site: JohkuSite): Adapter => ({
   },
 });
 
-export const ADAPTERS: Adapter[] = [
-  {
-    id: "biorex",
-    platform: "mycloudcinema",
-    pull: async ({ env }, { from, days, venues }) => {
-      const http = createHttpClient(contact(env));
-      const raw = await fetchBiorex(http, {
-        from,
-        days,
-        ...(venues && { cinemaIds: venues.map(Number) }),
-      });
-      return { raw, batch: restrictToVenues(parseBiorex(raw), venues) };
-    },
+/** MyCloudCinema: venues come from the API, so `--venue` takes cinema ids. */
+const myCloudCinemaAdapter = (site: MyCloudCinemaSite): Adapter => ({
+  id: site.provider,
+  platform: "mycloudcinema",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    const raw = await fetchMyCloudCinema(http, site, {
+      from,
+      days,
+      ...(venues && { cinemaIds: venues.map(Number) }),
+    });
+    return { raw, batch: restrictToVenues(parseMyCloudCinema(raw, site), venues) };
   },
+});
+
+/** Gilda: MyCloudCinema data through the cinema's own WordPress facade. */
+const gildaAdapter = (site: GildaSite): Adapter => ({
+  id: site.provider,
+  platform: "mycloudcinema",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchGilda(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseGilda(raw, site), venues) };
+  },
+});
+
+/** TMB Cinema: one list page per site. */
+const tmbAdapter = (site: TmbSite): Adapter => ({
+  id: site.provider,
+  platform: "tmb",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchTmb(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseTmb(raw, site), venues) };
+  },
+});
+
+/** The cinema-reservations WordPress plugin: one front page per site. */
+const cinemahouseAdapter = (site: CinemahouseSite): Adapter => ({
+  id: site.provider,
+  platform: "cinema-reservations",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchCinemahouse(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseCinemahouse(raw, site), venues) };
+  },
+});
+
+export const ADAPTERS: Adapter[] = [
+  ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
+  ...GILDA_SITES.map(gildaAdapter),
+  ...TMB_SITES.map(tmbAdapter),
+  ...CINEMAHOUSE_SITES.map(cinemahouseAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",

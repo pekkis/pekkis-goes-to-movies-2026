@@ -906,6 +906,18 @@ class AliasFileTest(unittest.TestCase):
                                            enrich_tmdb.norm(enrich_tmdb.clean(published)))
                 self.assertEqual(got, "1781923")
 
+    def test_kino_virtas_bare_lapanen_is_the_new_film(self):
+        """Kino Virta's own page gives the original title Pikku Kummitus Lapanen
+        keppostelee and 63 minutes; the bare title had matched 69381, the 2006 film."""
+        doc = json.loads(self.FILE.read_text(encoding="utf-8"))
+        self.assertEqual(doc[enrich_tmdb.norm("Pikku Kummitus Lapanen")], "1781923")
+
+    def test_myyris_drishyam_the_conclusion_is_the_2026_hindi_film(self):
+        """Myyri's page names Abhishek Pathak and Ajay Devgn, and 1269325 is their 2026
+        film. The pass had matched 244049, the 2013 Malayalam Drishyam."""
+        doc = json.loads(self.FILE.read_text(encoding="utf-8"))
+        self.assertEqual(doc[enrich_tmdb.norm("Drishyam: The Conclusion")], "1269325")
+
     def test_bio_sades_the_painter_is_hirschbiegels_der_maler(self):
         """The festival names Der Maler with Albert Oehlen as its guest, IDFA lists it as
         The Painter, 95 minutes, and 893149 is that film. A title search finds only a 2024
@@ -960,6 +972,8 @@ class AliasFileTest(unittest.TestCase):
             "339324": "Cohn's 1989 French Natalia, not Kassila's 1979 film (459808)",
             "980026": "Arcel's 2023 Bastarden, not Wajda's Ziemia obiecana (511)",
             "1211957": "Kimani Ray Smith's 2024 thriller, not Hirschbiegel's Der Maler (893149)",
+            "69381": "the 2006 Lilla Sp\u00f6ket Laban, not the 2026 Laban film (1781923)",
+            "244049": "the 2013 Malayalam Drishyam, not Drishyam: The Conclusion (1269325)",
         }
         for tmdb_id, why in wrong.items():
             with self.subTest(tmdb_id=tmdb_id):
@@ -981,11 +995,17 @@ class PublishedCoverageTest(unittest.TestCase):
     the cleaner is where it is fixed. It does not compare loosely, does not suggest an id,
     and never writes one.
 
-    `ALLOWED` is empty and should stay that way. An entry belongs there only when the two
-    are genuinely different films whose titles nest, and it carries the reason.
+    `ALLOWED` stays as short as it can. An entry belongs there only when the two titles
+    nest but name different things, two films or a film and an event built from several,
+    and it carries the reason.
     """
 
-    ALLOWED = {}
+    ALLOWED = {
+        # Finnkino, 18.10.2026 at six cinemas: 618 minutes and, in its own synopsis, "neljä
+        # Nälkäpeli -elokuvaa". A marathon of four films, not the 2012 film the plain title
+        # matched, and no single TMDB record covers it, so an initials tile is right.
+        "N\u00e4lk\u00e4peli- elokuvamaraton": "a four-film marathon, not the 2012 film",
+    }
 
     @classmethod
     def setUpClass(cls):

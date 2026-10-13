@@ -34,6 +34,11 @@ Tag labels are the site's own text ("Lapsille", "Ensi-ilta"), taken verbatim rat
 mapped to wording this repo made up. `showtable-tickets` is the buy button on every row
 and is not a strand, so it is excluded by name.
 
+**A row the site's own words name as no screening is left out** (`NOT_FILMS`, decided by
+the maintainer on 2026-10-13): "Salissa yksityisvaraus", a private booking of a hall,
+listed with a ticket button like a film. Only the exact titles listed are dropped, and they
+are counted in the log.
+
 No screening parsed is a failure, never `EmptyProgramme`. This site's empty programme has
 not been read, so nothing on the page is known to mean "nothing on": an empty
 `<div id="showtable">` is also what a change to the row markup inside it produces. The
@@ -119,6 +124,12 @@ def _rating(raw):
     return f"K-{m.group(1)}" if m else raw.strip()
 
 
+# Exact row titles, compared without case, with the evidence for each. Read 2026-10-12 and
+# 2026-10-13: Sali 2 at 17:00 on 15.10. "Salissa yksityisvaraus", whose film page (id 2216)
+# carries the title and "Elokuvan kesto: 120 min" and nothing else.
+NOT_FILMS = {"salissa yksityisvaraus": "a private booking of a hall, not a screening"}
+
+
 def parse(page):
     """The front page -> [show]. Raises when the table container is missing or holds
     no screening this parser can read; see the docstring for why the latter is not
@@ -127,7 +138,7 @@ def parse(page):
         raise RuntimeError("no <div id=\"showtable\"> in the response: this is not the "
                            "page this parser reads, so it is a fetch or template failure "
                            "rather than a cinema with nothing on")
-    shows, seen = [], set()
+    shows, seen, left_out = [], set(), []
     cheap, dear = tariff(page)
     days = list(DAY_RE.finditer(page))
     for i, d in enumerate(days):
@@ -145,6 +156,9 @@ def parse(page):
                     continue
                 title = _txt(n.group(1))
                 if not title:
+                    continue
+                if title.casefold() in NOT_FILMS:
+                    left_out.append(title)
                     continue
                 try:
                     start = datetime.datetime(year, month, day, int(t.group(1)),
@@ -179,6 +193,9 @@ def parse(page):
                     "provider": "isohannu",
                     "venue": VENUE["id"],
                 })
+    if left_out:
+        print(f"[isohannu] {len(left_out)} row(s) the site names as no screening, left out: "
+              f"{', '.join(sorted(set(left_out)))}")
     if not shows:
         halls = page.count('<div class="showtable-container">')
         anchors = len(re.findall(r"/leffasivu\.php\?id=", page))

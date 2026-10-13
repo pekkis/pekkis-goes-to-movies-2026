@@ -10,8 +10,8 @@ Finnkino and BioRex investigated on 2026-10-09, Nexxo, eTiketti and Kinola on 20
 
 - `biorex.fi` is a WordPress site (Polylang fi/sv/en, Yoast, custom theme) **[V]**.
 - The ticket shop `webshop.biorex.fi` is AngularJS + Express **[V]**. **The platform is MyCloudCinema**: the cinema settings contain `webhook_url: https://api.biorex.mycloudcinema.com/…` **[V]**. The HTML's `<meta name="author" content="Unique X">` points to the developer (Unique X) **[A]**.
-- According to Leffavuoro, the same MyCloudCinema `/webservices` API is used by Cine Mäntsälä (`mantsala.cine.fi`) and Gilda (`*.mycloudcinema.com`) **[A]**. The adapter can therefore later become a generic MyCloudCinema adapter.
-- **Implementation:** [src/providers/biorex/](../packages/fetcher/src/providers/biorex/), run with `pnpm pull`.
+- The same MyCloudCinema `/webservices` API serves Cine Mäntsälä (`mantsala.cine.fi`) **[V]** (see below), and according to Leffavuoro, Gilda's WordPress facade **[A]**.
+- **Implementation:** the MyCloudCinema platform adapter, [src/providers/mycloudcinema/](../packages/fetcher/src/providers/mycloudcinema/), one site per cinema chain in `sites.ts` (BioRex, Cine Mäntsälä). Run with `pnpm pull --provider mycloudcinema`, or a site id.
 - `robots.txt` allows everything (`User-agent: * / Disallow:`) **[V]**. The terms of service contain no ban on scraping.
 
 ### Webshop JSON API (no authentication, GET)
@@ -103,6 +103,45 @@ Filtered out: ids 6, 15 and 16 (`xxx` name prefix, closed) and id 11 (the compan
   }
   ```
 - The listing page uses `admin-ajax.php?action=br_movies_handler` (POST). A GET returned 503.
+
+### Cine Mäntsälä (MyCloudCinema, 2026-10-13)
+
+Origin: Leffavuoro's `scripts/providers/cinemantsala.py`, re-verified with three GETs.
+
+- **Same API as BioRex** on the cinema's own host: `https://mantsala.cine.fi/webservices/` `cinemas/getCinemasList`, `show_times/getShowTimesDays?cinema_id=1&date=&number_of_days=` **[V]**. No key, no session.
+- **Two cinemas in the list:** 1 Cine Mäntsälä, and 2 **Cine Keuda-talo** (Kerava), which we read from eTiketti (`kiertue.cine.fi`) **[V]**. Neither source had Keuda-talo shows on 2026-10-13. The site config reads cinema 1 only, so a venue never appears twice.
+- **No coordinates** in the API **[V]**: set in `config/venue-overrides.json` (OSM way 1225638695, with the API's own address).
+- **Rows** look like BioRex's **[V]**:
+  - the same rating icons (`rating_fi_12.svg`) and `business_date` convention;
+  - two halls, "Sali 1" and "Sali 2";
+  - `audio_lang` codes and `movie_audio_style_id` for dubs.
+- **`subtitle_lang` is a Finnish phrase**, not a code **[V]**: "Suomeksi ja ruotsiksi", "Ruotsiksi", "suomeksi", "Ei" (none). The platform parser reads both vocabularies.
+- **`title_extension` is a label:** "Ennakkonäytös!" **[V]**, read by the shared title-label rules as a `preview` tag. Leffavuoro also saw "Cine Matinea" and "Leffa & Kaffe - näytös" **[A]**; they'd show as unmapped labels until added.
+- **Days per request:** Leffavuoro measured `number_of_days` as a cap of 7 **[A]**, so the platform fetches in windows of at most 7 days and deduplicates by show id. A 7-day pull is still one request per cinema.
+- **Ticket links:** `https://mantsala.cine.fi/#/book/{show_time_id}`, the anchor the cinema's own programme page renders **[A, Leffavuoro]**. Copied by pattern, never requested.
+- **First run:** 18 films, 30 screenings, all films matched to TMDB, no warnings.
+
+### Gilda (MyCloudCinema through a WordPress facade, 2026-10-13)
+
+Origin: Leffavuoro's `scripts/providers/gilda.py`, re-verified with two GETs. Adapter: `packages/fetcher/src/providers/gilda/`.
+
+- **What the cinema's own page reads:** `GET https://www.gilda.fi/wp-json/gilda-react-booking/v1/movies` **[V]**. One response, `{"fi": {"data": [film…], "resultCode": 0}}`, holds every film with its `show_times`: 53 films and 202 shows, reaching January 2027. No auth.
+- **Not used:** the same data is also on `web.atlanticfilm.mycloudcinema.com/webservices` (cinema 15, "Gilda", Narinkka 2) **[V]**, but gilda.fi's own programme reads the facade, so we do too. The namespace also has write and admin routes: never called.
+- **Venues by screen** **[V]**: one cinema (15) holds screens 66–68, "Gilda 1–3" in Kamppi, and 69, "Bio Rex Lasipalatsi (K-18)". The "(K-18)" is the house's door policy, so it becomes the hall's age limit, not a film rating. An unknown screen gives an `unclaimed-screen` warning.
+- **Rows are MyCloudCinema-like but not the same** **[V]**:
+  - no `business_date` (we derive the programme day), no seat flags (only `allow_purchases`, so availability is "unknown" or "not bookable");
+  - booleans as `true`/`false` or `"1"`/`"0"`, and shows can be `deleted` or `show_is_visible: "0"` (2 of 202; skipped).
+- **Ratings** `rating_name` **[V]**: "7", "12", "16", "18"; "T" and "EI MÄÄR." are unrated and stay unknown.
+- **Languages** **[V]**:
+  - `audio_lang` is a code, "MULTI" (several languages, so unknown), or "Ei puhetta" (no dialogue, `zxx`);
+  - `subtitle_lang` is "suomi, ruotsi", "SE", "FI", "EN" or "-".
+- **The "-" subtitle value:** it means none only with `movie_audio_style_name` "Ei tekstitystä". The 10 rows with "-" and "Tekstitetty" (subtitled) contradict themselves, so they stay unknown, as in Leffavuoro.
+- **Event-like shows:** style "Albumikuuntelu" (album listening, e.g. Coltrane) marks events, not films.
+- **Title prefixes:** "Seniorikino:" (shared rule) and, in the site config, "70mm:" (format only) and "Pieni elokuvakerho:" (series).
+- **Film ids:** each film carries `imdb_id` (40 of 53) and `tmdb_id`. We store the IMDb id, so matching is exact via TMDB `/find`.
+- **Ticket links:** no per-show link in the data. A show links to its film's page on gilda.fi, copied from the public `/wp-json/wp/v2/movies?per_page=100&_fields=link,title` list and matched by title. Otherwise it links to the programme page `/elokuvat/`. About half match on the first page of that list.
+- **Coordinates** from OSM (node 11701088977 Gilda, node 1381017800 BioRex Lasipalatsi), both with the cinemas' own addresses.
+- **First run:** 23 films, 75 screenings in a 7-day window; 21 matched to TMDB; no warnings.
 
 ---
 
@@ -206,6 +245,53 @@ Profiled on 2026-10-10 over 214 shows on 10 locations. Adapter: `packages/fetche
 1. Find the host (the page source mentions `nexxo-scope`) and its `locationId`s (`locationid=1,2,…` until empty).
 2. Find the programme page a visitor uses and check that `?location=N` (or the venue's own page) shows its shows.
 3. Add an entry to `sites.ts` with `verifiedAt`, run `pnpm pull --provider <id>` and read the warnings.
+
+---
+
+## TMB Cinema (one HTML template, four cinemas)
+
+Probed 2026-10-13, one GET per site. Adapter: `packages/fetcher/src/providers/tmb/`, sites in `sites.ts`. Origin: Leffavuoro's `scripts/providers/tmb.py`, re-verified.
+
+- **Who:** TMB Cinema Oy runs Kino-Toijala (Akaa), Kino-Sampo (Valkeakoski), KinoMania (Pieksämäki) and Elokuvateatteri Elo (Heinola), each on its own site built on one template ("Mediapalvelu W3D").
+- **Four cinemas, not mirrors** **[A, Leffavuoro]**: their programmes coincide, but each has its own booking ids.
+- **The programme:** `GET {base}/?lista=1`, the list view **[V]**:
+  - each row is `<small>KE&nbsp;14.10.2026 klo&nbsp;13:30[, sali&nbsp;1]</small>`, followed by `<h2><a href="?ohjelmisto={id}">Title</a></h2>` and a rating image `/files/images/ikaraja_N.png`;
+  - the year is always there. Halls appear only at KinoMania and Elo.
+- **Date-only rows** ("23.10.2026", no weekday or time) **[V]**: announcements, not screenings; skipped.
+- **A weekday that contradicts its date** is rejected with a warning: the template must have changed.
+- **Rating images** **[V]**:
+  - `_2` K-7, `_3` K-12 and `_4` K-16 were checked by Leffavuoro against other cinemas' ratings of the same films;
+  - `_1` is S: we checked it on 2026-10-13 ("Pirjo i Sverige" is S at 13 other cinemas, "Pikkuli ja Tähtipeura" at 6), and it also appears on operas and ballets;
+  - `_0` is titled "Ikärajaa ei ole määritetty" (no rating set);
+  - `_5` (one festival screening) is reported as an unmapped label.
+- **Labels in titles** **[V]**: "(Ennakkonäytös)" / "(Ennakkonäytös!)" (preview), "(Puhumme suomea!)" (Finnish dub, also without the space), "Ooppera:", "Baletti:" (events), "Akaan elokuvajuhla 2026:" (series, in Toijala's config). They're read by the shared label rules in `labels.ts`, which now also take labels in parentheses at the end.
+- **No screening ids in the list:** a screening's id is film, minute and hall: `867-202610141330`, `847-202610141745-1`.
+- **Ticket links:** the film's public page `?ohjelmisto={id}`, which lists its screenings with the site's own booking buttons. Never `?varaa=` (the seat-reservation action). So booking is `reserve`.
+- **Not read:** the film pages, which state runtime, genre and a price per screening, at about one request per film per site. Possible later; TMDB gives the runtime anyway.
+- **Coordinates** **[V]**:
+  - Toijala and Sampo: OSM nodes with the cinemas' own addresses;
+  - KinoMania: an OSM node about 45 m from the Kauppakatu 5–7 address points;
+  - Elo: OSM has no cinema in Heinola and Nominatim can't place Kauppakatu 16, so the point is the maintainer's (`manual`, 2026-10-13).
+- **First run:** 19 + 19 + 26 + 26 screenings, about 9 of every 10 films matched, no warnings apart from Elo's coordinates.
+
+---
+
+## Cinemahouse (WordPress `cinema-reservations` plugin)
+
+Probed 2026-10-13, one GET per site. Adapter: `packages/fetcher/src/providers/cinemahouse/`. Origin: Leffavuoro's `scripts/providers/cinemahouse.py`, re-verified.
+
+- **Who:** Kino Piispanristi (Kaarina), Kino Lumo (Salo) and Laitilan Kino (Laitila).
+- **The programme:** the front page renders the whole programme **[V]**:
+  - `article.cr-movie-tile`: title, age badge (S/7/12/16), runtime "129 min", genres;
+  - `div.cr-screening-row`: title, "14.10. 12:00 · Sali 2" (**no year**), price "12,00 €", "Vapaat paikat: 53 / 65", and `a.cr-screening-cta` with `data-screening-id` and the reservation link `/varaa/?screening_id=N`.
+- **Joining tiles to rows:** every row title had a tile with exactly the same title (labels included) **[V]**.
+- **The year:** `nearestDate` (in `@pgtm/model/time`) puts a date at most 30 days before the programme's first day, otherwise ahead. Programmes reach mid-December.
+- **Labels are in capitals** **[V]**: "ENNAKKO:", "ENNAKKONÄYTÖS:", "ENSI-ILTA:" and trailing "SUOMEKSI" / "PÅ SVENSKA". The shared label rules now match without regard to case and read capitalized trailing languages (lower case "suomeksi" at the end of a title is left alone).
+- **Dubbed and subtitled runs are separate films** (separate WordPress posts), so the listing id is the film page's slug.
+- **Halls:** "Vip 4" and "Premium 5" are kept as names, not features.
+- **The reservation link** is the cinema's own page, copied, never requested.
+- **Coordinates** **[V]**: all three from OSM. Kino Lumo is mapped as "Elokuvateatteri Lumo" at its own address (Savipajankatu 2B, Salo).
+- **First run:** 126 + 82 + 16 screenings this week, 24 of 25 films matched at Piispanristi, no unmapped labels.
 
 ---
 
@@ -317,7 +403,7 @@ Found on 2026-10-12. Adapter: `packages/fetcher/src/providers/johku/`, cinemas i
   - Called anonymously with our User-Agent on 2026-10-12, it answered 200 with JSON on all seven storefronts.
   - Leffavuoro reads the same data from the `__NUXT_DATA__` copy embedded in the front page instead.
 - **Finding the parameters:** the front page's `__NUXT_DATA__` names `storefront-{shop}-fi_FI` and one `showschedule-fi_FI-f{date}-c{category}` per programme block.
-- **Not used:** sites that embed the Johku widget (Kino Engel, Kino Tapiola) or load shows through `/api/auth/widget-session` (KuvaTähti) need the widget's `X-ApiKey`. We do not use it.
+- **Not used:** KuvaTähti loads its shows only through `/api/auth/widget-session` and the widget's `X-ApiKey`, which we never use. Kino Engel and Kino Tapiola embed the Johku widget for tickets only; their programmes are on their own server-rendered pages, which Leffavuoro reads as HTML (`engel.py`, `tapiola.py`) **[A]**, and which we may read the same way.
 - **Entry fields:**
   - `text` (title as written, with labels: "Perhekino:", "Seniorikino:", "Vauvakino:", "På svenska:", "MLL-näytös:");
   - `start_date` (Helsinki local, "2026-10-14 19:00") and `resource_name` (the hall);

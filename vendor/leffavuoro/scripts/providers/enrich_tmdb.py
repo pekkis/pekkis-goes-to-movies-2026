@@ -82,8 +82,9 @@ from strands import EVENT_PREFIXES  # noqa: E402
 # first run. The exclamation mark is the operator's and is matched with the rest.
 # 2026-09-24: Kino Aurora's "Unohdettu saari (EN dub)" drew no poster while the plain
 # title matched; a language code before `dub` names the dub, not the film.
+# 2026-10-13: Kino Ritz's "Kerro kaikille (suomeksi tekstitetty)" names the subtitles.
 PAREN_NOISE = re.compile(
-    r"\(\s*(?:(?:19|20)\d{2}|suomeksi(?:\s+puhuttu)?|englanniksi|p[åa]\s+svenska"
+    r"\(\s*(?:(?:19|20)\d{2}|suomeksi(?:\s+puhuttu|\s+tekstitetty)?|englanniksi|p[åa]\s+svenska"
     r"|puhumme\s+suomea!?|dubattu|(?:(?:en|eng|fi|sv)\s+)?dub\.?|orig\.?|re-?release"
     r"|uudelleenjulkaisu|uusi\s+kopio|live\s?action|liveaction|2d|3d|imax|4k"
     # A screening, not the film: Elokuvateatteri Star publishes its knitting screening as
@@ -101,6 +102,10 @@ TRAIL_NOISE = re.compile(
 # Kinopirtti's "Unohdettu saari DUP." (2026-10-09), its abbreviation of "dubattu", drew no
 # match while the plain title matched 1465063. The dot is required and the word is last.
 TRAIL_DUB = re.compile(r"\s+dup\.\s*$", re.I)
+# Kino Olympia's "Pikku Kummitus Lapanen keppostelee - puhumme suomea" (2026-10-12) drew no
+# match while the plain title matched 1781923 at fourteen cinemas. The same claim as the
+# bracketed "(Puhumme suomea!)", after a dash and last on the line.
+TRAIL_SPEAK = re.compile(r"\s+[-\u2013]\s*puhumme\s+suomea!?\s*$", re.I)
 
 # Two terminal version markers still reaching TMDB, measured 2026-09-20 in the committed
 # data. TMB publishes "Kojootti vs ACME Orginaali äänillä" with no brackets and with
@@ -215,6 +220,7 @@ def clean(title):
     t = TRAIL_FESTIVAL.sub(" ", t)
     t = TRAIL_FORMAT.sub(" ", t)
     t = TRAIL_DUB.sub(" ", t)
+    t = TRAIL_SPEAK.sub(" ", t)
     t = TRAIL_NOISE.sub(" ", PAREN_NOISE.sub(" ", TRAIL_VERSION.sub(" ", t)))
     return re.sub(r"\s{2,}", " ", t).strip(" -–:,")
 

@@ -67,6 +67,12 @@ with no canonical name the path `/fi_FI/products/{id}-{shop}-{name}`, while ever
 event has a canonical name and a path of its own (`/fi_FI/kerro-kaikille`). That path is
 the rule here, and no word in a title is read.
 
+**A site can name its own non-film products, by path, with the evidence beside each**
+(`not_films`, decided by the maintainer on 2026-10-13). Kinokulma sells its night off
+and a local association's evening as products with canonical paths, so the hall-hire rule
+cannot see them, and they drew as screenings with initials tiles. Only the exact paths a
+site lists are left out, before any page is read, and they are counted in the log.
+
 **Thin metadata never withholds a screening.** A film page that answers nothing, or
 carries no director and no genre, costs the row its synopsis and its genres and nothing
 else. The maintainer's instruction of 2026-09-18: a small film that publishes little about
@@ -110,6 +116,13 @@ SITES = [
                  "city": "Tammisaari", "loc": "Bio Forum"}]},
     {"provider": "kinokulma", "label": "Kinokulma",
      "base": "https://kinokulma.fi", "listing": "/",
+     # Read 2026-10-12 and 2026-10-13: neither product page describes a film.
+     "not_films": {
+         "/fi_FI/olemme-lomalla": "\"Olemme vapaalla\", the cinema's night off; the page "
+                                  "carries the title and a length and nothing else",
+         "/fi_FI/oulaisten-valovoima-ry": "Oulaisten Valovoima ry, a local association; the "
+                                          "page describes the association, not a film",
+     },
      "venues": [{"id": "kinokulma-oulainen", "name": "Kinokulma", "short": "Kinokulma",
                  "city": "Oulainen", "loc": "Kulmasali"}]},
     # Added 2026-09-20, the sixth storefront. `kinohannikainen` on cdn.johku.com behind
@@ -529,6 +542,11 @@ def film_facts(page):
             "syn": syn, "lang": film_lang(paras)}
 
 
+def not_film(site, url):
+    """Whether a row's link is one of the paths the site lists as not a film. -> bool"""
+    return urlsplit(url or "").path.rstrip("/") in site.get("not_films", {})
+
+
 def parse(site, blocks, pages, now):
     """-> ({venue_id: [show]}, report). `pages` is {product: film page html}.
 
@@ -539,11 +557,15 @@ def parse(site, blocks, pages, now):
     listed, report = rows(site, blocks, now)
     facts = {p: film_facts(h) for p, h in pages.items()}
     per_venue = {v["id"]: [] for v in site["venues"]}
-    unplaced, hire, hire_shows = set(), set(), 0
+    unplaced, hire, hire_shows, others, other_shows = set(), set(), 0, set(), 0
     for r in listed:
         if PRODUCT_PATH in r["url"]:
             hire.add(r["title"])
             hire_shows += 1
+            continue
+        if not_film(site, r["url"]):
+            others.add(r["title"])
+            other_shows += 1
             continue
         f = facts.get(r["product"]) or {"len": "", "genres": "", "original": "", "syn": "",
                                         "lang": ""}
@@ -576,7 +598,8 @@ def parse(site, blocks, pages, now):
         per_venue[r["venue"]].append(show)
     for shows in per_venue.values():
         shows.sort(key=lambda s: s["start"])
-    report.update(hire=hire, hire_shows=hire_shows, unplaced=unplaced)
+    report.update(hire=hire, hire_shows=hire_shows, not_films=others,
+                  not_film_shows=other_shows, unplaced=unplaced)
     return per_venue, report
 
 
@@ -613,7 +636,7 @@ def fetch_site(site, sleep=1.2):
     # The hall-hire rows are dropped before the film pages are chosen: their product page
     # is never read, so the request is not made at all.
     wanted = sorted({(r["product"], r["url"]) for r in listed
-                     if PRODUCT_PATH not in r["url"]})
+                     if PRODUCT_PATH not in r["url"] and not not_film(site, r["url"])})
     for n, r in enumerate(capped(wanted, pid)):
         if n:
             time.sleep(sleep)
@@ -640,6 +663,10 @@ def fetch_site(site, sleep=1.2):
         print(f"[{pid}] {len(report['hire'])} hall-hire title(s) over "
               f"{report['hire_shows']} row(s) left out: "
               f"{', '.join(sorted(report['hire'])[:8])}")
+    if report["not_films"]:
+        print(f"[{pid}] {len(report['not_films'])} product(s) the site lists as not a film "
+              f"over {report['not_film_shows']} row(s) left out: "
+              f"{', '.join(sorted(report['not_films'])[:8])}")
     if report["unplaced"]:
         print(f"[{pid}] {len(report['unplaced'])} synopsis/synopses withheld, no language "
               f"settled: {', '.join(sorted(report['unplaced'])[:8])}")

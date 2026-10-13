@@ -70,6 +70,26 @@ LIVE = payload(f"-{head(SUN)}",
                "Klo 19.30 Kerro  se kaikille   -k12/9-")
 
 
+NOV = datetime.date(2026, 11, 1)            # a Sunday
+
+
+def table(*lines):
+    """The layout read 2026-10-12: one item holding a table, one `<h2>` per line, the
+    posters in `<h2>` of their own and a captioned figure after the rows."""
+    return ('<table width="100%"><tbody><tr><td valign="top">'
+            + "".join(f"<h2>{x}</h2>" for x in lines)
+            + '<h2><img src="http://www.huvimylly.com/wp-content/uploads/2026/10/'
+              'lapin-sota-210x300.jpg" width="210" height="300"></h2>'
+            + '<figure class="wp-caption"><img src="x.jpg"><figcaption>Lapin sota '
+              'elokuvateattereissa 23.10.2026, ohjaus Aku Louhimies.</figcaption></figure>'
+            + "<p>&nbsp;</p></td></tr></tbody></table>")
+
+
+LIVE_TABLE = payload(table(head(NOV), "Klo 13.00", "Pikkuli ja T\u00e4htipeura -s-",
+                           head(NOV), "Klo 15.00 Lapin Sota", "Klo 18.00 Lapin Sota",
+                           "<strong>-k16/13-</strong>"))
+
+
 class ItemsTest(unittest.TestCase):
     def test_the_route_answering_something_else_raises(self):
         """A login wall or a moved slug has to fail rather than parse to zero rows."""
@@ -91,6 +111,30 @@ class RowsTest(unittest.TestCase):
                           ("2026-10-11T18:00", "Pirjo", "S"),
                           ("2026-10-11T19:30", "Kerro se kaikille", "K-12")])
         self.assertEqual(report["unplaceable"], 0)
+
+    def test_the_table_layout_reads_one_line_per_heading(self):
+        shows, report = self.rows(LIVE_TABLE)
+        self.assertEqual([(s["start"][:16], s["title"], s["rating"]) for s in shows],
+                         [("2026-11-01T13:00", "Pikkuli ja T\u00e4htipeura", "S"),
+                          ("2026-11-01T15:00", "Lapin Sota", "K-16"),
+                          ("2026-11-01T18:00", "Lapin Sota", "K-16")])
+        self.assertEqual(report["unplaceable"], 0)
+
+    def test_a_bare_marker_closes_only_rows_of_the_same_film(self):
+        """`Klo 15.00 Pirjo` above `Klo 18.00 Lapin Sota` and `-k16/13-`: the marker states
+        Lapin Sota's rating, and Pirjo's is unknown, so Pirjo is left out and counted."""
+        shows, report = self.rows(payload(table(
+            head(NOV), "Klo 15.00 Pirjo", "Klo 18.00 Lapin Sota", "-k16/13-",
+            "Klo 20.00 Kerro se kaikille -k12/9-")))
+        self.assertEqual([s["title"] for s in shows], ["Lapin Sota", "Kerro se kaikille"])
+        self.assertEqual(report["unplaceable"], 1)
+
+    def test_a_line_between_a_row_and_the_marker_keeps_the_row_out(self):
+        shows, report = self.rows(payload(table(
+            head(NOV), "Klo 15.00 Lapin Sota", "ennakkon\u00e4yt\u00f6s",
+            "Klo 18.00 Lapin Sota", "-k16/13-")))
+        self.assertEqual([s["start"][11:16] for s in shows], ["18:00"])
+        self.assertEqual(report["unplaceable"], 1)
 
     def test_the_marker_closes_the_title_across_two_items(self):
         """Position alone cannot tell a continuation from a note, so the rule is the

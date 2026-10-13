@@ -8,7 +8,6 @@ import {
   type FilmListing,
   type FinnishRating,
   type Lang,
-  type Provider,
   type ProviderBatch,
   type Screening,
   type ScreeningTag,
@@ -16,29 +15,16 @@ import {
   type Venue,
   type Warning,
 } from "@pgtm/model";
-import { Envelope, RawCinema, RawShowtime, type BiorexRawSnapshot } from "./raw.ts";
+import { Envelope, RawCinema, RawShowtime, type MyCloudCinemaRawSnapshot } from "./raw.ts";
+import type { MyCloudCinemaSite } from "./sites.ts";
+import { providerOf } from "../sites.ts";
 import { own } from "../../lib/records.ts";
+import { COMMON_TITLE_PREFIXES } from "../labels.ts";
 import { byStartThenId } from "../parsing.ts";
 
-export const PROVIDER: Provider = {
-  id: "biorex",
-  name: "BioRex",
-  homepage: "https://biorex.fi",
-  platform: "mycloudcinema",
-  booking: "buy",
-};
-
-const P = PROVIDER.id;
-const WEBSHOP = "https://webshop.biorex.fi";
-
-/** The API leaves `city` empty for these (verified 2026-10-09). */
-const CITY_OVERRIDES: Record<number, string> = {
-  13: "Helsinki", // BioRex Tripla
-  14: "Helsinki", // BioRex Redi
-};
-
-/** Same pattern the cinema's own site links to (data-click-data-layer on biorex.fi). */
-export const ticketUrl = (showTimeId: number): string => `${WEBSHOP}/fi/#/book/${showTimeId}`;
+/** The pattern the cinema's own programme page links to: `{ticketBase}/#/book/{id}`. */
+export const ticketUrl = (site: Pick<MyCloudCinemaSite, "ticketBase">, showTimeId: number) =>
+  `${site.ticketBase}/#/book/${showTimeId}`;
 
 const RATINGS: Record<string, FinnishRating> = {
   s: "S",
@@ -54,19 +40,22 @@ export const parseRating = (icon: string | null | undefined): FinnishRating | un
   return match?.[1] ? RATINGS[match[1].toLowerCase()] : undefined;
 };
 
-/** "Suomi & Ruotsi -" / "SE" / "-" -> structured subtitles. */
+/**
+ * Subtitles, in either vocabulary the platform's cinemas use: BioRex's "Suomi & Ruotsi -",
+ * "SE", "-" and Cine Mäntsälä's "Suomeksi ja ruotsiksi", "Ruotsiksi", "Ei".
+ */
 export const parseSubtitles = (raw: string | null | undefined): Subtitles => {
   const value = raw?.trim();
   if (!value) {
     return { kind: "unknown" };
   }
-  if (value === "-") {
+  if (value === "-" || value.toLowerCase() === "ei") {
     return { kind: "none" };
   }
 
   const parts = value
     .replace(/-$/, "")
-    .split(/&|,|\//)
+    .split(/&|,|\/|\s+ja\s+/i)
     .map((part) => part.trim())
     .filter(Boolean);
   const languages = parts.map(normalizeLang);
@@ -79,10 +68,25 @@ export const parseSubtitles = (raw: string | null | undefined): Subtitles => {
 /** Tokens of `title_extension` that only repeat what audio/dubbing fields already say. */
 const LANGUAGE_TOKENS = new Set(["FI", "SWE", "DUB", "ORIG"]);
 
-/** Splits `title_extension` into formats and labels we do not understand. */
+/** A whole `title_extension` that is a known label ("Ennakkonäytös!"), by the shared rules. */
+const labelRule = (raw: string) => {
+  const phrase = raw.trim().replace(/!+$/, "").toLowerCase();
+  return Object.entries(COMMON_TITLE_PREFIXES).find(
+    ([label]) => label.toLowerCase() === phrase,
+  )?.[1];
+};
+
+/**
+ * `title_extension`: a known label as a whole ("Ennakkonäytös!" at Cine Mäntsälä -> preview),
+ * otherwise format words (BioRex's "FI ATMOS") and labels we do not understand.
+ */
 export const parseTitleExtension = (
   raw: string | null | undefined,
-): { formats: Feature[]; unmapped: string[] } => {
+): { formats: Feature[]; tags: ScreeningTag[]; unmapped: string[] } => {
+  const rule = raw ? labelRule(raw) : undefined;
+  if (rule) {
+    return { formats: [], tags: [...(rule.tags ?? [])], unmapped: [] };
+  }
   const formats: Feature[] = [];
   const unmapped: string[] = [];
   for (const token of raw?.trim().split(/\s+/).filter(Boolean) ?? []) {
@@ -95,7 +99,7 @@ export const parseTitleExtension = (
       unmapped.push(`title_extension:${token}`);
     }
   }
-  return { formats, unmapped };
+  return { formats, tags: [], unmapped };
 };
 
 /** "6 REX (K-18)" -> features and the hall's own age limit. */
@@ -153,8 +157,8 @@ const availability = (s: RawShowtime): Availability => {
   return "available";
 };
 
-const parseVenue = (c: RawCinema): Venue | undefined => {
-  const city = c.city?.trim() || CITY_OVERRIDES[c.cinema_id];
+const parseVenue = (P: string, site: MyCloudCinemaSite, c: RawCinema): Venue | undefined => {
+  const city = c.city?.trim() || own(site.cityOverrides, String(c.cinema_id));
   if (!city) {
     return undefined;
   }
@@ -177,7 +181,13 @@ const parseVenue = (c: RawCinema): Venue | undefined => {
 export const isActiveCinema = (c: RawCinema): boolean =>
   c.offline === 0 && c.screen_count > 0 && !/^xxx\b/i.test(c.cinema_name);
 
-const parseScreening = (s: RawShowtime, venueId: string, fetchedAt: string): Screening => {
+const parseScreening = (
+  P: string,
+  site: MyCloudCinemaSite,
+  s: RawShowtime,
+  venueId: string,
+  fetchedAt: string,
+): Screening => {
   const title = parseTitleExtension(s.title_extension);
   const unmapped = [...title.unmapped];
   for (const [key, value] of Object.entries(s)) {
@@ -210,7 +220,7 @@ const parseScreening = (s: RawShowtime, venueId: string, fetchedAt: string): Scr
     unmapped.push(`subtitle_lang:${s.subtitle_lang}`);
   }
 
-  const tags: ScreeningTag[] = s.version_kids ? ["kids"] : [];
+  const tags: ScreeningTag[] = [...title.tags, ...(s.version_kids ? (["kids"] as const) : [])];
   const { ageLimit } = parseScreenName(s.screen_name);
   const status = availability(s);
 
@@ -243,13 +253,13 @@ const parseScreening = (s: RawShowtime, venueId: string, fetchedAt: string): Scr
     tags,
     series: [],
     availability: status,
-    ...(status !== "not-bookable" && { ticketUrl: ticketUrl(s.show_time_id) }),
+    ...(status !== "not-bookable" && { ticketUrl: ticketUrl(site, s.show_time_id) }),
     unmappedLabels: unmapped,
     fetchedAt,
   };
 };
 
-const parseListing = (s: RawShowtime): FilmListing => {
+const parseListing = (P: string, s: RawShowtime): FilmListing => {
   const rating = parseRating(s.rating);
   return {
     id: makeId(P, "film", s.movie_id),
@@ -260,12 +270,12 @@ const parseListing = (s: RawShowtime): FilmListing => {
     ...(rating && { rating }),
     genres: splitList(s.genre),
     countries: splitList(s.countries),
-    // BioRex does not mark event cinema.
+    // The platform does not mark event cinema.
     kind: "film",
   };
 };
 
-const parseAuditorium = (s: RawShowtime, venueId: string): Auditorium => {
+const parseAuditorium = (P: string, s: RawShowtime, venueId: string): Auditorium => {
   const { features, ageLimit } = parseScreenName(s.screen_name);
   return {
     id: makeId(P, "screen", s.cinema_screen_id),
@@ -292,8 +302,12 @@ const unwrap = (response: unknown, warnings: Warning[], context: Record<string, 
   return envelope.data.data;
 };
 
-/** Pure: raw snapshot -> normalized batch. Invalid rows become warnings, never exceptions. */
-export const parseBiorex = (raw: BiorexRawSnapshot): ProviderBatch => {
+/** Pure: raw snapshot + site -> normalized batch. Invalid rows become warnings, never exceptions. */
+export const parseMyCloudCinema = (
+  raw: MyCloudCinemaRawSnapshot,
+  site: MyCloudCinemaSite,
+): ProviderBatch => {
+  const P = site.provider;
   const warnings: Warning[] = [];
   const { fetchedAt } = raw;
 
@@ -307,7 +321,10 @@ export const parseBiorex = (raw: BiorexRawSnapshot): ProviderBatch => {
     if (!isActiveCinema(cinema.data)) {
       continue;
     }
-    const venue = parseVenue(cinema.data);
+    if (site.cinemaIds && !site.cinemaIds.includes(cinema.data.cinema_id)) {
+      continue;
+    }
+    const venue = parseVenue(P, site, cinema.data);
     if (!venue) {
       warnings.push({
         code: "venue-without-city",
@@ -323,7 +340,7 @@ export const parseBiorex = (raw: BiorexRawSnapshot): ProviderBatch => {
   const listings = new Map<string, FilmListing>();
   const screenings = new Map<string, Screening>();
 
-  for (const [cinemaId, response] of Object.entries(raw.showtimes)) {
+  for (const [cinemaId, responses] of Object.entries(raw.showtimes)) {
     const venue = venues.get(Number(cinemaId));
     if (!venue) {
       warnings.push({
@@ -332,7 +349,10 @@ export const parseBiorex = (raw: BiorexRawSnapshot): ProviderBatch => {
       });
       continue;
     }
-    for (const item of unwrap(response, warnings, { endpoint: "getShowTimesDays", cinemaId })) {
+    const items = (Array.isArray(responses) ? responses : [responses]).flatMap((response) =>
+      unwrap(response, warnings, { endpoint: "getShowTimesDays", cinemaId }),
+    );
+    for (const item of items) {
       const row = RawShowtime.safeParse(item);
       if (!row.success) {
         warnings.push({
@@ -342,13 +362,13 @@ export const parseBiorex = (raw: BiorexRawSnapshot): ProviderBatch => {
         });
         continue;
       }
-      const screening = parseScreening(row.data, venue.id, fetchedAt);
+      const screening = parseScreening(P, site, row.data, venue.id, fetchedAt);
       screenings.set(screening.id, screening);
 
-      const auditorium = parseAuditorium(row.data, venue.id);
+      const auditorium = parseAuditorium(P, row.data, venue.id);
       auditoriums.set(auditorium.id, auditorium);
 
-      const listing = parseListing(row.data);
+      const listing = parseListing(P, row.data);
       if (!listings.has(listing.id)) {
         listings.set(listing.id, listing);
       }
@@ -356,7 +376,7 @@ export const parseBiorex = (raw: BiorexRawSnapshot): ProviderBatch => {
   }
 
   return {
-    provider: PROVIDER,
+    provider: providerOf(site, "mycloudcinema", "buy"),
     fetchedAt,
     window: dateWindow(raw.from, raw.days),
     venues: [...venues.values()],

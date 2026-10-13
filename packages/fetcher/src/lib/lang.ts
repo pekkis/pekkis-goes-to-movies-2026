@@ -90,10 +90,11 @@ const ENGLISH_NAMES: Record<string, Lang> = {
 
 /**
  * Names seen in the wild that are not plain language names: Finnish adjective forms
- * ("italialainen"), translative forms ("englanniksi"), and a machine translation of
- * "Polish" as the verb "kiillottaa" (to polish).
+ * ("italialainen"), translative forms ("englanniksi"), a machine translation of
+ * "Polish" as the verb "kiillottaa" (to polish), and "no dialogue" (Gilda's album sessions).
  */
 const OTHER_NAMES: Record<string, Lang> = {
+  "ei puhetta": "zxx",
   englanniksi: "en",
   suomeksi: "fi",
   ruotsiksi: "sv",

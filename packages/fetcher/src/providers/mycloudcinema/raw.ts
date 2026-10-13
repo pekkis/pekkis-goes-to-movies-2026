@@ -1,9 +1,10 @@
 import { z } from "zod";
 
 /**
- * Raw response shapes of the BioRex webshop (MyCloudCinema) `/webservices` API.
+ * Raw response shapes of the MyCloudCinema `/webservices` API (BioRex, Cine Mäntsälä).
  * Only fields we read are declared; everything else passes through (looseObject).
- * Profiled 2026-10-09 over 1044 showtimes in 12 cinemas, see docs/data-sources.md.
+ * Profiled 2026-10-09 over 1044 BioRex showtimes in 12 cinemas, and 2026-10-13 over 30 at
+ * Cine Mäntsälä; see docs/data-sources.md.
  */
 
 const Flag = z.union([z.literal(0), z.literal(1)]);
@@ -43,7 +44,7 @@ export const RawShowtime = z.looseObject({
   countries: z.string().nullish(),
   /** "FI", "EN", "SE" (= Swedish), ... */
   audio_lang: z.string().nullish(),
-  /** "Suomi & Ruotsi -", "SE", "-" */
+  /** BioRex: "Suomi & Ruotsi -", "SE", "-". Cine Mäntsälä: "Suomeksi ja ruotsiksi", "Ei". */
   subtitle_lang: z.string().nullish(),
   /** 1 = original language, 2 = dubbed. */
   movie_audio_style_id: z.number().int().nullish(),
@@ -71,11 +72,14 @@ export const Envelope = z.looseObject({
 });
 
 /** What the fetch step stores on disk and the parser consumes. */
-export type BiorexRawSnapshot = {
+export type MyCloudCinemaRawSnapshot = {
   fetchedAt: string;
   from: string;
   days: number;
   cinemas: unknown;
-  /** cinema_id -> getShowTimesDays response */
+  /**
+   * cinema_id -> its getShowTimesDays responses, one per window of at most 7 days.
+   * Snapshots from before 2026-10-13 hold a single response instead of a list.
+   */
   showtimes: Record<string, unknown>;
 };

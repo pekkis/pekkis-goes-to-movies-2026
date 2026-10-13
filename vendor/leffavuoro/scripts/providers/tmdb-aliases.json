@@ -114,6 +114,8 @@
  "vilimit festivaali yksinäinen susi mcquade 1983": "14854",
  "_comment_matka_piemonteen_bare": "Cine Mantsala publishes the bare \"Matka Piemonteen\" where Laitilan Kino publishes it with its strand, and the strand spelling already has a key above. Same Finnish distributor title in the same weeks, so the same film, 1545391, whose identity was established for the other key from Laitilan Kino's film page on director and five of six billed actors.",
  "matka piemonteen": "1545391",
+ "_comment_matka_piemonteen_bilingual": "2026-10-13. Kino Kirkkonummi publishes \"Matka Piemonteen / Resan till Piemonte\". Its page names director Alexandra-Therese Keining and five of the six billed actors of 1545391.",
+ "matka piemonteen resan till piemonte": "1545391",
  "_comment_2026_09_20_ballet": "2026-09-20. Two Kino Tapiola ballet relays were matched, silently and as EXACT, to 265042 The Royal Ballet, Paul Czinner's 1960 Covent Garden documentary: both 'The Royal Ballet: Joutsenlampi' (205 min, relayed 2027-05-16) and 'The Royal Ballet: Pahkinansarkija' (140 min, relayed 2026-12-20) carried that one id, its Music genre and its English synopsis about extracts from Swan Lake, Ondine and The Firebird. Nothing visibly wrong shipped, because 265042 has no poster and its 2 votes are under the trust gate, but two different events shared one id and a 1960 synopsis. Neither title appears in run-enrich.log's no-match or weak lists, so no list would ever have surfaced this; it was found by reading the rows with no poster. The right records are the 2026/27 season ones, the same series and the same id block as the four relays verified in _comment_2026_09_19_g: The Nutcracker 1702761 (2026-11-29, relayed 12-20, 21 days) and Swan Lake 1702782 (2027-04-22, relayed 05-16, 24 days). Both carry a poster. Runtime cannot corroborate, since every record in this block publishes runtime 0, which is why the season, the id block and the relay offset are what settle them. 265042 must never appear again.",
  "the royal ballet pähkinänsärkijä": "1702761",
  "the royal ballet joutsenlampi": "1702782",
@@ -162,5 +164,9 @@
  "last prometheus of donbas taidekaupungin elokuvajuhlat": "1562438",
  "the painter taidekaupungin elokuvajuhlat": "893149",
  "_comment50": "2026-10-09. Seven cinemas publish \"Pikku Kummitus Lapanen keppostelee\", and none matched, because TMDB has no Finnish title for the film. It is 1781923, Alex Gustavsson's Lilla spöket Laban busar vidare (2026). Bio Forum's page for that film calls its hero Pikku Kummitus Lapanen, every cinema lists 60 to 66 minutes, and Engel, Bio Forum and Bio Marilyn's preview screening already carry 1781923. The Finnish title with \"(suomeksi)\" reaches this key through the cleaned search string.",
- "pikku kummitus lapanen keppostelee": "1781923"
+ "pikku kummitus lapanen keppostelee": "1781923",
+ "_comment51": "Kino Virta, 2026-10-12. Kino Virta lists the new Laban film as plain \"Pikku Kummitus Lapanen\", and the search matched 69381, Lilla Spöket Laban (2006, 44 minutes). Kino Virta's own film page gives the original title Pikku Kummitus Lapanen keppostelee and 63 minutes, the runtime Kino Olympia gives for the same film, and the screenings fall on the dates every other cinema shows 1781923. The downside is that a screening of the 2006 film listed by the bare title will also get 1781923.",
+ "pikku kummitus lapanen": "1781923",
+ "_comment52": "Kino Myyri, 2026-10-12. \"Drishyam: The Conclusion\" was matched to 244049, the 2013 Malayalam Drishyam, so the row showed that film's poster, plot and trailer. Myyri's own film page gives India 2026, director Abhishek Pathak, Ajay Devgn in the cast, Hindi audio and 170 minutes. TMDB 1269325 is Drishyam: The Conclusion, Hindi, released 2026-10-02, directed by Abhishek Pathak with Ajay Devgn, listed at 148 minutes. Director and cast settle it; the runtime differs, and Myyri's figure probably includes an interval.",
+ "drishyam the conclusion": "1269325"
 }

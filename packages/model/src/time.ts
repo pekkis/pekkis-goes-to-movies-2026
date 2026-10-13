@@ -145,3 +145,30 @@ export const helsinkiShowTimeAt = (instant: string): ShowTime | undefined => {
 /** Whole minutes from `now` until `instant`, rounded up (negative once it has passed). */
 export const minutesUntil = (instant: string, now: Temporal.Instant): number =>
   Math.ceil((Temporal.Instant.from(instant).epochMilliseconds - now.epochMilliseconds) / 60_000);
+
+/**
+ * A day and month without a year ("15.12.", "3.1.") as the nearest real date: at most
+ * `behindDays` before `reference` (`YYYY-MM-DD`, usually the programme's first day), else
+ * ahead of it. Undefined for impossible dates (31.2.) and ones no nearby year has.
+ */
+export const nearestDate = (
+  day: number,
+  month: number,
+  reference: string,
+  behindDays = 30,
+): string | undefined => {
+  const year = Temporal.PlainDate.from(reference).year;
+  for (const y of [year - 1, year, year + 1]) {
+    let date: Temporal.PlainDate;
+    try {
+      date = Temporal.PlainDate.from({ year: y, month, day }, { overflow: "reject" });
+    } catch {
+      continue; // no such day that year (29.2.)
+    }
+    const offset = daysBetween(reference, date.toString());
+    if (offset >= -behindDays && offset < 365 - behindDays) {
+      return date.toString();
+    }
+  }
+  return undefined;
+};

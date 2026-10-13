@@ -21,6 +21,14 @@ describe("splitVersion", () => {
     ["Unohdettu saari DUP.", "Unohdettu saari", { dubbed: true, audio: "fi" }],
     ["Amadeus – ohjaajan versio", "Amadeus", {}],
     ["På svenska: Bortglömda ön", "Bortglömda ön", { dubbed: true, audio: "sv" }],
+    ["Unohdettu saari SUOMEKSI", "Unohdettu saari", { dubbed: true, audio: "fi" }],
+    ["Unohdettu saari PÅ SVENSKA", "Unohdettu saari", { dubbed: true, audio: "sv" }],
+    // TMB writes it with or without the space.
+    [
+      "Pikkuli ja Tähtipeura(Puhumme suomea!)",
+      "Pikkuli ja Tähtipeura",
+      { dubbed: true, audio: "fi" },
+    ],
   ])("%s", (raw, title, version) => {
     expect(splitVersion(raw)).toEqual({ title, version });
   });
@@ -57,5 +65,39 @@ describe("splitTitlePrefix", () => {
     expect(splitTitlePrefix("Ryhmä Hau: Dinoelokuva", COMMON_TITLE_PREFIXES)).toEqual({
       title: "Ryhmä Hau: Dinoelokuva",
     });
+  });
+
+  it("matches labels without regard to case (Cinemahouse writes them in capitals)", () => {
+    expect(splitTitlePrefix("ENNAKKONÄYTÖS: Dyyni: Osa kolme", COMMON_TITLE_PREFIXES)).toEqual({
+      title: "Dyyni: Osa kolme",
+      rule: { tags: ["preview"] },
+    });
+    expect(splitTitlePrefix("ENNAKKO: Pikkuli", COMMON_TITLE_PREFIXES).rule).toEqual({
+      tags: ["preview"],
+    });
+    expect(splitTitlePrefix("ENSI-ILTA: Tony", COMMON_TITLE_PREFIXES).rule).toEqual({
+      tags: ["premiere"],
+    });
+    expect(splitVersion("Puhu suomeksi").title).toBe("Puhu suomeksi");
+  });
+
+  it("reads the same labels in parentheses at the end (TMB)", () => {
+    expect(
+      splitTitlePrefix(
+        "Late Lammas -elokuva: Hämäräpuuhissa (Ennakkonäytös)",
+        COMMON_TITLE_PREFIXES,
+      ),
+    ).toEqual({ title: "Late Lammas -elokuva: Hämäräpuuhissa", rule: { tags: ["preview"] } });
+    expect(
+      splitTitlePrefix("Pikkuli ja Tähtipeura (Ennakkonäytös!)", COMMON_TITLE_PREFIXES).title,
+    ).toBe("Pikkuli ja Tähtipeura");
+    expect(splitTitlePrefix("Baletti: Pähkinänsärkijä", COMMON_TITLE_PREFIXES).rule?.event).toBe(
+      true,
+    );
+    // Unknown parentheses stay: they may be part of the title.
+    expect(
+      splitTitlePrefix("Madama Butterfly (Bregenz festival / Puccini)", COMMON_TITLE_PREFIXES)
+        .title,
+    ).toBe("Madama Butterfly (Bregenz festival / Puccini)");
   });
 });

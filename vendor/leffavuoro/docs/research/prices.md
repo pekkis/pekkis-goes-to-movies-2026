@@ -89,7 +89,7 @@ raw was written to the repo.
 | Provider | Where a price is stated | Cost to read it |
 |---|---|---|
 | Kino-Toijala, -Sampo, KinoMania, Elo | under each screening on the `?ohjelmisto=` film page; the `?hinnat=N` tariff prices nothing | one request per distinct film, already made for the runtime |
-| Kino Kirkkonummi | `<div>Liput 14,50</div>` in each film's block | none, already fetched |
+| Kino Kirkkonummi | `<div>Liput 14,50</div>` in each film's block, and `<div>14.10. Ke klo13.30 Liput 14e</div>` for one screening (read 2026-10-13) | none, already fetched |
 | Iso-Hannu | `LIPUT Ma-to 13,50 € Pe-su ja arkipyhä 14,50 €` on the front page | none, already fetched |
 | Kino Manttu | `Kino Mantun liput: 11 € / 9 €` in the listing text | none, already fetched |
 | Kino Kuvakukko | a `/liput/` page | one request |

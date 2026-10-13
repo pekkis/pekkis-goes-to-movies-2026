@@ -8,10 +8,10 @@ linted or formatted here.
 | --- | --- |
 | Source | https://github.com/pekkis/kino (our fork of [Shady-Dev/kino](https://github.com/Shady-Dev/kino)) |
 | Branch | `main` |
-| Commit | `3b94faf7c8627e6e5c244748966ec37c4aad7fbe` |
-| Commit date | 2026-10-12T05:20:23Z |
-| Commit message | Update cloud provider data |
-| Vendored on | 2026-10-12 |
+| Commit | `b0c11147fe2d59c27097206f96dbb4be5065d296` |
+| Commit date | 2026-10-13T14:23:16+03:00 |
+| Commit message | data: refresh BioRex and enrichment with the JP code fix, Matka alias and subtitle marker |
+| Vendored on | 2026-10-13 |
 
 **Update:** run `pnpm vendor:leffavuoro --sync` (syncs the fork with upstream on GitHub, then copies)
 and commit the diff. The diff shows what changed upstream since the last copy. Without `--sync` the

@@ -90,7 +90,7 @@ class NoEmDashTest(unittest.TestCase):
         self.assertNotIn("\u2014", HTML[start:end])
         self.assertIn("<title>Leffavuoro – elokuvat ja näytösajat</title>", HTML)
         self.assertNotIn("\u2014", HTML[:HTML.index("<style")])            # the head's meta tags
-        self.assertIn("title=\"${verb} – ${esc(", HTML)                       # the stub tooltip
+        self.assertIn("const tip = safeUrlRaw(t.url) ? `${verb} – ` : '';", HTML)    # the stub tooltip
 
     def test_the_manifest_name_uses_the_en_dash(self):
         manifest = json.loads((_ctx.ROOT / "manifest.webmanifest").read_text(encoding="utf-8"))

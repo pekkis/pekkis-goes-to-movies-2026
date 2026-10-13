@@ -534,6 +534,29 @@ class ParseTest(unittest.TestCase):
                          ["Hetki ennen valoa"])
         self.assertEqual((report["hire"], report["hire_shows"]), ({"Salivaraus"}, 1))
 
+    def night_off(self):
+        return blocks_of(front((1, [
+            entry("1", "Hetki ennen valoa", "2026-10-09 17:30"),
+            entry("2", "Olemme vapaalla", "2026-10-09 19:00", product="319",
+                  slug="olemme-lomalla"),
+            entry("3", "Olemme vapaalla", "2026-10-10 19:00", product="319",
+                  slug="olemme-lomalla")])))
+
+    def test_a_path_the_site_lists_as_not_a_film_is_left_out_and_counted(self):
+        site = {**MARILYN, "not_films": {"/fi_FI/olemme-lomalla": "the night off"}}
+        shows, report = J.parse(site, self.night_off(), self.pages(), NOW)
+        self.assertEqual([s["title"] for s in shows["biomarilyn-lapua"]],
+                         ["Hetki ennen valoa"])
+        self.assertEqual((report["not_films"], report["not_film_shows"]),
+                         ({"Olemme vapaalla"}, 2))
+
+    def test_the_rule_is_the_sites_own_list_and_no_word_in_a_title(self):
+        """The same path on a site that lists nothing publishes."""
+        shows, report = J.parse(MARILYN, self.night_off(), self.pages(), NOW)
+        self.assertEqual([s["title"] for s in shows["biomarilyn-lapua"]],
+                         ["Hetki ennen valoa", "Olemme vapaalla", "Olemme vapaalla"])
+        self.assertEqual(report["not_films"], set())
+
     def test_the_show_shape(self):
         shows, _ = J.parse(MARILYN, self.blocks(), self.pages(), NOW)
         s = shows["biomarilyn-lapua"][0]
@@ -737,6 +760,19 @@ class RunnerTest(unittest.TestCase):
         self.assertEqual([c for c in self.calls if "/products/" in c], [])
         self.assertIn("hall-hire", log)
 
+    def test_a_product_the_site_lists_as_not_a_film_is_never_fetched(self):
+        site = next(s for s in J.SITES if s["provider"] == "kinokulma")
+        [a] = self.entries(site, "A")
+        self.serve(self.all_sites(**{"https://kinokulma.fi/": front((1, [
+            a, entry("9", "Oulaisten Valovoima ry", "2026-10-09 18:00", loc="Kulmasali",
+                     product="100", host=site["base"], slug="oulaisten-valovoima-ry")]),
+            shop="kinokulma")}))
+        code, log = self.main()
+        self.assertEqual(code, 0, log)
+        self.assertEqual([c for c in self.calls if "valovoima" in c], [])
+        self.assertEqual([s["title"] for s in self.shows("kinokulma-oulainen")], ["A"])
+        self.assertIn("not a film over 1 row(s) left out: Oulaisten Valovoima ry", log)
+
     def test_one_film_page_per_distinct_product(self):
         self.serve(self.all_sites())
         self.assertEqual(self.main()[0], 0)
@@ -834,6 +870,16 @@ class RegistryTest(unittest.TestCase):
                                      if q["accent"] == p["accent"]), 1)
                 site = next(s for s in J.SITES if s["provider"] == pid)
                 self.assertEqual(site["venues"][0]["city"], city)
+
+    def test_kinokulma_lists_its_two_non_film_products_with_evidence(self):
+        site = next(s for s in J.SITES if s["provider"] == "kinokulma")
+        self.assertEqual(sorted(site["not_films"]),
+                         ["/fi_FI/olemme-lomalla", "/fi_FI/oulaisten-valovoima-ry"])
+        for path, why in site["not_films"].items():
+            with self.subTest(path=path):
+                self.assertGreater(len(why), 20)
+        self.assertEqual([s["provider"] for s in J.SITES if s.get("not_films")],
+                         ["kinokulma"])
 
     def test_the_venue_name_matches_the_chain_label(self):
         """`build_pages.label_of` concatenates the two when the venue name does not start

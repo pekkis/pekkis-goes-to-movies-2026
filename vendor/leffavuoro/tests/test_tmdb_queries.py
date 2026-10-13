@@ -131,6 +131,19 @@ class NeulekinoMarkerTest(unittest.TestCase):
                 self.assertEqual(enrich_tmdb.clean(title), title)
 
 
+class SubtitledMarkerTest(unittest.TestCase):
+    """Kino Ritz published "Kerro kaikille (suomeksi tekstitetty)" on 2026-10-13 beside the
+    plain title, which matched, and the row drew no poster."""
+
+    def test_the_subtitle_marker_comes_off_the_search_string(self):
+        self.assertEqual(enrich_tmdb.clean("Kerro kaikille (suomeksi tekstitetty)"),
+                         "Kerro kaikille")
+
+    def test_the_published_title_keeps_it(self):
+        self.assertEqual(enrich_tmdb.norm("Kerro kaikille (suomeksi tekstitetty)"),
+                         "kerro kaikille suomeksi tekstitetty")
+
+
 class LastWeekMarkerTest(unittest.TestCase):
     """Bio Marilyn's "(Poistuu ohjelmistosta)" is a programme note, as "(Neulekino)" is a
     screening name: off the search string, kept in the title (2026-09-27)."""
@@ -277,6 +290,20 @@ class AudioMarkerTest(unittest.TestCase):
             with self.subTest(published=published):
                 self.assertEqual(enrich_tmdb.clean(published), "Unohdettu saari")
         for title in ("Duplikaatti", "Unohdettu saari DUP", "DUP. osa 2", "X DUP. Y"):
+            with self.subTest(title=title):
+                self.assertEqual(enrich_tmdb.clean(title), title)
+
+    def test_a_dashed_puhumme_suomea_comes_off(self):
+        """Kino Olympia published "Pikku Kummitus Lapanen keppostelee - puhumme suomea" on
+        2026-10-12; the plain title matched. Only after a dash, and only last."""
+        for published in ("Pikku Kummitus Lapanen keppostelee - puhumme suomea",
+                          "Pikku Kummitus Lapanen keppostelee \u2013 Puhumme suomea!",
+                          "Pikku Kummitus Lapanen keppostelee -puhumme suomea"):
+            with self.subTest(published=published):
+                self.assertEqual(enrich_tmdb.clean(published),
+                                 "Pikku Kummitus Lapanen keppostelee")
+        for title in ("Puhumme suomea - dokumentti", "X - puhumme suomea ja ruotsia",
+                      "Me puhumme suomea"):
             with self.subTest(title=title):
                 self.assertEqual(enrich_tmdb.clean(title), title)
 
