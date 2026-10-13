@@ -2,7 +2,7 @@
 # Development does not use this; see `pnpm api:dev`. Build: `pnpm api:up` or
 #   docker build -t pgtm-api .
 
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 # pnpm pinned to the repo's packageManager. Installed with npm here, outside the project
 # (devEngines blocks npm only inside it).
 RUN npm install --global pnpm@12.10.1
@@ -24,7 +24,7 @@ RUN pnpm --filter @pgtm/backend build \
  && pnpm --filter @pgtm/backend deploy --prod --legacy /out \
  && cp -r packages/backend/dist /out/dist
 
-FROM node:24-alpine AS runtime
+FROM node:26-alpine AS runtime
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3000
 WORKDIR /app
 COPY --from=build --chown=node:node /out/package.json ./

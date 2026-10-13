@@ -13,7 +13,7 @@ import {
 } from "@pgtm/model";
 import { load, type CheerioAPI } from "cheerio";
 import { normalizeLang } from "../../lib/lang.ts";
-import { dateWindow, helsinkiShowTime } from "../../lib/time.ts";
+import { dateWindow, helsinkiShowTime } from "@pgtm/model/time";
 import {
   COMMON_TITLE_PREFIXES,
   splitTitlePrefix,

@@ -37,7 +37,7 @@ How the code is built and how to change it. [AGENTS.md](../AGENTS.md) has the ru
 
 - Ticket links are copied, never built.
 - The programme day (business date) comes from the source when it gives one (BioRex, Finnkino, Nexxo).
-- Otherwise it is derived: shows before 05:00 belong to the previous day (`BUSINESS_DAY_CUTOFF_HOUR` in `lib/time.ts`).
+- Otherwise it is derived: shows before 05:00 belong to the previous day (`BUSINESS_DAY_CUTOFF_HOUR` in `@pgtm/model/time`).
 - A price of 0 means free only where the source writes 0 for free (`toCents(…, { zeroIsFree })`).
 
 **History is kept.**
@@ -49,19 +49,19 @@ How the code is built and how to change it. [AGENTS.md](../AGENTS.md) has the ru
 
 When the same fact appears in several sources, it has one helper:
 
-| Fact                                     | Helper                                                                         |
-| ---------------------------------------- | ------------------------------------------------------------------------------ |
-| Helsinki time and programme day          | `lib/time.ts` (`helsinkiShowTime`, `parseLocalDateTime`, `helsinkiShowTimeAt`) |
-| Prices, seats, room ids, screening order | `providers/parsing.ts`                                                         |
-| Title labels and version markers         | `providers/labels.ts`                                                          |
-| Language codes                           | `providers/language-codes.ts`                                                  |
-| Venues from config                       | `toVenue` in `providers/sites.ts`                                              |
-| Lookups by outside text                  | `own` in `lib/records.ts`, so a label "constructor" finds nothing              |
+| Fact                                              | Helper                                                                                                                   |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Helsinki time, programme day, calendar arithmetic | `@pgtm/model/time` (`helsinkiShowTime`, `parseLocalDateTime`, `helsinkiShowTimeAt`, `addDays`, `isIsoDate`), on Temporal |
+| Prices, seats, room ids, screening order          | `providers/parsing.ts`                                                                                                   |
+| Title labels and version markers                  | `providers/labels.ts`                                                                                                    |
+| Language codes                                    | `providers/language-codes.ts`                                                                                            |
+| Venues from config                                | `toVenue` in `providers/sites.ts`                                                                                        |
+| Lookups by outside text                           | `own` in `lib/records.ts`, so a label "constructor" finds nothing                                                        |
 
 **Native TypeScript first.**
 
-- Node 24 runs `.ts` directly: erasable syntax only, no build step except the API's Docker bundle.
-- We use no general utility library (remeda, lodash, es-toolkit). Reviewed on 2026-10-12, the code's generic patterns (unique values, counts, chunks, sorting) are one-liners or Node 24 built-ins: `toSorted`, `Object.groupBy`/`Map.groupBy`, `Set` methods, iterator helpers. The duplication worth removing was domain logic, which no library covers.
+- Node 26 runs `.ts` directly: erasable syntax only, no build step except the API's Docker bundle.
+- We use no general utility library (remeda, lodash, es-toolkit). Reviewed on 2026-10-12, the code's generic patterns (unique values, counts, chunks, sorting) are one-liners or Node built-ins: `toSorted`, `Object.groupBy`/`Map.groupBy`, `Set` methods, iterator helpers. The duplication worth removing was domain logic, which no library covers.
 - Prefer `toSorted` over `sort` (oxlint enforces it).
 - Reconsider a library only for something clearly beyond a one-liner.
 

@@ -9,7 +9,7 @@ import {
   type Venue,
   type Warning,
 } from "@pgtm/model";
-import { dateWindow, helsinkiShowTime, parseLocalDateTime } from "../../lib/time.ts";
+import { dateWindow, helsinkiShowTime, parseLocalDateTime } from "@pgtm/model/time";
 import { splitTitlePrefix as splitPrefix, splitVersion } from "../labels.ts";
 import { codes, parseAudio, parseSubtitles, UNKNOWN_CODE } from "../language-codes.ts";
 import { byStartThenId, toCents } from "../parsing.ts";

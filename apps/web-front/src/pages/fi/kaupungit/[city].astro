@@ -29,7 +29,7 @@ if (!page) {Astro.response.status = 404;}
       <DateNav date={page.date} />
       {
         page.screenings.length ? (
-          <CityProgramme client:idle screenings={page.screenings} now={Astro.locals.now.toISOString()} />
+          <CityProgramme client:idle screenings={page.screenings} now={Astro.locals.now.toString()} />
         ) : (
           <p>{fi.noScreenings}</p>
         )

@@ -1,10 +1,9 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
-import { isValid, parseISO } from "date-fns";
 import { loadEnv, requireTmdbKey } from "../lib/env.ts";
 import { DATA_DIR } from "../lib/paths.ts";
-import { helsinkiToday } from "../lib/time.ts";
+import { helsinkiToday, isIsoDate } from "@pgtm/model/time";
 import { runMatching } from "../matching/run.ts";
 import { ProviderBatch } from "@pgtm/model";
 import { finishVenues, loadVenueOverrides } from "../providers/overrides.ts";
@@ -49,8 +48,7 @@ const selected = selectAdapters(values.provider);
 const from = values.from ?? helsinkiToday();
 const days = Number(values.days);
 const invalid =
-  !/^\d{4}-\d{2}-\d{2}$/.test(from) ||
-  !isValid(parseISO(from)) ||
+  !isIsoDate(from) ||
   !Number.isInteger(days) ||
   days < 1 ||
   days > 90 ||

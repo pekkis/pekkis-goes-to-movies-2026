@@ -1,3 +1,4 @@
+import { addDays } from "@pgtm/model/time";
 import type { Kysely } from "kysely";
 import type { DB } from "../db/types.ts";
 
@@ -18,11 +19,7 @@ export type ScreeningFilter = {
 };
 
 /** "2026-10-10" -> "2026-10-11". */
-export const nextDay = (date: string): string => {
-  const d = new Date(`${date}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + 1);
-  return d.toISOString().slice(0, 10);
-};
+export const nextDay = (date: string): string => addDays(date, 1);
 
 /** "18:00" or "9:30" -> "18:00" / "09:30"; undefined when not a time of day. */
 export const parseTime = (raw: string): string | undefined => {

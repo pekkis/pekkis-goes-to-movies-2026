@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseBbox } from "../../src/api/params.ts";
-import { toHelsinkiIso } from "../../src/lib/time.ts";
+import { toHelsinkiIso } from "@pgtm/model/time";
 import { decodeCursor, encodeCursor } from "../../src/queries/screenings.ts";
 
 describe("toHelsinkiIso", () => {

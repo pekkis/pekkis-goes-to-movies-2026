@@ -96,9 +96,10 @@ The principles the code follows; [docs/development.md](docs/development.md) expl
 - **Fetch and parse are separate.** `fetch.ts` does I/O only and returns a raw snapshot (archived under `data/raw/`); `parse.ts` is a **pure** function from snapshot to `ProviderBatch`, tested against trimmed real responses without network.
 - **Zod at every boundary:** raw responses (`raw.ts`, loose objects with only the fields we read), the model (`@pgtm/model`), env, CLI input, API requests and responses. Parsers `safeParse` each item and turn failures into `invalid-*` warnings.
 - **A site is data, not code.** Multi-site platforms have one adapter per site, generated from the platform's `sites.ts`. Everything that differs between sites is a Zod-validated config field (named quirks with platform defaults, `verifiedAt`, `notes`), never an `if (site === "x")`.
-- **Shared meaning, shared code:** Helsinki time and the programme day (`lib/time.ts`), prices, seats, room ids and ordering (`providers/parsing.ts`), labels and version markers (`providers/labels.ts`), language codes (`providers/language-codes.ts`), venues from config (`providers/sites.ts`). A new parser uses these instead of its own copy.
+- **Shared meaning, shared code:** Helsinki time, the programme day and calendar arithmetic (`@pgtm/model/time`, shared by every package), prices, seats, room ids and ordering (`providers/parsing.ts`), labels and version markers (`providers/labels.ts`), language codes (`providers/language-codes.ts`), venues from config (`providers/sites.ts`). A new parser uses these instead of its own copy.
 - **Incomplete batches infer no removals:** data-missing warnings (`invalid-*`, `unknown-*`, `result-code`; `isIncomplete` in the model) stop ingest from marking absent screenings as removed.
-- **Native TypeScript first.** Node 24 runs `.ts` directly (no build step, except the API's Docker bundle). Erasable syntax only: no `enum`, `namespace` or parameter properties. Prefer built-ins (`toSorted`, `Object.groupBy`, `Set` methods, iterator helpers) over utility libraries; lookup tables keyed by outside text use `own()` (`lib/records.ts`).
+- **Native TypeScript first.** Node 26 runs `.ts` directly (no build step, except the API's Docker bundle). Erasable syntax only: no `enum`, `namespace` or parameter properties. Prefer built-ins (`toSorted`, `Object.groupBy`, `Set` methods, iterator helpers) over utility libraries; lookup tables keyed by outside text use `own()` (`lib/records.ts`).
+- **Dates and times are Temporal** (no date library). Calendar and time-zone logic (Helsinki wall-clock time, the programme day, adding days, minutes until a show) lives in `@pgtm/model/time` and nowhere else. Plain `Date` only for timestamps and at library boundaries (`pg` returns `Date`); `currentInstant()` reads the clock through `Date.now()` so tests can fake it. The website loads `temporal-polyfill` (native where available; Safari lacks Temporal) and formats with `Intl` in `src/lib/time.ts`.
 - `strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`: optional fields are spread in only when set (`...(x && { x })`).
 - **Braces always:** every `if` / `else` / loop body goes in `{}` on its own lines, never `if (x) return y;`. Enforced by oxlint (`curly: all`, autofixable with `pnpm exec oxlint --fix`; oxfmt puts the body on its own line).
 - **Modern React 19:** `use(Context)` instead of `useContext`, `<Context value>` instead of `<Context.Provider>`, `ref` as an ordinary prop (no `forwardRef`), function components only. Shared client state lives in **jotai** atoms (an atom's `onMount` subscribes to external sources, like the clock); each island root is a jotai `Provider`, so the server never shares a store between requests. Never `setState` in an effect to sync with the outside world. oxlint's React plugin checks the rules of hooks, effect dependencies and `setState` in effects.
@@ -157,9 +158,9 @@ apps/web-front/                 @pgtm/web-front: the website (Astro SSR, React, 
   src/components/               React components; islands (client:idle) for live UI; clock.tsx: jotai clock atom, ClockIsland, useShowStatus
   src/styles/                   design system: theme.css.ts (all tokens), containers.ts, sprinkles, reset, recipes/
   src/lib/                      typed API client (hc<AppType>), page loaders, cities, time, text (Finnish UI text)
-packages/model/                 @pgtm/model: src/schema.ts, the domain model (Zod + types) and its rules; source-only
+packages/model/                 @pgtm/model: src/schema.ts, the domain model (Zod + types); src/time.ts (`@pgtm/model/time`): Temporal dates and times; source-only
 packages/fetcher/               @pgtm/fetcher: fetch, normalize, match → data/normalized/*.json
-  src/lib/                      env, paths, http (ky + p-queue, per-host pacing), time, lang, cache, records
+  src/lib/                      env, paths, http (ky + p-queue, per-host pacing), lang, cache, records
   src/providers/adapter.ts      Adapter (id, platform, pull), restrictToVenues
   src/providers/registry.ts     every adapter (one per site on platforms), pacing, selectAdapters
   src/providers/sites.ts        SiteBase, SiteVenue, defineSites, toVenue: the multi-site base
@@ -199,6 +200,7 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
 
 ## Tools
 
+- **Node 26, managed by pnpm:** `devEngines.runtime` in `package.json` pins it, and pnpm downloads it for every script (`pnpm pull`, `pnpm test`, …), whatever `node` your shell has. Docker uses `node:26-alpine`.
 - **pnpm 12**, configured in `pnpm-workspace.yaml`:
   - `minimumReleaseAge` 1 day
   - `trustPolicy: no-downgrade`
@@ -211,7 +213,7 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
 - **Adding dependencies:** a runtime dependency goes to its package (`pnpm --filter @pgtm/fetcher add …`), shared dev tooling to the root (`-D -w`).
 - **Checks:** TypeScript (strict, `noEmit`), oxlint (correctness and suspicious categories plus `curly: all` and the React plugin's hook rules, warnings fail), oxfmt and vitest. No ESLint or Prettier.
 - **Libraries:**
-  - `zod` v4, `ky`, `p-queue`, `date-fns` + `@date-fns/tz`;
+  - `zod` v4, `ky`, `p-queue`;
   - `cheerio` (eTiketti HTML);
   - `playwright` (Finnkino token only, the installed Chrome);
   - `kysely` + `pg` (+ `kysely-codegen`);
@@ -219,4 +221,4 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
   - `tsdown` (Docker bundle only);
   - website: `astro` (+ `@astrojs/node`, `@astrojs/react`), `react`, `@vanilla-extract/*` (css, vite-plugin, sprinkles, recipes, dynamic), `hono/client`, `jotai` (shared client state), `maplibre-gl` (the map page only, with OpenFreeMap tiles). Interactive and live UI is React islands, rendered on the server first and hydrated `client:idle`; no hand-written DOM scripts for UI (the map excepted).
 - **Website caveats:** `astro check` does not support TypeScript 7 yet, so `tsc` checks the `.ts`/`.tsx` files and `.astro` files stay thin. oxlint checks `.astro` frontmatter; oxfmt does not format `.astro` files.
-- **No general utility library** (remeda, lodash, es-toolkit). Node 24's built-ins cover what the code needs (see development.md).
+- **No general utility library** (remeda, lodash, es-toolkit). Node 26's built-ins cover what the code needs (see development.md).

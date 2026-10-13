@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import type { Env } from "../lib/env.ts";
 import { createHttpClient } from "../lib/http.ts";
-import { helsinkiToday } from "../lib/time.ts";
+import { helsinkiToday } from "@pgtm/model/time";
 import { restrictToVenues, type Adapter } from "./adapter.ts";
 import { fetchBiorex } from "./biorex/fetch.ts";
 import { parseBiorex } from "./biorex/parse.ts";

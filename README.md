@@ -20,7 +20,7 @@ The website (`apps/web-front`: city and venue pages, and a venue map) is in prog
 
 ## Usage
 
-You need Node 24, pnpm 12, Docker, Google Chrome (for Finnkino) and a [TMDB](https://www.themoviedb.org/settings/api) API Read Access Token.
+You need pnpm 12 (it downloads the pinned Node 26 for the repo by itself), Docker, Google Chrome (for Finnkino) and a [TMDB](https://www.themoviedb.org/settings/api) API Read Access Token.
 
 ```sh
 pnpm install

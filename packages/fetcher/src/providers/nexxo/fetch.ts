@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, parseISO } from "date-fns";
+import { daysBetween } from "@pgtm/model/time";
 import type { HttpClient } from "../../lib/http.ts";
 import type { NexxoRawSnapshot } from "./raw.ts";
 import type { NexxoSite } from "./sites.ts";
@@ -24,7 +24,7 @@ export const fetchNexxo = async (
   { from, days, today, now = () => new Date() }: FetchOptions,
 ): Promise<NexxoRawSnapshot> => {
   const fetchedAt = now().toISOString();
-  const span = Math.max(0, differenceInCalendarDays(parseISO(from), parseISO(today))) + days;
+  const span = Math.max(0, daysBetween(today, from)) + days;
   const payloads: Record<string, unknown> = {};
   for (const locationId of new Set(site.venues.map((v) => v.locationId))) {
     payloads[locationId] = await http.getJson(apiUrl(site), {

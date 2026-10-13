@@ -3,7 +3,7 @@ import { defineConfig } from "tsdown";
 /**
  * Production bundle for the Docker image only; development runs the .ts sources directly.
  * @pgtm/model is TypeScript source and Node will not strip types inside node_modules, so it
- * is bundled in. Everything else in `dependencies` stays external and is installed by
+ * is bundled in, subpaths (`@pgtm/model/time`) included. Everything else in `dependencies` stays external and is installed by
  * `pnpm deploy --prod`.
  */
 export default defineConfig({
@@ -11,8 +11,8 @@ export default defineConfig({
   outDir: "dist",
   format: "esm",
   platform: "node",
-  target: "node24",
+  target: "node26",
   clean: true,
   dts: false,
-  deps: { alwaysBundle: ["@pgtm/model"] },
+  deps: { alwaysBundle: [/^@pgtm\/model(\/|$)/] },
 });

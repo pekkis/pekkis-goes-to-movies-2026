@@ -3,7 +3,7 @@ import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { beforeAll, describe, expect, it } from "vitest";
 import { createApi } from "../../src/lib/api.ts";
 import VenuePage from "../../src/pages/fi/elokuvateatterit/[venue].astro";
-import { fakeFetch, NOON, screening, venue } from "../fixtures.ts";
+import { fakeFetch, NOON_INSTANT, screening, venue } from "../fixtures.ts";
 
 let container: AstroContainer;
 beforeAll(async () => {
@@ -35,7 +35,7 @@ const renderVenue = (slug: string) =>
   container.renderToResponse(VenuePage, {
     params: { venue: slug },
     request: new Request(`http://web/fi/elokuvateatterit/${slug}`),
-    locals: { api, now: NOON },
+    locals: { api, now: NOON_INSTANT },
   });
 
 describe("venue page", () => {

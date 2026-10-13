@@ -39,7 +39,7 @@ const address = [venue?.address, [venue?.postalCode, venue?.city].filter(Boolean
       <DateNav date={page.date} />
       {
         page.screenings.length ? (
-          <VenueProgramme client:idle screenings={page.screenings} now={Astro.locals.now.toISOString()} />
+          <VenueProgramme client:idle screenings={page.screenings} now={Astro.locals.now.toString()} />
         ) : (
           <p>{fi.noScreenings}</p>
         )

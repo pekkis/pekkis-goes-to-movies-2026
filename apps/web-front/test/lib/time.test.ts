@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { addDays, formatDay, formatTime, isIsoDate } from "../../src/lib/time.ts";
+import { formatDay, formatTime } from "../../src/lib/time.ts";
+
+// Date arithmetic (addDays, isIsoDate, …) is shared: tested in packages/model/test/time.test.ts.
 
 describe("formatTime", () => {
   it.each([
@@ -12,26 +14,8 @@ describe("formatTime", () => {
   });
 });
 
-describe("days", () => {
+describe("formatDay", () => {
   it("formats a day in Finnish", () => {
     expect(formatDay("2026-10-13")).toBe("tiistaina 13.10.");
-  });
-
-  it.each([
-    ["2026-10-13", 1, "2026-10-14"],
-    ["2026-10-31", 1, "2026-11-01"],
-    ["2026-03-01", -1, "2026-02-28"],
-    ["2026-10-25", 1, "2026-10-26"], // across the switch to winter time
-  ])("%s %+d -> %s", (date, days, expected) => {
-    expect(addDays(date, days)).toBe(expected);
-  });
-
-  it.each([
-    ["2026-10-13", true],
-    ["2026-02-31", false],
-    ["13.10.2026", false],
-    ["", false],
-  ])("isIsoDate(%j) is %s", (value, expected) => {
-    expect(isIsoDate(value)).toBe(expected);
   });
 });

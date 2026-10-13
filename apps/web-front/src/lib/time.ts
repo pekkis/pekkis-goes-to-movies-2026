@@ -1,33 +1,28 @@
-const ZONE = "Europe/Helsinki";
+import "./temporal.ts";
+import { HELSINKI } from "@pgtm/model/time";
 
+// Temporal parses and computes; Intl prints. One formatter each, with explicit options,
+// so native Temporal and the polyfill give the same text ("00.30", not "0.30").
 const clock = new Intl.DateTimeFormat("fi-FI", {
-  timeZone: ZONE,
+  timeZone: HELSINKI,
   hour: "2-digit",
   minute: "2-digit",
+  hourCycle: "h23",
 });
 
-const day = new Intl.DateTimeFormat("fi-FI", {
-  timeZone: ZONE,
+const weekday = new Intl.DateTimeFormat("fi-FI", {
+  timeZone: "UTC",
   weekday: "long",
   day: "numeric",
   month: "numeric",
 });
 
 /** "2026-10-13T18:00:00+03:00" -> "18.00", in Helsinki whatever the server's zone. */
-export const formatTime = (iso: string): string => clock.format(new Date(iso));
-
-/** Noon UTC of a calendar date: the same day in every European zone. */
-const noon = (date: string) => new Date(`${date}T12:00:00Z`);
+export const formatTime = (iso: string): string =>
+  clock.format(Temporal.Instant.from(iso).epochMilliseconds);
 
 /** "2026-10-13" -> "tiistaina 13.10." (on Tuesday 13 October). */
-export const formatDay = (date: string): string => day.format(noon(date));
-
-/** "2026-10-13", +1 -> "2026-10-14". */
-export const addDays = (date: string, days: number): string => {
-  const d = noon(date);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-};
-
-export const isIsoDate = (value: string): boolean =>
-  /^\d{4}-\d{2}-\d{2}$/.test(value) && noon(value).toISOString().startsWith(value);
+export const formatDay = (date: string): string =>
+  weekday.format(
+    Temporal.PlainDate.from(date).toZonedDateTime({ timeZone: "UTC" }).epochMilliseconds,
+  );

@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { screen } from "@testing-library/react";
+import { currentInstant } from "@pgtm/model/time";
 import { describe, expect, it } from "vitest";
 import { CityProgramme } from "../../src/components/CityProgramme.tsx";
 import { languageLine, ScreeningList } from "../../src/components/ScreeningList.tsx";
@@ -76,7 +77,7 @@ describe("CityProgramme", () => {
   it("puts started shows behind 'Näytä alkaneet' while others are still to come", () => {
     renderWithClock(
       <CityProgramme
-        now={new Date().toISOString()}
+        now={currentInstant().toString()}
         screenings={[at("10:00"), at("11:00"), at("19:00")]}
       />,
     );
@@ -87,7 +88,7 @@ describe("CityProgramme", () => {
 
   it("shows everything as it is when nothing is left to come", () => {
     renderWithClock(
-      <CityProgramme now={new Date().toISOString()} screenings={[at("10:00"), at("11:00")]} />,
+      <CityProgramme now={currentInstant().toString()} screenings={[at("10:00"), at("11:00")]} />,
     );
     expect(screen.queryByText(/Näytä alkaneet/)).toBeNull();
     expect(screen.getAllByText("alkanut")).toHaveLength(2);

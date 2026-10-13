@@ -2,6 +2,8 @@ import type { Screening, Venue } from "../src/lib/api.ts";
 
 /** Noon on the fixtures' day: the default screening (18.00) is "later". */
 export const NOON = new Date("2026-10-13T12:00:00+03:00");
+/** The same moment as a Temporal instant, for code that takes one. */
+export const NOON_INSTANT = Temporal.Instant.from("2026-10-13T12:00:00+03:00");
 
 const provider = { id: "testchain", name: "Test Chain", homepage: null, booking: "buy" };
 
