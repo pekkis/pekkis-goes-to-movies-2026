@@ -8,5 +8,7 @@ describe("DateNav", () => {
     expect(html).toMatch(/<form [^>]*method="get"/);
     expect(html).toMatch(/<input [^>]*type="date"[^>]*name="date"[^>]*value="2026-10-13"/);
     expect(html).toContain('type="submit"');
+    expect(html).toContain('href="?date=2026-10-12"');
+    expect(html).toContain('href="?date=2026-10-14"');
   });
 });

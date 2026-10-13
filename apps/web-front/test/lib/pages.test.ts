@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createApi } from "../../src/lib/api.ts";
-import { loadCityPage } from "../../src/lib/pages.ts";
+import { loadCityPage, loadVenuePage } from "../../src/lib/pages.ts";
 import { pageHeaders } from "../../src/lib/headers.ts";
 import { fakeFetch, screening, venue } from "../fixtures.ts";
 
@@ -20,6 +20,7 @@ describe("loadCityPage", () => {
     ]);
     const page = await loadCityPage(createApi("http://api", fake.impl), "jyvaskyla", "2026-10-13");
     expect(page?.city).toEqual({ name: "Jyväskylä", slug: "jyvaskyla" });
+    expect(page?.venues.map((v) => v.id)).toEqual(["testchain:venue:1"]);
     expect(page?.screenings.map((s) => s.id)).toEqual(["testchain:show:1", "testchain:show:2"]);
     const asked = fake.requests.filter((u) => u.pathname === "/v1/screenings");
     expect(asked.map((u) => u.searchParams.get("city"))).toEqual(["Jyväskylä", "Jyväskylä"]);
@@ -36,6 +37,28 @@ describe("loadCityPage", () => {
   it("returns nothing for an unknown city", async () => {
     const fake = api([]);
     expect(await loadCityPage(createApi("http://api", fake.impl), "nowhere", null)).toBeUndefined();
+  });
+});
+
+describe("loadVenuePage", () => {
+  it("asks for the venue's screenings on the given day", async () => {
+    const fake = api([{ date: "2026-10-14", items: [screening()], nextCursor: null }]);
+    const page = await loadVenuePage(
+      createApi("http://api", fake.impl),
+      "kino-testi-jyvaskyla",
+      "2026-10-14",
+    );
+    expect(page?.venue.id).toBe("testchain:venue:1");
+    const asked = fake.requests.at(-1);
+    expect(asked?.searchParams.get("venue")).toBe("testchain:venue:1");
+    expect(asked?.searchParams.get("date")).toBe("2026-10-14");
+  });
+
+  it("returns nothing for an unknown venue", async () => {
+    const fake = api([]);
+    expect(
+      await loadVenuePage(createApi("http://api", fake.impl), "kino-testi", null),
+    ).toBeUndefined();
   });
 });
 

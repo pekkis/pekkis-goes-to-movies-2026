@@ -1,21 +1,36 @@
-import { cityScreenings, listVenues, type Api, type Screening } from "./api.ts";
+import { dayScreenings, listVenues, type Api, type Screening, type Venue } from "./api.ts";
 import { resolveCity, type City } from "./cities.ts";
 import { isIsoDate } from "./time.ts";
+import { resolveVenue } from "./venues.ts";
 
-export type CityPage = { city: City; date: string; screenings: Screening[] };
+/** A valid `?date=`, or undefined: a malformed one falls back to the API's today. */
+const dateOf = (param: string | null) => (param && isIsoDate(param) ? param : undefined);
 
-/**
- * Data for /fi/kaupungit/{slug}: undefined for an unknown city. A malformed `?date=` is
- * ignored (the API's today is used) rather than failing the page.
- */
+export type CityPage = { city: City; venues: Venue[]; date: string; screenings: Screening[] };
+
+/** Data for /fi/kaupungit/{slug}, or undefined for an unknown city. */
 export const loadCityPage = async (
   api: Api,
   slug: string,
   dateParam: string | null,
 ): Promise<CityPage | undefined> => {
-  const city = resolveCity(slug, await listVenues(api));
+  const all = await listVenues(api);
+  const city = resolveCity(slug, all);
   if (!city) return undefined;
-  const date = dateParam && isIsoDate(dateParam) ? dateParam : undefined;
-  const { date: shown, items } = await cityScreenings(api, { city: city.name, date });
-  return { city, date: shown, screenings: items };
+  const { date, items } = await dayScreenings(api, { city: city.name }, dateOf(dateParam));
+  return { city, venues: all.filter((v) => v.city === city.name), date, screenings: items };
+};
+
+export type VenuePage = { venue: Venue; date: string; screenings: Screening[] };
+
+/** Data for /fi/elokuvateatterit/{slug}, or undefined for an unknown venue. */
+export const loadVenuePage = async (
+  api: Api,
+  slug: string,
+  dateParam: string | null,
+): Promise<VenuePage | undefined> => {
+  const venue = resolveVenue(slug, await listVenues(api));
+  if (!venue) return undefined;
+  const { date, items } = await dayScreenings(api, { venue: venue.id }, dateOf(dateParam));
+  return { venue, date, screenings: items };
 };

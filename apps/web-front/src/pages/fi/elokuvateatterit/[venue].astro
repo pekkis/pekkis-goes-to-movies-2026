@@ -1,0 +1,48 @@
+---
+import { DateNav } from "../../../components/DateNav.tsx";
+import { FilmProgramme } from "../../../components/FilmProgramme.tsx";
+import Base from "../../../layouts/Base.astro";
+import { citySlug } from "../../../lib/cities.ts";
+import { groupByFilm } from "../../../lib/films.ts";
+import { loadVenuePage } from "../../../lib/pages.ts";
+import { fi } from "../../../lib/text.ts";
+import { formatDay } from "../../../lib/time.ts";
+import { osmUrl } from "../../../lib/venues.ts";
+import { sprinkles } from "../../../styles/sprinkles.css.ts";
+
+const page = await loadVenuePage(
+  Astro.locals.api,
+  Astro.params.venue ?? "",
+  Astro.url.searchParams.get("date"),
+);
+if (!page) Astro.response.status = 404;
+const venue = page?.venue;
+const website = venue?.url ?? venue?.provider.homepage;
+const address = [venue?.address, [venue?.postalCode, venue?.city].filter(Boolean).join(" ")]
+  .filter(Boolean)
+  .join(", ");
+---
+
+{
+  page && venue ? (
+    <Base title={`${venue.name} – ${formatDay(page.date)}`} description={`${venue.name}, ${venue.city}: ${fi.films(groupByFilm(page.screenings).length)} ${formatDay(page.date)}.`}>
+      <h1>{venue.name}</h1>
+      <p class={sprinkles({ marginBottom: "md" })}>
+        {address}
+        {venue.geo && <> · <a href={osmUrl(venue.geo)}>{fi.showOnMap}</a></>}
+        {website && <> · <a href={website} rel="external">{fi.cinemaWebsite}</a></>}
+        {" · "}<a href={`/fi/kaupungit/${citySlug(venue.city)}`}>{venue.city}</a>
+      </p>
+      <p class={sprinkles({ marginBottom: "md" })}>
+        {formatDay(page.date)} · {fi.films(groupByFilm(page.screenings).length)}
+      </p>
+      <DateNav date={page.date} />
+      {page.screenings.length ? <FilmProgramme screenings={page.screenings} /> : <p>{fi.noScreenings}</p>}
+    </Base>
+  ) : (
+    <Base title={fi.venueNotFound}>
+      <h1>{fi.venueNotFound}</h1>
+      <p><a href="/fi/">{fi.cities}</a></p>
+    </Base>
+  )
+}

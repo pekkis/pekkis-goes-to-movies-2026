@@ -1,11 +1,10 @@
 import type { Screening } from "../lib/api.ts";
+import { tmdbUrl } from "../lib/films.ts";
 import { fi, languageName } from "../lib/text.ts";
 import { formatTime } from "../lib/time.ts";
+import { venuePath } from "../lib/venues.ts";
 import { button } from "../styles/recipes/button.css.ts";
 import * as css from "./ScreeningList.css.ts";
-
-const tmdbUrl = (filmId: string) =>
-  `https://www.themoviedb.org/movie/${filmId.slice("tmdb:".length)}`;
 
 /** "englanti, tekstit: suomi, ruotsi"; empty when the cinema says nothing. */
 export const languageLine = (s: Pick<Screening, "audio" | "dubbed" | "subtitles">): string => {
@@ -48,7 +47,7 @@ export const ScreeningList = ({ screenings }: { screenings: readonly Screening[]
               <Availability value={s.availability} />
             </div>
             <div className={css.meta}>
-              {s.venue.name}
+              <a href={venuePath(s.venue)}>{s.venue.name}</a>
               {s.auditorium && `, ${s.auditorium}`}
               {languages && ` · ${languages}`}
             </div>

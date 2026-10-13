@@ -23,27 +23,24 @@ export const listVenues = async (api: Api, city?: string): Promise<Venue[]> => {
   return res.json();
 };
 
-/** One day's screenings in a city, following `nextCursor` through every page. */
-export const cityScreenings = async (
+/** One day's screenings for a city or a venue, following `nextCursor` through every page. */
+export const dayScreenings = async (
   api: Api,
-  query: { city: string; date?: string | undefined },
+  query: { city: string } | { venue: string },
+  date?: string,
 ): Promise<{ date: string; items: Screening[] }> => {
   const items: Screening[] = [];
   let cursor: string | undefined;
-  let date = query.date ?? "";
+  let shown = date ?? "";
   do {
     const res = await api.v1.screenings.$get({
-      query: {
-        city: query.city,
-        ...(query.date && { date: query.date }),
-        ...(cursor && { cursor }),
-      },
+      query: { ...query, ...(date && { date }), ...(cursor && { cursor }) },
     });
     if (!res.ok) throw new ApiError(res.status, "/v1/screenings");
     const page = await res.json();
     items.push(...page.items);
-    date = page.date;
+    shown = page.date;
     cursor = page.nextCursor ?? undefined;
   } while (cursor);
-  return { date, items };
+  return { date: shown, items };
 };

@@ -4,7 +4,8 @@ import { ScreeningList } from "../../../components/ScreeningList.tsx";
 import Base from "../../../layouts/Base.astro";
 import { loadCityPage } from "../../../lib/pages.ts";
 import { fi } from "../../../lib/text.ts";
-import { addDays, formatDay } from "../../../lib/time.ts";
+import { formatDay } from "../../../lib/time.ts";
+import { venuePath } from "../../../lib/venues.ts";
 import { sprinkles } from "../../../styles/sprinkles.css.ts";
 
 const page = await loadCityPage(
@@ -22,11 +23,10 @@ if (!page) Astro.response.status = 404;
       <p class={sprinkles({ marginBottom: "md" })}>
         {formatDay(page.date)} · {fi.screenings(page.screenings.length)}
       </p>
-      <nav class={sprinkles({ display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: "md", marginBottom: "md" })}>
-        <a href={`?date=${addDays(page.date, -1)}`}>‹ {fi.previousDay}</a>
-        <DateNav date={page.date} />
-        <a href={`?date=${addDays(page.date, 1)}`}>{fi.nextDay} ›</a>
-      </nav>
+      <ul role="list" class={sprinkles({ display: "flex", flexWrap: "wrap", gap: "md", marginBottom: "md" })}>
+        {page.venues.map((v) => <li><a href={venuePath(v)}>{v.name}</a></li>)}
+      </ul>
+      <DateNav date={page.date} />
       {page.screenings.length ? <ScreeningList screenings={page.screenings} /> : <p>{fi.noScreenings}</p>}
     </Base>
   ) : (

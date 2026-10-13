@@ -1,6 +1,22 @@
 # Website (`apps/web-front`)
 
-The public website: server-rendered pages that search engines can index, from our own API. Status: **a spike**. One working slice, the city page (`/fi/kaupungit/tampere`), proves the stack end to end.
+The public website: server-rendered pages that search engines can index, from our own API. Status: **early**. City and venue pages, both server-rendered with no JavaScript.
+
+## Pages
+
+| URL                            | Page                                                                                               | Data                    |
+| ------------------------------ | -------------------------------------------------------------------------------------------------- | ----------------------- |
+| `/`                            | redirects to `/fi/`                                                                                | –                       |
+| `/fi/`                         | cities, as links                                                                                   | `/v1/venues`            |
+| `/fi/kaupungit/{city}`         | a city's day: its venues, then every screening in start order                                      | `/v1/screenings?city=`  |
+| `/fi/elokuvateatterit/{venue}` | a venue's day, film by film: address, map link, the cinema's website, each film with its showtimes | `/v1/screenings?venue=` |
+
+- **Slugs** are derived from names (`src/lib/cities.ts`, `src/lib/venues.ts`):
+  - a city: `Jyväskylä` → `jyvaskyla`;
+  - a venue: its name, plus the city unless the name already says it: `plevna-tampere`, `kino-myyri-vantaa`, `studio-123-kouvola`. Names alone collide ("Studio 123", "Maxim", "Kinopalatsi"). This is unique for all 88 venues on 2026-10-13, and a test covers the rule.
+  - If a cinema is renamed, its old slug stops working: add a redirect for it then.
+- **`?date=YYYY-MM-DD`** picks the day on both page types. It defaults to today in Helsinki; a malformed date falls back to today. The canonical URL leaves the date out, so dated variations count as one page.
+- **Swedish and English** will get their own path words (`/sv/biografer/…`, `/en/cinemas/…`) with the same slugs.
 
 ## Stack and why
 
@@ -34,6 +50,7 @@ request → src/middleware.ts      sets locals.api (API_URL), noindex + cache he
 - **`sprinkles.css.ts`:** atomic layout, spacing and color classes on those tokens, with `mobile`, `tablet` and `desktop` conditions. Use sprinkles for layout in pages.
 - **`recipes/`:** components with variants (`button({ tone, size })`). New shared components follow that pattern.
 - **Per-component styles** live next to the component (`ScreeningList.css.ts`) and read `vars`, never raw colors.
+- **Vanilla Extract only, for `.astro` files too.** A style is just a class-name string, so `.astro` files use it as `class={css.page}` (`Base.astro` ↔ `Base.css.ts`), and React components as `className=`. No Astro `<style>` blocks and no inline colors: everything goes through the same tokens, so dark mode and spacing stay consistent.
 
 ## Configuration (runtime)
 

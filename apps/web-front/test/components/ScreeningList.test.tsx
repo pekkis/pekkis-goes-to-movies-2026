@@ -16,7 +16,10 @@ describe("ScreeningList", () => {
     expect(screen.getByRole("link", { name: "Liput" }).getAttribute("href")).toBe(
       "https://kino.example/liput/1",
     );
-    expect(screen.getByText(/Kino Testi, Sali 2/)).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Kino Testi" }).getAttribute("href")).toBe(
+      "/fi/elokuvateatterit/kino-testi-jyvaskyla",
+    );
+    expect(screen.getByText(/, Sali 2/)).toBeTruthy();
   });
 
   it("links only matched films to TMDB and hides tickets when sold out", () => {
