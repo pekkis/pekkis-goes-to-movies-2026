@@ -74,6 +74,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 - **Mobile first:** the phone layout is the default; wider layouts are added with `min-width` conditions.
 - **Container queries, always when possible:** components adapt to their container, not the viewport (`minWidth()` from `src/styles/containers.ts`, sprinkles `wide`/`widest`). Viewport `@media` only where a container can't work.
+- **Lists of films are alphabetical by title** (Finnish order, `byTitle` in `src/lib/films.ts`); showtimes within a film, and timetables of screenings, stay in time order.
 - **The design system is the Vanilla Extract theme** (`src/styles/theme.css.ts`), the single source of truth. Every color, space, font size and weight, border and fixed size is a token. Components use `vars`, sprinkles and recipes, never literal values; a new value goes into the theme first.
 - Details: [docs/web.md](docs/web.md#user-interface-rules).
 

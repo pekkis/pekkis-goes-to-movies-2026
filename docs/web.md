@@ -9,7 +9,7 @@ The public website: server-rendered pages that search engines can index, from ou
 | `/`                            | redirects to `/fi/`                                                                                                                    | –                       |
 | `/fi/`                         | cities, as links                                                                                                                       | `/v1/venues`            |
 | `/fi/kaupungit/{city}`         | a city's day: its venues, then every screening in start order                                                                          | `/v1/screenings?city=`  |
-| `/fi/elokuvateatterit/{venue}` | a venue's day, film by film: address, map link, the cinema's website, each film with its showtimes                                     | `/v1/screenings?venue=` |
+| `/fi/elokuvateatterit/{venue}` | a venue's day, film by film: address, map link, the cinema's website, each film (alphabetical) with its showtimes                      | `/v1/screenings?venue=` |
 | `/fi/kartta`                   | every venue on a map: clusters when zoomed out, a popup per pin linking to the venue page; below it, the same venues as a list by city | `/v1/venues`            |
 
 - **Slugs** are derived from names (`src/lib/cities.ts`, `src/lib/venues.ts`):
@@ -64,7 +64,8 @@ request → src/middleware.ts      sets locals.api (API_URL), noindex + cache he
    - Responsive sprinkles (`wide`, `widest`) query the nearest container; `main` is one.
    - A component whose layout changes declares its own container (`containerType: "inline-size"`, like `ScreeningList`).
    - Viewport `@media` queries only where a container can't work. User preferences (`prefers-color-scheme`, `prefers-reduced-motion`) aren't layout and are fine.
-3. **The design system is the Vanilla Extract theme, and the theme is the source of truth.** Every design value is a token in `src/styles/theme.css.ts`: color, spacing, font sizes and weights, borders and fixed sizes. Container widths live in `containers.ts`. Components and pages use `vars` (or sprinkles and recipes built on them), never literal colors, rem/px sizes or fonts. A new value goes into the theme first. When the visual identity arrives, it changes the theme, not the components.
+3. **Lists of films are alphabetical by title** (Finnish order: Å, Ä, Ö after Z; `byTitle` in `src/lib/films.ts`). A film's showtimes stay in time order, and so do the city page's screenings, which are a timetable, not a list of films.
+4. **The design system is the Vanilla Extract theme, and the theme is the source of truth.** Every design value is a token in `src/styles/theme.css.ts`: color, spacing, font sizes and weights, borders and fixed sizes. Container widths live in `containers.ts`. Components and pages use `vars` (or sprinkles and recipes built on them), never literal colors, rem/px sizes or fonts. A new value goes into the theme first. When the visual identity arrives, it changes the theme, not the components.
 
 ## Styling pattern
 

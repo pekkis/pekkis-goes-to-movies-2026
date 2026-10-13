@@ -7,7 +7,8 @@ import * as css from "./FilmProgramme.css.ts";
 import { languageLine } from "./ScreeningList.tsx";
 
 /**
- * A venue's day, film by film: each film once, with its showtimes. Every showtime links to
+ * A venue's day, film by film: each film once, alphabetically, with its showtimes in time
+ * order. Every showtime links to
  * the cinema's own ticket page. Static HTML: no client directive.
  */
 export const FilmProgramme = ({ screenings }: { screenings: readonly Screening[] }) => (
