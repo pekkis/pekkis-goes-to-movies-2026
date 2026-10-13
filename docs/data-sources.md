@@ -403,7 +403,7 @@ Found on 2026-10-12. Adapter: `packages/fetcher/src/providers/johku/`, cinemas i
   - Called anonymously with our User-Agent on 2026-10-12, it answered 200 with JSON on all seven storefronts.
   - Leffavuoro reads the same data from the `__NUXT_DATA__` copy embedded in the front page instead.
 - **Finding the parameters:** the front page's `__NUXT_DATA__` names `storefront-{shop}-fi_FI` and one `showschedule-fi_FI-f{date}-c{category}` per programme block.
-- **Not used:** sites that embed the Johku widget (Kino Engel, Kino Tapiola) or load shows through `/api/auth/widget-session` (KuvaTähti) need the widget's `X-ApiKey`. We do not use it.
+- **Not used:** KuvaTähti loads its shows only through `/api/auth/widget-session` and the widget's `X-ApiKey`, which we never use. Kino Engel and Kino Tapiola embed the Johku widget for tickets only; their programmes are on their own server-rendered pages, which Leffavuoro reads as HTML (`engel.py`, `tapiola.py`) **[A]**, and which we may read the same way.
 - **Entry fields:**
   - `text` (title as written, with labels: "Perhekino:", "Seniorikino:", "Vauvakino:", "På svenska:", "MLL-näytös:");
   - `start_date` (Helsinki local, "2026-10-14 19:00") and `resource_name` (the hall);

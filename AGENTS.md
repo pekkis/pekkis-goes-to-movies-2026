@@ -56,7 +56,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 - Identifiable User-Agent. GET only. Few, paced requests (see per-adapter pacing in the registry). No residential proxies, fingerprint spoofing or captcha solving; do not try hard to get around Cloudflare.
 - Never call ticket purchase, booking or payment endpoints. Ticket links are **copied** from the source into `ticketUrl`, never constructed and never requested (eTiketti's `/salikartta`, Kinola's and Johku's `/checkout/…`).
-- **Johku:** only storefronts whose own code reads the schedule anonymously. Never a widget's `X-ApiKey` (Kino Engel, Kino Tapiola, KuvaTähti).
+- **Johku:** only storefronts whose own code reads the schedule anonymously. Never a widget's `X-ApiKey` (KuvaTähti loads its shows only that way, so it is out). Kino Engel and Kino Tapiola merely embed the Johku widget for tickets: their own server-rendered pages may be read like any HTML source (Engel challenges datacenter IPs; if it challenges us too, skip it).
 - **Finnkino:** only the token step uses a (visible) browser; never defeat Cloudflare by other means. It does not run in CI or the cloud.
 - **Posters, synopses and trailers come only from TMDB**, never from cinemas, and cinemas' texts stay out of test fixtures.
 - **Coordinates never from Google Maps** (its terms forbid storing them). OpenStreetMap (ODbL, credit "© OpenStreetMap contributors"), Nominatim (1 request/s, cached), the cinema's own pages, or the maintainer.
