@@ -3,10 +3,10 @@ import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { CityProgramme } from "../../src/components/CityProgramme.tsx";
 import { languageLine, ScreeningList } from "../../src/components/ScreeningList.tsx";
-import { advanceMinutes, renderWithClock, useFixedClock } from "../clock.tsx";
+import { advanceMinutes, renderWithClock, freezeClockAt } from "../clock.tsx";
 import { screening } from "../fixtures.ts";
 
-useFixedClock();
+freezeClockAt();
 
 const at = (time: string, id = time) => screening({ id, startsAt: `2026-10-13T${time}:00+03:00` });
 

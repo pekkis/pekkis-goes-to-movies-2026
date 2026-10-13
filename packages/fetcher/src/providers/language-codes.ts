@@ -30,8 +30,11 @@ export const parseAudio = (
   const unknown: string[] = [];
   for (const code of codes(raw).filter((c) => c !== UNKNOWN_CODE)) {
     const lang = toLang(code);
-    if (lang) audio.push(lang);
-    else unknown.push(code);
+    if (lang) {
+      audio.push(lang);
+    } else {
+      unknown.push(code);
+    }
   }
   return { audio, unknown };
 };
@@ -39,9 +42,15 @@ export const parseAudio = (
 /** "FI-SE" -> fi, sv; "XX" -> none; "OV" or "" -> unknown. */
 export const parseSubtitles = (raw: string | null | undefined): Subtitles => {
   const list = codes(raw);
-  if (list.length === 0 || list.includes(UNKNOWN_CODE)) return { kind: "unknown" };
+  if (list.length === 0 || list.includes(UNKNOWN_CODE)) {
+    return { kind: "unknown" };
+  }
   const langs = list.filter((c) => c !== NO_SUBTITLES).map(toLang);
-  if (langs.length === 0) return { kind: "none" };
-  if (langs.some((l) => l === undefined)) return { kind: "unknown" };
+  if (langs.length === 0) {
+    return { kind: "none" };
+  }
+  if (langs.some((l) => l === undefined)) {
+    return { kind: "unknown" };
+  }
   return { kind: "languages", languages: [...new Set(langs as Lang[])] };
 };

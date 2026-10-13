@@ -28,7 +28,9 @@ const fakeTmdb = (
     movie: async (id) => {
       calls.push(`movie:${id}`);
       const movie = byId.get(id);
-      if (!movie) throw new Error(`no movie ${id}`);
+      if (!movie) {
+        throw new Error(`no movie ${id}`);
+      }
       return movie;
     },
     findByImdb: async (imdbId) => {

@@ -1,13 +1,13 @@
 import type { Screening } from "../lib/api.ts";
 import { collapseStarted } from "../lib/show-status.ts";
 import { fi } from "../lib/text.ts";
-import { NowProvider, useCurrentTime } from "./now.tsx";
+import { ClockIsland, useNow } from "./clock.tsx";
 import * as css from "./Programme.css.ts";
 import { ScreeningList } from "./ScreeningList.tsx";
 
 /** Started shows wait behind "Näytä alkaneet" while there is still something to come. */
 const CityDay = ({ screenings }: { screenings: Screening[] }) => {
-  const { collapsed, shown } = collapseStarted(screenings, useCurrentTime());
+  const { collapsed, shown } = collapseStarted(screenings, useNow());
   return (
     <>
       {collapsed.length > 0 && (
@@ -27,7 +27,7 @@ const CityDay = ({ screenings }: { screenings: Screening[] }) => {
  * "alkanut" without a reload.
  */
 export const CityProgramme = ({ screenings, now }: { screenings: Screening[]; now: string }) => (
-  <NowProvider initial={now}>
+  <ClockIsland now={now}>
     <CityDay screenings={screenings} />
-  </NowProvider>
+  </ClockIsland>
 );

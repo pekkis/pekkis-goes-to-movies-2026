@@ -16,7 +16,9 @@ export const loadCityPage = async (
 ): Promise<CityPage | undefined> => {
   const all = await listVenues(api);
   const city = resolveCity(slug, all);
-  if (!city) return undefined;
+  if (!city) {
+    return undefined;
+  }
   const { date, items } = await dayScreenings(api, { city: city.name }, dateOf(dateParam));
   return { city, venues: all.filter((v) => v.city === city.name), date, screenings: items };
 };
@@ -30,7 +32,9 @@ export const loadVenuePage = async (
   dateParam: string | null,
 ): Promise<VenuePage | undefined> => {
   const venue = resolveVenue(slug, await listVenues(api));
-  if (!venue) return undefined;
+  if (!venue) {
+    return undefined;
+  }
   const { date, items } = await dayScreenings(api, { venue: venue.id }, dateOf(dateParam));
   return { venue, date, screenings: items };
 };

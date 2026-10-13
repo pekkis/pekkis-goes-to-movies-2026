@@ -51,8 +51,9 @@ if (values.address) {
   for (const address of values.address) {
     console.log(`\n${address}`);
     const places = await geocode(http, cache, address);
-    if (places.length === 0)
+    if (places.length === 0) {
       console.log("  not found: try without the hall name, or place it by hand");
+    }
     places.forEach((place, i) => {
       console.log(`  ${i + 1}. ${place.label}${place.url ? `  ${place.url}` : ""}`);
       console.log(`     ${geoSnippet(place, "nominatim")}`);
@@ -64,10 +65,15 @@ if (values.address) {
 
 const venues: LocatableVenue[] = [];
 for (const file of (await readdir(values.dir)).filter((f) => f.endsWith(".json")).toSorted()) {
-  if (file === "films.json") continue;
+  if (file === "films.json") {
+    continue;
+  }
   const batch = ProviderBatch.safeParse(JSON.parse(await readFile(join(values.dir, file), "utf8")));
-  if (batch.success) venues.push(...batch.data.venues);
-  else console.warn(`skipping ${file}: not a provider batch`);
+  if (batch.success) {
+    venues.push(...batch.data.venues);
+  } else {
+    console.warn(`skipping ${file}: not a provider batch`);
+  }
 }
 
 const cinemas = await fetchOsmCinemas(http, cache);

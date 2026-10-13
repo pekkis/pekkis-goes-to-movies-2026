@@ -2,10 +2,10 @@
 import { screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { FilmProgramme } from "../../src/components/FilmProgramme.tsx";
-import { renderWithClock, useFixedClock } from "../clock.tsx";
+import { renderWithClock, freezeClockAt } from "../clock.tsx";
 import { screening } from "../fixtures.ts";
 
-useFixedClock();
+freezeClockAt();
 
 describe("FilmProgramme", () => {
   it("lists each film once, every showtime linking to the cinema's ticket page", () => {

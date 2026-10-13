@@ -21,8 +21,12 @@ export const toCents = (
             .replace(",", ".")
             .trim() || NaN,
         );
-  if (!Number.isFinite(n) || n < 0) return undefined;
-  if (n === 0 && !zeroIsFree) return undefined;
+  if (!Number.isFinite(n) || n < 0) {
+    return undefined;
+  }
+  if (n === 0 && !zeroIsFree) {
+    return undefined;
+  }
   return Math.round(n * 100);
 };
 
@@ -40,9 +44,15 @@ export const availabilityFromSeats = ({
   free?: number | undefined;
   capacity?: number | undefined;
 }): Availability => {
-  if (free === undefined || !Number.isFinite(free)) return "unknown";
-  if (free <= 0) return "sold-out";
-  if (capacity !== undefined && capacity > 0 && free / capacity < FEW_LEFT_SHARE) return "few-left";
+  if (free === undefined || !Number.isFinite(free)) {
+    return "unknown";
+  }
+  if (free <= 0) {
+    return "sold-out";
+  }
+  if (capacity !== undefined && capacity > 0 && free / capacity < FEW_LEFT_SHARE) {
+    return "few-left";
+  }
   return "available";
 };
 

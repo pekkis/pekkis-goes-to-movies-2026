@@ -43,11 +43,15 @@ export type OsmCinema = {
 export const parseOverpass = (raw: unknown): OsmCinema[] =>
   OverpassResponse.parse(raw).elements.flatMap((item) => {
     const parsed = RawElement.safeParse(item);
-    if (!parsed.success) return [];
+    if (!parsed.success) {
+      return [];
+    }
     const e = parsed.data;
     const lat = e.lat ?? e.center?.lat;
     const lon = e.lon ?? e.center?.lon;
-    if (lat === undefined || lon === undefined) return [];
+    if (lat === undefined || lon === undefined) {
+      return [];
+    }
     const t = e.tags ?? {};
     const street = [t["addr:street"], t["addr:housenumber"]].filter(Boolean).join(" ");
     return [

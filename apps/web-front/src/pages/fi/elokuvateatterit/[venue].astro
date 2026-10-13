@@ -15,7 +15,7 @@ const page = await loadVenuePage(
   Astro.params.venue ?? "",
   Astro.url.searchParams.get("date"),
 );
-if (!page) Astro.response.status = 404;
+if (!page) {Astro.response.status = 404;}
 const venue = page?.venue;
 const website = venue?.url ?? venue?.provider.homepage;
 const address = [venue?.address, [venue?.postalCode, venue?.city].filter(Boolean).join(" ")]

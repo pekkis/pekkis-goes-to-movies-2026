@@ -20,8 +20,9 @@ export const fetchKinola = async (
   const pages: unknown[] = [];
   let url: string | undefined = `${apiBase(site)}/events?limit=500`;
   while (url) {
-    if (pages.length >= MAX_PAGES)
+    if (pages.length >= MAX_PAGES) {
       throw new Error(`${site.tenant}: more than ${MAX_PAGES} pages of events`);
+    }
     const page = await http.getJson(url);
     pages.push(page);
     const next = EventsPage.safeParse(page).data?.links?.next;

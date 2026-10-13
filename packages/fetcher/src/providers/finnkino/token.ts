@@ -23,7 +23,9 @@ export const tokenExpiry = (token: string): Date => {
   const payload = JSON.parse(Buffer.from(token.split(".")[1] ?? "", "base64url").toString()) as {
     exp?: unknown;
   };
-  if (typeof payload.exp !== "number") throw new Error("Finnkino token has no exp claim");
+  if (typeof payload.exp !== "number") {
+    throw new Error("Finnkino token has no exp claim");
+  }
   return new Date(payload.exp * 1000);
 };
 
@@ -40,7 +42,9 @@ export const readTokenWithBrowser = async (): Promise<string> => {
     const deadline = Date.now() + 45_000;
     while (Date.now() < deadline) {
       const token = (await page.content()).match(JWT)?.[0];
-      if (token) return token;
+      if (token) {
+        return token;
+      }
       await page.waitForTimeout(1000);
     }
     throw new Error("No token found on finnkino.fi (Cloudflare check not passed?)");
@@ -64,7 +68,9 @@ export const getToken = async ({
 }: TokenSource): Promise<string> => {
   try {
     const cached = JSON.parse(await readFile(cachePath, "utf8")) as Token;
-    if (isFresh(cached, now())) return cached.token;
+    if (isFresh(cached, now())) {
+      return cached.token;
+    }
   } catch {
     // no cache yet
   }

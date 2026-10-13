@@ -31,8 +31,9 @@ export const showStatus = (startsAt: string | Date, now: Date): ShowStatus => {
       ticketsOpen: -minutes < TICKETS_AFTER_START_MINUTES,
     };
   }
-  if (minutes <= SOON_MINUTES)
+  if (minutes <= SOON_MINUTES) {
     return { state: "soon", label: fi.startsIn(minutes), ticketsOpen: true };
+  }
   return { state: "later", label: "", ticketsOpen: true };
 };
 

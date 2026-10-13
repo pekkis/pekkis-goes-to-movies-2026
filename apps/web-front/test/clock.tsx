@@ -1,11 +1,11 @@
 import { act, cleanup, render } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, vi } from "vitest";
-import { NowProvider } from "../src/components/now.tsx";
+import { ClockIsland } from "../src/components/clock.tsx";
 import { NOON } from "./fixtures.ts";
 
-/** Fake timers with the clock at noon on the fixtures' day, around every test in the file. */
-export const useFixedClock = (now: Date = NOON): void => {
+/** Fake timers with the clock at `now` (default: noon on the fixtures' day), around every test in the file. */
+export const freezeClockAt = (now: Date = NOON): void => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(now);
@@ -16,9 +16,9 @@ export const useFixedClock = (now: Date = NOON): void => {
   });
 };
 
-/** Render inside a `<NowProvider>` started at the (fake) current time. */
+/** Render inside a `<ClockIsland>` started at the (fake) current time. */
 export const renderWithClock = (ui: ReactNode) =>
-  render(<NowProvider initial={new Date().toISOString()}>{ui}</NowProvider>);
+  render(<ClockIsland now={new Date().toISOString()}>{ui}</ClockIsland>);
 
 /** Move the fake clock forward, letting the provider's minute timer fire. */
 export const advanceMinutes = (minutes: number) =>

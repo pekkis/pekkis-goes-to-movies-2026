@@ -47,7 +47,9 @@ export const boundsOf = (
   collection: VenueCollection,
 ): [number, number, number, number] | undefined => {
   const points = collection.features.map((f) => f.geometry.coordinates);
-  if (!points.length) return undefined;
+  if (!points.length) {
+    return undefined;
+  }
   const lons = points.map(([lon]) => lon);
   const lats = points.map(([, lat]) => lat);
   return [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)];

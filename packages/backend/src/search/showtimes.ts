@@ -130,10 +130,15 @@ export const screeningsFor = async (
     ])
     .where("s.businessDate", "=", businessDate)
     .where("s.removedAt", "is", null);
-  if (hit) q = q.where(hit.kind === "film" ? "s.filmId" : "s.listingId", "=", hit.id);
-  if (minScores?.rottenTomatoes !== undefined)
+  if (hit) {
+    q = q.where(hit.kind === "film" ? "s.filmId" : "s.listingId", "=", hit.id);
+  }
+  if (minScores?.rottenTomatoes !== undefined) {
     q = q.where("rt.score", ">=", minScores.rottenTomatoes);
-  if (minScores?.imdb !== undefined) q = q.where("im.score", ">=", minScores.imdb);
+  }
+  if (minScores?.imdb !== undefined) {
+    q = q.where("im.score", ">=", minScores.imdb);
+  }
   if (after) {
     q = q.where(
       "s.startsAt",
@@ -149,8 +154,12 @@ export const screeningsFor = async (
       sql<Date>`(${day}::date + ${before}::time) at time zone 'Europe/Helsinki'`,
     );
   }
-  if (providerIds) q = q.where("s.providerId", "in", providerIds.length ? providerIds : [""]);
-  if (near) q = q.where(distanceKm(near.lat, near.lon), "<=", near.radiusKm);
+  if (providerIds) {
+    q = q.where("s.providerId", "in", providerIds.length ? providerIds : [""]);
+  }
+  if (near) {
+    q = q.where(distanceKm(near.lat, near.lon), "<=", near.radiusKm);
+  }
   return q.orderBy("s.startsAt").orderBy("v.city").orderBy("film").execute();
 };
 

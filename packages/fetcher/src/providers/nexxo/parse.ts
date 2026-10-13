@@ -39,7 +39,9 @@ export const parseAge = (
 ): { rating?: FinnishRating; ageLimit?: FinnishRating } => {
   const value = (raw ?? "").trim().toUpperCase();
   const strict = value.match(/^(?:K-?)?(S|7|12|16|18)$/)?.[1];
-  if (strict) return { rating: RATINGS[strict]! };
+  if (strict) {
+    return { rating: RATINGS[strict]! };
+  }
   const loose = value.match(/\bK-?(7|12|16|18)\b/)?.[1];
   return loose ? { ageLimit: RATINGS[loose]! } : {};
 };
@@ -70,7 +72,9 @@ const ticketUrl = (site: NexxoSite, venue: NexxoVenue): string =>
 /** Which venue a row belongs to: by roomId where venues split a location, else the only one. */
 const venueFor = (venues: NexxoVenue[], row: RawShow): NexxoVenue | undefined => {
   const roomed = venues.filter((v) => v.roomIds);
-  if (roomed.length === 0) return venues[0];
+  if (roomed.length === 0) {
+    return venues[0];
+  }
   return roomed.find((v) => v.roomIds!.includes(row.roomId ?? ""));
 };
 
@@ -122,20 +126,24 @@ export const parseNexxo = (raw: NexxoRawSnapshot, site: NexxoSite): ProviderBatc
         continue;
       }
       const row = parsed.data;
-      if (row.isUpcoming === "1" && !row.startDate) continue; // coming soon, not scheduled
+      if (row.isUpcoming === "1" && !row.startDate) {
+        continue;
+      } // coming soon, not scheduled
 
       const venue = venueFor(here, row);
       if (!venue) {
         const key = `${locationId}:${row.roomId}`;
         const seen = unclaimed.get(key);
-        if (seen) seen.shows++;
-        else
+        if (seen) {
+          seen.shows++;
+        } else {
           unclaimed.set(key, {
             locationId,
             roomId: row.roomId,
             roomTitle: row.roomTitle,
             shows: 1,
           });
+        }
         continue;
       }
       const startsAt = toIso(row.startTime);
@@ -148,7 +156,9 @@ export const parseNexxo = (raw: NexxoRawSnapshot, site: NexxoSite): ProviderBatc
         continue;
       }
       const businessDate = row.startDate ?? row.startTime.slice(0, 10);
-      if (businessDate < window.from || businessDate > window.to) continue;
+      if (businessDate < window.from || businessDate > window.to) {
+        continue;
+      }
 
       const unmapped: string[] = [];
       const { audio, unknown } = parseAudio(row.code_language);
@@ -162,8 +172,9 @@ export const parseNexxo = (raw: NexxoRawSnapshot, site: NexxoSite): ProviderBatc
         unmapped.push(`code_subtitles:${row.code_subtitles}`);
       }
       const age = parseAge(row.ageLimit);
-      if (row.ageLimit?.trim() && !age.rating && !age.ageLimit)
+      if (row.ageLimit?.trim() && !age.rating && !age.ageLimit) {
         unmapped.push(`ageLimit:${row.ageLimit}`);
+      }
 
       const { title: unprefixed, rule: prefix } = splitTitlePrefix(site, row.movieTitle);
       const { title, version } = splitVersion(unprefixed);
@@ -176,14 +187,18 @@ export const parseNexxo = (raw: NexxoRawSnapshot, site: NexxoSite): ProviderBatc
         const rule = showTypeRule(site, showType);
         if (rule) {
           tags.push(...(rule.tags ?? []));
-          if (rule.series) series.push(rule.series);
+          if (rule.series) {
+            series.push(rule.series);
+          }
           isEvent ||= rule.event ?? false;
           licensed ||= rule.licensed ?? false;
         } else {
           series.push(showType);
         }
       }
-      if (age.ageLimit && /tapahtuma/i.test(row.ageLimit ?? "")) isEvent = true;
+      if (age.ageLimit && /tapahtuma/i.test(row.ageLimit ?? "")) {
+        isEvent = true;
+      }
 
       // "0.00" means the price is not set.
       const price = toCents(row.priceIncludingTax, { zeroIsFree: false });

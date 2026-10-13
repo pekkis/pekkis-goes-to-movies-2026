@@ -4,7 +4,7 @@ import { fi, languageName } from "../lib/text.ts";
 import { formatTime } from "../lib/time.ts";
 import { venuePath } from "../lib/venues.ts";
 import { button } from "../styles/recipes/button.css.ts";
-import { useShowStatus } from "./now.tsx";
+import { useShowStatus } from "./clock.tsx";
 import * as css from "./ScreeningList.css.ts";
 
 /** "englanti, tekstit: suomi, ruotsi"; empty when the cinema says nothing. */
@@ -14,9 +14,11 @@ export const languageLine = (s: Pick<Screening, "audio" | "dubbed" | "subtitles"
     const audio = s.audio.map(languageName).join(", ");
     parts.push(s.dubbed ? `${fi.dubbed} ${audio}` : audio);
   }
-  if (s.subtitles.kind === "none") parts.push(fi.noSubtitles);
-  else if (s.subtitles.languages.length)
+  if (s.subtitles.kind === "none") {
+    parts.push(fi.noSubtitles);
+  } else if (s.subtitles.languages.length) {
     parts.push(fi.subtitles(s.subtitles.languages.map(languageName).join(", ")));
+  }
   return parts.join(", ");
 };
 
@@ -64,7 +66,7 @@ const ScreeningRow = ({ s }: { s: Screening }) => {
   );
 };
 
-/** A day's screenings in time order, each with its live status. Needs a `<NowProvider>`. */
+/** A day's screenings in time order, each with its live status. Live inside a `<ClockIsland>`. */
 export const ScreeningList = ({ screenings }: { screenings: readonly Screening[] }) => (
   <ol role="list" className={css.list}>
     {screenings.map((s) => (

@@ -57,8 +57,12 @@ export const parseRating = (icon: string | null | undefined): FinnishRating | un
 /** "Suomi & Ruotsi -" / "SE" / "-" -> structured subtitles. */
 export const parseSubtitles = (raw: string | null | undefined): Subtitles => {
   const value = raw?.trim();
-  if (!value) return { kind: "unknown" };
-  if (value === "-") return { kind: "none" };
+  if (!value) {
+    return { kind: "unknown" };
+  }
+  if (value === "-") {
+    return { kind: "none" };
+  }
 
   const parts = value
     .replace(/-$/, "")
@@ -83,9 +87,13 @@ export const parseTitleExtension = (
   const unmapped: string[] = [];
   for (const token of raw?.trim().split(/\s+/).filter(Boolean) ?? []) {
     const upper = token.toUpperCase();
-    if (upper === "ATMOS") formats.push("atmos");
-    else if (upper === "IMAX") formats.push("imax");
-    else if (!LANGUAGE_TOKENS.has(upper)) unmapped.push(`title_extension:${token}`);
+    if (upper === "ATMOS") {
+      formats.push("atmos");
+    } else if (upper === "IMAX") {
+      formats.push("imax");
+    } else if (!LANGUAGE_TOKENS.has(upper)) {
+      unmapped.push(`title_extension:${token}`);
+    }
   }
   return { formats, unmapped };
 };
@@ -95,10 +103,18 @@ export const parseScreenName = (
   name: string,
 ): { features: Feature[]; ageLimit?: FinnishRating } => {
   const features: Feature[] = [];
-  if (/\bprime\b/i.test(name)) features.push("prime");
-  if (/\bplus\b/i.test(name)) features.push("plus");
-  if (/\bluxe\b/i.test(name)) features.push("luxe");
-  if (/\bimax\b/i.test(name)) features.push("imax");
+  if (/\bprime\b/i.test(name)) {
+    features.push("prime");
+  }
+  if (/\bplus\b/i.test(name)) {
+    features.push("plus");
+  }
+  if (/\bluxe\b/i.test(name)) {
+    features.push("luxe");
+  }
+  if (/\bimax\b/i.test(name)) {
+    features.push("imax");
+  }
   const age = name.match(/\(K-(18|16|12|7)\)/)?.[1];
   const ageLimit = age ? own(RATINGS, age) : undefined;
   return ageLimit ? { features, ageLimit } : { features };
@@ -125,15 +141,23 @@ const MAPPED_VERSION_FLAGS = new Set([
 ]);
 
 const availability = (s: RawShowtime): Availability => {
-  if (!s.bookable || !s.allow_purchases || s.show_locked) return "not-bookable";
-  if (s.sold_out) return "sold-out";
-  if (s.seats_low) return "few-left";
+  if (!s.bookable || !s.allow_purchases || s.show_locked) {
+    return "not-bookable";
+  }
+  if (s.sold_out) {
+    return "sold-out";
+  }
+  if (s.seats_low) {
+    return "few-left";
+  }
   return "available";
 };
 
 const parseVenue = (c: RawCinema): Venue | undefined => {
   const city = c.city?.trim() || CITY_OVERRIDES[c.cinema_id];
-  if (!city) return undefined;
+  if (!city) {
+    return undefined;
+  }
   const address = c.address?.trim();
   const postalCode = c.postal_code?.trim();
   return {
@@ -163,13 +187,23 @@ const parseScreening = (s: RawShowtime, venueId: string, fetchedAt: string): Scr
   }
 
   const formats = new Set<Feature>(title.formats);
-  if (s.version_atmos) formats.add("atmos");
-  if (s.version_imax) formats.add("imax");
-  if (s.version_dbox) formats.add("dbox");
-  if (s.version_luxe) formats.add("luxe");
+  if (s.version_atmos) {
+    formats.add("atmos");
+  }
+  if (s.version_imax) {
+    formats.add("imax");
+  }
+  if (s.version_dbox) {
+    formats.add("dbox");
+  }
+  if (s.version_luxe) {
+    formats.add("luxe");
+  }
 
   const audio = s.audio_lang ? normalizeLang(s.audio_lang) : undefined;
-  if (s.audio_lang && !audio) unmapped.push(`audio_lang:${s.audio_lang}`);
+  if (s.audio_lang && !audio) {
+    unmapped.push(`audio_lang:${s.audio_lang}`);
+  }
 
   const subtitles = parseSubtitles(s.subtitle_lang);
   if (subtitles.kind === "unknown" && s.subtitle_lang) {
@@ -270,7 +304,9 @@ export const parseBiorex = (raw: BiorexRawSnapshot): ProviderBatch => {
       warnings.push({ code: "invalid-cinema", message: cinema.error.message, context: { item } });
       continue;
     }
-    if (!isActiveCinema(cinema.data)) continue;
+    if (!isActiveCinema(cinema.data)) {
+      continue;
+    }
     const venue = parseVenue(cinema.data);
     if (!venue) {
       warnings.push({
@@ -313,7 +349,9 @@ export const parseBiorex = (raw: BiorexRawSnapshot): ProviderBatch => {
       auditoriums.set(auditorium.id, auditorium);
 
       const listing = parseListing(row.data);
-      if (!listings.has(listing.id)) listings.set(listing.id, listing);
+      if (!listings.has(listing.id)) {
+        listings.set(listing.id, listing);
+      }
     }
   }
 

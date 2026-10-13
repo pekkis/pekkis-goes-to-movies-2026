@@ -39,7 +39,9 @@ export const parseLatLon = (raw: string): { lat: number; lon: number } | undefin
     .trim()
     .replace(/^@/, "")
     .match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/);
-  if (!m) return undefined;
+  if (!m) {
+    return undefined;
+  }
   const lat = Number(m[1]);
   const lon = Number(m[2]);
   return Math.abs(lat) <= 90 && Math.abs(lon) <= 180 ? { lat, lon } : undefined;

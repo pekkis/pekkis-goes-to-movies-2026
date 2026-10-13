@@ -74,7 +74,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 - **Mobile first:** the phone layout is the default; wider layouts are added with `min-width` conditions.
 - **Container queries, always when possible:** components adapt to their container, not the viewport (`minWidth()` from `src/styles/containers.ts`, sprinkles `wide`/`widest`). Viewport `@media` only where a container can't work.
-- **Showtimes are live:** any component showing one uses `useShowStatus` inside a `<NowProvider>` (`src/components/now.tsx`): started, soon (within an hour) or later, kept current while the page is open. See [docs/web.md](docs/web.md#live-showtimes-one-clock-reusable).
+- **Showtimes are live:** any component showing one uses `useShowStatus` (`src/components/clock.tsx`, a jotai atom ticking once a minute) inside an island rooted in `<ClockIsland>`: started, soon (within an hour) or later, kept current while the page is open. See [docs/web.md](docs/web.md#live-showtimes-one-clock-reusable).
 - **Lists of films are alphabetical by title** (Finnish order, `byTitle` in `src/lib/films.ts`); showtimes within a film, and timetables of screenings, stay in time order.
 - **The design system is the Vanilla Extract theme** (`src/styles/theme.css.ts`), the single source of truth. Every color, space, font size and weight, border and fixed size is a token. Components use `vars`, sprinkles and recipes, never literal values; a new value goes into the theme first.
 - Details: [docs/web.md](docs/web.md#user-interface-rules).
@@ -100,6 +100,8 @@ The principles the code follows; [docs/development.md](docs/development.md) expl
 - **Incomplete batches infer no removals:** data-missing warnings (`invalid-*`, `unknown-*`, `result-code`; `isIncomplete` in the model) stop ingest from marking absent screenings as removed.
 - **Native TypeScript first.** Node 24 runs `.ts` directly (no build step, except the API's Docker bundle). Erasable syntax only: no `enum`, `namespace` or parameter properties. Prefer built-ins (`toSorted`, `Object.groupBy`, `Set` methods, iterator helpers) over utility libraries; lookup tables keyed by outside text use `own()` (`lib/records.ts`).
 - `strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`: optional fields are spread in only when set (`...(x && { x })`).
+- **Braces always:** every `if` / `else` / loop body goes in `{}` on its own lines, never `if (x) return y;`. Enforced by oxlint (`curly: all`, autofixable with `pnpm exec oxlint --fix`; oxfmt puts the body on its own line).
+- **Modern React 19:** `use(Context)` instead of `useContext`, `<Context value>` instead of `<Context.Provider>`, `ref` as an ordinary prop (no `forwardRef`), function components only. Shared client state lives in **jotai** atoms (an atom's `onMount` subscribes to external sources, like the clock); each island root is a jotai `Provider`, so the server never shares a store between requests. Never `setState` in an effect to sync with the outside world. oxlint's React plugin checks the rules of hooks, effect dependencies and `setState` in effects.
 
 ## Commands
 
@@ -152,7 +154,7 @@ vendor/leffavuoro/, scripts/    Leffavuoro reference copy (not built, linted or 
 apps/fpgm/                      the teammate's Flutter app: own tooling, not in the pnpm workspace; do not edit unasked
 apps/web-front/                 @pgtm/web-front: the website (Astro SSR, React, Vanilla Extract); see docs/web.md
   src/pages/, src/layouts/      thin .astro routes and layout; logic lives in src/lib/
-  src/components/               React components; islands (client:idle) for live UI; now.tsx: shared clock, useShowStatus
+  src/components/               React components; islands (client:idle) for live UI; clock.tsx: jotai clock atom, ClockIsland, useShowStatus
   src/styles/                   design system: theme.css.ts (all tokens), containers.ts, sprinkles, reset, recipes/
   src/lib/                      typed API client (hc<AppType>), page loaders, cities, time, text (Finnish UI text)
 packages/model/                 @pgtm/model: src/schema.ts, the domain model (Zod + types) and its rules; source-only
@@ -207,7 +209,7 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
   - `engineStrict`
 - **No npm or npx:** `devEngines` blocks them; use `pnpm exec`.
 - **Adding dependencies:** a runtime dependency goes to its package (`pnpm --filter @pgtm/fetcher add …`), shared dev tooling to the root (`-D -w`).
-- **Checks:** TypeScript (strict, `noEmit`), oxlint (correctness and suspicious categories, warnings fail), oxfmt and vitest. No ESLint or Prettier.
+- **Checks:** TypeScript (strict, `noEmit`), oxlint (correctness and suspicious categories plus `curly: all` and the React plugin's hook rules, warnings fail), oxfmt and vitest. No ESLint or Prettier.
 - **Libraries:**
   - `zod` v4, `ky`, `p-queue`, `date-fns` + `@date-fns/tz`;
   - `cheerio` (eTiketti HTML);
@@ -215,6 +217,6 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
   - `kysely` + `pg` (+ `kysely-codegen`);
   - `hono` + `@hono/zod-openapi` + `@scalar/hono-api-reference`;
   - `tsdown` (Docker bundle only);
-  - website: `astro` (+ `@astrojs/node`, `@astrojs/react`), `react`, `@vanilla-extract/*` (css, vite-plugin, sprinkles, recipes, dynamic), `hono/client`, `maplibre-gl` (the map page only, with OpenFreeMap tiles). Interactive and live UI is React islands, rendered on the server first and hydrated `client:idle`; no hand-written DOM scripts for UI (the map excepted).
+  - website: `astro` (+ `@astrojs/node`, `@astrojs/react`), `react`, `@vanilla-extract/*` (css, vite-plugin, sprinkles, recipes, dynamic), `hono/client`, `jotai` (shared client state), `maplibre-gl` (the map page only, with OpenFreeMap tiles). Interactive and live UI is React islands, rendered on the server first and hydrated `client:idle`; no hand-written DOM scripts for UI (the map excepted).
 - **Website caveats:** `astro check` does not support TypeScript 7 yet, so `tsc` checks the `.ts`/`.tsx` files and `.astro` files stay thin. oxlint checks `.astro` frontmatter; oxfmt does not format `.astro` files.
 - **No general utility library** (remeda, lodash, es-toolkit). Node 24's built-ins cover what the code needs (see development.md).

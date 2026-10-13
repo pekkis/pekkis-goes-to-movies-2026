@@ -7,7 +7,9 @@ import { loadFixture } from "../../fixtures.ts";
 
 const site = (shop: string): JohkuSite => {
   const found = JOHKU_SITES.find((s) => s.shop === shop);
-  if (!found) throw new Error(`No site ${shop}`);
+  if (!found) {
+    throw new Error(`No site ${shop}`);
+  }
   return found;
 };
 
@@ -30,7 +32,9 @@ const parse = (shop: string, categories: number[], overrides: Partial<JohkuRawSn
 
 const show = (batch: ProviderBatch, sourceId: string) => {
   const found = batch.screenings.find((s) => s.sourceId === sourceId);
-  if (!found) throw new Error(`No screening ${sourceId}`);
+  if (!found) {
+    throw new Error(`No screening ${sourceId}`);
+  }
   return found;
 };
 

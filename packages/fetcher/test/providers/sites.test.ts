@@ -23,7 +23,9 @@ describe("site configs", () => {
   it("has one adapter per Nexxo site with unique ids", () => {
     const ids = ADAPTERS.map((a) => a.id);
     expect(new Set(ids).size).toBe(ids.length);
-    for (const site of NEXXO_SITES) expect(ids).toContain(site.provider);
+    for (const site of NEXXO_SITES) {
+      expect(ids).toContain(site.provider);
+    }
   });
 
   it("rejects duplicate providers, duplicate slugs and invalid fields", () => {

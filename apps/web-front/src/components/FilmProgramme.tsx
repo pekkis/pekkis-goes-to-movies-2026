@@ -4,7 +4,7 @@ import { fi } from "../lib/text.ts";
 import { formatTime } from "../lib/time.ts";
 import { button } from "../styles/recipes/button.css.ts";
 import * as css from "./FilmProgramme.css.ts";
-import { useShowStatus } from "./now.tsx";
+import { useShowStatus } from "./clock.tsx";
 import { languageLine } from "./ScreeningList.tsx";
 
 /**
@@ -45,7 +45,7 @@ export const Showtime = ({ s }: { s: Screening }) => {
 
 /**
  * A venue's day, film by film: each film once, alphabetically, with its showtimes in time
- * order and their live status. Needs a `<NowProvider>`.
+ * order and their live status. Live inside a `<ClockIsland>`.
  */
 export const FilmProgramme = ({ screenings }: { screenings: readonly Screening[] }) => (
   <ol role="list">

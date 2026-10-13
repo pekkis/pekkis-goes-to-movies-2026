@@ -31,7 +31,9 @@ export const encodeCursor = (c: Cursor): string =>
 
 export const decodeCursor = (raw: string): Cursor | undefined => {
   const [startsAt, id] = Buffer.from(raw, "base64url").toString("utf8").split("|");
-  if (!startsAt || !id || Number.isNaN(Date.parse(startsAt))) return undefined;
+  if (!startsAt || !id || Number.isNaN(Date.parse(startsAt))) {
+    return undefined;
+  }
   return { startsAt, id };
 };
 
@@ -108,8 +110,12 @@ export const listScreenings = async (
       .where("v.lon", "<=", f.bbox.maxLon);
   }
   const city = f.city?.toLowerCase();
-  if (city) q = q.where((eb) => eb(eb.fn("lower", ["v.city"]), "=", city));
-  if (f.venueId) q = q.where("s.venueId", "=", f.venueId);
+  if (city) {
+    q = q.where((eb) => eb(eb.fn("lower", ["v.city"]), "=", city));
+  }
+  if (f.venueId) {
+    q = q.where("s.venueId", "=", f.venueId);
+  }
   if (f.filmId) {
     const id = f.filmId;
     q = q.where((eb) => eb.or([eb("s.filmId", "=", id), eb("s.listingId", "=", id)]));

@@ -13,7 +13,7 @@ const page = await loadCityPage(
   Astro.params.city ?? "",
   Astro.url.searchParams.get("date"),
 );
-if (!page) Astro.response.status = 404;
+if (!page) {Astro.response.status = 404;}
 ---
 
 {

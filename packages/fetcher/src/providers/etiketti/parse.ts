@@ -37,7 +37,9 @@ export const filmLinks = (listingHtml: string): string[] => {
   $("a[href]").each((_, a) => {
     const href = $(a).attr("href") ?? "";
     const id = href.match(FILM_PATH)?.[1];
-    if (id && !byId.has(id)) byId.set(id, href);
+    if (id && !byId.has(id)) {
+      byId.set(id, href);
+    }
   });
   return [...byId.values()];
 };
@@ -61,7 +63,9 @@ const labelValue = ($: CheerioAPI, label: DomNode): string => {
   let value = "";
   for (let node = label.nextSibling; node; node = node.nextSibling) {
     if (node.type === "tag") {
-      if (node.name === "br" || $(node as never).hasClass("label")) break;
+      if (node.name === "br" || $(node as never).hasClass("label")) {
+        break;
+      }
       value += $(node as never).text();
     } else if (node.type === "text") {
       value += node.data ?? "";
@@ -81,7 +85,9 @@ export const extractFilmPage = (
   $("span.label").each((_, el) => {
     const key = text($(el).text()).replace(/:$/, "");
     const value = labelValue($, el as unknown as DomNode);
-    if (key && value && !(key in facts)) facts[key] = value;
+    if (key && value && !(key in facts)) {
+      facts[key] = value;
+    }
   });
   const genres = $("span.movie-genre")
     .map((_, el) => text($(el).text()))
@@ -162,7 +168,9 @@ const norm = (s: string) => s.normalize("NFC").toLowerCase().replace(/\s+/g, " "
 /** "2 h 9 min" -> 129, "95 min" -> 95. */
 export const parseDuration = (raw: string | undefined): number | undefined => {
   const m = raw?.match(/^(?:(\d+)\s*h)?\s*(?:(\d+)\s*min)?$/i);
-  if (!m || (!m[1] && !m[2])) return undefined;
+  if (!m || (!m[1] && !m[2])) {
+    return undefined;
+  }
   const minutes = Number(m[1] ?? 0) * 60 + Number(m[2] ?? 0);
   return minutes > 0 ? minutes : undefined;
 };
@@ -178,7 +186,9 @@ export const parseLanguages = (raw: string): Lang[] | undefined => {
 
 /** "Kieli": the audio. "Alkuperäinen" (original) says nothing, so it gives none. */
 export const parseAudio = (raw: string | undefined): { audio: Lang[]; unknown?: string } => {
-  if (!raw || /^alkuperäinen/i.test(raw)) return { audio: [] };
+  if (!raw || /^alkuperäinen/i.test(raw)) {
+    return { audio: [] };
+  }
   const langs = parseLanguages(raw);
   return langs ? { audio: langs } : { audio: [], unknown: raw };
 };
@@ -188,9 +198,12 @@ export const parseSubtitles = (
   raw: string | undefined,
   noSubtitlesUnreliable: boolean,
 ): { subtitles: Subtitles; unknown?: string } => {
-  if (!raw) return { subtitles: { kind: "unknown" } };
-  if (/^ei\b/i.test(raw))
+  if (!raw) {
+    return { subtitles: { kind: "unknown" } };
+  }
+  if (/^ei\b/i.test(raw)) {
     return { subtitles: noSubtitlesUnreliable ? { kind: "unknown" } : { kind: "none" } };
+  }
   const langs = parseLanguages(raw);
   return langs
     ? { subtitles: { kind: "languages", languages: langs } }
@@ -213,9 +226,13 @@ export const resolvePlace = (
   }
   const parts = place.split("|").map(text).filter(Boolean);
   for (const venue of venues) {
-    if (!venue.place) continue;
+    if (!venue.place) {
+      continue;
+    }
     const i = parts.findIndex((p) => norm(p) === norm(venue.place!));
-    if (i === -1) continue;
+    if (i === -1) {
+      continue;
+    }
     const room = parts[i + 1];
     return room && norm(room) !== norm(venue.place) ? { venue, room } : { venue };
   }
@@ -224,7 +241,9 @@ export const resolvePlace = (
 
 /** "SALI 3" -> "Sali 3", "VIP-SALI" -> "VIP-sali"; mixed-case names stay as printed. */
 export const roomName = (raw: string): string => {
-  if (raw !== raw.toUpperCase()) return raw;
+  if (raw !== raw.toUpperCase()) {
+    return raw;
+  }
   const lower = raw.toLowerCase().replace(/\b(vip|imax|3d|4dx)\b/g, (m) => m.toUpperCase());
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 };
@@ -266,13 +285,19 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
     const { title, version } = splitVersion(unprefixed);
     const facts = f.facts;
     const languageFact = parseAudio(facts["Kieli"]);
-    if (languageFact.unknown) unmapped.push(`Kieli:${languageFact.unknown}`);
+    if (languageFact.unknown) {
+      unmapped.push(`Kieli:${languageFact.unknown}`);
+    }
     const subs = parseSubtitles(facts["Tekstitys"], site.noSubtitlesUnreliable ?? false);
-    if (subs.unknown) unmapped.push(`Tekstitys:${subs.unknown}`);
+    if (subs.unknown) {
+      unmapped.push(`Tekstitys:${subs.unknown}`);
+    }
     const audio = version.audio ? [version.audio] : languageFact.audio;
     const year = facts["Valmistumisvuosi"]?.match(/^\d{4}$/)?.[0];
     const rating = f.age ? own(RATINGS, f.age) : undefined;
-    if (f.age && !rating) unmapped.push(`age:${f.age}`);
+    if (f.age && !rating) {
+      unmapped.push(`age:${f.age}`);
+    }
 
     const listingId = makeId(P, "film", f.sourceId);
     let isEvent = prefix?.event ?? false;
@@ -301,7 +326,9 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
         continue;
       }
       const { startsAt, businessDate } = showTime;
-      if (businessDate < window.from || businessDate > window.to) continue;
+      if (businessDate < window.from || businessDate > window.to) {
+        continue;
+      }
 
       const tags: ScreeningTag[] = [...(prefix?.tags ?? [])];
       const series: string[] = prefix?.series ? [prefix.series] : [];
@@ -313,9 +340,15 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
           continue;
         }
         tags.push(...(rule.tags ?? []));
-        if (rule.series) series.push(rule.series);
-        if (rule.licensed) licensed = true;
-        if (rule.event) isEvent = true;
+        if (rule.series) {
+          series.push(rule.series);
+        }
+        if (rule.licensed) {
+          licensed = true;
+        }
+        if (rule.event) {
+          isEvent = true;
+        }
       }
 
       const venueId = makeId(P, "venue", where.venue.slug);
@@ -336,7 +369,9 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
         s.ticketPath?.match(/id=(\d+)/)?.[1] ??
         `${f.sourceId}-${s.date}-${s.time.replace(":", "")}-${where.venue.slug}`;
       const id = makeId(P, "show", showId);
-      if (screenings.has(id)) continue; // Niagara prints each row twice
+      if (screenings.has(id)) {
+        continue;
+      } // Niagara prints each row twice
       const price = toCents(s.priceText, { zeroIsFree: false });
       screenings.set(id, {
         id,

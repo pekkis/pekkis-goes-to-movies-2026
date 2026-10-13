@@ -23,7 +23,9 @@ describe("typed client (hono/client)", () => {
 
     const venues = await api.v1.venues.$get({ query: { city: "Nowhere" } });
     expect(venues.status).toBe(200);
-    if (venues.status === 200) expect(await venues.json()).toEqual([]);
+    if (venues.status === 200) {
+      expect(await venues.json()).toEqual([]);
+    }
 
     const film = await api.v1.films[":id"].$get({ param: { id: "tmdb:404404" } });
     expect(film.status).toBe(404);

@@ -6,7 +6,9 @@ const NUM = String.raw`-?\d+(?:\.\d+)?`;
 /** Parses "minLon,minLat,maxLon,maxLat"; undefined when malformed or inverted. */
 export const parseBbox = (raw: string): Bbox | undefined => {
   const parts = raw.split(",").map(Number);
-  if (parts.length !== 4 || parts.some((n) => !Number.isFinite(n))) return undefined;
+  if (parts.length !== 4 || parts.some((n) => !Number.isFinite(n))) {
+    return undefined;
+  }
   const [minLon, minLat, maxLon, maxLat] = parts as [number, number, number, number];
   const valid =
     minLon < maxLon &&

@@ -34,7 +34,9 @@ export const restrictToVenues = (
   batch: ProviderBatch,
   keys: string[] | undefined,
 ): ProviderBatch => {
-  if (!keys) return batch;
+  if (!keys) {
+    return batch;
+  }
   const venues = batch.venues.filter(
     (v) => keys.includes(v.sourceId) || keys.includes(v.id.split(":").at(-1)!),
   );

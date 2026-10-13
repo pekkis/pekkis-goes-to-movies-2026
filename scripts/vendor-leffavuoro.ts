@@ -57,7 +57,9 @@ const gh = (args: string[]) =>
 
 /** "https://github.com/pekkis/kino.git" -> "pekkis/kino". */
 const fork = values.repo.match(/github\.com[/:]([^/]+\/[^/]+?)(?:\.git)?$/)?.[1];
-if (!fork) throw new Error(`--repo must be a GitHub repository: ${values.repo}`);
+if (!fork) {
+  throw new Error(`--repo must be a GitHub repository: ${values.repo}`);
+}
 
 /** Commits upstream has that the fork lacks. */
 const behindBy = () => {
@@ -106,8 +108,11 @@ try {
   const missing: string[] = [];
   for (const path of INCLUDE) {
     const from = join(work, path);
-    if (await exists(from)) await cp(from, join(TARGET, path), { recursive: true });
-    else missing.push(path);
+    if (await exists(from)) {
+      await cp(from, join(TARGET, path), { recursive: true });
+    } else {
+      missing.push(path);
+    }
   }
 
   await writeFile(
@@ -150,7 +155,9 @@ to the data. Never copy their \`data/\` into this repository.
 `,
   );
   console.log(`vendor/leffavuoro updated to ${sha.slice(0, 12)} (${date})`);
-  if (missing.length) console.warn(`not present upstream: ${missing.join(", ")}`);
+  if (missing.length) {
+    console.warn(`not present upstream: ${missing.join(", ")}`);
+  }
 } finally {
   await rm(work, { recursive: true, force: true });
 }

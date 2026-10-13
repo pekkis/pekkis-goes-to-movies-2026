@@ -21,7 +21,9 @@ const html = (name: string) =>
 
 const site = (provider: string): EtikettiSite => {
   const found = ETIKETTI_SITES.find((s) => s.provider === provider);
-  if (!found) throw new Error(`No site ${provider}`);
+  if (!found) {
+    throw new Error(`No site ${provider}`);
+  }
   return found;
 };
 

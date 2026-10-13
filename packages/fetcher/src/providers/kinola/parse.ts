@@ -40,12 +40,19 @@ export const parseLanguageList = (
   let dubbed = false;
   for (const raw of names ?? []) {
     const name = raw.trim();
-    if (!name) continue;
+    if (!name) {
+      continue;
+    }
     const dub = name.match(/^dubattu\s+(.+)$/i);
-    if (dub) dubbed = true;
+    if (dub) {
+      dubbed = true;
+    }
     const lang = normalizeLang(dub ? dub[1]! : name);
-    if (lang) langs.push(lang);
-    else unknown.push(name);
+    if (lang) {
+      langs.push(lang);
+    } else {
+      unknown.push(name);
+    }
   }
   return { langs: [...new Set(langs)], dubbed, unknown };
 };
@@ -55,9 +62,12 @@ export const parseSubtitleList = (
   names: string[] | null | undefined,
 ): { subtitles: Subtitles; unknown: string[] } => {
   const list = (names ?? []).map((n) => n.trim()).filter(Boolean);
-  if (list.length === 0) return { subtitles: { kind: "unknown" }, unknown: [] };
-  if (list.some((n) => /^ei\s+te\S*tystä/i.test(n)))
+  if (list.length === 0) {
+    return { subtitles: { kind: "unknown" }, unknown: [] };
+  }
+  if (list.some((n) => /^ei\s+te\S*tystä/i.test(n))) {
     return { subtitles: { kind: "none" }, unknown: [] };
+  }
   const { langs, unknown } = parseLanguageList(list);
   return {
     subtitles:
@@ -77,8 +87,12 @@ export const availabilityOf = (e: Pick<KinolaEvent, "freeSeats" | "visibility">)
 /** Conservative note reading: only notes that start with the label. */
 export const noteTags = (note: string | null | undefined): ScreeningTag[] => {
   const text = note?.trim() ?? "";
-  if (/^ennakko/i.test(text)) return ["preview"];
-  if (/^(ensi-ilta|premiere)\b/i.test(text)) return ["premiere"];
+  if (/^ennakko/i.test(text)) {
+    return ["preview"];
+  }
+  if (/^(ensi-ilta|premiere)\b/i.test(text)) {
+    return ["premiere"];
+  }
   return [];
 };
 
@@ -132,7 +146,9 @@ export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderB
       continue;
     }
     const { startsAt, businessDate } = showTime;
-    if (businessDate < window.from || businessDate > window.to) continue;
+    if (businessDate < window.from || businessDate > window.to) {
+      continue;
+    }
 
     const p = e.production;
     const unmapped: string[] = [];
@@ -143,7 +159,9 @@ export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderB
     const subs = parseSubtitleList(p.subtitles);
     unmapped.push(...subs.unknown.map((n) => `subtitles:${n}`));
     const rating = p.rating ? own(RATINGS, p.rating.trim()) : undefined;
-    if (p.rating && !rating && p.rating !== "Not rated") unmapped.push(`rating:${p.rating}`);
+    if (p.rating && !rating && p.rating !== "Not rated") {
+      unmapped.push(`rating:${p.rating}`);
+    }
     const imdbId = p.imdb_id?.trim().match(/^tt\d+$/)?.[0];
     const bare = !p.languages?.some((l) => l.trim()) && !p.distributor?.trim() && !imdbId;
     const isEvent = (prefix?.event ?? false) || (site.bareProductionsAreEvents === true && bare);
@@ -173,11 +191,16 @@ export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderB
     const program = e.program?.name.trim();
     if (program) {
       const rule = own(site.programs, program);
-      if (!rule) series.push(program);
-      else {
+      if (!rule) {
+        series.push(program);
+      } else {
         tags.push(...(rule.tags ?? []));
-        if (rule.series) series.push(rule.series);
-        if (rule.licensed) licensed = true;
+        if (rule.series) {
+          series.push(rule.series);
+        }
+        if (rule.licensed) {
+          licensed = true;
+        }
       }
     }
 

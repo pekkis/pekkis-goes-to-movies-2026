@@ -92,7 +92,9 @@ export const defineSites = <
   const parsed = sites.map((site) => schema.parse(site));
   const providers = new Set<string>();
   for (const site of parsed) {
-    if (providers.has(site.provider)) throw new Error(`Duplicate site provider: ${site.provider}`);
+    if (providers.has(site.provider)) {
+      throw new Error(`Duplicate site provider: ${site.provider}`);
+    }
     providers.add(site.provider);
     const slugs = site.venues.map((v) => v.slug);
     if (new Set(slugs).size !== slugs.length) {

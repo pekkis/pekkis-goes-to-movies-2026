@@ -40,11 +40,15 @@ export const splitTitlePrefix = (
   const title = raw.trim();
   const prefix = title.match(/^([^:]+):\s*(.+)$/);
   const prefixRule = prefix ? own(rules, prefix[1]!.trim()) : undefined;
-  if (prefix && prefixRule) return { title: prefix[2]!.trim(), rule: prefixRule };
+  if (prefix && prefixRule) {
+    return { title: prefix[2]!.trim(), rule: prefixRule };
+  }
   // The same labels after a dash at the end: "Pirjo i Sverige – Vauvakino".
   const suffix = title.match(/^(.+?)\s+[–-]\s+([^–-]+)$/);
   const suffixRule = suffix ? own(rules, suffix[2]!.trim()) : undefined;
-  if (suffix && suffixRule) return { title: suffix[1]!.trim(), rule: suffixRule };
+  if (suffix && suffixRule) {
+    return { title: suffix[1]!.trim(), rule: suffixRule };
+  }
   return { title };
 };
 
@@ -92,7 +96,9 @@ export const splitVersion = (raw: string): { title: string; version: Version } =
     );
     const marker = m && (m[2] ?? m[3] ?? m[4])?.trim();
     const hit = marker ? VERSIONS.find(([re]) => re.test(marker)) : undefined;
-    if (!m || !hit || !m[1]) return { title, version };
+    if (!m || !hit || !m[1]) {
+      return { title, version };
+    }
     Object.assign(version, hit[1]);
     title = m[1].trim();
   }

@@ -50,7 +50,9 @@ export const getFilm = async (db: Kysely<DB>, id: string): Promise<FilmOut | und
     };
   }
   const listing = await listingDetails(db, id);
-  if (!listing) return undefined;
+  if (!listing) {
+    return undefined;
+  }
   return {
     id: listing.id,
     kind: "listing",

@@ -79,7 +79,9 @@ export const formatScreenings = (
   withLinks: boolean,
   { withFilm = false, withRatings = false } = {},
 ): string => {
-  if (rows.length === 0) return "  No screenings found.";
+  if (rows.length === 0) {
+    return "  No screenings found.";
+  }
   const withDistance = rows.some((r) => r.distanceKm !== null);
   const header = [
     "Time",
