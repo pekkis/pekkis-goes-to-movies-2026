@@ -10,8 +10,8 @@ Finnkino and BioRex investigated on 2026-10-09, Nexxo, eTiketti and Kinola on 20
 
 - `biorex.fi` is a WordPress site (Polylang fi/sv/en, Yoast, custom theme) **[V]**.
 - The ticket shop `webshop.biorex.fi` is AngularJS + Express **[V]**. **The platform is MyCloudCinema**: the cinema settings contain `webhook_url: https://api.biorex.mycloudcinema.com/…` **[V]**. The HTML's `<meta name="author" content="Unique X">` points to the developer (Unique X) **[A]**.
-- According to Leffavuoro, the same MyCloudCinema `/webservices` API is used by Cine Mäntsälä (`mantsala.cine.fi`) and Gilda (`*.mycloudcinema.com`) **[A]**. The adapter can therefore later become a generic MyCloudCinema adapter.
-- **Implementation:** [src/providers/biorex/](../packages/fetcher/src/providers/biorex/), run with `pnpm pull`.
+- The same MyCloudCinema `/webservices` API serves Cine Mäntsälä (`mantsala.cine.fi`) **[V]** (see below), and according to Leffavuoro, Gilda's WordPress facade **[A]**.
+- **Implementation:** the MyCloudCinema platform adapter, [src/providers/mycloudcinema/](../packages/fetcher/src/providers/mycloudcinema/), one site per cinema chain in `sites.ts` (BioRex, Cine Mäntsälä). Run with `pnpm pull --provider mycloudcinema`, or a site id.
 - `robots.txt` allows everything (`User-agent: * / Disallow:`) **[V]**. The terms of service contain no ban on scraping.
 
 ### Webshop JSON API (no authentication, GET)
@@ -103,6 +103,23 @@ Filtered out: ids 6, 15 and 16 (`xxx` name prefix, closed) and id 11 (the compan
   }
   ```
 - The listing page uses `admin-ajax.php?action=br_movies_handler` (POST). A GET returned 503.
+
+### Cine Mäntsälä (MyCloudCinema, 2026-10-13)
+
+Origin: Leffavuoro's `scripts/providers/cinemantsala.py`, re-verified with three GETs.
+
+- **Same API as BioRex** on the cinema's own host: `https://mantsala.cine.fi/webservices/` `cinemas/getCinemasList`, `show_times/getShowTimesDays?cinema_id=1&date=&number_of_days=` **[V]**. No key, no session.
+- **Two cinemas in the list:** 1 Cine Mäntsälä, and 2 **Cine Keuda-talo** (Kerava), which we read from eTiketti (`kiertue.cine.fi`) **[V]**. Neither source had Keuda-talo shows on 2026-10-13. The site config reads cinema 1 only, so a venue never appears twice.
+- **No coordinates** in the API **[V]**: set in `config/venue-overrides.json` (OSM way 1225638695, with the API's own address).
+- **Rows** look like BioRex's **[V]**:
+  - the same rating icons (`rating_fi_12.svg`) and `business_date` convention;
+  - two halls, "Sali 1" and "Sali 2";
+  - `audio_lang` codes and `movie_audio_style_id` for dubs.
+- **`subtitle_lang` is a Finnish phrase**, not a code **[V]**: "Suomeksi ja ruotsiksi", "Ruotsiksi", "suomeksi", "Ei" (none). The platform parser reads both vocabularies.
+- **`title_extension` is a label:** "Ennakkonäytös!" **[V]**, read by the shared title-label rules as a `preview` tag. Leffavuoro also saw "Cine Matinea" and "Leffa & Kaffe - näytös" **[A]**; they'd show as unmapped labels until added.
+- **Days per request:** Leffavuoro measured `number_of_days` as a cap of 7 **[A]**, so the platform fetches in windows of at most 7 days and deduplicates by show id. A 7-day pull is still one request per cinema.
+- **Ticket links:** `https://mantsala.cine.fi/#/book/{show_time_id}`, the anchor the cinema's own programme page renders **[A, Leffavuoro]**. Copied by pattern, never requested.
+- **First run:** 18 films, 30 screenings, all films matched to TMDB, no warnings.
 
 ---
 

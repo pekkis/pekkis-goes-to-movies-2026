@@ -13,9 +13,9 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 ## Current state
 
-- **Data:** 88 venues in 63 cities from 44 providers on six source types:
-  - two chains: Finnkino (Vista OCAPI) and BioRex (MyCloudCinema);
-  - four multi-site platforms: Nexxo, eTiketti, Kinola and Johku.
+- **Data:** 89 venues in 64 cities from 45 providers on six source types:
+  - one chain: Finnkino (Vista OCAPI);
+  - five multi-site platforms: MyCloudCinema (BioRex, Cine Mäntsälä), Nexxo, eTiketti, Kinola and Johku.
 
   Fetched into JSON (`pnpm pull`), matched to TMDB, stored with history in PostgreSQL (`pnpm ingest`).
 
@@ -169,7 +169,7 @@ packages/fetcher/               @pgtm/fetcher: fetch, normalize, match → data/
   src/providers/language-codes.ts   FI / OV / FI-SE / XX codes (Nexxo, Johku)
   src/providers/overrides.ts    config/venue-overrides.json for chain venues; venue-without-geo warnings
   src/providers/<source>/       raw.ts, fetch.ts, parse.ts; sites.ts on platforms; finnkino/token.ts
-                                (biorex, finnkino, nexxo, etiketti [HTML, cheerio], kinola, johku)
+                                (mycloudcinema [BioRex, Cine Mäntsälä], finnkino, nexxo, etiketti [HTML, cheerio], kinola, johku)
   src/matching/                 TMDB matching: score.ts (pure), match.ts, titles.ts, aliases.ts, catalog.ts, run.ts
   src/tmdb/, src/ratings/       TMDB client and toFilm; OMDb ratings
   src/geo/                      Finland bounds and sources, Overpass, Nominatim, OSM matching (venues:locate)

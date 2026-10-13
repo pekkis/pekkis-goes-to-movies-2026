@@ -1,0 +1,29 @@
+{
+  "resultCode": 0,
+  "data": [
+    {
+      "cinema_id": 1,
+      "cinema_name": "Cine Mäntsälä",
+      "cinema_short_name": "Cine Mäntsälä",
+      "offline": 0,
+      "screen_count": 2,
+      "address": "Meijerin aukio 2",
+      "city": "Mäntsälä",
+      "postal_code": "04600",
+      "latitude": null,
+      "longitude": null
+    },
+    {
+      "cinema_id": 2,
+      "cinema_name": "Cine Keuda-talo",
+      "cinema_short_name": "Cine Keuda-talo",
+      "offline": 0,
+      "screen_count": 1,
+      "address": "Keskikatu 3",
+      "city": "Kerava",
+      "postal_code": "04200",
+      "latitude": null,
+      "longitude": null
+    }
+  ]
+}

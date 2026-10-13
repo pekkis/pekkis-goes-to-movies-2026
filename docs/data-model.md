@@ -38,7 +38,7 @@ Goal: a precise, typed model that improves on the data model of Leffavuoro (Shad
 - **Availability:** `available`, `few-left`, `sold-out`, `not-bookable` or `unknown`. `ticketUrl` is set only while the screening is on sale.
 - **`unmappedLabels`:** source labels the parser does not recognize (e.g. `version_hfr` or `title_extension:4DX`). They are never dropped silently.
 - **Validation in two stages:**
-  - Raw data is checked with source-specific schemas (e.g. [src/providers/biorex/raw.ts](../packages/fetcher/src/providers/biorex/raw.ts)). A broken row becomes a warning and does not abort the run.
+  - Raw data is checked with source-specific schemas (e.g. [src/providers/mycloudcinema/raw.ts](../packages/fetcher/src/providers/mycloudcinema/raw.ts)). A broken row becomes a warning and does not abort the run.
   - Finally, the whole result is checked against the `ProviderBatch` schema.
 
 ## Pipeline

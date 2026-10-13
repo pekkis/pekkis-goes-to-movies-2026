@@ -1,21 +1,27 @@
 import { describe, expect, it } from "vitest";
 import { ProviderBatch } from "@pgtm/model";
 import {
-  parseBiorex,
+  parseMyCloudCinema,
   parseRating,
   parseScreenName,
   parseSubtitles,
   parseTitleExtension,
-} from "../../../src/providers/biorex/parse.ts";
-import type { BiorexRawSnapshot } from "../../../src/providers/biorex/raw.ts";
+} from "../../../src/providers/mycloudcinema/parse.ts";
+import type { MyCloudCinemaRawSnapshot } from "../../../src/providers/mycloudcinema/raw.ts";
+import { MYCLOUDCINEMA_SITES } from "../../../src/providers/mycloudcinema/sites.ts";
+import { windows } from "../../../src/providers/mycloudcinema/fetch.ts";
 import { loadFixture } from "../../fixtures.ts";
 
-const snapshot = (overrides: Partial<BiorexRawSnapshot> = {}): BiorexRawSnapshot => ({
+const site = (provider: string) => MYCLOUDCINEMA_SITES.find((x) => x.provider === provider)!;
+const BIOREX = site("biorex");
+const parseBiorex = (raw: MyCloudCinemaRawSnapshot) => parseMyCloudCinema(raw, BIOREX);
+
+const snapshot = (overrides: Partial<MyCloudCinemaRawSnapshot> = {}): MyCloudCinemaRawSnapshot => ({
   fetchedAt: "2026-10-09T12:00:00.000Z",
   from: "2026-10-09",
   days: 7,
-  cinemas: loadFixture("biorex", "cinemas.json"),
-  showtimes: loadFixture("biorex", "showtimes.json") as Record<string, unknown>,
+  cinemas: loadFixture("mycloudcinema", "biorex-cinemas.json"),
+  showtimes: loadFixture("mycloudcinema", "biorex-showtimes.json") as Record<string, unknown>,
   ...overrides,
 });
 
@@ -27,7 +33,7 @@ const screening = (batch: ProviderBatch, sourceId: string) => {
   return found;
 };
 
-describe("parseBiorex", () => {
+describe("MyCloudCinema: BioRex", () => {
   const batch = parseBiorex(snapshot());
 
   it("produces a batch that satisfies the output schema without warnings", () => {
@@ -143,9 +149,9 @@ describe("parseBiorex", () => {
   });
 });
 
-describe("parseBiorex robustness", () => {
+describe("MyCloudCinema robustness", () => {
   it("turns an invalid row into a warning and keeps the rest", () => {
-    const showtimes = loadFixture("biorex", "showtimes.json") as Record<
+    const showtimes = loadFixture("mycloudcinema", "biorex-showtimes.json") as Record<
       string,
       { data: unknown[] }
     >;
@@ -172,7 +178,7 @@ describe("parseBiorex robustness", () => {
   });
 
   it("reports unknown version flags and labels instead of dropping them", () => {
-    const showtimes = loadFixture("biorex", "showtimes.json") as Record<
+    const showtimes = loadFixture("mycloudcinema", "biorex-showtimes.json") as Record<
       string,
       { data: Record<string, unknown>[] }
     >;
@@ -186,6 +192,23 @@ describe("parseBiorex robustness", () => {
       "title_extension:SPECIAL",
       "version_hfr",
     ]);
+  });
+});
+
+describe("fetch windows", () => {
+  it.each([
+    [7, [{ date: "2026-10-13", days: 7 }]],
+    [3, [{ date: "2026-10-13", days: 3 }]],
+    [
+      16,
+      [
+        { date: "2026-10-13", days: 7 },
+        { date: "2026-10-20", days: 7 },
+        { date: "2026-10-27", days: 2 },
+      ],
+    ],
+  ])("splits %d days into windows of at most 7", (days, expected) => {
+    expect(windows("2026-10-13", days)).toEqual(expected);
   });
 });
 
@@ -209,6 +232,8 @@ describe("field parsers", () => {
     ["", { kind: "unknown" }],
     [null, { kind: "unknown" }],
     ["Klingon", { kind: "unknown" }],
+    ["Suomeksi ja ruotsiksi", { kind: "languages", languages: ["fi", "sv"] }],
+    ["Ei", { kind: "none" }],
   ])("parseSubtitles(%s)", (input, expected) => {
     expect(parseSubtitles(input)).toEqual(expected);
   });
@@ -222,7 +247,15 @@ describe("field parsers", () => {
     ["ORIG", [], []],
     ["4DX", [], ["title_extension:4DX"]],
   ])("parseTitleExtension(%s)", (input, formats, unmapped) => {
-    expect(parseTitleExtension(input)).toEqual({ formats, unmapped });
+    expect(parseTitleExtension(input)).toEqual({ formats, tags: [], unmapped });
+  });
+
+  it("reads a whole label by the shared rules (Cine Mäntsälä)", () => {
+    expect(parseTitleExtension("Ennakkonäytös!")).toEqual({
+      formats: [],
+      tags: ["preview"],
+      unmapped: [],
+    });
   });
 
   it.each([
@@ -232,5 +265,62 @@ describe("field parsers", () => {
     ["6 REX (K-18)", { features: [], ageLimit: "K-18" }],
   ])("parseScreenName(%s)", (input, expected) => {
     expect(parseScreenName(input)).toEqual(expected);
+  });
+});
+
+describe("MyCloudCinema: Cine Mäntsälä", () => {
+  const MANTSALA = site("cinemantsala");
+  const batch = parseMyCloudCinema(
+    {
+      fetchedAt: "2026-10-13T17:23:11.230Z",
+      from: "2026-10-13",
+      days: 7,
+      cinemas: loadFixture("mycloudcinema", "cinemantsala-cinemas.json"),
+      showtimes: loadFixture("mycloudcinema", "cinemantsala-showtimes.json") as Record<
+        string,
+        unknown
+      >,
+    },
+    MANTSALA,
+  );
+
+  it("produces a valid batch without warnings, under the site's own provider", () => {
+    expect(() => ProviderBatch.parse(batch)).not.toThrow();
+    expect(batch.warnings).toEqual([]);
+    expect(batch.provider).toEqual({
+      id: "cinemantsala",
+      name: "Cine Mäntsälä",
+      homepage: "https://mantsala.cine.fi",
+      platform: "mycloudcinema",
+      booking: "buy",
+    });
+  });
+
+  it("reads only the configured cinema: Keuda-talo comes from eTiketti", () => {
+    expect(batch.venues.map((v) => [v.id, v.name, v.city, v.address])).toEqual([
+      ["cinemantsala:venue:1", "Cine Mäntsälä", "Mäntsälä", "Meijerin aukio 2"],
+    ]);
+    expect(batch.auditoriums.map((a) => a.name).toSorted()).toEqual(["Sali 1", "Sali 2"]);
+  });
+
+  it("links bookable shows to the cinema's own webshop, in Helsinki time", () => {
+    const s = screening(batch, "13610");
+    expect(s).toMatchObject({
+      startsAt: "2026-10-14T13:00:00+03:00",
+      businessDate: "2026-10-14",
+      ticketUrl: "https://mantsala.cine.fi/#/book/13610",
+      dubbed: true,
+      tags: ["preview"],
+      unmappedLabels: [],
+    });
+  });
+
+  it.each([
+    ["13613", { kind: "none" }],
+    ["13602", { kind: "languages", languages: ["fi"] }],
+    ["13599", { kind: "languages", languages: ["fi", "sv"] }],
+    ["13598", { kind: "languages", languages: ["sv"] }],
+  ])("reads the Finnish subtitle phrase of %s", (id, subtitles) => {
+    expect(screening(batch, id).subtitles).toEqual(subtitles);
   });
 });

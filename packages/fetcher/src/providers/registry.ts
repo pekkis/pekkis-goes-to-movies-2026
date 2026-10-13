@@ -3,8 +3,9 @@ import type { Env } from "../lib/env.ts";
 import { createHttpClient } from "../lib/http.ts";
 import { helsinkiToday } from "@pgtm/model/time";
 import { restrictToVenues, type Adapter } from "./adapter.ts";
-import { fetchBiorex } from "./biorex/fetch.ts";
-import { parseBiorex } from "./biorex/parse.ts";
+import { fetchMyCloudCinema } from "./mycloudcinema/fetch.ts";
+import { parseMyCloudCinema } from "./mycloudcinema/parse.ts";
+import { MYCLOUDCINEMA_SITES, type MyCloudCinemaSite } from "./mycloudcinema/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -93,20 +94,23 @@ const johkuAdapter = (site: JohkuSite): Adapter => ({
   },
 });
 
-export const ADAPTERS: Adapter[] = [
-  {
-    id: "biorex",
-    platform: "mycloudcinema",
-    pull: async ({ env }, { from, days, venues }) => {
-      const http = createHttpClient(contact(env));
-      const raw = await fetchBiorex(http, {
-        from,
-        days,
-        ...(venues && { cinemaIds: venues.map(Number) }),
-      });
-      return { raw, batch: restrictToVenues(parseBiorex(raw), venues) };
-    },
+/** MyCloudCinema: venues come from the API, so `--venue` takes cinema ids. */
+const myCloudCinemaAdapter = (site: MyCloudCinemaSite): Adapter => ({
+  id: site.provider,
+  platform: "mycloudcinema",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    const raw = await fetchMyCloudCinema(http, site, {
+      from,
+      days,
+      ...(venues && { cinemaIds: venues.map(Number) }),
+    });
+    return { raw, batch: restrictToVenues(parseMyCloudCinema(raw, site), venues) };
   },
+});
+
+export const ADAPTERS: Adapter[] = [
+  ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",
