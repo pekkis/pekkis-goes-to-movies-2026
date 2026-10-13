@@ -111,13 +111,19 @@ if (
 
 /** The point to search around, from --near, --address or --here; undefined for none. */
 const locate = async (contact?: string): Promise<Located | undefined> => {
-  if (point) return { ...point, label: "the given point", approximate: false };
+  if (point) {
+    return { ...point, label: "the given point", approximate: false };
+  }
   if (values.address !== undefined) {
     const found = await geocode(values.address, contact);
-    if (!found) throw new Error(`No place found for "${values.address}". Try adding the town.`);
+    if (!found) {
+      throw new Error(`No place found for "${values.address}". Try adding the town.`);
+    }
     return found;
   }
-  if (values.here) return (await fromCoreLocation()) ?? (await fromIp(contact));
+  if (values.here) {
+    return (await fromCoreLocation()) ?? (await fromIp(contact));
+  }
   return undefined;
 };
 
@@ -135,8 +141,12 @@ const run = async (db: Kysely<DB>, contact?: string): Promise<number> => {
       ...(minRt !== undefined && { rottenTomatoes: Math.ceil(minRt) }),
       ...(minImdb !== undefined && { imdb: Math.round(minImdb * 10) }),
     };
-    if (minRt !== undefined) where.push(`RT ≥ ${minRt}%`);
-    if (minImdb !== undefined) where.push(`IMDb ≥ ${minImdb}`);
+    if (minRt !== undefined) {
+      where.push(`RT ≥ ${minRt}%`);
+    }
+    if (minImdb !== undefined) {
+      where.push(`IMDb ≥ ${minImdb}`);
+    }
   }
   if (before) {
     filter.before = before;
@@ -190,12 +200,18 @@ const run = async (db: Kysely<DB>, contact?: string): Promise<number> => {
     let header: string | undefined;
     if (hit.kind === "film") {
       const film = await filmDetails(db, hit.id);
-      if (film) header = formatFilm(film, hit.score, { withRatings });
+      if (film) {
+        header = formatFilm(film, hit.score, { withRatings });
+      }
     } else {
       const listing = await listingDetails(db, hit.id);
-      if (listing) header = formatListing(listing, hit.score);
+      if (listing) {
+        header = formatListing(listing, hit.score);
+      }
     }
-    if (!header) continue;
+    if (!header) {
+      continue;
+    }
     const screenings = await screeningsFor(db, hit, date, filter);
     console.log(
       `\n${header}\n\n  ${screenings.length} screenings on ${date}${scope}\n${formatScreenings(screenings, values.links)}`,

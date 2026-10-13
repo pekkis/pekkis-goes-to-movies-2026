@@ -15,7 +15,9 @@ export const createDiskCache = (dir: string, now: () => Date = () => new Date())
     const path = join(dir, `${createHash("sha1").update(key).digest("hex")}.json`);
     try {
       const entry = JSON.parse(await readFile(path, "utf8")) as Entry;
-      if (now().getTime() - Date.parse(entry.storedAt) < maxAgeMs) return entry.value as T;
+      if (now().getTime() - Date.parse(entry.storedAt) < maxAgeMs) {
+        return entry.value as T;
+      }
     } catch {
       // missing or unreadable: fall through and load
     }

@@ -1,26 +1,32 @@
 import { createSprinkles, defineProperties } from "@vanilla-extract/sprinkles";
-import { breakpoints, space, vars } from "./theme.css.ts";
+import { minWidth } from "./containers.ts";
+import { vars } from "./theme.css.ts";
 
+/**
+ * Responsive layout, mobile first: the default is the narrow layout, and `wide` / `widest`
+ * apply when the nearest container (`main`, or a component's own) is at least that wide.
+ * Container queries, not viewport media queries, so a component adapts to the space it gets.
+ */
 const layout = defineProperties({
   conditions: {
-    mobile: {},
-    tablet: { "@media": `screen and (min-width: ${breakpoints.tablet}px)` },
-    desktop: { "@media": `screen and (min-width: ${breakpoints.desktop}px)` },
+    narrow: {},
+    wide: { "@container": minWidth("wide") },
+    widest: { "@container": minWidth("widest") },
   },
-  defaultCondition: "mobile",
+  defaultCondition: "narrow",
   properties: {
     display: ["none", "block", "flex", "grid", "inline-flex"],
     flexDirection: ["row", "column"],
     flexWrap: ["wrap", "nowrap"],
     alignItems: ["stretch", "flex-start", "center", "flex-end", "baseline"],
     justifyContent: ["flex-start", "center", "flex-end", "space-between"],
-    gap: space,
-    paddingTop: space,
-    paddingBottom: space,
-    paddingLeft: space,
-    paddingRight: space,
-    marginTop: space,
-    marginBottom: space,
+    gap: vars.space,
+    paddingTop: vars.space,
+    paddingBottom: vars.space,
+    paddingLeft: vars.space,
+    paddingRight: vars.space,
+    marginTop: vars.space,
+    marginBottom: vars.space,
   },
   shorthands: {
     padding: ["paddingTop", "paddingBottom", "paddingLeft", "paddingRight"],

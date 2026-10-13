@@ -28,7 +28,9 @@ const SOURCES: Record<string, Rating["source"]> = {
 /** "93%" -> 93, "81/100" -> 81, "7.9/10" -> 79; undefined for "N/A" and the like. */
 export const normalizeScore = (value: string): number | undefined => {
   const percent = value.match(/^(\d{1,3})%$/);
-  if (percent) return Math.min(100, Number(percent[1]));
+  if (percent) {
+    return Math.min(100, Number(percent[1]));
+  }
   const fraction = value.match(/^(\d+(?:\.\d+)?)\/(\d+)$/);
   if (fraction && Number(fraction[2]) > 0) {
     return Math.min(100, Math.round((Number(fraction[1]) / Number(fraction[2])) * 100));
@@ -39,12 +41,16 @@ export const normalizeScore = (value: string): number | undefined => {
 /** Pure: an OMDb title response -> ratings. "Movie not found!" and the like -> []. */
 export const parseOmdb = (raw: unknown): Rating[] => {
   const parsed = OmdbResponse.safeParse(raw);
-  if (!parsed.success || parsed.data.Response !== "True") return [];
+  if (!parsed.success || parsed.data.Response !== "True") {
+    return [];
+  }
   const votes = Number((parsed.data.imdbVotes ?? "").replace(/,/g, ""));
   return (parsed.data.Ratings ?? []).flatMap((r) => {
     const source = own(SOURCES, r.Source);
     const score = normalizeScore(r.Value);
-    if (!source || score === undefined) return [];
+    if (!source || score === undefined) {
+      return [];
+    }
     return [
       {
         source,
@@ -101,7 +107,9 @@ export const addOmdbRatings = async (
     }
     try {
       const ratings = await lookup(film.imdbId);
-      if (ratings.length) rated++;
+      if (ratings.length) {
+        rated++;
+      }
       out.push({
         ...film,
         ratings: [...film.ratings.filter((r) => r.source === "tmdb"), ...ratings],

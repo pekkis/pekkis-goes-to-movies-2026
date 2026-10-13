@@ -51,13 +51,17 @@ export const matchListings = async (
   const unmatched: Unmatched[] = [];
 
   const keep = (details: MovieDetails) => {
-    if (!films.has(details.id)) films.set(details.id, toFilm(details, fetchedAt));
+    if (!films.has(details.id)) {
+      films.set(details.id, toFilm(details, fetchedAt));
+    }
     return `tmdb:${details.id}`;
   };
 
   for (const listing of listings) {
     const title = listing.title.fi ?? listing.title.en ?? listing.title.sv;
-    if (!title) continue;
+    if (!title) {
+      continue;
+    }
 
     const alias = aliases[listing.id];
     if (alias) {

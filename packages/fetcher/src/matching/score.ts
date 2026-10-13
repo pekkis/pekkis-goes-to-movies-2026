@@ -115,16 +115,24 @@ export type Tier = "exact" | "prefix" | "sparse";
  *   (typical for small Finnish films). Accepted only if it is the sole candidate in its tier.
  */
 export const tierOf = (e: Evidence): Tier | undefined => {
-  if (e.runtime === "far" || e.countries === "disjoint") return undefined;
+  if (e.runtime === "far" || e.countries === "disjoint") {
+    return undefined;
+  }
   const recent = e.year === "window" || e.year === "listing";
   const corroborated = e.runtime === "close" || e.runtime === "near" || e.countries === "overlap";
   const strong = e.runtime === "close" && e.countries === "overlap";
 
   if (e.title === "exact") {
-    if (recent ? corroborated : strong) return "exact";
-    if (recent && e.runtime === "unknown" && e.countries === "unknown") return "sparse";
+    if (recent ? corroborated : strong) {
+      return "exact";
+    }
+    if (recent && e.runtime === "unknown" && e.countries === "unknown") {
+      return "sparse";
+    }
   }
-  if (e.title === "prefix" && recent && strong) return "prefix";
+  if (e.title === "prefix" && recent && strong) {
+    return "prefix";
+  }
   return undefined;
 };
 
@@ -146,11 +154,17 @@ export const decide = (evidence: Evidence[]): Decision => {
   for (const tier of ["exact", "prefix", "sparse"] as const) {
     let inTier = evidence.filter((e) => tierOf(e) === tier);
     for (const prefer of TIE_BREAKERS) {
-      if (inTier.length <= 1) break;
+      if (inTier.length <= 1) {
+        break;
+      }
       const preferred = inTier.filter(prefer);
-      if (preferred.length > 0) inTier = preferred;
+      if (preferred.length > 0) {
+        inTier = preferred;
+      }
     }
-    if (inTier.length === 1) return { kind: "match", tmdbId: inTier[0]!.tmdbId, tier };
+    if (inTier.length === 1) {
+      return { kind: "match", tmdbId: inTier[0]!.tmdbId, tier };
+    }
     if (inTier.length > 1) {
       return {
         kind: "none",
@@ -158,7 +172,9 @@ export const decide = (evidence: Evidence[]): Decision => {
       };
     }
   }
-  if (evidence.length === 0) return { kind: "none", reason: "no search results" };
+  if (evidence.length === 0) {
+    return { kind: "none", reason: "no search results" };
+  }
   const best = evidence.find((e) => e.title !== "none") ?? evidence[0]!;
   return {
     kind: "none",

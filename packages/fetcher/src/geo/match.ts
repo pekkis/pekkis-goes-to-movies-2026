@@ -15,7 +15,9 @@ export type Candidate = { cinema: OsmCinema; nameScore: number; sameCity: boolea
 const trigrams = (s: string): Set<string> => {
   const padded = `  ${normalizeTitle(s)} `;
   const out = new Set<string>();
-  for (let i = 0; i < padded.length - 2; i++) out.add(padded.slice(i, i + 3));
+  for (let i = 0; i < padded.length - 2; i++) {
+    out.add(padded.slice(i, i + 3));
+  }
   return out;
 };
 
@@ -24,7 +26,11 @@ export const nameSimilarity = (a: string, b: string): number => {
   const x = trigrams(a);
   const y = trigrams(b);
   let shared = 0;
-  for (const t of x) if (y.has(t)) shared++;
+  for (const t of x) {
+    if (y.has(t)) {
+      shared++;
+    }
+  }
   return shared / (x.size + y.size - shared || 1);
 };
 
@@ -75,12 +81,16 @@ export const suspiciousCoordinates = (
   maxMeters = 300,
 ): Suspect[] =>
   venues.flatMap((venue) => {
-    if (!venue.geo) return [];
+    if (!venue.geo) {
+      return [];
+    }
     let nearest: OsmCinema | undefined;
     let distance = Infinity;
     for (const cinema of cinemas) {
       const d = distanceMeters(venue.geo, cinema);
-      if (d < distance) [nearest, distance] = [cinema, d];
+      if (d < distance) {
+        [nearest, distance] = [cinema, d];
+      }
     }
     return distance > maxMeters ? [{ venue, ...(nearest && { nearest }), distance }] : [];
   });

@@ -26,7 +26,9 @@ export const parseCoreLocation = (stdout: string): Located | undefined => {
     const d = JSON.parse(stdout) as Record<string, unknown>;
     const lat = Number(d["latitude"]);
     const lon = Number(d["longitude"]);
-    if (!isPoint(lat, lon)) return undefined;
+    if (!isPoint(lat, lon)) {
+      return undefined;
+    }
     const accuracy = Number(d["h_accuracy"] ?? d["horizontalAccuracy"]);
     return {
       lat,
@@ -46,10 +48,14 @@ export const fromCoreLocation = async (): Promise<Located | undefined> => {
       timeout: 20_000,
     });
     const located = parseCoreLocation(stdout);
-    if (!located) throw new Error(`CoreLocationCLI gave no position: ${stdout.trim()}`);
+    if (!located) {
+      throw new Error(`CoreLocationCLI gave no position: ${stdout.trim()}`);
+    }
     return located;
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return undefined;
+    }
     throw new Error(
       `CoreLocationCLI failed (is Location Services allowed for your terminal?): ${(error as Error).message}`,
       { cause: error },
@@ -61,12 +67,16 @@ export const fromCoreLocation = async (): Promise<Located | undefined> => {
 
 /** Pure: ipinfo.io `/json` -> point ("loc": "60.1695,24.9354"). */
 export const parseIpinfo = (body: unknown): Located | undefined => {
-  if (!body || typeof body !== "object") return undefined;
+  if (!body || typeof body !== "object") {
+    return undefined;
+  }
   const d = body as Record<string, unknown>;
   const [lat, lon] = String(d["loc"] ?? "")
     .split(",")
     .map(Number);
-  if (!isPoint(lat, lon)) return undefined;
+  if (!isPoint(lat, lon)) {
+    return undefined;
+  }
   const place = [d["city"], d["region"]].filter((x) => typeof x === "string" && x).join(", ");
   return {
     lat: lat!,
@@ -82,9 +92,13 @@ export const fromIp = async (contact?: string): Promise<Located> => {
     headers: { accept: "application/json", "user-agent": userAgent(contact) },
     signal: AbortSignal.timeout(10_000),
   });
-  if (!res.ok) throw new Error(`ipinfo.io answered ${res.status}`);
+  if (!res.ok) {
+    throw new Error(`ipinfo.io answered ${res.status}`);
+  }
   const located = parseIpinfo(await res.json());
-  if (!located) throw new Error("ipinfo.io gave no position");
+  if (!located) {
+    throw new Error("ipinfo.io gave no position");
+  }
   return located;
 };
 
@@ -92,11 +106,15 @@ export const fromIp = async (contact?: string): Promise<Located> => {
 
 /** Pure: Nominatim jsonv2 search results -> the best match. */
 export const parseNominatim = (body: unknown): Located | undefined => {
-  if (!Array.isArray(body) || body.length === 0) return undefined;
+  if (!Array.isArray(body) || body.length === 0) {
+    return undefined;
+  }
   const top = body[0] as Record<string, unknown>;
   const lat = Number(top["lat"]);
   const lon = Number(top["lon"]);
-  if (!isPoint(lat, lon)) return undefined;
+  if (!isPoint(lat, lon)) {
+    return undefined;
+  }
   return {
     lat,
     lon,
@@ -121,8 +139,9 @@ export const geocode = async (address: string, contact?: string): Promise<Locate
   const path = join(CACHE_DIR, `${createHash("sha1").update(key).digest("hex")}.json`);
   try {
     const cached = JSON.parse(await readFile(path, "utf8")) as { storedAt: string; body: unknown };
-    if (Date.now() - Date.parse(cached.storedAt) < CACHE_MAX_AGE_MS)
+    if (Date.now() - Date.parse(cached.storedAt) < CACHE_MAX_AGE_MS) {
       return parseNominatim(cached.body);
+    }
   } catch {
     // not cached
   }
@@ -137,7 +156,9 @@ export const geocode = async (address: string, contact?: string): Promise<Locate
     headers: { accept: "application/json", "user-agent": userAgent(contact) },
     signal: AbortSignal.timeout(15_000),
   });
-  if (!res.ok) throw new Error(`Nominatim answered ${res.status}`);
+  if (!res.ok) {
+    throw new Error(`Nominatim answered ${res.status}`);
+  }
   const body: unknown = await res.json();
   await mkdir(CACHE_DIR, { recursive: true });
   await writeFile(path, JSON.stringify({ storedAt: new Date().toISOString(), key, body }));

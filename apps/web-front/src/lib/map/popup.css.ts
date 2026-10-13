@@ -1,12 +1,12 @@
 import { style } from "@vanilla-extract/css";
-import { space } from "../../styles/theme.css.ts";
+import { vars } from "../../styles/theme.css.ts";
 
 export const popup = style({
   display: "flex",
   flexDirection: "column",
-  gap: space.xs,
-  fontFamily: "inherit",
-  fontSize: "0.875rem",
+  gap: vars.space.xs,
+  fontFamily: vars.font.family,
+  fontSize: vars.font.size.sm,
 });
 
-export const name = style({ fontSize: "1rem", fontWeight: 700 });
+export const name = style({ fontSize: vars.font.size.md, fontWeight: vars.font.weight.bold });

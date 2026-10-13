@@ -31,7 +31,9 @@ type Scheme = keyof typeof STYLES;
 /** Our theme: `<html data-theme>` wins, otherwise the OS setting. */
 const scheme = (): Scheme => {
   const chosen = document.documentElement.dataset.theme;
-  if (chosen === "light" || chosen === "dark") return chosen;
+  if (chosen === "light" || chosen === "dark") {
+    return chosen;
+  }
   return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 };
 
@@ -112,14 +114,18 @@ export const mountVenueMap = (el: HTMLElement, venues: VenueCollection): MapLibr
   map.on("click", "clusters", async (e) => {
     const cluster = e.features?.[0];
     const id = cluster?.properties?.["cluster_id"];
-    if (!cluster || typeof id !== "number") return;
+    if (!cluster || typeof id !== "number") {
+      return;
+    }
     const zoom = await map.getSource<GeoJSONSource>(SOURCE)!.getClusterExpansionZoom(id);
     map.easeTo({ center: pointOf(cluster), zoom });
   });
 
   map.on("click", "venue", (e) => {
     const venue = e.features?.[0];
-    if (!venue) return;
+    if (!venue) {
+      return;
+    }
     new Popup({ offset: 12, maxWidth: "18rem" })
       .setLngLat(pointOf(venue))
       .setDOMContent(popupContent(venue.properties as VenueProps))
@@ -134,7 +140,9 @@ export const mountVenueMap = (el: HTMLElement, venues: VenueCollection): MapLibr
   // Follow the OS switching between light and dark.
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
     const next = scheme();
-    if (next !== current) load((current = next));
+    if (next !== current) {
+      load((current = next));
+    }
   });
 
   return map;

@@ -30,6 +30,8 @@ export const fetchEtiketti = async (
     throw new Error(`${base}: ${paths.length} film pages exceeds the budget of ${PAGE_BUDGET}`);
   }
   const films: Record<string, string> = {};
-  for (const path of paths) films[path] = await http.getText(`${base}${path}`);
+  for (const path of paths) {
+    films[path] = await http.getText(`${base}${path}`);
+  }
   return { fetchedAt, from, days, listing, films };
 };

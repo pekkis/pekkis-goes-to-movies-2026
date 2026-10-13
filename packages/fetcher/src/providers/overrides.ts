@@ -38,7 +38,9 @@ export const loadVenueOverrides = async (
 export const finishVenues = (batch: ProviderBatch, overrides: VenueOverrides): ProviderBatch => {
   const venues = batch.venues.map((venue) => {
     const o = overrides[venue.id];
-    if (!o) return venue;
+    if (!o) {
+      return venue;
+    }
     return {
       ...venue,
       ...(o.address && { address: o.address }),

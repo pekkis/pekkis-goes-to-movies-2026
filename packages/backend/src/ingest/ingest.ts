@@ -51,7 +51,9 @@ export const ingestFilms = async (db: Kysely<DB>, catalog: FilmCatalog): Promise
   await db.transaction().execute(async (trx) => {
     await upsert(trx, "films", catalog.films.map(filmRow));
     const ids = catalog.films.map((f) => f.id);
-    if (ids.length) await trx.deleteFrom("filmRatings").where("filmId", "in", ids).execute();
+    if (ids.length) {
+      await trx.deleteFrom("filmRatings").where("filmId", "in", ids).execute();
+    }
     for (const chunk of chunks(catalog.films.flatMap(filmRatingRows))) {
       await trx.insertInto("filmRatings").values(chunk).execute();
     }
@@ -103,13 +105,18 @@ export const ingestBatch = (db: Kysely<DB>, batch: ProviderBatch): Promise<Batch
         .returning(sql<boolean>`(xmax = 0)`.as("inserted"))
         .execute();
       for (const row of rows) {
-        if (row.inserted) inserted++;
-        else updated++;
+        if (row.inserted) {
+          inserted++;
+        } else {
+          updated++;
+        }
       }
     }
 
     // Part of the source failed to parse: absence proves nothing this time.
-    if (isIncomplete(batch)) return { inserted, updated, removed: 0, removalsSkipped: true };
+    if (isIncomplete(batch)) {
+      return { inserted, updated, removed: 0, removalsSkipped: true };
+    }
 
     const removed = await trx
       .updateTable("screenings")

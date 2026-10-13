@@ -93,7 +93,9 @@ const pullOne = async (adapter: Adapter): Promise<{ ok: boolean; lines: string[]
         `${batch.screenings.length} screenings, ${batch.warnings.length} warnings` +
         (unmapped.size ? `, unmapped labels: ${[...unmapped].join(", ")}` : ""),
     );
-    for (const warning of batch.warnings) lines.push(`  [${warning.code}] ${warning.message}`);
+    for (const warning of batch.warnings) {
+      lines.push(`  [${warning.code}] ${warning.message}`);
+    }
     return { ok: true, lines };
   } catch (error) {
     lines.push(`${adapter.id}: FAILED: ${error instanceof Error ? error.message : String(error)}`);
@@ -127,4 +129,6 @@ if (failures < results.length) {
     process.exitCode = 1;
   }
 }
-if (failures) process.exitCode = 1;
+if (failures) {
+  process.exitCode = 1;
+}

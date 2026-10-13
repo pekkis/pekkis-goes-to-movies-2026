@@ -25,6 +25,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
   - a Flutter map app by a teammate in `apps/fpgm` (an early scaffold);
   - the public website in `apps/web-front`: Astro (SSR) + React + Vanilla Extract. City pages, venue pages and a venue map (MapLibre). See [docs/web.md](docs/web.md).
 
+- **Visual style: a grey mockup, on purpose.** There is no visual identity yet; it comes after user testing. See the rule below.
 - **Not started here:** design and user research. The course work happens outside this repository.
 - **Backlog:** GitHub issues (`gh issue list`; labels `provider`, `tmdb`, `geo`, `backlog`).
 - **Prior work:** [Leffavuoro / Shady-Dev/kino](https://github.com/Shady-Dev/kino) (AGPL-3.0, about 230 cinemas). A code-only copy is in [vendor/leffavuoro/](vendor/leffavuoro/UPSTREAM.md). Read it first when adding a platform; its adapters may be ported (credit them in the site file's header), its `data/` may not be used.
@@ -38,7 +39,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 **Process**
 
 - **Git:** `main` is protected (no direct pushes, force pushes or deletion, for everyone). Work on a branch, open a PR with `gh pr create`; no approval needed. **Commit only when the maintainer asks.**
-- **`pnpm check` must pass** (typecheck, lint with **zero warnings**, format, tests) before you say you are done or open a PR.
+- **`pnpm check` must pass** (typecheck, lint with **zero warnings**, format, the website build, tests) before you say you are done or open a PR.
 - **Keep docs true:** update this file and `docs/` in the same change that makes them stale. Mark in docs what was verified first-hand ([V]) and what was assumed or read elsewhere ([A]).
 - **Issues are public:** English, no secrets, no personal data.
 
@@ -59,6 +60,24 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 - **Posters, synopses and trailers come only from TMDB**, never from cinemas, and cinemas' texts stay out of test fixtures.
 - **Coordinates never from Google Maps** (its terms forbid storing them). OpenStreetMap (ODbL, credit "© OpenStreetMap contributors"), Nominatim (1 request/s, cached), the cinema's own pages, or the maintainer.
 - **Contacting cinemas:** not needed while this is a course project. **Before the service goes truly public, every cinema and chain is notified first** (what we read, how often, that every click goes to their ticket page), and any that object are removed.
+
+**Visual style (until user testing)**
+
+- **The website is a grey wireframe built of boxes.** It has no visual identity until user testing gives us one, so testers react to structure and content, not looks.
+- **Allowed:** neutral greys only (the theme tokens in `src/styles/theme.css.ts`); plain rectangles with borders; system font; underlined links.
+- **Not allowed:** brand or accent colors, rounded corners, shadows, gradients, illustrations, icons for decoration, custom fonts, animation.
+- **Information is never carried by color alone:** use text, borders, weight and layout.
+- **Required third-party content stays as it is:** the TMDB logo, map tiles (grey styles), attributions.
+- When the visual identity arrives, it replaces the token values and recipes, not the components.
+
+**User interface (website)**
+
+- **Mobile first:** the phone layout is the default; wider layouts are added with `min-width` conditions.
+- **Container queries, always when possible:** components adapt to their container, not the viewport (`minWidth()` from `src/styles/containers.ts`, sprinkles `wide`/`widest`). Viewport `@media` only where a container can't work.
+- **Showtimes are live:** any component showing one uses `useShowStatus` (`src/components/clock.tsx`, a jotai atom ticking once a minute) inside an island rooted in `<ClockIsland>`: started, soon (within an hour) or later, kept current while the page is open. See [docs/web.md](docs/web.md#live-showtimes-one-clock-reusable).
+- **Lists of films are alphabetical by title** (Finnish order, `byTitle` in `src/lib/films.ts`); showtimes within a film, and timetables of screenings, stay in time order.
+- **The design system is the Vanilla Extract theme** (`src/styles/theme.css.ts`), the single source of truth. Every color, space, font size and weight, border and fixed size is a token. Components use `vars`, sprinkles and recipes, never literal values; a new value goes into the theme first.
+- Details: [docs/web.md](docs/web.md#user-interface-rules).
 
 **Data correctness**
 
@@ -81,6 +100,8 @@ The principles the code follows; [docs/development.md](docs/development.md) expl
 - **Incomplete batches infer no removals:** data-missing warnings (`invalid-*`, `unknown-*`, `result-code`; `isIncomplete` in the model) stop ingest from marking absent screenings as removed.
 - **Native TypeScript first.** Node 24 runs `.ts` directly (no build step, except the API's Docker bundle). Erasable syntax only: no `enum`, `namespace` or parameter properties. Prefer built-ins (`toSorted`, `Object.groupBy`, `Set` methods, iterator helpers) over utility libraries; lookup tables keyed by outside text use `own()` (`lib/records.ts`).
 - `strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`: optional fields are spread in only when set (`...(x && { x })`).
+- **Braces always:** every `if` / `else` / loop body goes in `{}` on its own lines, never `if (x) return y;`. Enforced by oxlint (`curly: all`, autofixable with `pnpm exec oxlint --fix`; oxfmt puts the body on its own line).
+- **Modern React 19:** `use(Context)` instead of `useContext`, `<Context value>` instead of `<Context.Provider>`, `ref` as an ordinary prop (no `forwardRef`), function components only. Shared client state lives in **jotai** atoms (an atom's `onMount` subscribes to external sources, like the clock); each island root is a jotai `Provider`, so the server never shares a store between requests. Never `setState` in an effect to sync with the outside world. oxlint's React plugin checks the rules of hooks, effect dependencies and `setState` in effects.
 
 ## Commands
 
@@ -97,7 +118,7 @@ pnpm venues:locate           # suggest OSM coordinates; --address geocodes an ad
 pnpm showtimes odysey        # film search; with no film, everything on (--here, --after, …: docs/cli.md)
 pnpm api:dev / api:up / api:down   # the HTTP API on :3000 (dev with reload / Docker)
 pnpm web:dev / web:build     # the website on :4321 (API_URL points it at the API)
-pnpm check                   # typecheck + lint (zero warnings) + fmt:check + test
+pnpm check                   # typecheck + lint (zero warnings) + fmt:check + web build + test
 pnpm test / typecheck / lint / fmt / fmt:check
 pnpm vendor:leffavuoro --sync   # sync the pekkis/kino fork with upstream, refresh vendor/leffavuoro
 ```
@@ -133,8 +154,8 @@ vendor/leffavuoro/, scripts/    Leffavuoro reference copy (not built, linted or 
 apps/fpgm/                      the teammate's Flutter app: own tooling, not in the pnpm workspace; do not edit unasked
 apps/web-front/                 @pgtm/web-front: the website (Astro SSR, React, Vanilla Extract); see docs/web.md
   src/pages/, src/layouts/      thin .astro routes and layout; logic lives in src/lib/
-  src/components/               React components: static by default, islands only with client:*
-  src/styles/                   theme contract + tokens, sprinkles, reset, recipes/
+  src/components/               React components; islands (client:idle) for live UI; clock.tsx: jotai clock atom, ClockIsland, useShowStatus
+  src/styles/                   design system: theme.css.ts (all tokens), containers.ts, sprinkles, reset, recipes/
   src/lib/                      typed API client (hc<AppType>), page loaders, cities, time, text (Finnish UI text)
 packages/model/                 @pgtm/model: src/schema.ts, the domain model (Zod + types) and its rules; source-only
 packages/fetcher/               @pgtm/fetcher: fetch, normalize, match → data/normalized/*.json
@@ -188,7 +209,7 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
   - `engineStrict`
 - **No npm or npx:** `devEngines` blocks them; use `pnpm exec`.
 - **Adding dependencies:** a runtime dependency goes to its package (`pnpm --filter @pgtm/fetcher add …`), shared dev tooling to the root (`-D -w`).
-- **Checks:** TypeScript (strict, `noEmit`), oxlint (correctness and suspicious categories, warnings fail), oxfmt and vitest. No ESLint or Prettier.
+- **Checks:** TypeScript (strict, `noEmit`), oxlint (correctness and suspicious categories plus `curly: all` and the React plugin's hook rules, warnings fail), oxfmt and vitest. No ESLint or Prettier.
 - **Libraries:**
   - `zod` v4, `ky`, `p-queue`, `date-fns` + `@date-fns/tz`;
   - `cheerio` (eTiketti HTML);
@@ -196,6 +217,6 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
   - `kysely` + `pg` (+ `kysely-codegen`);
   - `hono` + `@hono/zod-openapi` + `@scalar/hono-api-reference`;
   - `tsdown` (Docker bundle only);
-  - website: `astro` (+ `@astrojs/node`, `@astrojs/react`), `react`, `@vanilla-extract/*` (css, vite-plugin, sprinkles, recipes, dynamic), `hono/client`, `maplibre-gl` (the map page only, with OpenFreeMap tiles). No client-side UI library: pages ship no JavaScript except the map, and any new script is measured first (docs/web.md).
+  - website: `astro` (+ `@astrojs/node`, `@astrojs/react`), `react`, `@vanilla-extract/*` (css, vite-plugin, sprinkles, recipes, dynamic), `hono/client`, `jotai` (shared client state), `maplibre-gl` (the map page only, with OpenFreeMap tiles). Interactive and live UI is React islands, rendered on the server first and hydrated `client:idle`; no hand-written DOM scripts for UI (the map excepted).
 - **Website caveats:** `astro check` does not support TypeScript 7 yet, so `tsc` checks the `.ts`/`.tsx` files and `.astro` files stay thin. oxlint checks `.astro` frontmatter; oxfmt does not format `.astro` files.
 - **No general utility library** (remeda, lodash, es-toolkit). Node 24's built-ins cover what the code needs (see development.md).

@@ -16,12 +16,16 @@ const localized = (details: MovieDetails, field: "title" | "overview"): Localize
       candidates.find((t) => t.iso_3166_1 === home)?.data[field] ??
       candidates.find((t) => t.data[field])?.data[field]
     )?.trim();
-    if (text) out[lang] = text;
+    if (text) {
+      out[lang] = text;
+    }
   }
   // An empty translated title means "same as the original".
   if (field === "title" && details.original_language) {
     const lang = details.original_language as (typeof LANGS)[number];
-    if (LANGS.includes(lang) && !out[lang]) out[lang] = details.original_title;
+    if (LANGS.includes(lang) && !out[lang]) {
+      out[lang] = details.original_title;
+    }
   }
   return out;
 };
@@ -46,7 +50,9 @@ const pickPoster = (details: MovieDetails): string | undefined => {
     const best = details.images.posters
       .filter((p) => p.iso_639_1 === lang)
       .toSorted((a, b) => (b.vote_average ?? 0) - (a.vote_average ?? 0))[0];
-    if (best) return best.file_path;
+    if (best) {
+      return best.file_path;
+    }
   }
   return details.poster_path ?? undefined;
 };
@@ -69,7 +75,9 @@ export const MIN_TMDB_VOTES = 20;
 export const tmdbRating = (details: MovieDetails): Rating[] => {
   const average = details.vote_average;
   const votes = details.vote_count ?? 0;
-  if (average === null || average === undefined || votes < MIN_TMDB_VOTES) return [];
+  if (average === null || average === undefined || votes < MIN_TMDB_VOTES) {
+    return [];
+  }
   return [
     { source: "tmdb", score: Math.round(average * 10), display: `${average.toFixed(1)}/10`, votes },
   ];

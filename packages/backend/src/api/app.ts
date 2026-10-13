@@ -25,7 +25,9 @@ const ATTRIBUTION =
 /** The whole API. Pure wiring: no listening, so tests call `app.request()` directly. */
 export const createApp = ({ db, corsOrigins = "*", log = false }: AppOptions) => {
   const app = router();
-  if (log) app.use(logger());
+  if (log) {
+    app.use(logger());
+  }
   app.use(secureHeaders());
   app.use("/v1/*", cors({ origin: corsOrigins, allowMethods: ["GET", "HEAD", "OPTIONS"] }));
   app.use("/v1/*", async (c, next) => {

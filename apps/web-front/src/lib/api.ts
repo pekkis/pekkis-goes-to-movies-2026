@@ -19,7 +19,9 @@ export class ApiError extends Error {
 
 export const listVenues = async (api: Api, city?: string): Promise<Venue[]> => {
   const res = await api.v1.venues.$get({ query: city ? { city } : {} });
-  if (!res.ok) throw new ApiError(res.status, "/v1/venues");
+  if (!res.ok) {
+    throw new ApiError(res.status, "/v1/venues");
+  }
   return res.json();
 };
 
@@ -36,7 +38,9 @@ export const dayScreenings = async (
     const res = await api.v1.screenings.$get({
       query: { ...query, ...(date && { date }), ...(cursor && { cursor }) },
     });
-    if (!res.ok) throw new ApiError(res.status, "/v1/screenings");
+    if (!res.ok) {
+      throw new ApiError(res.status, "/v1/screenings");
+    }
     const page = await res.json();
     items.push(...page.items);
     shown = page.date;

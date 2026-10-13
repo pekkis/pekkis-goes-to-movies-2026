@@ -29,7 +29,8 @@ export const loadEnv = (source: NodeJS.ProcessEnv = process.env): Env => {
 
 /** The TMDB token, for commands that match films (pull, match). Fails with a clear message. */
 export const requireTmdbKey = (env: Env): string => {
-  if (!env.TMDB_APIKEY)
+  if (!env.TMDB_APIKEY) {
     throw new Error("TMDB_APIKEY is not set (check .env): film matching needs it");
+  }
   return env.TMDB_APIKEY;
 };

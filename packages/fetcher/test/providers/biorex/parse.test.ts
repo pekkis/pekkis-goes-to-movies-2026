@@ -21,7 +21,9 @@ const snapshot = (overrides: Partial<BiorexRawSnapshot> = {}): BiorexRawSnapshot
 
 const screening = (batch: ProviderBatch, sourceId: string) => {
   const found = batch.screenings.find((s) => s.sourceId === sourceId);
-  if (!found) throw new Error(`No screening ${sourceId}`);
+  if (!found) {
+    throw new Error(`No screening ${sourceId}`);
+  }
   return found;
 };
 

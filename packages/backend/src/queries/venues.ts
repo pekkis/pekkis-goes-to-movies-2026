@@ -58,7 +58,9 @@ export const listVenues = async (
       .where("v.lon", ">=", bbox.minLon)
       .where("v.lon", "<=", bbox.maxLon);
   }
-  if (city) q = q.where((eb) => eb(eb.fn("lower", ["v.city"]), "=", city.toLowerCase()));
+  if (city) {
+    q = q.where((eb) => eb(eb.fn("lower", ["v.city"]), "=", city.toLowerCase()));
+  }
   const rows = await q.orderBy("v.city").orderBy("v.name").execute();
   return rows.map(toVenue);
 };

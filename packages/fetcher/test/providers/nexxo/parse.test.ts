@@ -14,7 +14,9 @@ import { loadFixture } from "../../fixtures.ts";
 
 const site = (provider: string): NexxoSite => {
   const found = NEXXO_SITES.find((s) => s.provider === provider);
-  if (!found) throw new Error(`No site ${provider}`);
+  if (!found) {
+    throw new Error(`No site ${provider}`);
+  }
   return found;
 };
 
@@ -25,7 +27,9 @@ const snapshot = (name: string, overrides: Partial<NexxoRawSnapshot> = {}): Nexx
 
 const screening = (batch: ProviderBatch, sourceId: string) => {
   const found = batch.screenings.find((s) => s.sourceId === sourceId);
-  if (!found) throw new Error(`No screening ${sourceId}`);
+  if (!found) {
+    throw new Error(`No screening ${sourceId}`);
+  }
   return found;
 };
 

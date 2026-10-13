@@ -1,5 +1,8 @@
 import type { Screening, Venue } from "../src/lib/api.ts";
 
+/** Noon on the fixtures' day: the default screening (18.00) is "later". */
+export const NOON = new Date("2026-10-13T12:00:00+03:00");
+
 const provider = { id: "testchain", name: "Test Chain", homepage: null, booking: "buy" };
 
 export const venue = (over: Partial<Venue> = {}): Venue =>

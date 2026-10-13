@@ -21,12 +21,16 @@ export const runMatching = async (out: string, env: Env) => {
   const omdbCache = createDiskCache(join(out, "cache", "omdb"));
   let ratingsNote = "ratings: TMDB only (set OMDB_APIKEY for Rotten Tomatoes, Metacritic, IMDb)";
   const enrich = async (films: Parameters<typeof addOmdbRatings>[0]) => {
-    if (!omdbKey) return films;
+    if (!omdbKey) {
+      return films;
+    }
     const result = await addOmdbRatings(films, (imdbId) =>
       fetchOmdb(omdbHttp, omdbCache, omdbKey, imdbId),
     );
     ratingsNote = `omdb: ratings for ${result.rated} of ${films.length} films`;
-    if (result.error) ratingsNote += ` (stopped: ${result.error})`;
+    if (result.error) {
+      ratingsNote += ` (stopped: ${result.error})`;
+    }
     return result.films;
   };
 
@@ -45,5 +49,7 @@ export const runMatching = async (out: string, env: Env) => {
       console.log(`      ? ${c.tmdbId} "${c.title}" ${c.year ?? ""}`);
     }
   }
-  if (catalog.unmatched.length) console.log("  -> add aliases to config/tmdb-aliases.json");
+  if (catalog.unmatched.length) {
+    console.log("  -> add aliases to config/tmdb-aliases.json");
+  }
 };

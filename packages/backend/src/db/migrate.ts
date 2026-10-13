@@ -12,6 +12,10 @@ export const report = ({ error, results }: MigrationResultSet): void => {
       `  ${r.status === "Success" ? "ok  " : r.status === "Error" ? "FAIL" : "skip"} ${r.direction.toLowerCase()} ${r.migrationName}`,
     );
   }
-  if (error) throw error instanceof Error ? error : new Error(String(error));
-  if (!results?.length) console.log("  nothing to do");
+  if (error) {
+    throw error instanceof Error ? error : new Error(String(error));
+  }
+  if (!results?.length) {
+    console.log("  nothing to do");
+  }
 };

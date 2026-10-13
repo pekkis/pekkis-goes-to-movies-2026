@@ -1,6 +1,6 @@
 # Website (`apps/web-front`)
 
-The public website: server-rendered pages that search engines can index, from our own API. Status: **early**. City and venue pages, both server-rendered with no JavaScript.
+The public website: server-rendered pages that search engines can index, from our own API. Status: **early**. City and venue pages and a venue map, all server-rendered; React islands make them live.
 
 ## Pages
 
@@ -9,7 +9,7 @@ The public website: server-rendered pages that search engines can index, from ou
 | `/`                            | redirects to `/fi/`                                                                                                                    | –                       |
 | `/fi/`                         | cities, as links                                                                                                                       | `/v1/venues`            |
 | `/fi/kaupungit/{city}`         | a city's day: its venues, then every screening in start order                                                                          | `/v1/screenings?city=`  |
-| `/fi/elokuvateatterit/{venue}` | a venue's day, film by film: address, map link, the cinema's website, each film with its showtimes                                     | `/v1/screenings?venue=` |
+| `/fi/elokuvateatterit/{venue}` | a venue's day, film by film: address, map link, the cinema's website, each film (alphabetical) with its showtimes                      | `/v1/screenings?venue=` |
 | `/fi/kartta`                   | every venue on a map: clusters when zoomed out, a popup per pin linking to the venue page; below it, the same venues as a list by city | `/v1/venues`            |
 
 - **Slugs** are derived from names (`src/lib/cities.ts`, `src/lib/venues.ts`):
@@ -21,12 +21,12 @@ The public website: server-rendered pages that search engines can index, from ou
 
 ## Stack and why
 
-| Need       | Choice                                                        | Why                                                                                                                                                                                                                       |
-| ---------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Framework  | **Astro 7**, `output: "server"`, `@astrojs/node` (standalone) | SSR for indexing. Pages ship no JavaScript unless a component asks for it. Vite and Vitest, like the rest of the workspace. Chosen over TanStack Start (whose server components are experimental) and Next.js (not Vite). |
-| Components | **React 19** via `@astrojs/react`                             | The team's component language. Astro renders React to static HTML; only `client:*` components hydrate.                                                                                                                    |
-| Styling    | **Vanilla Extract**: `css`, `sprinkles`, `recipes`, `dynamic` | Typed, zero-runtime CSS: static files at build time, nothing to hydrate.                                                                                                                                                  |
-| API access | `hc<AppType>` from `hono/client`                              | Types come from `@pgtm/backend` with no code generation.                                                                                                                                                                  |
+| Need       | Choice                                                        | Why                                                                                                                                                                                                                                                                  |
+| ---------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework  | **Astro 7**, `output: "server"`, `@astrojs/node` (standalone) | SSR for indexing: every page is complete HTML first, and React islands hydrate where the page is interactive or live. Vite and Vitest, like the rest of the workspace. Chosen over TanStack Start (whose server components are experimental) and Next.js (not Vite). |
+| Components | **React 19** via `@astrojs/react`                             | The team's component language. Astro renders React to static HTML; only `client:*` components hydrate.                                                                                                                                                               |
+| Styling    | **Vanilla Extract**: `css`, `sprinkles`, `recipes`, `dynamic` | Typed, zero-runtime CSS: static files at build time, nothing to hydrate.                                                                                                                                                                                             |
+| API access | `hc<AppType>` from `hono/client`                              | Types come from `@pgtm/backend` with no code generation.                                                                                                                                                                                                             |
 
 ## How a page works
 
@@ -38,20 +38,68 @@ request → src/middleware.ts      sets locals.api (API_URL), noindex + cache he
 ```
 
 - **`.astro` files stay thin.** Logic goes in `src/lib/` as plain TypeScript, where `tsc` and unit tests reach it.
-- **No JavaScript unless a feature needs it.** The city page ships none: `ScreeningList` is static HTML, and `DateNav` is a plain GET form with the browser's own `<input type="date">`. Phones show their system picker, and accessibility comes from the browser.
-- **Islands only where interaction needs them**, and their size is measured before they're added. React's client runtime alone is about 69 kB gzipped, loaded by the first island on a page.
-- **Progressive enhancement:** an island first renders something that works without JavaScript.
-- **React Aria was tried and dropped (2026-10-13).** Its `DatePicker` island cost about 77 kB gzipped on top of React: translations for 34 languages, which its locale plugin trims to 61 kB, and every calendar system, which `DatePicker` can't drop. For a date choice, the native input is enough. Revisit per widget (film search, map filters): Ark UI, react-day-picker, or Preact islands.
+- **Interactive and live UI is written in React islands.** It's the team's language, and React's runtime (about 69 kB gzipped, decided 2026-10-13) is a fair price that browsers cache across pages. Don't hand-write DOM scripts for UI; the map is the exception, because MapLibre does its own drawing.
+- **Server first:** an island is rendered on the server, so the HTML is complete and correct before any JavaScript runs, for search engines, slow phones and people without JavaScript. Hydrate with `client:idle` unless the UI must react at once.
+- **Static where nothing changes:** `DateNav` is a plain GET form with the browser's own `<input type="date">`. Phones show their system picker, and accessibility comes from the browser.
+- **React Aria was tried and dropped (2026-10-13).** Its `DatePicker` island cost about 77 kB gzipped on top of React: translations for 34 languages, which its locale plugin trims to 61 kB, and every calendar system, which `DatePicker` can't drop. For a date choice, the native input is enough. Revisit per widget (film search, map filters), weighing what a library adds on top of React.
 - **Times are formatted in `Europe/Helsinki` explicitly** (`src/lib/time.ts`), so server and browser always agree whatever their own time zones.
 - **UI text** is in `src/lib/text.ts` (Finnish), ready to move to an i18n catalogue (Lingui is the plan). Routes are under `/fi/`; `sv` and `en` are configured but have no pages yet.
 
+## Visual style: grey mockup
+
+**Until user testing, the website is a grey wireframe made of boxes** (AGENTS.md has the rule). There's no visual identity yet, and we don't want testers judging colors and polish when we ask about structure and content.
+
+- **Neutral greys only:** the `vars.color` tokens; `accent` is a dark grey (light grey in dark mode). Links are recognized by their underline.
+- **Boxes:** plain rectangles with visible 1 px borders. No `borderRadius`, `boxShadow`, gradients or decorative images.
+- **System font** and plain sizes. No icons for decoration, no animation.
+- **Never color alone for meaning:** sold-out, few-left and the like are words.
+- **Exceptions, required as is:** the TMDB logo and notice, and the map tiles (OpenFreeMap's grey `positron` and `dark` styles). MapLibre's pins and clusters use the grey `accent` token.
+- **Later:** the visual identity changes token values and recipes, not components. That's why components never use raw colors.
+
+## Live showtimes: one clock, reusable
+
+Showtimes say whether a show has started, starts soon or is later, and they keep saying it correctly while the page stays open.
+
+| Piece                       | Where                      | Use                                                                                                                                                                                                                                                                                           |
+| --------------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `showStatus(startsAt, now)` | `src/lib/show-status.ts`   | Pure: `started` / `soon` (within `SOON_MINUTES`, 60) / `later`, the label ("alkanut", "alkaa 25 min päästä"), and `ticketsOpen` (until `TICKETS_AFTER_START_MINUTES`, 15, after the start: cinemas sell during the ads). Compares instants, so shows after midnight and other days just work. |
+| `nowAtom`                   | `src/components/clock.tsx` | A jotai atom holding the current time. While anything reads it, it ticks once a minute (`onMount`).                                                                                                                                                                                           |
+| `useNow()`                  | `src/components/clock.tsx` | The current time, e.g. for `collapseStarted` (started shows behind "Näytä alkaneet" while something is still to come).                                                                                                                                                                        |
+| `useShowStatus(startsAt)`   | `src/components/clock.tsx` | A show's live status. **Use this wherever a showtime is shown.**                                                                                                                                                                                                                              |
+| `<ClockIsland now={iso}>`   | `src/components/clock.tsx` | The root of every island that shows showtimes: a jotai `Provider` (its own store), seeded with the server's time by `useHydrateAtoms`.                                                                                                                                                        |
+
+- **Pattern for a new island:** pass the screenings and `now={Astro.locals.now.toISOString()}` (set per request by the middleware) to a component that wraps its content in `<ClockIsland now={now}>`. Presentational components (`ScreeningList`, `FilmProgramme`, `Showtime`) only call `useShowStatus` or `useNow`.
+- **Why each island has its own store:** on the server, jotai's default store would be shared by every request in the Node process, so one request's time would stick for the next. A `Provider` per island gives each render a fresh store. A test covers this. The server's time is also the store's starting value, so hydration matches the server's HTML.
+- **How states look (grey only):** started is muted with "alkanut"; soon gets a strong border and "alkaa N min päästä"; the label always says it.
+- **Tests:** `test/clock.tsx` fixes the clock with fake timers (`freezeClockAt`), renders inside a provider (`renderWithClock`) and moves time (`advanceMinutes`).
+
+## React
+
+- **React 19, written the modern way:** `use(Context)`, `<Context value>`, `ref` as a prop, function components only.
+- **Shared client state: jotai.** Atoms instead of hand-written contexts and stores; an atom's `onMount` subscribes to external sources (the clock's minute timer). Each island root is a jotai `Provider`, because on the server the default store would be shared between requests. Never `setState` inside an effect to sync with the outside world.
+- **Lint:** oxlint's React plugin enforces the rules of hooks, exhaustive effect dependencies and no `setState` in effects. `react-in-jsx-scope` is off, because the automatic JSX runtime doesn't need it.
+- **Test helpers aren't hooks:** don't name them `use…`, or the hook rules apply to them (`freezeClockAt`, not `useFixedClock`).
+
+## User interface rules
+
+1. **Mobile first.** The phone layout is the default style; wider layouts are added with `min-width` conditions. Design and test at phone width (about 390 px) first.
+2. **Container queries, always when possible.** A component adapts to the space it's given, not to the screen. So it works the same in a page column, a sidebar or a popup.
+   - Use `@container (min-width: …)` from `src/styles/containers.ts` (`minWidth("wide")`).
+   - Responsive sprinkles (`wide`, `widest`) query the nearest container; `main` is one.
+   - A component whose layout changes declares its own container (`containerType: "inline-size"`, like `ScreeningList`).
+   - Viewport `@media` queries only where a container can't work. User preferences (`prefers-color-scheme`, `prefers-reduced-motion`) aren't layout and are fine.
+3. **Lists of films are alphabetical by title** (Finnish order: Å, Ä, Ö after Z; `byTitle` in `src/lib/films.ts`). A film's showtimes stay in time order, and so do the city page's screenings, which are a timetable, not a list of films.
+4. **The design system is the Vanilla Extract theme, and the theme is the source of truth.** Every design value is a token in `src/styles/theme.css.ts`: color, spacing, font sizes and weights, borders and fixed sizes. Container widths live in `containers.ts`. Components and pages use `vars` (or sprinkles and recipes built on them), never literal colors, rem/px sizes or fonts. A new value goes into the theme first. When the visual identity arrives, it changes the theme, not the components.
+
 ## Styling pattern
 
-- **`src/styles/theme.css.ts`:** `createThemeContract` defines the color tokens (`vars`). Light and dark values are set globally, following `prefers-color-scheme`, and `<html data-theme="light|dark">` overrides that. It also holds the spacing scale and breakpoints.
-- **`sprinkles.css.ts`:** atomic layout, spacing and color classes on those tokens, with `mobile`, `tablet` and `desktop` conditions. Use sprinkles for layout in pages.
+- **`src/styles/theme.css.ts`:** `createThemeContract` defines every token (`vars`). Only the colors differ between light and dark mode; light and dark follow `prefers-color-scheme`, and `<html data-theme="light|dark">` overrides that.
+- **`src/styles/containers.ts`:** the container widths (`wide` 40 rem, `widest` 64 rem) and `minWidth()`. It's a plain module because `.css.ts` files may only export data (a function there fails the build), and because CSS can't use custom properties in container conditions.
+- **`sprinkles.css.ts`:** atomic layout, spacing and color classes on the tokens, with `narrow` (the default), `wide` and `widest` container conditions. Use sprinkles for layout in pages.
 - **`recipes/`:** components with variants (`button({ tone, size })`). New shared components follow that pattern.
-- **Per-component styles** live next to the component (`ScreeningList.css.ts`) and read `vars`, never raw colors.
-- **Vanilla Extract only, for `.astro` files too.** A style is just a class-name string, so `.astro` files use it as `class={css.page}` (`Base.astro` ↔ `Base.css.ts`), and React components as `className=`. No Astro `<style>` blocks and no inline colors: everything goes through the same tokens, so dark mode and spacing stay consistent.
+- **Per-component styles** live next to the component (`ScreeningList.css.ts`) and read `vars` only.
+- **Vanilla Extract only, for `.astro` files too.** A style is just a class-name string, so `.astro` files use it as `class={css.page}` (`Base.astro` ↔ `Base.css.ts`), and React components as `className=`. No Astro `<style>` blocks and no inline styles.
+- **`pnpm check` builds the website**, because some Vanilla Extract errors only show at build time.
 
 ## The map (`/fi/kartta`)
 

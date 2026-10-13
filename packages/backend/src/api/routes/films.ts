@@ -76,7 +76,9 @@ export const filmRoutes = (db: Kysely<DB>) =>
     .openapi(screenings, async (c) => {
       const { id } = c.req.valid("param");
       const q = c.req.valid("query");
-      if (!(await getFilm(db, id))) return c.json({ error: "film not found" }, 404);
+      if (!(await getFilm(db, id))) {
+        return c.json({ error: "film not found" }, 404);
+      }
       const date = q.date ?? (await helsinkiToday(db));
       const page = await listScreenings(db, {
         date,

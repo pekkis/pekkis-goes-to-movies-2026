@@ -59,9 +59,13 @@ export const parseLanguageAttribute = (
   shortName: string,
 ): { role: "audio" | "subtitles"; languages: Lang[] } | undefined => {
   const match = shortName.match(/^([A-Z]{2}(?:-[A-Z]{2})*)-([AS])$/);
-  if (!match?.[1]) return undefined;
+  if (!match?.[1]) {
+    return undefined;
+  }
   const languages = match[1].split("-").map(toLang);
-  if (languages.some((lang) => lang === undefined)) return undefined;
+  if (languages.some((lang) => lang === undefined)) {
+    return undefined;
+  }
   return { role: match[2] === "A" ? "audio" : "subtitles", languages: languages as Lang[] };
 };
 
@@ -100,10 +104,14 @@ const IGNORED = new Set(["Tampere", "Pkseutu", "TKU & R", "Maxim", "Varaus20"]);
 
 const localized = (text: Text): Localized => {
   const out: Localized = {};
-  if (text.text.trim()) out.fi = text.text.trim();
+  if (text.text.trim()) {
+    out.fi = text.text.trim();
+  }
   for (const t of text.translations ?? []) {
     const lang = t.languageTag.slice(0, 2).toLowerCase();
-    if ((lang === "en" || lang === "sv") && !out[lang] && t.text.trim()) out[lang] = t.text.trim();
+    if ((lang === "en" || lang === "sv") && !out[lang] && t.text.trim()) {
+      out[lang] = t.text.trim();
+    }
   }
   return out;
 };
@@ -118,14 +126,18 @@ type Lookup = {
 const ruleKey = (siteId: string, filmId: string) => `${siteId}|${filmId}`;
 
 const availability = (s: RawShowtime, lookup: Lookup, fetchedAt: string): Availability => {
-  if (s.isSoldOut) return "sold-out";
+  if (s.isSoldOut) {
+    return "sold-out";
+  }
   if (s.restrictions.includes("FilmAdvanceBookingRule")) {
     // The rule says when sales open (all restrictions were "None" when profiled).
     const rule = lookup.rules.get(ruleKey(s.siteId, s.filmId));
     const opens = rule?.bookingPeriods
       .map((p) => Date.parse(p.startsAt))
       .toSorted((a, b) => a - b)[0];
-    if (opens !== undefined && opens > Date.parse(fetchedAt)) return "not-bookable";
+    if (opens !== undefined && opens > Date.parse(fetchedAt)) {
+      return "not-bookable";
+    }
   }
   return "available";
 };
@@ -151,15 +163,20 @@ const parseScreening = (s: RawShowtime, lookup: Lookup, fetchedAt: string): Scre
     const language = parseLanguageAttribute(name);
     if (language) {
       (language.role === "audio" ? audio : subtitleLangs).push(...language.languages);
-    } else if (name === "2D") dimension = "2d";
-    else if (name === "3D") dimension = "3d";
-    else if (own(FORMATS, name)) formats.push(own(FORMATS, name)!);
-    else if (own(TAGS, name)) tags.push(own(TAGS, name)!);
-    else if (name === "Annisk_K18") {
+    } else if (name === "2D") {
+      dimension = "2d";
+    } else if (name === "3D") {
+      dimension = "3d";
+    } else if (own(FORMATS, name)) {
+      formats.push(own(FORMATS, name)!);
+    } else if (own(TAGS, name)) {
+      tags.push(own(TAGS, name)!);
+    } else if (name === "Annisk_K18") {
       licensed = true;
       ageLimit = "K-18";
-    } else if (name === "Anniskelu") licensed = true;
-    else if (name === "OCAP") {
+    } else if (name === "Anniskelu") {
+      licensed = true;
+    } else if (name === "OCAP") {
       // Open captions: Finnish subtitles for the hard of hearing.
       captions = true;
       tags.push("accessible");
@@ -168,10 +185,14 @@ const parseScreening = (s: RawShowtime, lookup: Lookup, fetchedAt: string): Scre
       noSubtitles = true;
     } else if (name === "SEVERAL") {
       // "Several languages": spoken languages not listed, so audio stays unknown.
-    } else if (!IGNORED.has(name)) unmapped.push(name);
+    } else if (!IGNORED.has(name)) {
+      unmapped.push(name);
+    }
   }
 
-  if (captions && !subtitleLangs.includes("fi")) subtitleLangs.push("fi");
+  if (captions && !subtitleLangs.includes("fi")) {
+    subtitleLangs.push("fi");
+  }
   const subtitles: Subtitles =
     subtitleLangs.length > 0
       ? { kind: "languages", languages: [...new Set(subtitleLangs)] }
@@ -234,7 +255,9 @@ const parseListing = (film: RawFilm, lookup: Lookup, isEvent: boolean): FilmList
 const parseVenue = (site: RawSite): Venue | undefined => {
   const address = site.contactDetails?.address;
   const city = address?.city?.trim();
-  if (!city) return undefined;
+  if (!city) {
+    return undefined;
+  }
   const street = address?.line1?.trim();
   const postalCode = address?.line2?.trim();
   return {
@@ -260,7 +283,9 @@ const each = <T>(
 ): T[] =>
   (items ?? []).flatMap((item) => {
     const result = schema.safeParse(item);
-    if (result.success) return [result.data];
+    if (result.success) {
+      return [result.data];
+    }
     warnings.push({ code, message: result.error.message, context: { item } });
     return [];
   });
@@ -277,8 +302,11 @@ export const parseFinnkino = (raw: FinnkinoRawSnapshot): ProviderBatch => {
   const venues = new Map<string, Venue>();
   for (const site of each(sitesResponse.data?.sites, RawSite, "invalid-site", warnings)) {
     const venue = parseVenue(site);
-    if (venue) venues.set(site.id, venue);
-    else warnings.push({ code: "venue-without-city", message: `No city for site ${site.id}` });
+    if (venue) {
+      venues.set(site.id, venue);
+    } else {
+      warnings.push({ code: "venue-without-city", message: `No city for site ${site.id}` });
+    }
   }
 
   const lookup: Lookup = {
@@ -319,7 +347,9 @@ export const parseFinnkino = (raw: FinnkinoRawSnapshot): ProviderBatch => {
     )) {
       lookup.rules.set(ruleKey(r.siteId, r.filmId), r);
     }
-    for (const f of each(related.films, RawFilm, "invalid-film", warnings)) films.set(f.id, f);
+    for (const f of each(related.films, RawFilm, "invalid-film", warnings)) {
+      films.set(f.id, f);
+    }
     for (const s of each(related.screens, RawScreen, "invalid-screen", warnings)) {
       screens.set(s.id, s.name.text.trim());
     }

@@ -13,7 +13,9 @@ import { loadFixture } from "../../fixtures.ts";
 
 const site = (tenant: string): KinolaSite => {
   const found = KINOLA_SITES.find((s) => s.tenant === tenant);
-  if (!found) throw new Error(`No site ${tenant}`);
+  if (!found) {
+    throw new Error(`No site ${tenant}`);
+  }
   return found;
 };
 
@@ -33,7 +35,9 @@ const parse = (tenant: string, overrides: Partial<KinolaRawSnapshot> = {}) =>
 
 const show = (batch: ProviderBatch, idPrefix: string) => {
   const found = batch.screenings.find((s) => s.sourceId.startsWith(idPrefix));
-  if (!found) throw new Error(`No screening ${idPrefix}`);
+  if (!found) {
+    throw new Error(`No screening ${idPrefix}`);
+  }
   return found;
 };
 

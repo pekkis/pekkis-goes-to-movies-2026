@@ -52,7 +52,9 @@ export const helsinkiShowTime = (t: LocalDateTime): ShowTime | undefined => {
     start.getDate() === t.day &&
     start.getHours() === t.hour &&
     start.getMinutes() === t.minute;
-  if (!valid) return undefined;
+  if (!valid) {
+    return undefined;
+  }
   const business = t.hour < BUSINESS_DAY_CUTOFF_HOUR ? subDays(start, 1) : start;
   return {
     startsAt: formatISO(start),
@@ -63,7 +65,9 @@ export const helsinkiShowTime = (t: LocalDateTime): ShowTime | undefined => {
 /** "2026-10-14 19:00" or "2026-10-14 19:00:00", Helsinki local -> parts. */
 export const parseLocalDateTime = (raw: string): LocalDateTime | undefined => {
   const m = raw.trim().match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/);
-  if (!m) return undefined;
+  if (!m) {
+    return undefined;
+  }
   const [year, month, day, hour, minute] = m.slice(1, 6).map(Number) as [
     number,
     number,
@@ -77,7 +81,9 @@ export const parseLocalDateTime = (raw: string): LocalDateTime | undefined => {
 /** An instant with any offset -> the same show time in Helsinki, normalized. */
 export const helsinkiShowTimeAt = (instant: string): ShowTime | undefined => {
   const local = new TZDate(parseISO(instant), FINNISH_TZ);
-  if (Number.isNaN(local.getTime())) return undefined;
+  if (Number.isNaN(local.getTime())) {
+    return undefined;
+  }
   return helsinkiShowTime({
     year: local.getFullYear(),
     month: local.getMonth() + 1,

@@ -26,7 +26,9 @@ const validate = async <T>(
   },
 ): Promise<T> => {
   const result = schema.safeParse(await readJson(file));
-  if (result.success) return result.data;
+  if (result.success) {
+    return result.data;
+  }
   console.error(
     `${file} does not match the model (stale data? run \`pnpm pull\`):\n${result.error.message}`,
   );
@@ -41,7 +43,9 @@ const batches = await Promise.all(
 
 const db = createDb(env.DATABASE_URL);
 try {
-  if (catalog) console.log(`films: ${await ingestFilms(db, catalog)} upserted`);
+  if (catalog) {
+    console.log(`films: ${await ingestFilms(db, catalog)} upserted`);
+  }
   for (const { file, batch } of batches) {
     const result = await ingestBatch(db, batch);
     console.log(

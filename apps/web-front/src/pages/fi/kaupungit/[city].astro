@@ -1,6 +1,6 @@
 ---
 import { DateNav } from "../../../components/DateNav.tsx";
-import { ScreeningList } from "../../../components/ScreeningList.tsx";
+import { CityProgramme } from "../../../components/CityProgramme.tsx";
 import Base from "../../../layouts/Base.astro";
 import { loadCityPage } from "../../../lib/pages.ts";
 import { fi } from "../../../lib/text.ts";
@@ -13,7 +13,7 @@ const page = await loadCityPage(
   Astro.params.city ?? "",
   Astro.url.searchParams.get("date"),
 );
-if (!page) Astro.response.status = 404;
+if (!page) {Astro.response.status = 404;}
 ---
 
 {
@@ -27,7 +27,13 @@ if (!page) Astro.response.status = 404;
         {page.venues.map((v) => <li><a href={venuePath(v)}>{v.name}</a></li>)}
       </ul>
       <DateNav date={page.date} />
-      {page.screenings.length ? <ScreeningList screenings={page.screenings} /> : <p>{fi.noScreenings}</p>}
+      {
+        page.screenings.length ? (
+          <CityProgramme client:idle screenings={page.screenings} now={Astro.locals.now.toISOString()} />
+        ) : (
+          <p>{fi.noScreenings}</p>
+        )
+      }
     </Base>
   ) : (
     <Base title={fi.notFound}>
@@ -36,3 +42,4 @@ if (!page) Astro.response.status = 404;
     </Base>
   )
 }
+

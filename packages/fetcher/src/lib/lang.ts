@@ -126,15 +126,23 @@ const fromAdjective = (key: string) => key.replace(/l(?:ainen|äinen)$/, "");
 /** Code or Finnish/English name -> ISO 639-1, or undefined when not recognized. */
 export const normalizeLang = (input: string): Lang | undefined => {
   const key = input.trim().toLowerCase();
-  if (key === "") return undefined;
+  if (key === "") {
+    return undefined;
+  }
   const named =
     own(NON_ISO, key) ??
     own(FINNISH_NAMES, key) ??
     own(ENGLISH_NAMES, key) ??
     own(OTHER_NAMES, key);
-  if (named) return named;
+  if (named) {
+    return named;
+  }
   const stem = fromAdjective(key);
-  if (stem !== key) return own(FINNISH_NAMES, stem) ?? own(OTHER_NAMES, stem);
-  if (/^[a-z]{2}$/.test(key)) return key;
+  if (stem !== key) {
+    return own(FINNISH_NAMES, stem) ?? own(OTHER_NAMES, stem);
+  }
+  if (/^[a-z]{2}$/.test(key)) {
+    return key;
+  }
   return undefined;
 };

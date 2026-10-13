@@ -41,7 +41,9 @@ export const screeningRoutes = (db: Kysely<DB>) =>
   router().openapi(list, async (c) => {
     const q = c.req.valid("query");
     const cursor = q.cursor === undefined ? undefined : decodeCursor(q.cursor);
-    if (q.cursor !== undefined && !cursor) return c.json({ error: "invalid cursor" }, 400);
+    if (q.cursor !== undefined && !cursor) {
+      return c.json({ error: "invalid cursor" }, 400);
+    }
     const date = q.date ?? (await helsinkiToday(db));
     const page = await listScreenings(db, {
       date,

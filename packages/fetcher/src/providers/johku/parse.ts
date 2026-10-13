@@ -88,9 +88,17 @@ export const parseJohku = (raw: JohkuRawSnapshot, site: JohkuSite): ProviderBatc
       }
       const e = parsed.data;
       // Coming soon (no time yet), hidden, outside the catalogue, or not a screening.
-      if (e.upcoming === "1" || e.upcoming === 1 || e.hideinternet === "1" || e.hideinternet === 1)
+      if (
+        e.upcoming === "1" ||
+        e.upcoming === 1 ||
+        e.hideinternet === "1" ||
+        e.hideinternet === 1
+      ) {
         continue;
-      if (!inCatalogue(e) || !isPublicScreening(e)) continue;
+      }
+      if (!inCatalogue(e) || !isPublicScreening(e)) {
+        continue;
+      }
 
       const venue = site.venues.find((v) => v.resource === e.resource_name);
       if (!venue) {
@@ -108,9 +116,13 @@ export const parseJohku = (raw: JohkuRawSnapshot, site: JohkuSite): ProviderBatc
         });
         continue;
       }
-      if (start.businessDate < window.from || start.businessDate > window.to) continue;
+      if (start.businessDate < window.from || start.businessDate > window.to) {
+        continue;
+      }
       const id = makeId(P, "show", e.id);
-      if (screenings.has(id)) continue; // a show can sit in two programme blocks
+      if (screenings.has(id)) {
+        continue;
+      } // a show can sit in two programme blocks
 
       const unmapped: string[] = [];
       const { title: unprefixed, rule: prefix } = splitTitlePrefix(e.text, prefixRules);
@@ -128,7 +140,9 @@ export const parseJohku = (raw: JohkuRawSnapshot, site: JohkuSite): ProviderBatc
         unmapped.push(`subtitles:${e.maccsboxsubtitles}`);
       }
       const rating = blank(e.agelimit) ? undefined : own(RATINGS, e.agelimit!.trim());
-      if (!blank(e.agelimit) && !rating) unmapped.push(`agelimit:${e.agelimit}`);
+      if (!blank(e.agelimit) && !rating) {
+        unmapped.push(`agelimit:${e.agelimit}`);
+      }
       const imdbId = e.imdb?.trim().match(/^tt\d+$/)?.[0];
 
       const listingId = makeId(P, "film", e.product.id);

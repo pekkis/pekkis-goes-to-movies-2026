@@ -30,7 +30,9 @@ const onlyVenues = <S extends { provider: string; venues: { slug: string }[] }>(
   site: S,
   slugs: string[] | undefined,
 ): S => {
-  if (!slugs) return site;
+  if (!slugs) {
+    return site;
+  }
   const venues = site.venues.filter((v) => slugs.includes(v.slug));
   if (venues.length === 0) {
     throw new Error(
@@ -126,7 +128,9 @@ export const ADAPTERS: Adapter[] = [
 
 /** Resolves `--provider` values: an adapter id (`kinoaurora`) or a platform (`nexxo`). */
 export const selectAdapters = (names: string[] | undefined): Adapter[] | undefined => {
-  if (!names) return ADAPTERS;
+  if (!names) {
+    return ADAPTERS;
+  }
   const selected = ADAPTERS.filter((a) => names.includes(a.id) || names.includes(a.platform));
   const known = new Set(ADAPTERS.flatMap((a) => [a.id, a.platform]));
   return names.every((n) => known.has(n)) ? selected : undefined;
