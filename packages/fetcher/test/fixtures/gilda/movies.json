@@ -1,0 +1,224 @@
+{
+  "fi": {
+    "resultCode": 0,
+    "data": [
+      {
+        "movie_id": 1565,
+        "imdb_id": null,
+        "genre": "Draama, Seikkailu",
+        "show_times": [
+          {
+            "show_time_id": 303226,
+            "movie_id": 1565,
+            "cinema_screen_id": 69,
+            "screen_name": "Bio Rex Lasipalatsi (K-18)",
+            "movie_name": "70mm: The Odyssey",
+            "original_title": "70mm: The Odyssey",
+            "show_time": "2026-10-23T15:00:00.000+00:00",
+            "running_time": 172,
+            "rating_name": "16",
+            "audio_lang": "EN",
+            "subtitle_lang": "suomi, ruotsi",
+            "movie_audio_style_name": "Tekstitetty",
+            "movie_sound_name": "",
+            "allow_purchases": true,
+            "show_is_visible": 1,
+            "deleted": false,
+            "version_3d": false,
+            "version_35mm": false,
+            "version_70mm": true,
+            "version_16mm": false,
+            "version_atmos": false,
+            "version_imax": false
+          }
+        ]
+      },
+      {
+        "movie_id": 1599,
+        "imdb_id": null,
+        "genre": null,
+        "show_times": [
+          {
+            "show_time_id": 303354,
+            "movie_id": 1599,
+            "cinema_screen_id": 68,
+            "screen_name": "Gilda 3",
+            "movie_name": "John Coltrane 'Highlights 1957-1964'",
+            "original_title": "John Coltrane 'Highlights 1957-1964'",
+            "show_time": "2026-10-26T15:40:00.000+00:00",
+            "running_time": 78,
+            "rating_name": "T",
+            "audio_lang": "Ei puhetta",
+            "subtitle_lang": "-",
+            "movie_audio_style_name": "Albumikuuntelu",
+            "movie_sound_name": "",
+            "allow_purchases": true,
+            "show_is_visible": 1,
+            "deleted": false,
+            "version_3d": false,
+            "version_35mm": false,
+            "version_70mm": false,
+            "version_16mm": false,
+            "version_atmos": false,
+            "version_imax": false
+          }
+        ]
+      },
+      {
+        "movie_id": 1638,
+        "imdb_id": "tt0103874",
+        "genre": "Romantiikka, Horror",
+        "show_times": [
+          {
+            "show_time_id": 303234,
+            "movie_id": 1638,
+            "cinema_screen_id": 68,
+            "screen_name": "Gilda 3",
+            "movie_name": "Bram Stoker's Dracula",
+            "original_title": "Bram Stoker's Dracula",
+            "show_time": "2026-11-25T17:45:00.000+00:00",
+            "running_time": 122,
+            "rating_name": "16",
+            "audio_lang": "EN",
+            "subtitle_lang": "-",
+            "movie_audio_style_name": "Ei tekstitystä",
+            "movie_sound_name": "",
+            "allow_purchases": true,
+            "show_is_visible": 1,
+            "deleted": false,
+            "version_3d": false,
+            "version_35mm": false,
+            "version_70mm": false,
+            "version_16mm": false,
+            "version_atmos": false,
+            "version_imax": false
+          }
+        ]
+      },
+      {
+        "movie_id": 1647,
+        "imdb_id": "tt0066993",
+        "genre": "Draama, Historia, Horror",
+        "show_times": [
+          {
+            "show_time_id": 303560,
+            "movie_id": 1647,
+            "cinema_screen_id": 66,
+            "screen_name": "Gilda 1",
+            "movie_name": "The Devils",
+            "original_title": "The Devils",
+            "show_time": "2026-10-16T17:30:00.000+00:00",
+            "running_time": 115,
+            "rating_name": "16",
+            "audio_lang": "EN",
+            "subtitle_lang": "-",
+            "movie_audio_style_name": "Tekstitetty",
+            "movie_sound_name": "",
+            "allow_purchases": true,
+            "show_is_visible": 1,
+            "deleted": false,
+            "version_3d": false,
+            "version_35mm": false,
+            "version_70mm": false,
+            "version_16mm": false,
+            "version_atmos": false,
+            "version_imax": false
+          }
+        ]
+      },
+      {
+        "movie_id": 1633,
+        "imdb_id": null,
+        "genre": null,
+        "show_times": [
+          {
+            "show_time_id": 303136,
+            "movie_id": 1633,
+            "cinema_screen_id": 67,
+            "screen_name": "Gilda 2",
+            "movie_name": "Seniorikino: Järki ja Tunteet",
+            "original_title": "Seniorikino: Järki ja Tunteet",
+            "show_time": "2026-11-03T09:45:00.000+00:00",
+            "running_time": 131,
+            "rating_name": "EI MÄÄR.",
+            "audio_lang": "EN",
+            "subtitle_lang": "suomi, ruotsi",
+            "movie_audio_style_name": "Tekstitetty",
+            "movie_sound_name": "",
+            "allow_purchases": true,
+            "show_is_visible": 1,
+            "deleted": false,
+            "version_3d": false,
+            "version_35mm": false,
+            "version_70mm": false,
+            "version_16mm": false,
+            "version_atmos": false,
+            "version_imax": false
+          }
+        ]
+      },
+      {
+        "movie_id": 1607,
+        "imdb_id": "tt34886821",
+        "genre": "Draama",
+        "show_times": [
+          {
+            "show_time_id": 303514,
+            "movie_id": 1607,
+            "cinema_screen_id": 66,
+            "screen_name": "Gilda 1",
+            "movie_name": "La Grazia",
+            "original_title": "La Grazia",
+            "show_time": "2026-10-14T10:15:00.000+00:00",
+            "running_time": 133,
+            "rating_name": "7",
+            "audio_lang": "IT",
+            "subtitle_lang": "suomi, ruotsi",
+            "movie_audio_style_name": "Tekstitetty",
+            "movie_sound_name": "",
+            "allow_purchases": false,
+            "show_is_visible": 0,
+            "deleted": true,
+            "version_3d": false,
+            "version_35mm": false,
+            "version_70mm": false,
+            "version_16mm": false,
+            "version_atmos": false,
+            "version_imax": false
+          }
+        ]
+      },
+      {
+        "movie_id": 1511,
+        "imdb_id": "tt31450459",
+        "genre": "Komedia, Draama, Seikkailu",
+        "show_times": [
+          {
+            "show_time_id": 303546,
+            "movie_id": 1511,
+            "cinema_screen_id": 66,
+            "screen_name": "Gilda 1",
+            "movie_name": "Digger",
+            "original_title": "Digger",
+            "show_time": "2026-10-15T17:00:00.000+00:00",
+            "running_time": 129,
+            "rating_name": "12",
+            "audio_lang": "EN",
+            "subtitle_lang": "suomi, ruotsi",
+            "movie_audio_style_name": "Tekstitetty",
+            "movie_sound_name": "",
+            "allow_purchases": true,
+            "show_is_visible": 1,
+            "deleted": false,
+            "version_3d": false,
+            "version_35mm": false,
+            "version_70mm": false,
+            "version_16mm": false,
+            "version_atmos": false,
+            "version_imax": false
+          }
+        ]
+      }
+    ]
+  }
+}

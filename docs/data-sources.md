@@ -121,6 +121,28 @@ Origin: Leffavuoro's `scripts/providers/cinemantsala.py`, re-verified with three
 - **Ticket links:** `https://mantsala.cine.fi/#/book/{show_time_id}`, the anchor the cinema's own programme page renders **[A, Leffavuoro]**. Copied by pattern, never requested.
 - **First run:** 18 films, 30 screenings, all films matched to TMDB, no warnings.
 
+### Gilda (MyCloudCinema through a WordPress facade, 2026-10-13)
+
+Origin: Leffavuoro's `scripts/providers/gilda.py`, re-verified with two GETs. Adapter: `packages/fetcher/src/providers/gilda/`.
+
+- **What the cinema's own page reads:** `GET https://www.gilda.fi/wp-json/gilda-react-booking/v1/movies` **[V]**. One response, `{"fi": {"data": [film…], "resultCode": 0}}`, holds every film with its `show_times`: 53 films and 202 shows, reaching January 2027. No auth.
+- **Not used:** the same data is also on `web.atlanticfilm.mycloudcinema.com/webservices` (cinema 15, "Gilda", Narinkka 2) **[V]**, but gilda.fi's own programme reads the facade, so we do too. The namespace also has write and admin routes: never called.
+- **Venues by screen** **[V]**: one cinema (15) holds screens 66–68, "Gilda 1–3" in Kamppi, and 69, "Bio Rex Lasipalatsi (K-18)". The "(K-18)" is the house's door policy, so it becomes the hall's age limit, not a film rating. An unknown screen gives an `unclaimed-screen` warning.
+- **Rows are MyCloudCinema-like but not the same** **[V]**:
+  - no `business_date` (we derive the programme day), no seat flags (only `allow_purchases`, so availability is "unknown" or "not bookable");
+  - booleans as `true`/`false` or `"1"`/`"0"`, and shows can be `deleted` or `show_is_visible: "0"` (2 of 202; skipped).
+- **Ratings** `rating_name` **[V]**: "7", "12", "16", "18"; "T" and "EI MÄÄR." are unrated and stay unknown.
+- **Languages** **[V]**:
+  - `audio_lang` is a code, "MULTI" (several languages, so unknown), or "Ei puhetta" (no dialogue, `zxx`);
+  - `subtitle_lang` is "suomi, ruotsi", "SE", "FI", "EN" or "-".
+- **The "-" subtitle value:** it means none only with `movie_audio_style_name` "Ei tekstitystä". The 10 rows with "-" and "Tekstitetty" (subtitled) contradict themselves, so they stay unknown, as in Leffavuoro.
+- **Event-like shows:** style "Albumikuuntelu" (album listening, e.g. Coltrane) marks events, not films.
+- **Title prefixes:** "Seniorikino:" (shared rule) and, in the site config, "70mm:" (format only) and "Pieni elokuvakerho:" (series).
+- **Film ids:** each film carries `imdb_id` (40 of 53) and `tmdb_id`. We store the IMDb id, so matching is exact via TMDB `/find`.
+- **Ticket links:** no per-show link in the data. A show links to its film's page on gilda.fi, copied from the public `/wp-json/wp/v2/movies?per_page=100&_fields=link,title` list and matched by title. Otherwise it links to the programme page `/elokuvat/`. About half match on the first page of that list.
+- **Coordinates** from OSM (node 11701088977 Gilda, node 1381017800 BioRex Lasipalatsi), both with the cinemas' own addresses.
+- **First run:** 23 films, 75 screenings in a 7-day window; 21 matched to TMDB; no warnings.
+
 ---
 
 ## Finnkino
