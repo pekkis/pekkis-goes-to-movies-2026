@@ -278,11 +278,16 @@ TITLE_RE = re.compile(r'<a[^>]*class=["\']kinola-event-title["\'][^>]*href=["\']
 SLUG_RE = re.compile(r'/film/([^/?#"\']+)', re.I)
 TICKET_RE = re.compile(r'<a[^>]*class=["\'][^"\']*kinola-event-tickets-link[^"\']*["\'][^>]*href=["\']([^"\']+)["\']',
                        re.S | re.I)
-SOLD_OUT_RE = re.compile(r'kinola-event-tickets-link-sold-out', re.I)
+# A class on an element, never the bare name: Myyri's own script names the class in a
+# `querySelector` after the last row (read 2026-10-12), and the last block runs to the end of
+# the page, so a bare match marked whichever film was listed last sold out.
+SOLD_OUT_RE = re.compile(r'class=["\'][^"\']*(?<![-\w])kinola-event-tickets-link-sold-out'
+                         r'(?![-\w])', re.I)
 DIV_CLASS_RE = r'<div[^>]*class=["\'][^"\']*\b%s\b[^"\']*["\'][^>]*>(.*?)</div>'
 SPAN_CLASS_RE = r'<span[^>]*class=["\'][^"\']*\b%s\b[^"\']*["\'][^>]*>(.*?)</span>'
 POSTER_RE = re.compile(r'<img[^>]*class=["\'][^"\']*kinola-event-poster[^"\']*["\'][^>]*>', re.I)
-SRC_RE = re.compile(r'(?:data-)?src=["\']([^"\']+)["\']', re.I)
+DATA_SRC_RE = re.compile(r'(?<![-\w])data-src=["\']([^"\']+)["\']', re.I)
+PLAIN_SRC_RE = re.compile(r'(?<![-\w])src=["\']([^"\']+)["\']', re.I)
 KILTA_DATE_RE = re.compile(r'(\d{1,2})\.(\d{1,2})\.(\d{4})')
 KILTA_TIME_RE = re.compile(r'(\d{1,2})[:.](\d{2})')
 LAIKA_DATE_RE = re.compile(r'(\d{1,2})/(\d{1,2})/(\d{4})\s+(\d{1,2})[:.](\d{2})')
@@ -417,6 +422,23 @@ def blocks(page):
     return out
 
 
+def poster_src(block, base):
+    """The row's poster as an absolute URL, or "" when it states none.
+
+    A lazy-loading theme puts the real address in `data-src` and a placeholder in `src`:
+    every Myyri row read 2026-10-12 carried a 100x150 base64 PNG there. So `data-src` wins,
+    and a `data:` value is never taken, which leaves the film page's `og:image` to supply
+    the poster.
+    """
+    pm = POSTER_RE.search(block)
+    for rx in (DATA_SRC_RE, PLAIN_SRC_RE):
+        m = rx.search(pm.group(0)) if pm else None
+        value = html_mod.unescape(m.group(1)).strip() if m else ""
+        if value and not value.lower().startswith("data:"):
+            return urljoin(base, value)
+    return ""
+
+
 def _title_and_slug(block, base):
     m = TITLE_RE.search(block)
     if not m:
@@ -492,13 +514,9 @@ def events_laika(page, site):
         except ValueError as e:
             raise _row_fault(site, n, "calendar date", dtxt, title) from e
         url, sold = _destination(b, site["base"], film_url)
-        pm = POSTER_RE.search(b)
-        src = SRC_RE.search(pm.group(0)) if pm else None
         out.append({"slug": slug, "title": title, "film_url": film_url,
                     "start": start.isoformat(), "url": url, "soldOut": sold,
-                    "method": "", "len": "",
-                    "img": urljoin(site["base"], html_mod.unescape(src.group(1)))
-                           if src else ""})
+                    "method": "", "len": "", "img": poster_src(b, site["base"])})
     return out
 
 
@@ -536,16 +554,12 @@ def _events_no_year(page, site, today, date_re, weekday):
                                       int(d.group(4)), int(d.group(5)), tzinfo=FI)
         except ValueError as e:
             raise _row_fault(site, n, "calendar date", dtxt, title) from e
-        pm = POSTER_RE.search(b)
-        src = SRC_RE.search(pm.group(0)) if pm else None
         sold = bool(SOLD_OUT_RE.search(b))
         out.append({"slug": slug, "title": title, "film_url": film_url,
                     "start": start.isoformat(),
                     "url": film_url if sold else _destination(b, site["base"], film_url)[0],
                     "soldOut": sold,
-                    "method": "", "len": "",
-                    "img": urljoin(site["base"], html_mod.unescape(src.group(1)))
-                           if src else ""})
+                    "method": "", "len": "", "img": poster_src(b, site["base"])})
     return out
 
 

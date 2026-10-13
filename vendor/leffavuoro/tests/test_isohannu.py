@@ -11,6 +11,8 @@ pin are the site's own oddities -- the ticket link written `http://` on a host t
 answers `https://`, the age limit written `K12` where every other provider in this repo
 publishes `K-12`, and a film page that carries no `Genre:` line at all.
 """
+import contextlib
+import io
 import unittest
 
 import _ctx                                                # noqa: F401
@@ -155,6 +157,29 @@ class TableTest(unittest.TestCase):
                              row("2190", "18:00", "PRACTICAL MAGIC", "121294"),
                              row("2139", "20:20", "THE RIVALS", "121266"))))
         self.assertEqual(len(isohannu.parse(dupe)), 2)
+
+
+class NotAFilmTest(unittest.TestCase):
+    """Read 2026-10-12: "Salissa yksityisvaraus", a private booking of Sali 2, listed with
+    a ticket button like a film."""
+
+    def parse(self, *rows):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            shows = isohannu.parse(page(day("Ke 15.10.2026", hall("Sali 2", *rows))))
+        return shows, out.getvalue()
+
+    def test_a_private_booking_is_left_out_and_counted(self):
+        shows, log = self.parse(row(2216, "17:00", "Salissa yksityisvaraus", 124300),
+                                row(2201, "19:00", "Hetki ennen valoa", 124301))
+        self.assertEqual([s["title"] for s in shows], ["Hetki ennen valoa"])
+        self.assertIn("1 row(s) the site names as no screening, left out: "
+                      "Salissa yksityisvaraus", log)
+
+    def test_only_the_exact_title_is_dropped(self):
+        shows, _ = self.parse(row(2202, "17:00", "Yksityisvaraus: Hetki ennen valoa", 124302),
+                              row(2201, "19:00", "Hetki ennen valoa", 124301))
+        self.assertEqual(len(shows), 2)
 
 
 class EmptyAndBrokenTest(unittest.TestCase):

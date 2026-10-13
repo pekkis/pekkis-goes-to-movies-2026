@@ -70,7 +70,10 @@ LANG = {"fi": "FI", "suomi": "FI", "en": "EN", "englanti": "EN", "sv": "SV",
         "se": "SV", "ruotsi": "SV", "ja": "JA", "japani": "JA", "fr": "FR",
         "ranska": "FR", "de": "DE", "saksa": "DE", "es": "ES", "espanja": "ES",
         "it": "IT", "italia": "IT", "ru": "RU", "venäjä": "RU", "da": "DA",
-        "no": "NO", "et": "ET", "viro": "ET", "pl": "PL", "puola": "PL"}
+        "no": "NO", "et": "ET", "viro": "ET", "pl": "PL", "puola": "PL",
+        # Japan's country code for Japanese, as `se` is Sweden's for Swedish: Two Seasons,
+        # Two Strangers came as `jp` on 2026-10-12 and published JP-A, which no table names.
+        "jp": "JA"}
 # version_* flags worth showing as a format pill; the rest are noise
 FORMATS = {"version_70mm": "70mm", "version_35mm": "35mm", "version_16mm": "16mm",
            "version_imax": "IMAX", "version_3d": "3D", "version_4k": "4K",

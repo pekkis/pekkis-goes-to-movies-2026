@@ -28,5 +28,12 @@ class NoSubtitlesTest(unittest.TestCase):
         self.assertEqual(lang("FI", "-", "Dubattu"), "FI-A")
 
 
+class CountryCodeTest(unittest.TestCase):
+    def test_japans_country_code_is_the_japanese_language(self):
+        """`jp` arrived for Two Seasons, Two Strangers on 2026-10-12 and published JP-A."""
+        self.assertEqual(lang("jp", "suomi, ruotsi", ""), "JA-A, FI-S, SV-S")
+        self.assertEqual(lang("JP", "-", ""), "JA-A")
+
+
 if __name__ == "__main__":
     unittest.main()

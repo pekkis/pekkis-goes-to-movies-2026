@@ -6,7 +6,7 @@ Finnish cinema showtimes as a fast, installable web page.
 
 ## What it does
 
-Showtimes for 134 venues in 96 cities across 83 providers: Finnkino, BioRex,
+Showtimes for 138 venues in 100 cities across 83 providers: Finnkino, BioRex,
 Kinoset, Kotkan Leffat, Riviera, Savon Kinot, Gilda, Cinema Orion, Kino Engel,
 Bio Rex Kokkola, Kino Akseli, Kinopirtti, Leffabuumi, Studio 123 Järvenpää,
 Studio 123 Kouvola, Kino 123, Ihme Kompleksi, Kinotar 123, Kino Juha, Bio Grand,
@@ -32,7 +32,7 @@ planetarium).
 
 Cities with more than one venue get a combined view that merges the same film
 across chains into one card, and so do 15 regions: the picker switches between
-its 96 cities and those regions, so Pääkaupunkiseutu is one row rather than four
+its 100 cities and those regions, so Pääkaupunkiseutu is one row rather than four
 cities. A region groups towns close enough that a cinema in one can replace one
 in another. The theatre picker is searchable, and "jarvela" finds Järvelä,
 "capital region" finds Pääkaupunkiseutu. Installs as a PWA and serves the last
@@ -56,7 +56,7 @@ small cinemas run one of a few ticketing platforms:
 | Finnkino (Vista OCAPI) | 1 | 17 | short-lived token | Local |
 | eTiketti | 21 | 31 | none | GitHub Actions; 5 of 21 local, see registry |
 | BioRex | 1 | 12 | none | GitHub Actions |
-| Nexxo | 8 | 13 | none | GitHub Actions |
+| Nexxo | 8 | 17 | none | GitHub Actions |
 | Riviera | 1 | 2 | none | GitHub Actions |
 | Gilda (MyCloudCinema) | 1 | 2 | none | GitHub Actions |
 | Cinema Orion | 1 | 1 | none | GitHub Actions |
@@ -280,7 +280,7 @@ local machine alike, so a schedule and the pages built from it land in one commi
     /teatteri/{slug}/     one venue        /sv/teatteri/{slug}/   /en/theatre/{slug}/
     /kaupunki/{slug}/     a whole city     /sv/kaupunki/{slug}/   /en/city/{slug}/
 
-151 per language, 454 sitemap URLs: 134 venues plus the seventeen cities with more
+155 per language, 466 sitemap URLs: 138 venues plus the seventeen cities with more
 than one venue, and the front page. The 15 regions get no page of their own: a region
 page would compete with the city and venue pages it is made of, and a region
 exists only inside the picker. A one-venue city would

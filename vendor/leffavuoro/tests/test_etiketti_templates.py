@@ -151,6 +151,166 @@ class Stubbed(unittest.TestCase):
         return e
 
 
+# --- data-dates items: Leffabuumi and Savon Kinot (2026-10-12) ----------------------------
+
+def dated_item(town, date, clock, place, price, seats, sid, tag=""):
+    """The shape read live on 2026-10-13, attributes on lines of their own."""
+    specs = f'<div class="movie-specs"> <span class="tag">{tag}</span> </div>' if tag else ""
+    return (f'<div class="item"\n      data-locations="[&quot;{town}&quot;]"\n'
+            f'      data-dates="[&quot;{date}&quot;]"\n>\n'
+            f'<div> <p> <strong><span>KE {date[:-4]} klo {clock}</span></strong> {specs}</p> '
+            f'<p> {place}<br /> Lippu {price}&euro;<br /> Vapaat paikat {seats} </p> </div> '
+            f'<div> <a class="button-screening" href="/salikartta?id={sid}"> Osta tai varaa '
+            f'</a> </div> </div>\n')
+
+
+def dated_film(*items):
+    return (KOTKA_FILM.split('<div class="item kotka')[0]
+            + "".join(items) + "</div>\n</div>\n</div>\n</main>")
+
+
+BUUMI_FILM = dated_film(
+    dated_item("mikkeli", "14.10.2026", "19.15", "MIKKELI | KINOLINNA | SALI 2", "14,50", "52/52", 57163),
+    dated_item("mikkeli", "21.10.2026", "14.15", "MIKKELI | KINOLINNA | VIP", "18,50", "31/31", 57253),
+    dated_item("mikkeli", "22.10.2026", "18.00", "MIKKELI | KINO RITZ | RITZ 1", "13,00", "0/80", 57260))
+
+
+class DataDatesTest(Stubbed):
+    def test_each_item_is_a_screening_with_its_date_place_price_and_link(self):
+        e = load()
+        rows, meta = e.parse_movie(BUUMI_FILM, site("leffabuumi"), "/elokuvat/3287/digger")
+        self.assertEqual(meta["skipped"], 0)
+        self.assertEqual([(r["start"][:16], r["aud"], r["price"], r["free"], r["sid"]) for r in rows],
+                         [("2026-10-14T19:15", "KINOLINNA | SALI 2", "14.5€", 52, "/salikartta?id=57163"),
+                          ("2026-10-21T14:15", "KINOLINNA | VIP", "18.5€", 31, "/salikartta?id=57253"),
+                          ("2026-10-22T18:00", "KINO RITZ | RITZ 1", "13€", 0, "/salikartta?id=57260")])
+
+    def test_leffabuumis_venues_and_ticket_links(self):
+        e = self.stub({"/elokuvat/ohjelmistossa": listing("/elokuvat/3287/digger"),
+                       "/elokuvat/3287/digger": BUUMI_FILM})
+        out = e.fetch_site(site("leffabuumi"), sleep=0)
+        self.assertEqual({k: len(v) for k, v in out.items()}, {"lb-kinolinna": 2, "lb-ritz": 1})
+        self.assertEqual(out["lb-kinolinna"][0]["url"], "https://leffabuumi.fi/salikartta?id=57163")
+        self.assertTrue(out["lb-ritz"][0]["soldOut"])
+
+    def test_savon_kinots_town_first_place_line_keeps_its_room(self):
+        page = dated_film(
+            dated_item("joensuu", "13.10.2026", "18.30", "JOENSUU | TAPIO | TAPIO 3", "14,00",
+                       "91/103", 55785, tag="Viimeinen näytös"),
+            dated_item("varkaus", "14.10.2026", "19.00", "VARKAUS | MAXIM | MAXIM", "12,00",
+                       "40/60", 55786))
+        e = self.stub({"/elokuvat/ohjelmistossa": listing("/elokuvat/111/avengers"),
+                       "/elokuvat/111/avengers": page})
+        out = e.fetch_site(site("savonkinot"), sleep=0)
+        tapio, maxim = out["sk-tapio"][0], out["sk-maxim"][0]
+        self.assertEqual((tapio["aud"], tapio["price"], tapio["method"]),
+                         ("Sali Tapio 3", "14€", "Viimeinen näytös"))
+        self.assertEqual((maxim["aud"], maxim["price"]), ("", "12€"))
+
+    def test_an_item_with_two_dates_or_none_is_not_placed(self):
+        e = load()
+        two = dated_item("mikkeli", "14.10.2026", "19.15", "MIKKELI | KINOLINNA | SALI 2",
+                         "14,50", "52/52", 1).replace(
+            "[&quot;14.10.2026&quot;]", "[&quot;14.10.2026&quot;,&quot;15.10.2026&quot;]")
+        none = '<div class="item"><p>KE klo 19.15</p></div>\n'
+        rows, meta = e.parse_movie(dated_film(two, none), site("leffabuumi"), "/elokuvat/1/x")
+        self.assertEqual((rows, meta["skipped"]), ([], 1))
+
+
+# --- the operas and events listing (2026-10-12) -------------------------------------------
+
+OPERA_FILM = (KOTKA_FILM.replace("Insidious: Out of the Further", "Ooppera: Don Giovanni")
+              .replace("salikartta?id=56106", "salikartta?id=55623")
+              .replace("salikartta?id=56107", "salikartta?id=55624"))
+EVENTS_LINK = '<a href="/elokuvat/oopperat-ja-tapahtumat">Oopperat ja tapahtumat</a>'
+
+
+class EventListingTest(Stubbed):
+    """Kinopalatsi Kotka's opera on 15.10. was linked only from "Oopperat ja tapahtumat",
+    which eight hosts link from their programme page."""
+
+    def test_a_linked_events_listing_adds_its_films(self):
+        e = self.stub({"/elokuvat/ohjelmistossa": listing("/elokuvat/3268/insidious",
+                                                          nav=EVENTS_LINK),
+                       "/elokuvat/oopperat-ja-tapahtumat": listing("/elokuvat/3291/don-giovanni",
+                                                                   "/elokuvat/3268/insidious"),
+                       "/elokuvat/3268/insidious": KOTKA_FILM,
+                       "/elokuvat/3291/don-giovanni": OPERA_FILM})
+        out = e.fetch_site(site("kotkanleffat"), sleep=0)
+        titles = sorted({s["title"] for v in out.values() for s in v})
+        self.assertEqual(titles, ["Insidious: Out of the Further", "Ooppera: Don Giovanni"])
+        self.assertEqual(sum(len(v) for v in out.values()), 4)
+
+    def test_an_unlinked_or_foreign_events_listing_is_never_requested(self):
+        """The stub raises on any unmapped fetch, so a request would fail the test."""
+        for nav in ("", '<a href="https://example.org/elokuvat/oopperat-ja-tapahtumat">x</a>'):
+            with self.subTest(nav=nav):
+                e = self.stub({"/elokuvat/ohjelmistossa": listing("/elokuvat/3268/insidious",
+                                                                  nav=nav),
+                               "/elokuvat/3268/insidious": KOTKA_FILM})
+                out = e.fetch_site(site("kotkanleffat"), sleep=0)
+                self.assertEqual(sum(len(v) for v in out.values()), 2)
+
+    def test_a_linked_events_listing_that_fails_fails_the_site(self):
+        e = self.stub({"/elokuvat/ohjelmistossa": listing("/elokuvat/3268/insidious",
+                                                          nav=EVENTS_LINK),
+                       "/elokuvat/oopperat-ja-tapahtumat": RuntimeError("HTTP Error 503"),
+                       "/elokuvat/3268/insidious": KOTKA_FILM})
+        with self.assertRaises(RuntimeError):
+            e.fetch_site(site("kotkanleffat"), sleep=0)
+
+
+# --- the showtimes listing (2026-10-13) ---------------------------------------------------
+
+DUNE_FILM = (KOTKA_FILM.replace("Insidious: Out of the Further", "Dyyni: osa kolme")
+             .replace("salikartta?id=56106", "salikartta?id=57301")
+             .replace("salikartta?id=56107", "salikartta?id=57302"))
+SHOWTIMES_LINK = '<a href="/elokuvat/naytosajat">Näytösajat</a>'
+
+
+class ShowtimesListingTest(Stubbed):
+    """On 2026-10-13, 58 films with screenings on 13 hosts were linked only from
+    "Näytösajat"."""
+
+    def pages(self, nav):
+        return {"/elokuvat/ohjelmistossa": listing("/elokuvat/3268/insidious", nav=nav),
+                "/elokuvat/oopperat-ja-tapahtumat": listing("/elokuvat/3291/don-giovanni",
+                                                            "/elokuvat/3268/insidious"),
+                "/elokuvat/naytosajat": listing("/elokuvat/3268/insidious",
+                                                "/elokuvat/3291/don-giovanni",
+                                                "/elokuvat/3277/dyyni-osa-kolme",
+                                                "/elokuvat/3277/dyyni-osa-kolme"),
+                "/elokuvat/3268/insidious": KOTKA_FILM,
+                "/elokuvat/3291/don-giovanni": OPERA_FILM,
+                "/elokuvat/3277/dyyni-osa-kolme": DUNE_FILM}
+
+    def test_the_three_listings_together_publish_each_screening_once(self):
+        e = self.stub(self.pages(EVENTS_LINK + SHOWTIMES_LINK))
+        fetched, real = [], e.get
+        e.get = lambda url, tries=3: fetched.append(url) or real(url, tries)
+        out = e.fetch_site(site("kotkanleffat"), sleep=0)
+        shows = sorted((s["title"], s["start"], s["url"]) for v in out.values() for s in v)
+        self.assertEqual(len(shows), 6)
+        self.assertEqual(len(set(shows)), 6)
+        self.assertEqual(sorted({t for t, _, _ in shows}),
+                         ["Dyyni: osa kolme", "Insidious: Out of the Further", "Ooppera: Don Giovanni"])
+        self.assertEqual(len(fetched), len(set(fetched)), fetched)
+
+    def test_an_unlinked_or_foreign_showtimes_listing_is_never_requested(self):
+        for nav in ("", '<a href="https://example.org/elokuvat/naytosajat">x</a>'):
+            with self.subTest(nav=nav):
+                pages = self.pages(nav)
+                del pages["/elokuvat/naytosajat"]
+                out = self.stub(pages).fetch_site(site("kotkanleffat"), sleep=0)
+                self.assertEqual(sum(len(v) for v in out.values()), 2)
+
+    def test_a_linked_showtimes_listing_that_fails_fails_the_site(self):
+        pages = self.pages(SHOWTIMES_LINK)
+        pages["/elokuvat/naytosajat"] = RuntimeError("HTTP Error 503")
+        with self.assertRaises(RuntimeError):
+            self.stub(pages).fetch_site(site("kotkanleffat"), sleep=0)
+
+
 # --- template 1 still parses exactly as before -------------------------------------------
 
 class KotkaTemplateTest(Stubbed):

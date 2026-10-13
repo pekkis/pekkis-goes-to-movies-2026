@@ -141,6 +141,9 @@ halves. They share the client's design and carry real HTML showtimes plus struct
 Two properties hold them together: the output is **deterministic**, so nothing volatile may
 go into a page or `write_if_changed` stops converging; and the pages depend on the day they
 were built for, so `--date recorded` rebuilds for the day the committed sitemap carries.
+A venue whose last read failed and kept its file, or whose own file or provider file is
+past `PAGE_STALE_DAYS`, puts a warning on every page it appears on, with the time of its
+last successful read. That time comes from the data, so the page stays reproducible.
 CI's drift check regenerates and requires a clean tree.
 
 ## How failure is meant to surface

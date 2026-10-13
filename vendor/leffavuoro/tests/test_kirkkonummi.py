@@ -292,6 +292,26 @@ class PriceTest(unittest.TestCase):
         common.check_shows({kirkkonummi.VENUE["id"]: self.shows}, "kirkkonummi",
                            {kirkkonummi.VENUE["id"]})
 
+    def slotted(self, *lines):
+        """Kerro kaikille's block as read 2026-10-13: `Liput 15e`, then
+        `14.10. Ke klo13.30 Liput 14e`."""
+        body = (head("Kerro kaikille") + item("16.9. Ke klo13.30! / 17.9. To klo18.00") +
+                item("20.9. Sunnuntai klo18.00") + facts("Liput 15e", *lines))
+        return {s["start"][:16]: s["price"] for s in kirkkonummi.parse(page(body), TODAY)}
+
+    def test_a_line_led_by_a_screening_prices_that_screening_alone(self):
+        self.assertEqual(self.slotted("16.9. Ke klo13.30 Liput 14e"),
+                         {"2026-09-16T13:30": "14€", "2026-09-17T18:00": "15€",
+                          "2026-09-20T18:00": "15€"})
+
+    def test_two_amounts_for_one_screening_price_it_nothing(self):
+        got = self.slotted("16.9. Ke klo13.30 Liput 14e", "16.9. Ke klo13.30 Liput 13e")
+        self.assertEqual((got["2026-09-16T13:30"], got["2026-09-17T18:00"]), ("", "15€"))
+
+    def test_a_line_whose_weekday_does_not_fit_the_date_prices_nothing(self):
+        got = self.slotted("16.9. Ti klo13.30 Liput 14e")
+        self.assertEqual((got["2026-09-16T13:30"], got["2026-09-17T18:00"]), ("", "15€"))
+
 
 
 class RangeRowTest(unittest.TestCase):
@@ -320,6 +340,23 @@ class RangeRowTest(unittest.TestCase):
         starts, log = self.parse("26-27.9. Su,Ma klo17.00", "30.9. Ke klo18.30")
         self.assertEqual(starts, ["2026-09-30T18:30"])
         self.assertIn("whose weekday matches no candidate year, skipped: Su 26.9., Ma 27.9.", log)
+
+
+class PairRowTest(RangeRowTest):
+    """`12.10. Ma klo18.30 / 13.10. Ti klo18.30` is two screenings on one row. Read
+    2026-10-12: four such rows held 8 of the page's 15 screenings, all skipped."""
+
+    def test_each_half_of_a_slashed_row_is_a_screening(self):
+        starts, log = self.parse("28.9. Ma klo18.30 / 29.9. Ti klo18.30",
+                                 "30.9. Ke klo13.30! / 1.10. To klo18.00")
+        self.assertEqual(starts, ["2026-09-28T18:30", "2026-09-29T18:30", "2026-09-30T13:30",
+                                  "2026-10-01T18:00"])
+        self.assertNotIn("does not read", log)
+
+    def test_a_half_that_does_not_read_leaves_the_whole_row_unread(self):
+        starts, log = self.parse("28.9. Ma klo18.30 / iltapäivällä", "30.9. Ke klo18.30")
+        self.assertEqual(starts, ["2026-09-30T18:30"])
+        self.assertIn("1 row(s) with a time in a shape this parser does not read", log)
 
 
 class FilmFactsTest(unittest.TestCase):

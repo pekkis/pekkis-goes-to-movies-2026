@@ -1538,6 +1538,187 @@ class StaleEmptyPageTest(unittest.TestCase):
                 self.assertIs(bp.unchecked(fetched, today), want)
 
 
+class LatePopulatedPageTest(unittest.TestCase):
+    """A page with screenings says when a venue's programme is retained or old.
+
+    On 2026-10-13 six Savon Kinot venues kept their 12.10. programme after a failed read
+    and their 21 pages listed it with no warning, while the app warned. Built from the
+    committed data with each scenario's provider and area files written explicitly and one
+    screening on the build day, so the outcome does not depend on what the data holds."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        root = pathlib.Path(cls.tmp.name)
+        data = root / "data"
+        data.mkdir()
+        for p in REAL_DATA.glob("*.json"):
+            shutil.copy2(p, data / p.name)
+        cls.today = today = bp.recorded_date()
+        cls.saved = (bp.ROOT, bp.DATA)
+        bp.ROOT, bp.DATA = root, data
+        try:
+            providers = {p["id"]: p for p in
+                         json.loads((data / "providers.json").read_text())["providers"]}
+            chains = {k: p.get("label", k) for k, p in providers.items()}
+            venues, seen = [], set()
+            for v in bp.load_venues():
+                v["city"], v["label"] = bp.city_of(v), bp.label_of(v, chains)
+                v["slug"] = bp.slug(f"{v['label']} {v['city']}")
+                if v["slug"] in seen:
+                    v["slug"] = f"{v['slug']}-{bp.slug(v['id'])}"
+                seen.add(v["slug"])
+                venues.append(v)
+            by_prov, by_city = {}, {}
+            for v in venues:
+                by_prov.setdefault(v["provider"], []).append(v)
+                by_city.setdefault(v["city"], []).append(v)
+            multi = {c: vs for c, vs in by_city.items() if len(vs) > 1}
+            single = sorted(p for p, vs in by_prov.items() if p != "finnkino" and len(vs) == 1
+                            and vs[0]["city"] not in multi and providers[p].get("host"))
+            used, cities = set(single[:5]), []
+            for c in sorted(multi):
+                provs = {v["provider"] for v in multi[c]}
+                if "finnkino" in provs or provs & used or len(provs) != len(multi[c]):
+                    continue
+                cities.append(c)
+                used |= provs
+                if len(cities) == 2:
+                    break
+            cls.retained, cls.fresh, cls.old_area, cls.unverified, cls.pending = (
+                by_prov[p][0] for p in single[:5])
+            cls.mixed, cls.both = cities
+            cls.providers = providers
+            fresh = datetime.combine(today, time(6), tzinfo=bp.FI).isoformat()
+            cls.kept_at = datetime.combine(today - timedelta(days=1), time(14, 10), tzinfo=bp.FI)
+            old = datetime.combine(today - timedelta(days=2), time(12), tzinfo=bp.FI).isoformat()
+            show = {"eventId": "x", "title": "Testielokuva", "original": "", "len": "90",
+                    "start": datetime.combine(today, time(20), tzinfo=bp.FI).isoformat(),
+                    "url": "https://example.org/liput/1", "price": "", "aud": "", "img": ""}
+
+            def area(v, generated, shows=True):
+                (data / f"area-{v['id']}.json").write_text(json.dumps(
+                    {"generated": generated, "shows": [dict(show)] if shows else []}))
+
+            def provider(v, **state):
+                f = data / f"venues-{v['provider']}.json"
+                d = json.loads(f.read_text())
+                d.update({"generated": fresh, "stale": [], "unverified": [], "pending": []})
+                d.update(state)
+                f.write_text(json.dumps(d))
+
+            area(cls.retained, cls.kept_at.isoformat())
+            provider(cls.retained, stale=[cls.retained["id"]])
+            area(cls.fresh, fresh)
+            provider(cls.fresh)
+            area(cls.old_area, old)
+            provider(cls.old_area)
+            area(cls.unverified, fresh, shows=False)
+            provider(cls.unverified, unverified=[cls.unverified["id"]])
+            area(cls.pending, fresh, shows=False)
+            provider(cls.pending, pending=[cls.pending["id"]])
+            vs = sorted(multi[cls.mixed], key=lambda x: x["label"])
+            cls.mixed_late, cls.mixed_ok = vs[0], vs[1:]
+            area(cls.mixed_late, cls.kept_at.isoformat())
+            provider(cls.mixed_late, stale=[cls.mixed_late["id"]])
+            for v in cls.mixed_ok:
+                area(v, fresh)
+                provider(v)
+            cls.both_vs = multi[cls.both]
+            for v in cls.both_vs:
+                area(v, cls.kept_at.isoformat())
+                provider(v, stale=[v["id"]])
+            bp._unmirrored_hosts.clear()
+            bp._SHOWS.clear()
+            with contextlib.redirect_stdout(io.StringIO()):
+                bp.main(today=today)
+            cls.root = root
+            cls.first = {p: p.read_bytes() for p in root.rglob("index.html")}
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                bp.main(today=today)
+            cls.second_build = out.getvalue()
+        except BaseException:
+            bp.ROOT, bp.DATA = cls.saved
+            cls.tmp.cleanup()
+            raise
+
+    @classmethod
+    def tearDownClass(cls):
+        bp.ROOT, bp.DATA = cls.saved
+        cls.tmp.cleanup()
+
+    def note(self, path):
+        m = re.search(r'<p class="intro late"><span data-nosnippet>(.*?)</span></p>',
+                      (self.root / path.strip("/") / "index.html").read_text(encoding="utf-8"))
+        return html.unescape(m.group(1)) if m else None
+
+    def venue_path(self, v, lang):
+        return {"fi": f"/teatteri/{v['slug']}/", "sv": f"/sv/teatteri/{v['slug']}/",
+                "en": f"/en/theatre/{v['slug']}/"}[lang]
+
+    def city_path(self, c, lang):
+        return {"fi": f"/kaupunki/{bp.slug(c)}/", "sv": f"/sv/kaupunki/{bp.slug(c)}/",
+                "en": f"/en/city/{bp.slug(c)}/"}[lang]
+
+    def test_a_retained_programme_is_named_with_its_last_read_and_its_site(self):
+        at = self.kept_at
+        host = self.providers[self.retained["provider"]]["host"]
+        for lang in bp.LANGS:
+            with self.subTest(lang=lang):
+                t = bp.L[lang]
+                note = self.note(self.venue_path(self.retained, lang))
+                self.assertIsNotNone(note)
+                self.assertIn(t["late"].format(who=self.retained["label"]), note)
+                self.assertIn(t["late_since"].format(d=at.day, m=at.month, h=at.hour,
+                                                     mi=f"{at.minute:02d}"), note)
+                self.assertIn(t["late_site"].format(host=host), note)
+
+    def test_a_fresh_programme_carries_no_warning(self):
+        for lang in bp.LANGS:
+            with self.subTest(lang=lang):
+                self.assertIsNone(self.note(self.venue_path(self.fresh, lang)))
+                page = (self.root / self.venue_path(self.fresh, lang).strip("/")
+                        / "index.html").read_text(encoding="utf-8")
+                self.assertNotIn(".late{", page)
+
+    def test_a_new_provider_stamp_does_not_hide_an_old_area_file(self):
+        self.assertIsNotNone(self.note(self.venue_path(self.old_area, "fi")))
+
+    def test_a_mixed_city_names_only_the_late_venue(self):
+        for lang in bp.LANGS:
+            with self.subTest(lang=lang):
+                note = self.note(self.city_path(self.mixed, lang))
+                self.assertIsNotNone(note)
+                self.assertIn(self.mixed_late["label"] + ":", note)
+                for v in self.mixed_ok:
+                    self.assertNotIn(v["label"], note)
+
+    def test_two_late_providers_point_to_the_status_page(self):
+        page = (self.root / self.city_path(self.both, "fi").strip("/")
+                / "index.html").read_text(encoding="utf-8")
+        href = html.escape(bp.status_href("city:" + self.both, "fi"))
+        self.assertIn(f'<a href="{href}">{bp.L["fi"]["late_status"]}</a></span></p>', page)
+        note = self.note(self.city_path(self.both, "fi"))
+        self.assertIsNotNone(note)
+        for v in self.both_vs:
+            self.assertIn(v["label"], note)
+
+    def test_unverified_and_confirmed_empty_pages_keep_their_own_lines(self):
+        for v, key in ((self.unverified, "no_shows_unchecked"), (self.pending, "no_shows")):
+            with self.subTest(venue=v["id"]):
+                page = (self.root / self.venue_path(v, "fi").strip("/")
+                        / "index.html").read_text(encoding="utf-8")
+                lines = [html.unescape(x) for x in re.findall(
+                    r'<p class="intro"><span data-nosnippet>([^<]*)</span>', page)]
+                self.assertTrue(any(x.startswith(bp.L["fi"][key]) for x in lines), lines)
+                self.assertIsNone(self.note(self.venue_path(v, "fi")))
+
+    def test_the_same_inputs_build_the_same_pages(self):
+        self.assertIn(" 0 files written", self.second_build)
+        self.assertEqual({p: p.read_bytes() for p in self.root.rglob("index.html")}, self.first)
+
+
 class HomeLinkVenuesTest(unittest.TestCase):
     """main() checks the homepage's city links against the venue list it already holds.
 

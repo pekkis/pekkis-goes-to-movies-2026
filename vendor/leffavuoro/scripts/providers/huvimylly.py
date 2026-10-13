@@ -52,6 +52,12 @@ below. Measured over the live page and eleven Wayback captures from 2023-05 to 2
   times raises, the same shape `lieksa.py` gets from counting listed lines against read
   ones. Kinotour's undeclared towns are the precedent for counting and naming rather than
   dropping in silence.
+- **A bare marker closes the rows of one film directly above it.** Read 2026-10-12, the
+  programme moved into one `<li>` holding a table of `<h2>` lines, each heading its own
+  line, and printed `Klo 15.00 Lapin Sota`, `Klo 18.00 Lapin Sota` and then `-k16/13-` on
+  its own. A marker with no title text closes the row above it and every unmarked row
+  directly above that one naming the same film. Rows naming another film, or separated
+  from the marker by any other line, are still left out and counted.
 - **One line can hold two times**, `Klo 14.00  ja 19.00  Myrskyluodon Maija -k12/9-`, and
   it is two screenings of one film. Both are published.
 - **The price is the standing line, and it settles every row.** `Liput  vain 10-€` carries
@@ -114,6 +120,9 @@ SITES = [
 WINDOW = (30, 120)
 
 LI_RE = re.compile(r"<li[^>]*>(.*?)</li>", re.S | re.I)
+# The lines of an item that lays its programme out as headings, one per line (2026-10-12).
+BLOCK_RE = re.compile(r"<(h[1-6]|p)\b[^>]*>(.*?)</\1>", re.S | re.I)
+HEADING_TAG_RE = re.compile(r"<h[1-6]\b", re.I)
 TAGS_RE = re.compile(r"<[^>]+>")
 # One `Weekday D.M` with an optional space-separated year, read only out of a line
 # HEAD_LINE_RE has already accepted whole.
@@ -185,7 +194,11 @@ def items(payload):
     if not isinstance(doc, list) or not doc:
         raise RuntimeError(f"the page route answered no page ({served(payload)})")
     body = ((doc[0].get("content") or {}).get("rendered")) or ""
-    return [_text(x) for x in LI_RE.findall(body)]
+    out = []
+    for item in LI_RE.findall(body):
+        blocks = BLOCK_RE.findall(item) if HEADING_TAG_RE.search(item) else []
+        out += [_text(b) for _, b in blocks] if blocks else [_text(item)]
+    return out
 
 
 def price_of(lines):
@@ -239,50 +252,10 @@ def rows(site, lines, today=None):
     # publishing it.
     out, report = [], {"unread": 0, "no_price": 0, "unplaceable": 0}
     pending, fresh = [], True
-    i = 0
-    while i < len(lines):
-        line = lines[i]
-        i += 1
-        if not line or set(line) <= set(".… "):
-            continue
-        if PRICE_RE.search(line):
-            continue
-        if HEAD_LINE_RE.match(line) and _dates(line):
-            if not fresh:
-                pending, fresh = [], True
-            pending += _dates(line)
-            continue
-        if not KLO_RE.match(line):
-            report["unread"] += 1
-            continue
-        if not pending:
-            raise ShowRowError(f"{site['provider']}: {line[:60]!r} is a screening line "
-                               f"with no date heading before it")
-        fresh = False
-        rest = line[3:].strip()
-        times = []
-        while True:
-            m = TIME_RE.match(rest)
-            if not m:
-                break
-            times.append((int(m.group(1)), int(m.group(2))))
-            rest = rest[m.end():].lstrip(" ja")
-        if not times:
-            report["unplaceable"] += 1          # `Klo?`, and a dotless `Klo 1900`
-            continue
-        title, rating, marked = _split_rating(rest)
-        if not marked:
-            nxt = lines[i] if i < len(lines) else ""
-            if nxt and not KLO_RE.match(nxt) and _split_rating(nxt)[2]:
-                tail, rating, _ = _split_rating(nxt)
-                title = f"{title} {tail}".strip()
-                i += 1
-            else:
-                report["unplaceable"] += 1      # no marker closes the title
-                continue
-        if not title:
-            report["unplaceable"] += 1          # `Klo 14.00 -k7/4-`, a row with no film
-            continue
+    # Unmarked rows directly above, which a bare marker on the next line may still close.
+    waiting = []
+
+    def publish(title, rating, times):
         for wd, day, month, year in pending:
             got = year or resolve_year(day, month, today, weekday_index(wd), WINDOW)
             if got is None:
@@ -316,6 +289,66 @@ def rows(site, lines, today=None):
                     "provider": site["provider"],
                     "venue": venue["id"],
                 })
+
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        i += 1
+        if not line or set(line) <= set(".… "):
+            continue
+        if not KLO_RE.match(line):
+            report["unplaceable"] += len(waiting)
+            waiting = []
+        if PRICE_RE.search(line):
+            continue
+        if HEAD_LINE_RE.match(line) and _dates(line):
+            if not fresh:
+                pending, fresh = [], True
+            pending += _dates(line)
+            continue
+        if not KLO_RE.match(line):
+            report["unread"] += 1
+            continue
+        if not pending:
+            raise ShowRowError(f"{site['provider']}: {line[:60]!r} is a screening line "
+                               f"with no date heading before it")
+        fresh = False
+        rest = line[3:].strip()
+        times = []
+        while True:
+            m = TIME_RE.match(rest)
+            if not m:
+                break
+            times.append((int(m.group(1)), int(m.group(2))))
+            rest = rest[m.end():].lstrip(" ja")
+        if not times:
+            report["unplaceable"] += 1          # `Klo?`, and a dotless `Klo 1900`
+            continue
+        title, rating, marked = _split_rating(rest)
+        if not marked:
+            nxt = lines[i] if i < len(lines) else ""
+            if nxt and not KLO_RE.match(nxt) and _split_rating(nxt)[2]:
+                tail, rating, _ = _split_rating(nxt)
+                i += 1
+                if title and not tail:
+                    # A bare marker: it also closes the rows of this film directly above.
+                    same = [w for w in waiting if norm(w[0]) == norm(title)]
+                    report["unplaceable"] += len(waiting) - len(same)
+                    for w_title, w_times in same:
+                        publish(w_title, rating, w_times)
+                    waiting = []
+                title = f"{title} {tail}".strip()
+            elif title:
+                waiting.append((title, times))  # a bare marker below may still close it
+                continue
+            else:
+                report["unplaceable"] += 1      # no marker closes the title
+                continue
+        if not title:
+            report["unplaceable"] += 1          # `Klo 14.00 -k7/4-`, a row with no film
+            continue
+        publish(title, rating, times)
+    report["unplaceable"] += len(waiting)
     if not price:
         report["no_price"] = len(out)
     placed = len({s["start"] for s in out})

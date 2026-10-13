@@ -17,6 +17,16 @@ the ticket page is never fetched: it is the outbound link and nothing more.
 
 Adding another eTiketti cinema = an entry in SITES.
 
+Operas and events (2026-10-12). Eight of the twenty-one hosts link a second listing,
+`/elokuvat/oopperat-ja-tapahtumat`, from their own programme page, and its films are not on
+`/elokuvat/ohjelmistossa`: Kinopalatsi Kotka's opera on 15.10. was linked from nowhere else.
+That listing is read when, and only when, the programme page links it on the site's own
+host. Its film pages are read like any other, and a failure on it fails the site, because
+the screenings on it are part of the programme.
+
+Showtimes (2026-10-13). `/elokuvat/naytosajat` links every film with a screening, and on 13
+hosts it linked 58 films that neither listing above links. It is read on the same rule.
+
 Empty venues (2026-09-13). A site's film pages carry every screening, so a registered
 venue with no row is either out of programme or renamed. `EMPTY_VENUES_CONFIRMED` lets
 run.py publish a fresh empty file for such a venue instead of keeping its last, past
@@ -31,6 +41,7 @@ programme ended on 2026-09-13 and the provider read "not updated" for its past s
 """
 import re
 import datetime, html as html_mod, json, re, time
+from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 
 from common import EmptyProgramme, budget_or_raise, fetch, syn_language
@@ -259,9 +270,12 @@ H1_RE = re.compile(r"<h1[^>]*>(.*?)</h1>", re.S)
 # tag is matched on whitespace and the class attribute is captured whole. The date and the
 # place are read out of it afterwards. The block runs to the next item or to the template's
 # three closing divs, as before.
-ITEM_RE = re.compile(r'<div\s+class="(item [^"]*\bdate-\d{1,2}\.\d{1,2}\.\d{4}\b[^"]*)"(.*?)'
-                     r'(?=<div\s+class="item |</div>\s*</div>\s*</div>|\Z)', re.S)
+# Leffabuumi and Savon Kinot (2026-10-12): `<div class="item" data-dates="[&quot;14.10.2026&quot;]">`.
+ITEM_RE = re.compile(r'<div\s+class="(item(?:\s[^"]*)?)"([^>]*)>(.*?)'
+                     r'(?=<div\s+class="item[\s"]|</div>\s*</div>\s*</div>|\Z)', re.S)
 ITEM_DATE_RE = re.compile(r"\bdate-(\d{1,2})\.(\d{1,2})\.(\d{4})\b")
+DATA_DATES_RE = re.compile(r'\bdata-dates="([^"]*)"')
+DATE_RE = re.compile(r"\b(\d{1,2})\.(\d{1,2})\.(\d{4})\b")
 # Kotka: "KE 2.9. klo 20.00". Niagara: <div class="time"><span>16.15</span>.
 TIME_RE = re.compile(r'(?:klo\s*|class="time"[^>]*>\s*(?:<span[^>]*>\s*)?)(\d{1,2})[.:](\d{2})')
 # Trio 123 screenings read "TRIO 123 | SALI 1"; Kinopalatsi has no room at all.
@@ -549,8 +563,17 @@ def parse_movie(page, site, movie_url):
 
     out, skipped = [], 0
     for m in ITEM_RE.finditer(page):
-        cls, block = m.group(1), m.group(2)
+        cls, attrs, block = m.group(1), m.group(2), m.group(3)
         dm = ITEM_DATE_RE.search(cls)
+        if not dm:
+            listed = DATA_DATES_RE.search(attrs)
+            dates = DATE_RE.findall(html_mod.unescape(listed.group(1))) if listed else []
+            if not listed:
+                continue                     # no date: not a screening
+            if len(dates) != 1:
+                skipped += 1
+                continue
+            dm = DATE_RE.search(html_mod.unescape(listed.group(1)))
         d, mo, y = int(dm.group(1)), int(dm.group(2)), int(dm.group(3))
         tm = TIME_RE.search(block)
         if not tm:
@@ -693,12 +716,34 @@ def syn_value(text, paras=()):
     return {lang: text} if lang else ""
 
 
+# The other listings a host may link (see the module docstring). Never requested unless the
+# programme page links them.
+EVENT_LISTING = "/elokuvat/oopperat-ja-tapahtumat"
+SHOWTIMES_LISTING = "/elokuvat/naytosajat"
+HREF_RE = re.compile(r'href=["\']([^"\']+)["\']', re.I)
+
+
+def links_listing(listing, site, path):
+    """Whether the programme page links `path` on the site's own host."""
+    host = urlsplit(site["base"]).netloc.lower()
+    for href in HREF_RE.findall(listing):
+        u = urlsplit(html_mod.unescape(href))
+        if u.path.rstrip("/") == path and (not u.netloc or u.netloc.lower() == host):
+            return True
+    return False
+
+
 def fetch_site(site, sleep=1.2):
     listing = get(site["base"] + "/elokuvat/ohjelmistossa")
     seen, movies = set(), []
-    for path, mid in MOVIE_LINK_RE.findall(listing):
-        if mid not in seen:
-            seen.add(mid); movies.append((path, mid))
+    pages = [listing]
+    for path in (EVENT_LISTING, SHOWTIMES_LISTING):
+        if links_listing(listing, site, path):
+            pages.append(get(site["base"] + path))
+    for page in pages:
+        for path, mid in MOVIE_LINK_RE.findall(page):
+            if mid not in seen:
+                seen.add(mid); movies.append((path, mid))
 
     if not movies:
         _classify_no_films(listing, site["base"] + "/elokuvat/ohjelmistossa")

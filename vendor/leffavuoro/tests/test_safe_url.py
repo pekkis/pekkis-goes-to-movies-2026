@@ -11,6 +11,7 @@ protocol, since the defect was the gap between the tested string and the browser
 """
 import json
 import pathlib
+import re
 import shutil
 import subprocess
 import unittest
@@ -210,6 +211,34 @@ class SafeUrlRawTest(unittest.TestCase):
 
     def test_nothing_in_is_nothing_out(self):
         self.assertEqual(self.r["raw_empty"]["out"], "")
+
+
+@unittest.skipIf(shutil.which("node") is None, "node not installed")
+class TicketHrefTest(unittest.TestCase):
+    """A show with no usable link is drawn as an <a> without href, which is not a link.
+    `href=""` would open the app itself in a new tab."""
+
+    @classmethod
+    def setUpClass(cls):
+        out = subprocess.run(["node", str(HARNESS)], capture_output=True, text=True,
+                             cwd=str(_ctx.ROOT), timeout=60)
+        if out.returncode:
+            raise AssertionError(f"harness failed: {out.stderr}")
+        cls.r = json.loads(out.stdout)
+
+    def test_a_ticket_link_opens_in_a_new_tab_escaped(self):
+        self.assertEqual(self.r["ticket_https"]["out"],
+                         'href="https://x.fi/a?b=1&amp;c=2" target="_blank" rel="noopener"')
+        self.assertEqual(self.r["ticket_https"]["proto"], "https:")
+
+    def test_no_link_or_a_refused_one_writes_no_attribute(self):
+        for name in ("ticket_js", "ticket_js_lf", "ticket_empty", "ticket_null"):
+            self.assertEqual(self.r[name]["out"], "", name)
+
+    def test_every_renderer_takes_its_link_from_it(self):
+        html = (_ctx.ROOT / "index.html").read_text(encoding="utf-8")
+        self.assertEqual(len(re.findall(r'<a class="stub\$\{cls\}\$\{tint\}" \$\{ticketHref\((?:s|t)\.url\)\}', html)), 3)
+        self.assertNotRegex(html, r'href="\$\{safeUrl\((?:s|t)\.url\)\}')
 
 
 if __name__ == "__main__":

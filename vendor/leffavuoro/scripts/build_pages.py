@@ -157,6 +157,10 @@ L = {
         "days": ["Ma", "Ti", "Ke", "To", "Pe", "La", "Su"],
         "no_shows": "L\u00e4hip\u00e4iville ei ole julkaistu n\u00e4yt\u00f6ksi\u00e4.",
         "no_shows_unchecked": "L\u00e4hip\u00e4ivien n\u00e4yt\u00f6ksi\u00e4 ei voitu tarkistaa.",
+        # The app's staleOne, updated, staleSite and staleStatus, with a time for its hours.
+        "late": "{who}: n\u00e4yt\u00f6stiedot eiv\u00e4t ole p\u00e4ivittyneet",
+        "late_since": "p\u00e4ivitetty {d}.{m}. klo {h}.{mi}",
+        "late_site": "Tarkista ohjelmisto: {host}", "late_status": "Katso palvelun tila",
         "next_show": "Seuraava n\u00e4yt\u00f6s: {when}",
         "mins": "min", "tmdb": "TMDB",
         "venues_h": "Teatterit \u2013 {city}",
@@ -214,6 +218,9 @@ L = {
         "days": ["M\u00e5n", "Tis", "Ons", "Tors", "Fre", "L\u00f6r", "S\u00f6n"],
         "no_shows": "Inga visningar har publicerats f\u00f6r de n\u00e4rmaste dagarna.",
         "no_shows_unchecked": "Visningarna f\u00f6r de n\u00e4rmaste dagarna kunde inte kontrolleras.",
+        "late": "{who}: visningstiderna har inte uppdaterats",
+        "late_since": "uppdaterad {d}.{m}. kl. {h}.{mi}",
+        "late_site": "Kontrollera programmet: {host}", "late_status": "Se tj\u00e4nstens status",
         "next_show": "N\u00e4sta visning: {when}",
         "mins": "min", "tmdb": "TMDB",
         "venues_h": "Biografer \u2013 {city}",
@@ -269,6 +276,9 @@ L = {
         "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
         "no_shows": "No showtimes published for the next few days.",
         "no_shows_unchecked": "Showtimes for the next few days could not be checked.",
+        "late": "{who}: schedule has not refreshed",
+        "late_since": "updated {d}.{m}. at {h}:{mi}",
+        "late_site": "Check the programme: {host}", "late_status": "See service status",
         "next_show": "Next screening: {when}",
         "mins": "min", "tmdb": "TMDB",
         "venues_h": "Cinemas \u2013 {city}",
@@ -708,7 +718,9 @@ def load_venues():
             orphans.append(f.name)
             continue
         for v in d.get("venues", []):
-            out.append({**v, "provider": d["provider"], "fetched": d.get("generated", "")})
+            out.append({**v, "provider": d["provider"], "fetched": d.get("generated", ""),
+                        "retained": v["id"] in d.get("stale", []),
+                        "unverified": v["id"] in d.get("unverified", [])})
     if orphans:
         print(f"[pages] {len(orphans)} venue file(s) for providers the registry does not "
               f"list, skipped: {', '.join(orphans)}")
@@ -724,18 +736,56 @@ def load_venues():
 _SHOWS = {}
 
 
-def load_shows(vid):
+def load_area(vid):
     p = DATA / f"area-{vid}.json"
     if not p.exists():
-        return []
+        return {}
     st = p.stat()
     key = (str(p), st.st_mtime_ns, st.st_size)
     hit = _SHOWS.get(key)
     if hit is None:
-        hit = _SHOWS[key] = json.loads(p.read_text()).get("shows", [])
+        hit = _SHOWS[key] = json.loads(p.read_text())
     # The caller must not mutate it, and none does: the city pass copies every show it
     # keeps (`{**s, "venueLabel": ...}`) and `group_by_day` only sorts and groups.
     return hit
+
+
+def load_shows(vid):
+    return load_area(vid).get("shows", [])
+
+
+def late(v, today):
+    """Whether a venue's programme is older than a page for `today` can show as current:
+    its last read failed and kept the previous file, or its own file or its provider's is
+    past `PAGE_STALE_DAYS`. The provider's stamp alone is new whenever any venue was read."""
+    return v.get("retained", False) or any(
+        unchecked(s, today) for s in (load_area(v["id"]).get("generated"), v.get("fetched")) if s)
+
+
+def late_note(vs, t, providers, status_href):
+    """The warning above a programme that late venues are part of. -> html, or "" for none."""
+    if not vs:
+        return ""
+    stamps = []
+    for v in vs:
+        try:
+            stamps.append(datetime.fromisoformat(
+                load_area(v["id"]).get("generated") or v.get("fetched")).astimezone(FI))
+        except (TypeError, ValueError):
+            pass
+    text = "⚠ " + t["late"].format(who=", ".join(v["label"] for v in vs))
+    if stamps:
+        at = min(stamps)
+        text += " (" + t["late_since"].format(d=at.day, m=at.month, h=at.hour,
+                                              mi=f"{at.minute:02d}") + ")"
+    provs = sorted({v["provider"] for v in vs})
+    p = providers.get(provs[0], {}) if len(provs) == 1 else {}
+    if p.get("host"):
+        href, label = p.get("site") or f"https://{p['host']}/", t["late_site"].format(host=p["host"])
+    else:
+        href, label = status_href, t["late_status"]
+    return (f'<p class="intro late"><span data-nosnippet>{esc(text)}. '
+            f'<a href="{esc(href)}">{esc(label)}</a></span></p>')
 
 
 def duration(minutes):
@@ -1303,6 +1353,10 @@ def lang_switch(lang, paths, t):
             + "".join(seg(c) for c in LANGS) + "</nav>")
 
 
+def status_href(area, lang):
+    return f"/status/?area={urllib.parse.quote(area)}&lang={lang}"
+
+
 def sub_html(sub):
     """The line under the heading. A cinema page's is its city and the cinema's own host,
     set apart by spacing and type rather than a separator character; a city page's is a
@@ -1325,9 +1379,14 @@ def pageview_tag(kind):
             f'</script>')
 
 
+# Only on a page that carries the warning, so the others stay byte-identical.
+LATE_CSS = (".late{color:var(--ink)}"
+            ".late a{color:var(--accent-text);font-weight:700;text-decoration:none}"
+            ".late a:hover{text-decoration:underline}")
+
 def page(*, lang, paths, title, desc, h1, sub, intro, days, today, t,
          extra, gmap, city, with_venue, legend, also, og_image, app_href, area, chain_css,
-         kind, next_day="", native=None, stale=False):
+         kind, next_day="", native=None, stale=False, late=""):
     # One per published language plus x-default on the Finnish page, which is the one a
     # reader with no matching language gets.
     hreflangs = "\n".join(
@@ -1344,6 +1403,8 @@ def page(*, lang, paths, title, desc, h1, sub, intro, days, today, t,
         if next_day:
             line += " " + t["next_show"].format(when=day_label(next_day, t))
         body.append(f'<p class="intro"><span data-nosnippet>{esc(line)}</span></p>')
+    elif late:
+        body.append(late)
     for iso in sorted(days):
         body.append(f'<h2 class="day">{esc(day_label(iso, t))}</h2>')
         for title_, shows in sorted(days[iso].items(),
@@ -1386,7 +1447,7 @@ def page(*, lang, paths, title, desc, h1, sub, intro, days, today, t,
 <link rel="icon" href="/icon-192.png">
 <link rel="preload" href="/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>{CSS}
-{chain_css}</style>
+{chain_css}{LATE_CSS if late else ''}</style>
 <script type="application/ld+json">{ld_json(days, today, city, extra)}</script>
 </head>
 <body>
@@ -1618,6 +1679,7 @@ def main(today=None) -> int:
                              if (s.get("img") or "").startswith("data/posters/")), None)
         og = f"/{first_poster}" if first_poster else "/icon-512.png"
         prov = providers.get(v["provider"], {})
+        is_late = late(v, today)
         for lang in LANGS:
             t = L[lang]
             shown = city_name(v["city"], lang, names_sv)
@@ -1638,7 +1700,8 @@ def main(today=None) -> int:
                     if x),
                 days=days, today=today, t=t, extra=extra, gmap=gmap, city=v["city"], native=native,
                 with_venue=False, legend="", also=also, og_image=og,
-                next_day=next_day, stale=not days and unchecked(v.get("fetched"), today),
+                next_day=next_day, stale=not days and (is_late or v.get("unverified", False)),
+                late=late_note([v] if is_late else [], t, providers, status_href(v["id"], lang)),
                 # Deep link, so a reader arriving from search opens on this venue in this
                 # language instead of whatever the app last had selected. Both halves are
                 # decided by startupArea()/startupLang() in index.html.
@@ -1684,6 +1747,7 @@ def main(today=None) -> int:
         legend = ('<p class="legend">' + "".join(
             f'<span class="lg chain-{esc(k)}">{esc(chains.get(k, k))}</span>' for k in chain_ids)
             + "</p>")
+        late_vs = sorted((v for v in vs if late(v, today)), key=lambda x: x["label"])
         for lang in LANGS:
             t = L[lang]
             chips = "".join(
@@ -1703,7 +1767,8 @@ def main(today=None) -> int:
                 days=days, today=today, t=t, extra=extra, gmap=gmap, city=c, native=native,
                 with_venue=True, legend=legend, also=also, og_image=og,
                 next_day=next_day,
-                stale=not days and any(unchecked(v.get("fetched"), today) for v in vs),
+                stale=not days and any(late(v, today) or v.get("unverified", False) for v in vs),
+                late=late_note(late_vs, t, providers, status_href("city:" + c, lang)),
                 app_href="/?area=" + urllib.parse.quote("city:" + c) + "&lang=" + lang,
                 area="city:" + c, chain_css=chain_css, kind="city")
             stage(ROOT / paths[lang].strip("/") / "index.html", text)

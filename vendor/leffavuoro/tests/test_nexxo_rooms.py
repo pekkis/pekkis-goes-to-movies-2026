@@ -186,6 +186,50 @@ class RenumberedRoomTest(unittest.TestCase):
         self.assertNotIn("km-petajavesi", out)
 
 
+class WindowTest(unittest.TestCase):
+    """Kino Metso reads its whole published programme; every other Nexxo site keeps 21 days.
+    Read 2026-10-13: the cinema's own Laukaa page asks for days=999, and Muurame's November
+    screenings sat past the default window."""
+
+    def days_asked(self, site):
+        asked = []
+        real = nexxo.fetch_payload
+        def fake(site, loc, **kw):
+            asked.append(kw.get("days"))
+            return {"shows": {"d": [row(2, "Muurame", "Film A"), row(4, "Petäjävesi")]}}
+        nexxo.fetch_payload = fake
+        self.addCleanup(lambda: setattr(nexxo, "fetch_payload", real))
+        with contextlib.redirect_stdout(io.StringIO()):
+            nexxo.fetch_site(site, sleep=0)
+        return asked
+
+    def test_a_site_with_its_own_window_asks_for_it(self):
+        self.assertEqual(self.days_asked({**SITE, "days": 999}), [999])
+
+    def test_a_site_without_one_keeps_21_days(self):
+        self.assertEqual(self.days_asked(SITE), [21])
+
+    def test_kino_metso_reads_everything_and_laukaa_owns_room_24(self):
+        metso = next(s for s in nexxo.SITES if s["provider"] == "kinometso")
+        self.assertEqual(metso["days"], 999)
+        laukaa = next(v for v in metso["venues"] if v["id"] == "km-laukaa")
+        self.assertEqual((laukaa["rooms"], laukaa["page"], laukaa["city"]),
+                         (["24"], "/kino-metso/laukaa/", "Laukaa"))
+        self.assertEqual([s["provider"] for s in nexxo.SITES if "days" in s], ["kinometso"])
+
+    def test_every_town_with_a_programme_owns_its_room(self):
+        """Read 2026-10-13: each page names its roomId and shows that room's screenings."""
+        metso = next(s for s in nexxo.SITES if s["provider"] == "kinometso")
+        rooms = {v["id"]: (v["rooms"], v["page"]) for v in metso["venues"]}
+        for vid, room, town in (("km-laukaa", "24", "laukaa"), ("km-viitasaari", "10", "viitasaari"),
+                                ("km-toivakka", "23", "toivakka"),
+                                ("km-hankasalmi", "19", "hankasalmi")):
+            with self.subTest(venue=vid):
+                self.assertEqual(rooms[vid], ([room], f"/kino-metso/{town}/"))
+        owned = [r for rs, _ in rooms.values() for r in rs]
+        self.assertEqual(len(owned), len(set(owned)), "a room owned twice")
+
+
 class UnclaimedRoomTest(unittest.TestCase):
     def test_rows_nobody_owns_are_counted_by_room(self):
         got = nexxo.unclaimed(PAYLOAD, SITE["venues"])

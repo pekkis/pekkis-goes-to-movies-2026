@@ -468,6 +468,44 @@ class SheetHeightOnAPhone(SheetHeight):
     viewport = {"width": 375, "height": 812}; touch = True; phone = True
 
 
+class SheetLongTitle(Browser):
+    """A title with one long word wraps inside the sheet at 320 px. Measured 2026-10-12:
+    "PäiväKaffiLeffa:Hetki Ennen Valoa" ran past the sheet's edge and under the close
+    button, because the text column kept its longest word's width."""
+    viewport = {"width": 320, "height": 700}; touch = True
+    TITLE = "PäiväKaffiLeffa:Hetki Ennen Valoa"
+
+    def setUp(self):
+        shows = [{**s, "title": self.TITLE} if s["eventId"] == "presidentin-kyyditys" else s
+                 for s in SHOWS]
+        data = json.loads((FIXTURE / "data/area-or-helsinki.json").read_text(encoding="utf-8"))
+        Handler.body = {"area-or-helsinki.json":
+                        json.dumps({**data, "shows": shows}).encode("utf-8")}
+        self.addCleanup(lambda: setattr(Handler, "body", {}))
+        super().setUp()
+
+    def test_the_title_wraps_inside_the_sheet_and_clears_the_close_button(self):
+        self.page.goto(self.origin + "/index.html?area=or-helsinki&lang=fi")
+        expect(self.page.locator("a.stub").first).to_be_visible()
+        self.page.evaluate("location.hash = 'm=presidentin-kyyditys'")
+        expect(self.page.locator("#sheetTitle")).to_have_text(self.TITLE)
+        self.page.wait_for_function("() => getComputedStyle(document.querySelector('#sheet'))"
+                                    ".transform === 'none'")
+        m = self.page.evaluate("""() => {
+            const t = document.querySelector('#sheetTitle');
+            const r = document.createRange(); r.selectNodeContents(t);
+            const text = [...r.getClientRects()].reduce((a, b) => Math.max(a, b.right), 0);
+            return {text, over: t.scrollWidth - t.clientWidth,
+                    close: document.querySelector('.sheet-close').getBoundingClientRect().left,
+                    sheet: document.querySelector('#sheet').getBoundingClientRect().right,
+                    page: document.documentElement.scrollWidth};
+        }""")
+        self.assertLessEqual(m["over"], 0, m)
+        self.assertLessEqual(m["text"], m["close"] + 0.5, m)
+        self.assertLessEqual(m["text"], m["sheet"] + 0.5, m)
+        self.assertEqual(m["page"], 320, m)
+
+
 class FreeAdmissionTicket(Browser):
     """A source's "Vapaa pääsy" is drawn in the price compartment, which keeps its 56 px,
     its seam and its notches (audit, 2026-09-27: Kino K13's four screenings drew none)."""
@@ -499,6 +537,38 @@ class FreeAdmissionTicket(Browser):
 
 class FreeAdmissionTicketOnAPhone(FreeAdmissionTicket):
     viewport = {"width": 375, "height": 812}; touch = True
+
+
+class TicketWithoutALink(Browser):
+    """A show with no ticket link is still a ticket and is not a link: `href=""` opened the
+    app itself in a new tab (2026-10-13)."""
+
+    def setUp(self):
+        doc = json.loads((FIXTURE / "data/area-or-helsinki.json").read_text(encoding="utf-8"))
+        doc["shows"][0].update(url="", price="Vapaa pääsy")
+        self.eid, self.day = doc["shows"][0]["eventId"], doc["shows"][0]["start"][:10]
+        Handler.body = {"area-or-helsinki.json": json.dumps(doc).encode("utf-8")}
+        self.addCleanup(lambda: setattr(Handler, "body", {}))
+        super().setUp()
+
+    def check(self, root):
+        bare = self.page.locator(f"{root} a.stub:not([href])")
+        expect(bare).to_have_count(1)
+        expect(bare.locator(".price")).to_have_text("Vapaa pääsy")
+        got = bare.evaluate("e => ({target: e.getAttribute('target'), title: e.title,"
+                            " focused: (e.focus(), document.activeElement === e)})")
+        self.assertEqual((got["target"], got["focused"]), (None, False))
+        self.assertNotIn("Osta", got["title"])
+        self.assertGreater(self.page.locator(f"{root} a.stub[href^='https://']").count(), 0)
+
+    def test_it_is_drawn_unlinked_in_every_view(self):
+        self.pick_orion()
+        for view in ("#segMovies", "#segTimes"):
+            with self.subTest(view=view):
+                self.page.locator(view).click()
+                self.check("#main")
+        self.page.evaluate(f"location.hash = 'm={self.eid}&d={self.day}'")
+        self.check(".sheet-body")
 
 
 class PremiereBadge(Browser):
@@ -536,6 +606,129 @@ class PremiereBadge(Browser):
 
 class PremiereBadgeOnAPhone(PremiereBadge):
     viewport = {"width": 375, "height": 812}; touch = True
+
+
+class StaleDayPastTheHorizon(Browser):
+    """A venue whose last run is past the stale window and whose last date has gone says
+    the programme could not be checked, not that it is unpublished. Huvimylly, 2026-10-12:
+    "Tämän päivän ohjelmistoa ei ole vielä julkaistu." under a 24-hour stale banner while
+    the cinema listed three screenings."""
+
+    def serve(self, generated):
+        data = json.loads((FIXTURE / "data/area-or-helsinki.json").read_text(encoding="utf-8"))
+        shows = [{**s, "start": "2026-09-13" + s["start"][10:]} for s in data["shows"]]
+        doc = {**data, "generated": generated, "dates": ["2026-09-13"],
+               "horizon": "2026-09-13", "shows": shows}
+        Handler.body = {"area-or-helsinki.json": json.dumps(doc).encode("utf-8")}
+        self.addCleanup(lambda: setattr(Handler, "body", {}))
+
+    def message(self, want):
+        self.page.goto(self.origin + "/index.html?area=or-helsinki&lang=fi")
+        status = self.page.locator("#main .status")
+        expect(status).to_contain_text(want)
+        return status.inner_text()
+
+    def test_an_old_run_past_its_horizon_could_not_be_checked(self):
+        self.serve("2026-09-13T00:00:00+00:00")         # 33 hours before the pinned clock
+        self.assertNotIn("ei ole vielä julkaistu", self.message("Ohjelmistoa ei voitu tarkistaa"))
+
+    def test_a_fresh_run_past_its_horizon_is_not_yet_published(self):
+        self.serve("2026-09-14T08:00:00+00:00")         # one hour before
+        self.assertNotIn("ei voitu tarkistaa",
+                         self.message("Tämän päivän ohjelmistoa ei ole vielä julkaistu."))
+
+    def test_a_city_with_one_fresh_source_keeps_not_yet_published(self):
+        """The fresh cinema's "not yet published" is true, so one late cinema beside it
+        does not turn the city's day into one that could not be checked."""
+        self.serve("2026-09-13T00:00:00+00:00")
+        itis = json.loads((FIXTURE / "data/area-1004.json").read_text(encoding="utf-8"))
+        itis = {**itis, "generated": "2026-09-14T08:00:00+00:00", "dates": ["2026-09-13"],
+                "horizon": "2026-09-13",
+                "shows": [{**s, "venue": "1162", "theatre": "Itis",
+                           "start": "2026-09-13" + s["start"][10:]} for s in itis["shows"]]}
+        Handler.body = {**Handler.body, "area-1162.json": json.dumps(itis).encode("utf-8")}
+        self.page.goto(self.origin + "/index.html?area=city:Helsinki&lang=fi")
+        # Retried: the city draws as its parts arrive, and with only the late one in, every
+        # known source is late for a moment.
+        expect(self.page.locator("#main .status")).to_contain_text(
+            "Tämän päivän ohjelmistoa ei ole vielä julkaistu.")
+
+
+class FinnkinoUnpublishedGap(Browser):
+    """One advance screening sits past Finnkino's published week. The days between say
+    "not yet published", not "no shows": 16.-17.10.2026 at eight Finnkino venues, ahead of
+    an 18.10. marathon. Another chain's gap is a day with nothing on and keeps "no shows"."""
+
+    def serve(self, name, days=("2026-09-14", "2026-09-15", "2026-09-18")):
+        data = json.loads((FIXTURE / f"data/{name}").read_text(encoding="utf-8"))
+        first = data["shows"][0]
+        shows = [{**first, "start": day + first["start"][10:]} for day in days]
+        doc = {**data, "dates": list(days), "horizon": days[-1], "shows": shows}
+        Handler.body = {name: json.dumps(doc).encode("utf-8")}
+        self.addCleanup(lambda: setattr(Handler, "body", {}))
+
+    def wednesday(self, area):
+        self.page.goto(self.origin + f"/index.html?area={area}&lang=fi")
+        expect(self.page.locator("a.stub").first).to_be_visible()
+        self.page.locator("#days .day").nth(2).click()          # Ke 16.9.
+        status = self.page.locator("#main .status")
+        expect(status).to_be_visible()
+        return status
+
+    def test_a_finnkino_day_before_an_advance_screening_is_not_yet_published(self):
+        self.serve("area-1004.json")
+        expect(self.wednesday("1004")).to_contain_text(
+            "Tämän päivän ohjelmistoa ei ole vielä julkaistu.")
+
+    def test_a_finnkino_day_before_the_published_run_has_no_shows(self):
+        """A day before the listing's first date is an ordinary empty day, not an
+        unpublished one."""
+        self.serve("area-1004.json", days=("2026-09-16", "2026-09-17", "2026-09-18"))
+        self.page.goto(self.origin + "/index.html?area=1004&lang=fi")
+        expect(self.page.locator("a.stub").first).to_be_visible()
+        self.page.locator("#days .day").nth(1).click()          # Ti 15.9.
+        status = self.page.locator("#main .status")
+        expect(status).to_contain_text("ei ole näytöksiä")
+        self.assertNotIn("ei ole vielä julkaistu", status.inner_text())
+
+    def test_another_chains_gap_is_still_a_day_with_no_shows(self):
+        self.serve("area-or-helsinki.json")
+        status = self.wednesday("or-helsinki")
+        expect(status).to_contain_text("ei ole näytöksiä")
+        self.assertNotIn("ei ole vielä julkaistu", status.inner_text())
+
+
+class SheetFinnkinoSynopsisLanguages(Browser):
+    """A Finnkino film whose films.json entry is Finnish only reads the store's Swedish and
+    English, and keeps Finnkino's own Finnish. Measured 2026-10-12: 28 of 57 Finnkino films
+    had an English text in films-extra that the English sheet never showed."""
+    FILMS = json.dumps({"films": {
+        "promenadi-only-film": {"t": {"fi": "Porin oma elokuva"},
+                                "s": {"fi": "Finnkinon oma teksti.", "sv": "", "en": ""}}}}
+    ).encode("utf-8")
+    EXTRA = json.dumps({"films": {
+        "porin oma elokuva": {"s": {"fi": "Varaston teksti.", "sv": "Lagrets text.",
+                                    "en": "The store's text."}}}}).encode("utf-8")
+
+    def setUp(self):
+        Handler.body = {"films.json": self.FILMS, "films-extra.json": self.EXTRA}
+        self.addCleanup(lambda: setattr(Handler, "body", {}))
+        super().setUp()
+
+    def syn(self, lang):
+        self.page.goto(self.origin + f"/index.html?area=1004&lang={lang}")
+        expect(self.page.locator("a.stub").first).to_be_visible()
+        self.page.evaluate("location.hash = 'm=promenadi-only-film'")
+        p = self.page.locator(".sheet-body p.syn")
+        expect(p).to_have_count(1)
+        return p.text_content()
+
+    def test_the_store_fills_the_languages_finnkino_leaves_empty(self):
+        self.assertEqual(self.syn("en"), "The store's text.")
+        self.assertEqual(self.syn("sv"), "Lagrets text.")
+
+    def test_finnkinos_own_text_keeps_its_slot(self):
+        self.assertEqual(self.syn("fi"), "Finnkinon oma teksti.")
 
 
 class SheetSynopsisByTmdbId(Browser):

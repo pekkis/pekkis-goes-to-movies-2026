@@ -28,7 +28,7 @@ if (a === -1 || b === -1 || b < a) {
   process.exit(2);
 }
 const source = HTML.slice(a, b);
-for (const name of ['safeUrl', 'safeUrlRaw', 'safeAssetUrl', 'esc']) {
+for (const name of ['safeUrl', 'safeUrlRaw', 'safeAssetUrl', 'esc', 'ticketHref']) {
   if (!new RegExp('const ' + name + '\\s*=').test(source)) {
     console.error('marker block does not contain ' + name);
     process.exit(2);
@@ -38,11 +38,12 @@ for (const name of ['safeUrl', 'safeUrlRaw', 'safeAssetUrl', 'esc']) {
 const sandbox = {};
 vm.createContext(sandbox);
 vm.runInContext(source + '\n;globalThis.__u = safeUrl; globalThis.__a = safeAssetUrl;'
-                + 'globalThis.__r = safeUrlRaw;',
+                + 'globalThis.__r = safeUrlRaw; globalThis.__t = ticketHref;',
                 sandbox, { filename: 'urlSinks' });
 const safeUrl = sandbox.__u;
 const safeAssetUrl = sandbox.__a;
 const safeUrlRaw = sandbox.__r;
+const ticketHref = sandbox.__t;
 
 // Written as char codes so no literal control byte sits in this file, where an editor
 // would hide it and a diff would not show it.
@@ -120,16 +121,28 @@ const CASES = [
   ['asset_lf_inside',     'asset', 'data/posters/tt' + LF + '1234.jpg'],
   ['asset_lf_in_prefix',  'asset', 'data' + LF + '/posters/tt1234.jpg'],
   ['asset_empty',         'asset', ''],
+  // -- the ticket's link attributes: none at all when there is no usable URL --------
+  ['ticket_https',        'ticket', 'https://x.fi/a?b=1&c=2'],
+  ['ticket_js',           'ticket', 'javascript:alert(1)'],
+  ['ticket_js_lf',        'ticket', 'java' + LF + 'script:alert(1)'],
+  ['ticket_empty',        'ticket', ''],
+  ['ticket_null',         'ticket', null],
 ];
 
 const out = {};
 for (const [name, which, raw] of CASES) {
   const got = which === 'url' ? safeUrl(raw)
-            : which === 'raw' ? safeUrlRaw(raw) : safeAssetUrl(raw);
+            : which === 'raw' ? safeUrlRaw(raw)
+            : which === 'ticket' ? ticketHref(raw) : safeAssetUrl(raw);
   const rec = { out: got, accepted: got !== '' };
-  if (rec.accepted) {
+  // A ticket's output is attributes; the URL a browser follows is the href inside them.
+  const href = which === 'ticket'
+    ? (/^href="([^"]+)" target="_blank" rel="noopener"$/.exec(got) || [])[1] : got;
+  if (rec.accepted && href === undefined) {
+    rec.proto = 'NO_HREF';
+  } else if (rec.accepted) {
     try {
-      const url = new URL(unesc(got), BASE);
+      const url = new URL(unesc(href), BASE);
       rec.proto = url.protocol;
       rec.resolved = url.href;
       rec.sameOrigin = url.origin === new URL(BASE).origin;

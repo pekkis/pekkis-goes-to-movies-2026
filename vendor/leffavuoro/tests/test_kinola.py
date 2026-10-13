@@ -74,15 +74,21 @@ def laika_row(slug, title, date="16/09/2026 14:00", sold=False,
             f'<span class="kinola-event-date">{date}</span></p>{ticket}</div></div>')
 
 
+PLACEHOLDER = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACWAQMAAAASdr8F"
+
+
 def myyri_row(slug, title, when, time="19:30", sold=False, poster=True,
               checkout="2e4097de-cb51-4d0a-9fc6-28b1fd66ca38", date=None, href=None,
-              no_ticket=False):
+              no_ticket=False, lazy=False):
     """`when` is a date; the row prints its weekday, day and month and no year. `href`
-    replaces the ticket anchor's href as printed; `no_ticket` drops the anchor."""
+    replaces the ticket anchor's href as printed; `no_ticket` drops the anchor. `lazy` is
+    the shape read 2026-10-12: a placeholder in `src` and the poster in `data-src`."""
     date = date if date is not None else f"{FI_WD[when.weekday()]} {when.day}.{when.month}. klo {time}"
-    img = (f'<img decoding="async" src="https://media.kinola.ee/storage/myyri.kinola.ee/'
-           f'3786/{slug}_poster.jpg?width=1000&quality=85" width="100px" height="150px" '
-           f'style="float: left;" class="kinola-event-poster"/>' if poster else "")
+    real = (f'https://media.kinola.ee/storage/myyri.kinola.ee/'
+            f'3786/{slug}_poster.jpg?width=1000&quality=85')
+    src = f'src="{PLACEHOLDER}" data-src="{real}"' if lazy else f'src="{real}"'
+    img = (f'<img decoding="async" {src} width="100px" height="150px" '
+           f'style="float: left;" class="kinola-event-poster lazyload"/>' if poster else "")
     ticket = ('<p><span class="kinola-event-tickets-link-sold-out">Loppuunmyyty</span></p>'
               if sold else "" if no_ticket else
               f'<p><a class="kinola-event-tickets-link" '
@@ -485,6 +491,33 @@ class MyyriListingTest(unittest.TestCase):
     def test_a_row_with_no_readable_date_fails_the_site(self):
         with self.assertRaises(K.ListingRowError):
             self.rows(myyri_row("a", "A", None, date="pian"))
+
+    def test_a_lazy_loaded_poster_is_read_from_data_src_and_a_placeholder_never(self):
+        """Every row read 2026-10-12 had a base64 placeholder in `src`. One with only the
+        placeholder publishes no image, so the film page's `og:image` can supply it."""
+        lone = myyri_row("father", "B", self.TODAY, time="12:00").replace(
+            'src="https://media.kinola.ee/storage/myyri.kinola.ee/3786/father_poster.jpg'
+            '?width=1000&quality=85"', f'src="{PLACEHOLDER}"')
+        gif = myyri_row("mother", "C", self.TODAY, time="15:00", lazy=True).replace(
+            f'src="{PLACEHOLDER}"', 'src="/wp-content/plugins/lazy/blank.gif"')
+        [a, b, c] = self.rows(myyri_row("hanuman", "A", self.TODAY, lazy=True), lone, gif)
+        self.assertEqual(a["img"], "https://media.kinola.ee/storage/myyri.kinola.ee/3786/"
+                                   "hanuman_poster.jpg?width=1000&quality=85")
+        self.assertEqual(b["img"], "")
+        self.assertEqual(c["img"], "https://media.kinola.ee/storage/myyri.kinola.ee/3786/"
+                                   "mother_poster.jpg?width=1000&quality=85")
+
+    def test_a_script_naming_the_sold_out_class_marks_no_row_sold_out(self):
+        """The site's own script after the last row, read 2026-10-12. The last block runs
+        to the end of the page, so a bare match made the last film sold out."""
+        script = ("<script>var nappi1 = lohko1.querySelector("
+                  "'.kinola-event-tickets-link-sold-out');</script>")
+        page = listing(myyri_row("hanuman", "A", self.TODAY, checkout="u-1"),
+                       myyri_row("father", "B", self.TODAY, time="12:00", checkout="u-2"))
+        rows = K.events_myyri(page.replace("</body>", script + "</body>"), MYYRI, self.TODAY)
+        self.assertEqual([(r["soldOut"], r["url"]) for r in rows],
+                         [(False, "https://kinomyyri.fi/checkout/u-1"),
+                          (False, "https://kinomyyri.fi/checkout/u-2")])
 
 
 class MinutesTest(unittest.TestCase):

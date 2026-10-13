@@ -3788,3 +3788,136 @@ only when the page shows all three parts of that state: the results line "Kaikki
 paikkakunnat · 0 näytöstä", an event list with nothing in it, and the shown `kt-empty`
 notice with its exact text. Zero cards without them still fails the site. Evidence:
 [empty-states.md](../research/empty-states.md). Six mutations red.
+
+### Kino Kirkkonummi: two screenings on one row (2026-10-12)
+The functional test of 2026-10-12 found 7 of the page's 15 screenings published, with the
+run green. Four rows held two screenings joined by a slash, `12.10. Ma klo18.30 / 13.10. Ti
+klo18.30`, and one time ended in an exclamation mark, `14.10. Ke klo13.30!`. The parser
+counted those rows as unread and skipped them, which left Kerro kaikille out entirely. Each
+half is now read as a screening when every half reads, and the mark is allowed after a
+time. The live page parsed to 15 of 15 that day. Kerro kaikille stays unpriced, because its
+block states two amounts, `Liput 15e` and `14.10. Ke klo13.30 Liput 14e`. Four mutations
+red.
+
+### Kino Myyri's posters come from `data-src` (2026-10-12)
+From cloud commit `5e473c5f9` (2026-10-11 11:18 UTC), every Myyri row published the same
+100x150 base64 PNG as its poster, and the app and the generated page drew initials tiles
+for all of them. The theme had started lazy-loading: `src` holds the placeholder and
+`data-src` the real address. `SRC_RE` took the first `src` it met. `poster_src` now prefers
+`data-src` and never takes a `data:` value, which also lets the film page's `og:image`
+fill a row with no usable poster again. The Laika template reads posters the same way. The
+saved listing of 2026-10-12 parsed to 43 rows, all with a media.kinola.ee poster. Three
+mutations red.
+
+### Kino Myyri's last film is no longer marked sold out (2026-10-12)
+The functional test of 2026-10-12 found Naza, then the last film on Myyri's listing, shown
+as sold out while the cinema sold tickets. `blocks()` runs the last block to the end of the
+page, and the site's own script there names the class in `querySelector(
+'.kinola-event-tickets-link-sold-out')`. `SOLD_OUT_RE` matched the bare name. It now
+matches only as a class token inside a `class` attribute, which is how every real marker is
+written. On the saved listing of 2026-10-12 the only sold-out rows were the two with a real
+sold-out span, and the last film was on sale. The same script also turns two checkout links
+into "Vapaa pääsy" and the two Cinemaissí films' buttons into links to their own site. The
+adapter does not model either. One mutation red.
+
+### Elokuvateatteri Huvimylly reads its table layout (2026-10-12)
+Every local run from `5533001c6` (2026-10-11 20:14 EEST) failed with "no screening line in
+the page's own content". The programme had moved into one `<li>` holding a table of `<h2>`
+lines, so the whole programme arrived as one line the parser could not read. An item that
+lays its programme out as headings is now read one line per heading or paragraph. The new
+layout also printed `Klo 15.00 Lapin Sota` and `Klo 18.00 Lapin Sota` above a bare
+`-k16/13-`. A marker with no title text now closes the row above it and every unmarked row
+directly above that one naming the same film. A row naming another film, or with any other
+line between it and the marker, is still left out and counted. Read 2026-10-12 from an
+ordinary connection, the page parsed to its three screenings on 1.11., 13:00 Pikkuli ja
+Tähtipeura (S), and 15:00 and 18:00 Lapin Sota (K-16), all 10 €, with nothing unplaced. The
+adapter runs on the local half, so the published rows wait on the next local run. Five
+mutations red.
+
+### eTiketti reads the operas and events listing where a host links it (2026-10-12)
+The functional test of 2026-10-12 found Kinopalatsi Kotka's opera on 15.10., Don Giovanni
+at 17:30 for 25 €, missing while the cinema listed it. The adapter read only
+`/elokuvat/ohjelmistossa`, and the opera's film page is linked from
+`/elokuvat/oopperat-ja-tapahtumat`. A survey of the 21 hosts that day found eight linking
+that page from their programme page and seven with films on it that the programme lacked:
+Kotkan Leffat 8, Leffabuumi 7, Studio 123 Kouvola 7, Kino Tar 6, Kino Iiris 6, Studio 123
+Järvenpää 4 and Kinopirtti 3. Bio Vuoksi links it with none. The listing is now read only
+where the programme page links it on the site's own host, and a failed read fails the site.
+Read live that day, Kotka published the opera at 17:30, 25 €, with the cinema's own ticket
+id 55623. Four mutations red.
+
+### Kinokulma's non-film products are left out by path (2026-10-13)
+The functional test of 2026-10-12 found Kinokulma publishing "Olemme vapaalla", its night
+off, and "Oulaisten Valovoima ry", a local association's evening, as screenings with ticket
+links and initials tiles. Both are products with canonical paths, so the hall-hire rule
+cannot see them, and the Johku record says no word in a title is read. The maintainer
+decided on 2026-10-13 to exclude them with narrow, recorded per-site rules. A Johku site
+entry can now list `not_films`, exact storefront paths with the evidence beside each, and
+those rows are left out before any page is read and counted in the log. Kinokulma lists
+`/fi_FI/olemme-lomalla` and `/fi_FI/oulaisten-valovoima-ry`, read 2026-10-12 and 2026-10-13.
+The first page carries the title and a length and nothing else, and the second describes the
+association. Three mutations red.
+
+### Iso-Hannu's private hall booking is left out by its exact title (2026-10-13)
+The functional test of 2026-10-12 found Iso-Hannu publishing "Salissa yksityisvaraus", a
+private booking of Sali 2 at 17:00 on 15.10., as a screening with a ticket link. The
+cinema's own page lists it with a ticket button like a film, and its film page (id 2216)
+carries the title and "Elokuvan kesto: 120 min" and nothing else. The maintainer decided on
+2026-10-13 to exclude it with a narrow, recorded rule. `NOT_FILMS` lists exact row titles,
+compared without case, with the evidence for each. A matching row is left out and counted
+in the log, and a title merely containing the word still publishes. Three mutations red.
+
+### Kino Metso adds Laukaa and reads its whole programme (2026-10-13)
+The functional test of 2026-10-12 found Muurame showing nothing while ksek.fi listed six
+screenings from 3.11. to 3.12., Petäjävesi missing 25.11., and Laukaa's five screenings on
+31.10. in room 24, which no venue owned. Kino Metso was read with Nexxo's default 21 days.
+The maintainer decided on 2026-10-13 to add Laukaa and to give Kino Metso a horizon that
+covers the cinema's published dates. The cinema's own Laukaa page, read that day, asks the
+same endpoint for days=999, so Kino Metso's site entry now carries `days: 999` and every
+other Nexxo site keeps 21. Laukaa is room 24 with the page `/kino-metso/laukaa/`, which
+answers 200 with the plugin's showlist. Read live that day: Muurame 6, Petäjävesi 6, Laukaa
+5 and Tikkakoski 2, as the cinema lists them. The wider window also brings Viitasaari (room
+10), Toivakka (23) and Hankasalmi (19) into the payload. They are not added, the log names
+them, and Vaajakoski, with no screening, stays unconfirmed while they are unowned. Three
+mutations red.
+
+### Kino Metso adds Viitasaari, Toivakka and Hankasalmi (2026-10-13)
+The wider window from the record above brought three more towns into the payload with five
+screenings each, in rooms no venue owned: Viitasaari (room 10) on 7.11., Toivakka (23) on
+14.11. and Hankasalmi (19) on 21.11. The maintainer decided the same day to add them, as
+Laukaa was added, once each room and town page matched the cinema's programme. Read
+2026-10-13, each of `/kino-metso/viitasaari/`, `/toivakka/` and `/hankasalmi/` answers 200
+and names its room in its own script, and rendered in Chromium each shows that room's five
+films on its one date. With every room owned, the log names no unclaimed room, and
+Vaajakoski, with no screening, is now confirmed empty. A test pins the four rooms and
+pages, and giving Toivakka Hankasalmi's room turns it red.
+
+### eTiketti reads `data-dates` items (2026-10-13)
+Leffabuumi (from 2026-10-12 17:20 UTC) and Savon Kinot moved each screening's date from the
+item's class to `data-dates`, and every film page parsed to nothing. Read live 2026-10-13:
+Leffabuumi 124 of 124 ticket ids on its showtimes page; Savon Kinot 112 of 149, the other 37
+in 14 films its programme listing does not link. Four mutations red.
+
+### eTiketti reads the showtimes listing where a host links it (2026-10-13)
+A survey of the 21 hosts on 2026-10-13 found 58 films with 91 screenings on 13 sites that
+were linked from `/elokuvat/naytosajat` but from neither listing the adapter read. Savon
+Kinot's 14 were among them. `/elokuvat/tulossa` links 38 of the films, but reading it would
+add 378 film pages with no screening on every run. The showtimes page is linked from 20 of
+the 21 programme pages and is now read on the operas rule. Run live the same day, the 19
+sites that link it published every ticket id it lists, 1,471 in all, with no duplicates.
+Cinema Niagara does not link it and is left for a separate change. Four mutations red.
+
+### Kino Kirkkonummi prices one screening by its own line (2026-10-13)
+Kerro kaikille's block read `Liput 15e` and then `14.10. Ke klo13.30 Liput 14e`. The two
+amounts under one heading made the film ambiguous, so none of its screenings had a price. A
+`Liput` line that starts with a screening's date, weekday and time now prices that
+screening alone and no longer counts toward the film's amount. Two amounts for one
+screening, or a weekday that does not fit the date, leave that screening unpriced. On the
+live page that day, the 14.10. 13:30 screening read 14 € and the other four read 15 €.
+Five mutations red.
+
+### BioRex reads the audio code JP as Japanese (2026-10-13)
+The cloud data of 2026-10-13 09:42 UTC published `JP-A` for Two Seasons, Two Strangers at
+Tripla and Redi, which no language table names, and the language-name test went red on the
+committed data. Gilda had sent the same code the day before. BioRex now maps `JP` to `JA`
+for audio and subtitles. One mutation red.

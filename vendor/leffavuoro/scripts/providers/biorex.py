@@ -100,12 +100,16 @@ def _split_formats(fmts):
     return fmts, audio, subs
 
 
+# Japan's country code for Japanese: Two Seasons, Two Strangers came as JP on 2026-10-13.
+CODE = {"JP": "JA"}
+
+
 def _lang_str(audio, subs):
     """Tags the client understands, so the existing 'Suom. puhe' filter keeps working.
     BioRex publishes SV for Swedish, which is the ISO 639-1 code and what this app now
-    uses, so the codes pass through untouched."""
-    parts = [f"{a}-A" for a in audio.split("&") if a]
-    parts += [f"{x}-S" for x in subs.split("&") if x]
+    uses, so the codes pass through untouched apart from `CODE`."""
+    parts = [f"{CODE.get(a, a)}-A" for a in audio.split("&") if a]
+    parts += [f"{CODE.get(x, x)}-S" for x in subs.split("&") if x]
     return ", ".join(parts)
 
 

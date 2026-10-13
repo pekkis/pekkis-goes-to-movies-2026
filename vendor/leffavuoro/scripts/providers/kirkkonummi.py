@@ -32,7 +32,10 @@ heading as the current film. Four things about this page decide the rest:
   also bounds how far the answer may fall from today. A weekday matching no candidate, or
   one selecting a date roughly a year away, leaves the row unplaced and counted.
 
-The time is written `klo18.00`, with no space and a dot for minutes.
+The time is written `klo18.00`, with no space and a dot for minutes. Read 2026-10-12, one
+row can carry two screenings joined by a slash, `12.10. Ma klo18.30 / 13.10. Ti klo18.30`,
+and a time can end in an exclamation mark, `14.10. Ke klo13.30!`. Each half has to read as a
+screening on its own, or the whole row is counted as unread.
 
 There is no per-film page and no booking host: the site is one page and tickets are
 reserved by phone. So a showtime opens that page and the registry entry is `book="list"`,
@@ -68,7 +71,7 @@ CONTAINER_RE = re.compile(r'elementor-icon-list-text', re.I)
 HEAD_RE = re.compile(r'<p class="elementor-heading-title[^"]*">(.*?)</p>', re.S | re.I)
 ITEM_RE = re.compile(r'<span class="elementor-icon-list-text">(.*?)</span>', re.S | re.I)
 SHOW_RE = re.compile(r'^(\d{1,2})\.(\d{1,2})\.\s*([A-Za-zÄÖäö]{2,12})\s*klo\s*'
-                     r'(\d{1,2})[.:](\d{2})\s*$', re.I)
+                     r'(\d{1,2})[.:](\d{2})\s*!?\s*$', re.I)
 # `26-27.9. La,Su klo17.00`: consecutive days at one time, a weekday for each (2026-09-27).
 RANGE_RE = re.compile(r'^(\d{1,2})\s*-\s*(\d{1,2})\.(\d{1,2})\.\s*([A-Za-zÄÖäö, ]{2,60}?)\s*'
                       r'klo\s*(\d{1,2})[.:](\d{2})\s*$', re.I)
@@ -83,7 +86,11 @@ NOT_A_TITLE = re.compile(r'^(?:tulossa|elokuvateatteri|\d+\s*paikkaa)$', re.I)
 # house price would be wrong for some of the programme. No currency symbol is printed.
 # `Liput 15e` states whole euros.
 SEP = r'(?:\s|&nbsp;|<[^>]+>)*'
-PRICE_RE = re.compile(r'Liput' + SEP + r'(\d{1,3}(?:[.,]\d{2}|(?=\s*(?:e|€|eur)\b)))', re.I)
+AMOUNT = r'(\d{1,3}(?:[.,]\d{2}|(?=\s*(?:e|€|eur)\b)))'
+PRICE_RE = re.compile(r'Liput' + SEP + AMOUNT, re.I)
+# `14.10. Ke klo13.30 Liput 14e` (Kerro kaikille, 2026-10-13): the amount for that screening only.
+SLOT_PRICE_RE = re.compile(r'(\d{1,2})\.(\d{1,2})\.\s*([A-Za-zÄÖäö]{2,12})\s*klo\s*(\d{1,2})[.:](\d{2})'
+                           r'\s*!?\s*(Liput' + SEP + AMOUNT + ')', re.I)
 # The block's other facts, `Kesto: <span>102 min</span>`, `Kesto 1h 27min`, `Ikäraja 7`,
 # `Genres: <span>draama</span>`, read the same way (2026-09-27).
 KESTO_RE = re.compile(r'Kesto:?' + SEP + r'(?:(\d)\s*h(?:\s*(\d{1,2})\s*min)?|(\d{2,3})\s*min)',
@@ -146,10 +153,40 @@ def prices_by_title(page):
     not ambiguous, which is what the duplicated programme produces for every real film.
 
     The page read 2026-09-16 carried three such lines and all three were inside a film's
-    block.
+    block. A line led by a screening's date and time is that screening's alone
+    (`slot_prices`) and is not counted here.
     """
-    return {t: f"{v:.2f}".rstrip("0").rstrip(".") + "\u20ac" for t, v in by_title(
-        page, PRICE_RE, lambda m: float(m.group(1).replace(",", "."))).items()}
+    slot = {m.start(6) for m in SLOT_PRICE_RE.finditer(page)}
+    return {t: _euros(v) for t, v in by_title(
+        page, PRICE_RE, lambda m: None if m.start() in slot else m.group(1)).items()}
+
+
+def _euros(raw):
+    return f"{float(raw.replace(',', '.')):.2f}".rstrip("0").rstrip(".") + "\u20ac"
+
+
+def slot_prices(page):
+    """Amounts stated for one screening. -> {(title, month, day, hh, mm): {(price, weekday)}}"""
+    heads = [(m.start(), _txt(m.group(1))) for m in HEAD_RE.finditer(page)]
+    out = {}
+    for m in SLOT_PRICE_RE.finditer(page):
+        prior = [t for pos, t in heads if pos < m.start()]
+        if prior and prior[-1]:
+            key = (prior[-1], int(m.group(2)), int(m.group(1)), int(m.group(4)), int(m.group(5)))
+            out.setdefault(key, set()).add((_euros(m.group(7)), weekday_index(m.group(3))))
+    return out
+
+
+def _price(title, start, prices, slots):
+    """A screening's own line wins over the film's amount, and a doubtful one prices nothing."""
+    stated = slots.get((title, start.month, start.day, start.hour, start.minute))
+    if stated is None:
+        return prices.get(title, "")
+    if len(stated) == 1:
+        amount, wd = next(iter(stated))
+        if wd == start.weekday():
+            return amount
+    return ""
 
 
 def _minutes(m):
@@ -171,7 +208,7 @@ def parse(page, today=None):
             f"programme this parser reads. Treating it as a fetch or template failure "
             f"rather than a cinema with nothing on")
     today = today or datetime.datetime.now(FI).date()
-    prices = prices_by_title(page)
+    prices, slots = prices_by_title(page), slot_prices(page)
     lengths = by_title(page, KESTO_RE, _minutes)
     ratings = by_title(page, AGE_RE, _age)
     genres = by_title(page, GENRE_RE, lambda m: _txt(m.group(1)).strip(" .,"))
@@ -209,7 +246,8 @@ def parse(page, today=None):
             if key in seen:
                 continue            # the desktop and mobile copies of the same screening
             seen.add(key)
-            shows.append(_show(title, eid, start, prices, lengths, ratings, genres, langs))
+            shows.append(_show(title, eid, start, _price(title, start, prices, slots),
+                               lengths, ratings, genres, langs))
     if unread:
         odd = sorted(set(unread))
         print(f"[kirkkonummi] {len(odd)} row(s) with a time in a shape this parser does not "
@@ -228,7 +266,14 @@ def parse(page, today=None):
 
 def _rows(text):
     """One list item -> [(day, month, weekday, hh, mm)], or None when it is no screening.
-    A range needs one weekday per day, or it settles nothing."""
+    A range needs one weekday per day, or it settles nothing. A row of screenings joined
+    by a slash needs every one of them to read."""
+    if "/" in text:
+        parts = [SHOW_RE.match(p.strip()) for p in text.split("/")]
+        if not all(parts):
+            return None
+        return [(int(m.group(1)), int(m.group(2)), m.group(3), int(m.group(4)),
+                 int(m.group(5))) for m in parts]
     m = SHOW_RE.match(text)
     if m:
         return [(int(m.group(1)), int(m.group(2)), m.group(3), int(m.group(4)),
@@ -243,7 +288,7 @@ def _rows(text):
     return [(first + i, month, wd, int(m.group(5)), int(m.group(6))) for i, wd in enumerate(wds)]
 
 
-def _show(title, eid, start, prices, lengths, ratings, genres, langs):
+def _show(title, eid, start, price, lengths, ratings, genres, langs):
     return {
         "eventId": eid,
         "title": title,
@@ -259,7 +304,7 @@ def _show(title, eid, start, prices, lengths, ratings, genres, langs):
         "img": "",
         "lang": langs.get(title, ""),
         "soldOut": False,
-        "price": prices.get(title, ""),
+        "price": price,
         "provider": "kirkkonummi",
         "venue": VENUE["id"],
     }

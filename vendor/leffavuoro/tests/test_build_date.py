@@ -40,6 +40,9 @@ class Clock:
         self.asked.append(tz)
         return datetime.combine(self.day, time(12, 0), tzinfo=tz)
 
+    def __getattr__(self, name):          # fromisoformat and the rest read no clock
+        return getattr(datetime, name)
+
 
 def show(venue_id, name, day):
     iso = day.isoformat()
