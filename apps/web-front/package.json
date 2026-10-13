@@ -21,6 +21,7 @@
     "@vanilla-extract/vite-plugin": "^5.2.6",
     "astro": "^7.3.8",
     "hono": "^4.13.13",
+    "maplibre-gl": "^6.14.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "zod": "^4.6.6"

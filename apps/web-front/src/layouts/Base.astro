@@ -23,8 +23,21 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
   </head>
   <body>
     <div class={css.page}>
-      <header class={sprinkles({ paddingY: "md" })}>
+      <header
+        class={sprinkles({
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "baseline",
+          justifyContent: "space-between",
+          gap: "md",
+          paddingY: "md",
+        })}
+      >
         <a class={css.brand} href="/fi/">{fi.siteName}</a>
+        <nav class={sprinkles({ display: "flex", gap: "md" })}>
+          <a href="/fi/">{fi.cities}</a>
+          <a href="/fi/kartta">{fi.map}</a>
+        </nav>
       </header>
       <main><slot /></main>
       <footer class={css.footer}>

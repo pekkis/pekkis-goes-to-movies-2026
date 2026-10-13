@@ -4,12 +4,13 @@ The public website: server-rendered pages that search engines can index, from ou
 
 ## Pages
 
-| URL                            | Page                                                                                               | Data                    |
-| ------------------------------ | -------------------------------------------------------------------------------------------------- | ----------------------- |
-| `/`                            | redirects to `/fi/`                                                                                | –                       |
-| `/fi/`                         | cities, as links                                                                                   | `/v1/venues`            |
-| `/fi/kaupungit/{city}`         | a city's day: its venues, then every screening in start order                                      | `/v1/screenings?city=`  |
-| `/fi/elokuvateatterit/{venue}` | a venue's day, film by film: address, map link, the cinema's website, each film with its showtimes | `/v1/screenings?venue=` |
+| URL                            | Page                                                                                                                                   | Data                    |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| `/`                            | redirects to `/fi/`                                                                                                                    | –                       |
+| `/fi/`                         | cities, as links                                                                                                                       | `/v1/venues`            |
+| `/fi/kaupungit/{city}`         | a city's day: its venues, then every screening in start order                                                                          | `/v1/screenings?city=`  |
+| `/fi/elokuvateatterit/{venue}` | a venue's day, film by film: address, map link, the cinema's website, each film with its showtimes                                     | `/v1/screenings?venue=` |
+| `/fi/kartta`                   | every venue on a map: clusters when zoomed out, a popup per pin linking to the venue page; below it, the same venues as a list by city | `/v1/venues`            |
 
 - **Slugs** are derived from names (`src/lib/cities.ts`, `src/lib/venues.ts`):
   - a city: `Jyväskylä` → `jyvaskyla`;
@@ -51,6 +52,18 @@ request → src/middleware.ts      sets locals.api (API_URL), noindex + cache he
 - **`recipes/`:** components with variants (`button({ tone, size })`). New shared components follow that pattern.
 - **Per-component styles** live next to the component (`ScreeningList.css.ts`) and read `vars`, never raw colors.
 - **Vanilla Extract only, for `.astro` files too.** A style is just a class-name string, so `.astro` files use it as `class={css.page}` (`Base.astro` ↔ `Base.css.ts`), and React components as `className=`. No Astro `<style>` blocks and no inline colors: everything goes through the same tokens, so dark mode and spacing stay consistent.
+
+## The map (`/fi/kartta`)
+
+- **Library:** MapLibre GL JS (BSD-3), chosen over Leaflet (2026-10-13) for vector maps, built-in clustering and popups, and active development. It's written without React: a plain Astro `<script>` mounts `src/lib/map/venue-map.ts`, so React stays off this page too.
+- **Cost:** one script, about 279 kB gzipped (Leaflet with clustering would be about 51 kB). Only `/fi/kartta` loads it; every other page stays JavaScript-free.
+- **Tiles: OpenFreeMap** [V 2026-10-13]: free, commercial use allowed, no key, no limits. Required credit: "OpenFreeMap © OpenMapTiles Data from OpenStreetMap", which MapLibre adds itself. Styles: `positron` (light), `dark`. Self-hosting a Finland PMTiles extract is the fallback if we ever need independence.
+- **Labels are in Finnish:** `localizeLabels` rewrites the style's place labels to `name:fi`, then the Latin-script name, then the local one ("Tukholma", "Pietari"). The styles default to English.
+- **Theme:** the map style follows `prefers-color-scheme` (and `<html data-theme>`). Pins and clusters use our accent token; MapLibre's popup is themed in `map.css.ts`.
+- **Clustering:** a GeoJSON source with `cluster: true` (radius 48 px, up to zoom 12). Clicking a cluster zooms to where it splits; clicking a pin opens a popup with the name, the address and a link to the venue page. Popup content is built with `textContent`, never HTML strings.
+- **Worker:** MapLibre 6 loads its web worker from next to its own file, which bundling breaks, so `venue-map.ts` imports `maplibre-gl/dist/maplibre-gl-worker.mjs?url` and calls `setWorkerUrl`.
+- **Without JavaScript,** the map container stays `hidden` and the list by city is the page. That list is also the keyboard and screen-reader route to every venue.
+- **Testing:** GeoJSON, bounds, labels and popup content have unit tests. The map itself needs WebGL, so it's checked in a real browser (headless Chrome: clusters, popup, link, both themes) when it changes.
 
 ## Configuration (runtime)
 

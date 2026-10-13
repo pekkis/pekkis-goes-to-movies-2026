@@ -31,5 +31,9 @@ export default defineConfig({
       }),
     },
   },
-  vite: { plugins: [vanillaExtractPlugin()] },
+  vite: {
+    plugins: [vanillaExtractPlugin()],
+    // MapLibre (~1 MB, 279 kB gzipped) is one chunk on purpose, loaded only by /fi/kartta.
+    build: { chunkSizeWarningLimit: 1200 },
+  },
 });

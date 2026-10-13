@@ -23,7 +23,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
   - the `showtimes` CLI;
   - a read-only HTTP API (Hono, OpenAPI);
   - a Flutter map app by a teammate in `apps/fpgm` (an early scaffold);
-  - the public website in `apps/web-front`: Astro (SSR) + React + Vanilla Extract. So far a spike: a server-rendered city page. See [docs/web.md](docs/web.md).
+  - the public website in `apps/web-front`: Astro (SSR) + React + Vanilla Extract. City pages, venue pages and a venue map (MapLibre). See [docs/web.md](docs/web.md).
 
 - **Not started here:** design and user research. The course work happens outside this repository.
 - **Backlog:** GitHub issues (`gh issue list`; labels `provider`, `tmdb`, `geo`, `backlog`).
@@ -196,6 +196,6 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
   - `kysely` + `pg` (+ `kysely-codegen`);
   - `hono` + `@hono/zod-openapi` + `@scalar/hono-api-reference`;
   - `tsdown` (Docker bundle only);
-  - website: `astro` (+ `@astrojs/node`, `@astrojs/react`), `react`, `@vanilla-extract/*` (css, vite-plugin, sprinkles, recipes, dynamic), `hono/client`. No client-side UI library yet: pages ship no JavaScript, and any island is measured first (docs/web.md).
+  - website: `astro` (+ `@astrojs/node`, `@astrojs/react`), `react`, `@vanilla-extract/*` (css, vite-plugin, sprinkles, recipes, dynamic), `hono/client`, `maplibre-gl` (the map page only, with OpenFreeMap tiles). No client-side UI library: pages ship no JavaScript except the map, and any new script is measured first (docs/web.md).
 - **Website caveats:** `astro check` does not support TypeScript 7 yet, so `tsc` checks the `.ts`/`.tsx` files and `.astro` files stay thin. oxlint checks `.astro` frontmatter; oxfmt does not format `.astro` files.
 - **No general utility library** (remeda, lodash, es-toolkit). Node 24's built-ins cover what the code needs (see development.md).
