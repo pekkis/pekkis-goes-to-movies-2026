@@ -3,12 +3,13 @@ import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { beforeAll, describe, expect, it } from "vitest";
 import { createApi } from "../../src/lib/api.ts";
 import CityPage from "../../src/pages/fi/kaupungit/[city].astro";
-import { fakeFetch, screening, venue } from "../fixtures.ts";
+import { fakeFetch, NOON, screening, venue } from "../fixtures.ts";
 
 let container: AstroContainer;
 beforeAll(async () => {
   container = await AstroContainer.create();
   container.addServerRenderer({ renderer: reactRenderer, name: "@astrojs/react" });
+  container.addClientRenderer({ name: "@astrojs/react", entrypoint: "@astrojs/react/client.js" });
 });
 
 const api = createApi(
@@ -23,7 +24,7 @@ const renderCity = (city: string, query = "") =>
   container.renderToResponse(CityPage, {
     params: { city },
     request: new Request(`http://web/fi/kaupungit/${city}${query}`),
-    locals: { api },
+    locals: { api, now: NOON },
   });
 
 describe("city page", () => {
@@ -36,8 +37,9 @@ describe("city page", () => {
     expect(html).toContain("Unohdettu saari");
     expect(html).toContain('href="https://kino.example/liput/1"');
     expect(html).toMatch(/<meta name="robots" content="noindex, nofollow">/);
-    // No islands: the page is plain HTML and loads no JavaScript.
-    expect(html).not.toContain("<astro-island");
+    // One island keeps show states current; its HTML is already rendered on the server.
+    expect(html.match(/<astro-island/g)).toHaveLength(1);
+    expect(html).toContain('client="idle"');
     expect(html).toMatch(/<input [^>]*type="date"/);
     expect(html).toContain('href="?date=2026-10-14"');
     // TMDB's terms: logo and notice on every page.

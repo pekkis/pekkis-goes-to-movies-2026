@@ -28,7 +28,7 @@ export const vars = createThemeContract({
     size: { xs: null, sm: null, md: null, lg: null, xl: null, xxl: null },
     weight: { regular: null, semibold: null, bold: null, heavy: null },
   },
-  border: { width: null, focusWidth: null },
+  border: { width: null, strongWidth: null, focusWidth: null },
   size: {
     /** The page column's maximum width. */
     page: null,
@@ -63,7 +63,7 @@ const shared = {
     },
     weight: { regular: "400", semibold: "600", bold: "700", heavy: "800" },
   },
-  border: { width: "1px", focusWidth: "2px" },
+  border: { width: "1px", strongWidth: "3px", focusWidth: "2px" },
   size: { page: "56rem", timeColumn: "4rem", map: "min(70vh, 40rem)" },
 };
 

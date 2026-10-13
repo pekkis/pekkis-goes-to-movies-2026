@@ -1,4 +1,4 @@
-import { style } from "@vanilla-extract/css";
+import { globalStyle, style } from "@vanilla-extract/css";
 import { vars } from "../styles/theme.css.ts";
 
 export const film = style({
@@ -27,4 +27,19 @@ export const show = style({
 export const time = style({
   fontVariantNumeric: "tabular-nums",
   fontWeight: vars.font.weight.bold,
+});
+
+/** The time box that is the ticket link. */
+export const ticket = style({});
+
+/** "alkanut" / "alkaa 25 min päästä" under the time. */
+export const status = style({
+  fontWeight: vars.font.weight.bold,
+});
+
+// States in grey only: started is muted, soon gets a strong border; the label says which.
+globalStyle(`${show}[data-state="started"] time`, { fontWeight: vars.font.weight.regular });
+globalStyle(`${show}[data-state="soon"] ${ticket}`, {
+  borderWidth: vars.border.strongWidth,
+  borderColor: vars.color.accent,
 });

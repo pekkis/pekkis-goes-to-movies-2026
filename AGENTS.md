@@ -74,6 +74,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 - **Mobile first:** the phone layout is the default; wider layouts are added with `min-width` conditions.
 - **Container queries, always when possible:** components adapt to their container, not the viewport (`minWidth()` from `src/styles/containers.ts`, sprinkles `wide`/`widest`). Viewport `@media` only where a container can't work.
+- **Showtimes are live:** any component showing one uses `useShowStatus` inside a `<NowProvider>` (`src/components/now.tsx`): started, soon (within an hour) or later, kept current while the page is open. See [docs/web.md](docs/web.md#live-showtimes-one-clock-reusable).
 - **Lists of films are alphabetical by title** (Finnish order, `byTitle` in `src/lib/films.ts`); showtimes within a film, and timetables of screenings, stay in time order.
 - **The design system is the Vanilla Extract theme** (`src/styles/theme.css.ts`), the single source of truth. Every color, space, font size and weight, border and fixed size is a token. Components use `vars`, sprinkles and recipes, never literal values; a new value goes into the theme first.
 - Details: [docs/web.md](docs/web.md#user-interface-rules).
@@ -151,7 +152,7 @@ vendor/leffavuoro/, scripts/    Leffavuoro reference copy (not built, linted or 
 apps/fpgm/                      the teammate's Flutter app: own tooling, not in the pnpm workspace; do not edit unasked
 apps/web-front/                 @pgtm/web-front: the website (Astro SSR, React, Vanilla Extract); see docs/web.md
   src/pages/, src/layouts/      thin .astro routes and layout; logic lives in src/lib/
-  src/components/               React components: static by default, islands only with client:*
+  src/components/               React components; islands (client:idle) for live UI; now.tsx: shared clock, useShowStatus
   src/styles/                   design system: theme.css.ts (all tokens), containers.ts, sprinkles, reset, recipes/
   src/lib/                      typed API client (hc<AppType>), page loaders, cities, time, text (Finnish UI text)
 packages/model/                 @pgtm/model: src/schema.ts, the domain model (Zod + types) and its rules; source-only
@@ -214,6 +215,6 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
   - `kysely` + `pg` (+ `kysely-codegen`);
   - `hono` + `@hono/zod-openapi` + `@scalar/hono-api-reference`;
   - `tsdown` (Docker bundle only);
-  - website: `astro` (+ `@astrojs/node`, `@astrojs/react`), `react`, `@vanilla-extract/*` (css, vite-plugin, sprinkles, recipes, dynamic), `hono/client`, `maplibre-gl` (the map page only, with OpenFreeMap tiles). No client-side UI library: pages ship no JavaScript except the map, and any new script is measured first (docs/web.md).
+  - website: `astro` (+ `@astrojs/node`, `@astrojs/react`), `react`, `@vanilla-extract/*` (css, vite-plugin, sprinkles, recipes, dynamic), `hono/client`, `maplibre-gl` (the map page only, with OpenFreeMap tiles). Interactive and live UI is React islands, rendered on the server first and hydrated `client:idle`; no hand-written DOM scripts for UI (the map excepted).
 - **Website caveats:** `astro check` does not support TypeScript 7 yet, so `tsc` checks the `.ts`/`.tsx` files and `.astro` files stay thin. oxlint checks `.astro` frontmatter; oxfmt does not format `.astro` files.
 - **No general utility library** (remeda, lodash, es-toolkit). Node 24's built-ins cover what the code needs (see development.md).

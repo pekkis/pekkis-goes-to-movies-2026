@@ -19,6 +19,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     {INDEXING !== "on" && <meta name="robots" content="noindex, nofollow" />}
   </head>
   <body>

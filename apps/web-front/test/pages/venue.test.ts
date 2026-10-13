@@ -3,12 +3,13 @@ import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { beforeAll, describe, expect, it } from "vitest";
 import { createApi } from "../../src/lib/api.ts";
 import VenuePage from "../../src/pages/fi/elokuvateatterit/[venue].astro";
-import { fakeFetch, screening, venue } from "../fixtures.ts";
+import { fakeFetch, NOON, screening, venue } from "../fixtures.ts";
 
 let container: AstroContainer;
 beforeAll(async () => {
   container = await AstroContainer.create();
   container.addServerRenderer({ renderer: reactRenderer, name: "@astrojs/react" });
+  container.addClientRenderer({ name: "@astrojs/react", entrypoint: "@astrojs/react/client.js" });
 });
 
 const api = createApi(
@@ -34,7 +35,7 @@ const renderVenue = (slug: string) =>
   container.renderToResponse(VenuePage, {
     params: { venue: slug },
     request: new Request(`http://web/fi/elokuvateatterit/${slug}`),
-    locals: { api },
+    locals: { api, now: NOON },
   });
 
 describe("venue page", () => {
@@ -50,7 +51,7 @@ describe("venue page", () => {
     expect(html).toContain("Unohdettu saari");
     expect(html).toContain('href="https://kino.example/liput/1"');
     expect(html).toContain("1 elokuva");
-    expect(html).not.toContain("<astro-island");
+    expect(html.match(/<astro-island/g)).toHaveLength(1);
   });
 
   it("answers 404 for an unknown venue", async () => {

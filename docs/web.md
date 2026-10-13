@@ -1,6 +1,6 @@
 # Website (`apps/web-front`)
 
-The public website: server-rendered pages that search engines can index, from our own API. Status: **early**. City and venue pages, both server-rendered with no JavaScript.
+The public website: server-rendered pages that search engines can index, from our own API. Status: **early**. City and venue pages and a venue map, all server-rendered; React islands make them live.
 
 ## Pages
 
@@ -21,12 +21,12 @@ The public website: server-rendered pages that search engines can index, from ou
 
 ## Stack and why
 
-| Need       | Choice                                                        | Why                                                                                                                                                                                                                       |
-| ---------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Framework  | **Astro 7**, `output: "server"`, `@astrojs/node` (standalone) | SSR for indexing. Pages ship no JavaScript unless a component asks for it. Vite and Vitest, like the rest of the workspace. Chosen over TanStack Start (whose server components are experimental) and Next.js (not Vite). |
-| Components | **React 19** via `@astrojs/react`                             | The team's component language. Astro renders React to static HTML; only `client:*` components hydrate.                                                                                                                    |
-| Styling    | **Vanilla Extract**: `css`, `sprinkles`, `recipes`, `dynamic` | Typed, zero-runtime CSS: static files at build time, nothing to hydrate.                                                                                                                                                  |
-| API access | `hc<AppType>` from `hono/client`                              | Types come from `@pgtm/backend` with no code generation.                                                                                                                                                                  |
+| Need       | Choice                                                        | Why                                                                                                                                                                                                                                                                  |
+| ---------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework  | **Astro 7**, `output: "server"`, `@astrojs/node` (standalone) | SSR for indexing: every page is complete HTML first, and React islands hydrate where the page is interactive or live. Vite and Vitest, like the rest of the workspace. Chosen over TanStack Start (whose server components are experimental) and Next.js (not Vite). |
+| Components | **React 19** via `@astrojs/react`                             | The team's component language. Astro renders React to static HTML; only `client:*` components hydrate.                                                                                                                                                               |
+| Styling    | **Vanilla Extract**: `css`, `sprinkles`, `recipes`, `dynamic` | Typed, zero-runtime CSS: static files at build time, nothing to hydrate.                                                                                                                                                                                             |
+| API access | `hc<AppType>` from `hono/client`                              | Types come from `@pgtm/backend` with no code generation.                                                                                                                                                                                                             |
 
 ## How a page works
 
@@ -38,10 +38,10 @@ request → src/middleware.ts      sets locals.api (API_URL), noindex + cache he
 ```
 
 - **`.astro` files stay thin.** Logic goes in `src/lib/` as plain TypeScript, where `tsc` and unit tests reach it.
-- **No JavaScript unless a feature needs it.** The city page ships none: `ScreeningList` is static HTML, and `DateNav` is a plain GET form with the browser's own `<input type="date">`. Phones show their system picker, and accessibility comes from the browser.
-- **Islands only where interaction needs them**, and their size is measured before they're added. React's client runtime alone is about 69 kB gzipped, loaded by the first island on a page.
-- **Progressive enhancement:** an island first renders something that works without JavaScript.
-- **React Aria was tried and dropped (2026-10-13).** Its `DatePicker` island cost about 77 kB gzipped on top of React: translations for 34 languages, which its locale plugin trims to 61 kB, and every calendar system, which `DatePicker` can't drop. For a date choice, the native input is enough. Revisit per widget (film search, map filters): Ark UI, react-day-picker, or Preact islands.
+- **Interactive and live UI is written in React islands.** It's the team's language, and React's runtime (about 69 kB gzipped, decided 2026-10-13) is a fair price that browsers cache across pages. Don't hand-write DOM scripts for UI; the map is the exception, because MapLibre does its own drawing.
+- **Server first:** an island is rendered on the server, so the HTML is complete and correct before any JavaScript runs, for search engines, slow phones and people without JavaScript. Hydrate with `client:idle` unless the UI must react at once.
+- **Static where nothing changes:** `DateNav` is a plain GET form with the browser's own `<input type="date">`. Phones show their system picker, and accessibility comes from the browser.
+- **React Aria was tried and dropped (2026-10-13).** Its `DatePicker` island cost about 77 kB gzipped on top of React: translations for 34 languages, which its locale plugin trims to 61 kB, and every calendar system, which `DatePicker` can't drop. For a date choice, the native input is enough. Revisit per widget (film search, map filters), weighing what a library adds on top of React.
 - **Times are formatted in `Europe/Helsinki` explicitly** (`src/lib/time.ts`), so server and browser always agree whatever their own time zones.
 - **UI text** is in `src/lib/text.ts` (Finnish), ready to move to an i18n catalogue (Lingui is the plan). Routes are under `/fi/`; `sv` and `en` are configured but have no pages yet.
 
@@ -55,6 +55,21 @@ request → src/middleware.ts      sets locals.api (API_URL), noindex + cache he
 - **Never color alone for meaning:** sold-out, few-left and the like are words.
 - **Exceptions, required as is:** the TMDB logo and notice, and the map tiles (OpenFreeMap's grey `positron` and `dark` styles). MapLibre's pins and clusters use the grey `accent` token.
 - **Later:** the visual identity changes token values and recipes, not components. That's why components never use raw colors.
+
+## Live showtimes: one clock, reusable
+
+Showtimes say whether a show has started, starts soon or is later, and they keep saying it correctly while the page stays open.
+
+| Piece                         | Where                    | Use                                                                                                                                                                                                                                                                                           |
+| ----------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `showStatus(startsAt, now)`   | `src/lib/show-status.ts` | Pure: `started` / `soon` (within `SOON_MINUTES`, 60) / `later`, the label ("alkanut", "alkaa 25 min päästä"), and `ticketsOpen` (until `TICKETS_AFTER_START_MINUTES`, 15, after the start: cinemas sell during the ads). Compares instants, so shows after midnight and other days just work. |
+| `<NowProvider initial={iso}>` | `src/components/now.tsx` | One shared clock per island, re-rendering once a minute. `initial` is the server's time, so the first client render matches the server's HTML.                                                                                                                                                |
+| `useShowStatus(startsAt)`     | `src/components/now.tsx` | A show's live status in any component inside a provider. **Use this wherever a showtime is shown.**                                                                                                                                                                                           |
+| `useCurrentTime()`            | `src/components/now.tsx` | The clock itself, e.g. for `collapseStarted` (started shows behind "Näytä alkaneet" while something is still to come).                                                                                                                                                                        |
+
+- **Pattern for a new island:** pass the screenings and `now={Astro.locals.now.toISOString()}` (set per request by the middleware) to a component that wraps its content in `<NowProvider>`. Presentational components (`ScreeningList`, `FilmProgramme`, `Showtime`) only call `useShowStatus`.
+- **How states look (grey only):** started is muted with "alkanut"; soon gets a strong border and "alkaa N min päästä"; the label always says it.
+- **Tests:** `test/clock.tsx` fixes the clock with fake timers (`useFixedClock`), renders inside a provider (`renderWithClock`) and moves time (`advanceMinutes`).
 
 ## User interface rules
 

@@ -1,4 +1,4 @@
-import { style } from "@vanilla-extract/css";
+import { globalStyle, style } from "@vanilla-extract/css";
 import { minWidth } from "../styles/containers.ts";
 import { vars } from "../styles/theme.css.ts";
 
@@ -20,9 +20,25 @@ export const row = style({
 });
 
 export const time = style({
+  display: "block",
   fontVariantNumeric: "tabular-nums",
   fontWeight: vars.font.weight.bold,
   fontSize: vars.font.size.lg,
+});
+
+/** "alkanut" / "alkaa 25 min päästä" under the time. */
+export const status = style({
+  display: "block",
+  fontSize: vars.font.size.xs,
+  fontWeight: vars.font.weight.bold,
+});
+
+// States in grey only: started is muted, soon gets a strong left edge; the label says which.
+globalStyle(`${row}[data-state="started"]`, { color: vars.color.textMuted });
+globalStyle(`${row}[data-state="started"] a`, { color: vars.color.textMuted });
+globalStyle(`${row}[data-state="soon"]`, {
+  borderLeft: `${vars.border.strongWidth} solid ${vars.color.accent}`,
+  paddingLeft: vars.space.sm,
 });
 
 export const title = style({ fontWeight: vars.font.weight.semibold });

@@ -1,6 +1,6 @@
 ---
 import { DateNav } from "../../../components/DateNav.tsx";
-import { FilmProgramme } from "../../../components/FilmProgramme.tsx";
+import { VenueProgramme } from "../../../components/VenueProgramme.tsx";
 import Base from "../../../layouts/Base.astro";
 import { citySlug } from "../../../lib/cities.ts";
 import { groupByFilm } from "../../../lib/films.ts";
@@ -37,7 +37,13 @@ const address = [venue?.address, [venue?.postalCode, venue?.city].filter(Boolean
         {formatDay(page.date)} · {fi.films(groupByFilm(page.screenings).length)}
       </p>
       <DateNav date={page.date} />
-      {page.screenings.length ? <FilmProgramme screenings={page.screenings} /> : <p>{fi.noScreenings}</p>}
+      {
+        page.screenings.length ? (
+          <VenueProgramme client:idle screenings={page.screenings} now={Astro.locals.now.toISOString()} />
+        ) : (
+          <p>{fi.noScreenings}</p>
+        )
+      }
     </Base>
   ) : (
     <Base title={fi.venueNotFound}>
@@ -46,3 +52,4 @@ const address = [venue?.address, [venue?.postalCode, venue?.city].filter(Boolean
     </Base>
   )
 }
+
