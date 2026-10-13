@@ -21,6 +21,8 @@ describe("splitVersion", () => {
     ["Unohdettu saari DUP.", "Unohdettu saari", { dubbed: true, audio: "fi" }],
     ["Amadeus – ohjaajan versio", "Amadeus", {}],
     ["På svenska: Bortglömda ön", "Bortglömda ön", { dubbed: true, audio: "sv" }],
+    ["Unohdettu saari SUOMEKSI", "Unohdettu saari", { dubbed: true, audio: "fi" }],
+    ["Unohdettu saari PÅ SVENSKA", "Unohdettu saari", { dubbed: true, audio: "sv" }],
     // TMB writes it with or without the space.
     [
       "Pikkuli ja Tähtipeura(Puhumme suomea!)",
@@ -63,6 +65,20 @@ describe("splitTitlePrefix", () => {
     expect(splitTitlePrefix("Ryhmä Hau: Dinoelokuva", COMMON_TITLE_PREFIXES)).toEqual({
       title: "Ryhmä Hau: Dinoelokuva",
     });
+  });
+
+  it("matches labels without regard to case (Cinemahouse writes them in capitals)", () => {
+    expect(splitTitlePrefix("ENNAKKONÄYTÖS: Dyyni: Osa kolme", COMMON_TITLE_PREFIXES)).toEqual({
+      title: "Dyyni: Osa kolme",
+      rule: { tags: ["preview"] },
+    });
+    expect(splitTitlePrefix("ENNAKKO: Pikkuli", COMMON_TITLE_PREFIXES).rule).toEqual({
+      tags: ["preview"],
+    });
+    expect(splitTitlePrefix("ENSI-ILTA: Tony", COMMON_TITLE_PREFIXES).rule).toEqual({
+      tags: ["premiere"],
+    });
+    expect(splitVersion("Puhu suomeksi").title).toBe("Puhu suomeksi");
   });
 
   it("reads the same labels in parentheses at the end (TMB)", () => {

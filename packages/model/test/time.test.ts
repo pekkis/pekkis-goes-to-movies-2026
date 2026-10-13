@@ -9,6 +9,7 @@ import {
   helsinkiToday,
   isIsoDate,
   minutesUntil,
+  nearestDate,
   parseLocalDateTime,
   toHelsinkiIso,
 } from "../src/time.ts";
@@ -142,5 +143,23 @@ describe("instants", () => {
     vi.setSystemTime(new Date("2026-10-13T09:00:00Z"));
     expect(currentInstant().toString()).toBe("2026-10-13T09:00:00Z");
     vi.useRealTimers();
+  });
+});
+
+describe("nearestDate", () => {
+  it.each([
+    [14, 10, "2026-10-13", "2026-10-14"],
+    [15, 12, "2026-10-13", "2026-12-15"],
+    [3, 1, "2026-10-13", "2027-01-03"], // the programme reaches into next year
+    [20, 9, "2026-10-13", "2026-09-20"], // a few weeks back is still this year
+    [30, 12, "2027-01-05", "2026-12-30"], // early January looking back at December
+    [29, 2, "2027-12-01", "2028-02-29"], // only a leap year has it
+  ])("%d.%d. near %s is %s", (day, month, reference, expected) => {
+    expect(nearestDate(day, month, reference)).toBe(expected);
+  });
+
+  it("rejects impossible dates, and ones no nearby year has", () => {
+    expect(nearestDate(31, 2, "2026-10-13")).toBeUndefined();
+    expect(nearestDate(29, 2, "2026-10-13")).toBeUndefined(); // 2027 is no leap year
   });
 });

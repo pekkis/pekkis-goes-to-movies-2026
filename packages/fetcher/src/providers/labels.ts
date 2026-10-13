@@ -22,6 +22,8 @@ export type LabelRule = z.infer<typeof LabelRule>;
 export const COMMON_TITLE_PREFIXES: Record<string, LabelRule> = {
   "Ennakkoensi-ilta": { tags: ["preview"] },
   Ennakkonäytös: { tags: ["preview"] },
+  Ennakko: { tags: ["preview"] },
+  "Ensi-ilta": { tags: ["premiere"] },
   Vauvakino: { tags: ["baby"] },
   Perhekino: { tags: ["kids"] },
   Lastenkino: { tags: ["kids"] },
@@ -35,25 +37,35 @@ export const COMMON_TITLE_PREFIXES: Record<string, LabelRule> = {
  * Only listed prefixes are touched: "Ryhmä Hau: Dinoelokuva" is a title, not a label.
  * The same labels at the end: "Pirjo i Sverige – Vauvakino", "Pikkuli (Ennakkonäytös!)".
  */
+/** A label's rule, matched without regard to case ("ENNAKKONÄYTÖS" is "Ennakkonäytös"). */
+const ruleFor = (rules: Record<string, LabelRule>, label: string): LabelRule | undefined => {
+  const exact = own(rules, label);
+  if (exact) {
+    return exact;
+  }
+  const lower = label.toLowerCase();
+  return Object.entries(rules).find(([key]) => key.toLowerCase() === lower)?.[1];
+};
+
 export const splitTitlePrefix = (
   raw: string,
   rules: Record<string, LabelRule>,
 ): { title: string; rule?: LabelRule } => {
   const title = raw.trim();
   const prefix = title.match(/^([^:]+):\s*(.+)$/);
-  const prefixRule = prefix ? own(rules, prefix[1]!.trim()) : undefined;
+  const prefixRule = prefix ? ruleFor(rules, prefix[1]!.trim()) : undefined;
   if (prefix && prefixRule) {
     return { title: prefix[2]!.trim(), rule: prefixRule };
   }
   // The same labels after a dash at the end: "Pirjo i Sverige – Vauvakino".
   const suffix = title.match(/^(.+?)\s+[–-]\s+([^–-]+)$/);
-  const suffixRule = suffix ? own(rules, suffix[2]!.trim()) : undefined;
+  const suffixRule = suffix ? ruleFor(rules, suffix[2]!.trim()) : undefined;
   if (suffix && suffixRule) {
     return { title: suffix[1]!.trim(), rule: suffixRule };
   }
   // In parentheses at the end, an exclamation mark allowed: "(Ennakkonäytös!)" (TMB).
   const paren = title.match(/^(.+?)\s*\(([^()]+?)!?\)$/);
-  const parenRule = paren ? own(rules, paren[2]!.trim()) : undefined;
+  const parenRule = paren ? ruleFor(rules, paren[2]!.trim()) : undefined;
   if (paren && parenRule) {
     return { title: paren[1]!.trim(), rule: parenRule };
   }
@@ -96,6 +108,14 @@ export const splitVersion = (raw: string): { title: string; version: Version } =
   if (lead && leadHit) {
     Object.assign(version, leadHit[1]);
     title = lead[2]!.trim();
+  }
+  // A trailing capitalised language: "Unohdettu saari SUOMEKSI", "… PÅ SVENSKA" (Cinemahouse).
+  // Upper case only, so a title that merely ends in the word is left alone.
+  const caps = title.match(/^(.*\S)\s+(SUOMEKSI|RUOTSIKSI|ENGLANNIKSI|PÅ SVENSKA)$/);
+  const capsHit = caps && VERSIONS.find(([re]) => re.test(caps[2]!));
+  if (caps && capsHit) {
+    Object.assign(version, capsHit[1]);
+    title = caps[1]!.trim();
   }
   for (;;) {
     // "(DUB)", "DUB", or after a comma or dash: "Unohdettu saari, englanniksi".

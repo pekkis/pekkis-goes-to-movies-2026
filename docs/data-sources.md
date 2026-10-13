@@ -276,6 +276,25 @@ Probed 2026-10-13, one GET per site. Adapter: `packages/fetcher/src/providers/tm
 
 ---
 
+## Cinemahouse (WordPress `cinema-reservations` plugin)
+
+Probed 2026-10-13, one GET per site. Adapter: `packages/fetcher/src/providers/cinemahouse/`. Origin: Leffavuoro's `scripts/providers/cinemahouse.py`, re-verified.
+
+- **Who:** Kino Piispanristi (Kaarina), Kino Lumo (Salo) and Laitilan Kino (Laitila).
+- **The programme:** the front page renders the whole programme **[V]**:
+  - `article.cr-movie-tile`: title, age badge (S/7/12/16), runtime "129 min", genres;
+  - `div.cr-screening-row`: title, "14.10. 12:00 · Sali 2" (**no year**), price "12,00 €", "Vapaat paikat: 53 / 65", and `a.cr-screening-cta` with `data-screening-id` and the reservation link `/varaa/?screening_id=N`.
+- **Joining tiles to rows:** every row title had a tile with exactly the same title (labels included) **[V]**.
+- **The year:** `nearestDate` (in `@pgtm/model/time`) puts a date at most 30 days before the programme's first day, otherwise ahead. Programmes reach mid-December.
+- **Labels are in capitals** **[V]**: "ENNAKKO:", "ENNAKKONÄYTÖS:", "ENSI-ILTA:" and trailing "SUOMEKSI" / "PÅ SVENSKA". The shared label rules now match without regard to case and read capitalized trailing languages (lower case "suomeksi" at the end of a title is left alone).
+- **Dubbed and subtitled runs are separate films** (separate WordPress posts), so the listing id is the film page's slug.
+- **Halls:** "Vip 4" and "Premium 5" are kept as names, not features.
+- **The reservation link** is the cinema's own page, copied, never requested.
+- **Coordinates** **[V]**: Piispanristi and Laitila from OSM. **Kino Lumo has none yet**: no OSM cinema matched in Salo.
+- **First run:** 126 + 82 + 16 screenings this week, 24 of 25 films matched at Piispanristi, no unmapped labels.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
