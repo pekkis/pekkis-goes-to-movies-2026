@@ -112,6 +112,7 @@ const OTHER_NAMES: Record<string, Lang> = {
   jiddish: "yi",
   paštu: "ps",
   pastu: "ps",
+  pashtu: "ps",
   dari: "fa",
   farsi: "fa",
   urdu: "ur",

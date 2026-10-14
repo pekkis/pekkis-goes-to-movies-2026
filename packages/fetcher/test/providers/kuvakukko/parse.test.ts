@@ -3,19 +3,23 @@ import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
 import { describe, expect, it } from "vitest";
 import type { KuvakukkoRawSnapshot } from "../../../src/providers/kuvakukko/fetch.ts";
-import { parseKuvakukko } from "../../../src/providers/kuvakukko/parse.ts";
+import { filmPages, parseKuvakukko } from "../../../src/providers/kuvakukko/parse.ts";
 import { KUVAKUKKO_SITES } from "../../../src/providers/kuvakukko/sites.ts";
 
 const SITE = KUVAKUKKO_SITES[0]!;
-const HTML = readFileSync(
-  join(import.meta.dirname, "../../fixtures/kuvakukko/kuvakukko-ohjelmisto.html"),
-  "utf8",
-);
+const fixture = (name: string) =>
+  readFileSync(join(import.meta.dirname, "../../fixtures/kuvakukko", name), "utf8");
+const HTML = fixture("kuvakukko-ohjelmisto.html");
+const PAGES = "https://www.kuvakukko.fi/ohjelmisto/kuvakukon-ja-kino-mantun-ohjelmisto";
+/** Named after another film, holding La Grazia: the site reuses pages. */
+const INVITE = `${PAGES}/the-invite/`;
+const LA_GRAZIA = fixture("kuvakukko-elokuva-la-grazia.html");
 const snapshot = (overrides: Partial<KuvakukkoRawSnapshot> = {}): KuvakukkoRawSnapshot => ({
   fetchedAt: "2026-10-14T09:00:00.000Z",
   from: "2026-10-14",
   days: 31,
   html: HTML,
+  films: { [INVITE]: LA_GRAZIA },
   ...overrides,
 });
 
@@ -62,6 +66,64 @@ describe("parseKuvakukko", () => {
     expect(titleOf(at("kuopio", "2026-10-16T18:00:00+03:00"))).toBe(
       "Kuopion mediataidefestarit: Videoaktivistit – Kuopion videopaja 1985–1995",
     );
+  });
+
+  it("takes year, runtime, age limit and languages from the film page its heading names", () => {
+    const grazia = at("kuopio", "2026-10-15T13:00:00+03:00");
+    expect(grazia).toMatchObject({
+      audio: ["it"],
+      subtitles: { kind: "languages", languages: ["fi", "sv"] },
+      unmappedLabels: [],
+    });
+    expect(batch.listings.find((l) => l.id === grazia.listingId)).toMatchObject({
+      title: { fi: "La Grazia" },
+      year: 2025,
+      runtimeMinutes: 133,
+      rating: "K-7",
+    });
+  });
+
+  it("flags an age limit outside the Finnish classes instead of publishing it", () => {
+    const page = LA_GRAZIA.replace("• K7 •", "• K6 •");
+    const result = parseKuvakukko(snapshot({ films: { [INVITE]: page } }), SITE);
+    expect(() => ProviderBatch.parse(result)).not.toThrow();
+    const grazia = result.listings.find((l) => l.title.fi === "La Grazia")!;
+    expect(grazia.rating).toBeUndefined();
+    expect(result.screenings.find((s) => s.listingId === grazia.id)?.unmappedLabels).toEqual([
+      "rating:K6",
+    ]);
+  });
+
+  it('reads "tekstitys: –" as unknown, unflagged', () => {
+    const page = LA_GRAZIA.replace("tekstitys: suomi/ruotsi", "tekstitys: –");
+    const result = parseKuvakukko(snapshot({ films: { [INVITE]: page } }), SITE);
+    const grazia = result.listings.find((l) => l.title.fi === "La Grazia")!;
+    expect(result.screenings.find((s) => s.listingId === grazia.id)).toMatchObject({
+      subtitles: { kind: "unknown" },
+      unmappedLabels: [],
+    });
+  });
+
+  it("ignores a page whose heading names another film", () => {
+    const kerro = `${PAGES}/kerro-kaikille/`;
+    const result = parseKuvakukko(snapshot({ films: { [kerro]: LA_GRAZIA } }), SITE);
+    const listing = result.listings.find((l) => l.title.fi === "Kerro kaikille")!;
+    expect(listing.runtimeMinutes).toBeUndefined();
+    expect(result.warnings).toEqual([]);
+  });
+
+  it("asks for each linked film page once, never an image", () => {
+    const pages = filmPages(HTML, SITE, "2026-10-14", 31);
+    expect(pages).toContain(INVITE);
+    expect(new Set(pages).size).toBe(pages.length);
+    expect(pages.some((p) => /\.jpe?g$/.test(p))).toBe(false);
+  });
+
+  it("keeps the screenings when a film page fails, and says so", () => {
+    const result = parseKuvakukko(snapshot({ films: { [INVITE]: null } }), SITE);
+    expect(result.warnings.map((w) => w.code)).toEqual(["film-page-missing"]);
+    expect(isIncomplete(result)).toBe(false);
+    expect(result.screenings).toHaveLength(20);
   });
 
   it("splits series prefixes", () => {

@@ -359,7 +359,7 @@ Probed 2026-10-14, four GETs. Adapter: `packages/fetcher/src/providers/tapiola/`
 
 ## Kuvakukko and Kino Manttu (one shared WordPress page)
 
-Probed 2026-10-14, one GET. Adapter: `packages/fetcher/src/providers/kuvakukko/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/kuvakukko.py`, re-verified.
+Probed 2026-10-14: the programme page, then the linked film pages. Adapter: `packages/fetcher/src/providers/kuvakukko/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/kuvakukko.py`, re-verified.
 
 - **The page:** `https://www.kuvakukko.fi/ohjelmisto/kuvakukon-ja-kino-mantun-ohjelmisto/` holds both of the city of Kuopio's cinemas **[V]**:
   - under each `<h2>` heading ("Kino Kuvakukon esitysaikataulu", "Nilsiän Kino Mantun esitysaikataulu"), paragraphs of `<br>`-separated lines;
@@ -376,9 +376,14 @@ Probed 2026-10-14, one GET. Adapter: `packages/fetcher/src/providers/kuvakukko/`
 - **Links are not used:** the rows link to reused pages of other films (`/kino-manttu-digger/` holds "Two Seasons, Two Strangers"), or even to an image. Tickets are sold at the door only ("lipunmyynti vain Kuvakukossa", "Ei ennakkovarauksia … vain käteinen"), so `booking` is `door` and every screening links to the programme page.
 - **No ids:** a screening is venue, title and start minute.
 - **Kino Manttu** publishes every other weekend, so its section is often a weekend already past: no screenings in the window is normal for it.
-- **Not read yet:** each film's page has a facts line (runtime, age limit, language, subtitles), and `/liput/` states each cinema's ticket price **[A]** (Leffavuoro). Both need care (reused pages, price exceptions); left for later.
+- **Film pages:** one GET per linked title in the window, paced 1.5 s (images and off-site links skipped). A facts line **[V]**: "Italia 2025 • draama • 133 min • K7 • kieli: italia • tekstitys: suomi/ruotsi".
+  - The first segment's year is the production year; "K7" is K-7; "tekstitys: –" stays unknown.
+  - Exactly one such line (a runtime segment, all segments short), or nothing is read.
+  - **A page counts only when its `<h1>` names the row's film:** pages are reused (`/the-invite/` holds LA GRAZIA, `/kino-manttu-digger/` other films).
+  - Values outside the Finnish classes are flagged, not published ("K17" on Matka Piemonteen, a typo for K-7).
+- **Not read:** `/liput/` states each cinema's ticket price **[A]** (Leffavuoro), with exceptions for outside organisers; left out.
 - **Coordinates:** Kuvakukko: OSM node 5520821567. Manttu: OSM way 487580170 (the building on Mantunsuora); the cinema gives its address as Vesitornintie 1.
-- **First run:** 18 films, 35 screenings (all Kuvakukko), no warnings.
+- **First run:** 18 films, 35 screenings (all Kuvakukko), no warnings. With film pages, Rose, Tony and Matka Piemonteen match too; what stays unmatched is festival shows and classics (aliases).
 
 ---
 
@@ -436,7 +441,7 @@ Probed 2026-10-14, two GETs. Adapter: `packages/fetcher/src/providers/tribe/`, s
 
 ## Kino Engel (WordPress, the Johku schedule rendered server-side)
 
-Probed 2026-10-14 from a home connection, one GET. Adapter: `packages/fetcher/src/providers/engel/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/engel.py`, re-verified.
+Probed 2026-10-14 from a home connection: the front page, then the film pages. Adapter: `packages/fetcher/src/providers/engel/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/engel.py`, re-verified.
 
 - **Access:** kinoengel.fi (SiteGround) challenges datacenter addresses with a captcha **[A]** (Leffavuoro: HTTP 202 and `SG-Captcha: challenge`). From home it answered 200 with the page **[V]**. A challenge fails the pull with a clear error, so the previous data stands; it is never solved or worked around. Like Finnkino, this runs from the maintainer's machine only.
 - **The page:** a WordPress plugin renders Johku's schedule on the cinema's own server; we read only the HTML. Johku and its API key are never touched **[V]**.
@@ -445,9 +450,16 @@ Probed 2026-10-14 from a home connection, one GET. Adapter: `packages/fetcher/sr
 - **Every day appears twice** on the page (about 110 rows for 55 screenings); a screening is film plus start minute, so the copies merge.
 - **"Coming soon" entries** have an opening day and no time ("Pe 30.10. Osta liput", "Lue lisää"); they are not screenings and are skipped.
 - **Strands:** "BARNSÖNDAGAR:" (series, kids) and "KESÄKINO:" (the summer outdoor screen; series) as title prefixes.
-- **Not read:** posters (Johku's images; TMDB only), seats, prices, languages (not on the front page).
+- **Film pages** (`/elokuva/{slug}/`, one GET per film in the window, paced 1 s): `<label>`/`<span>` pairs **[V]**:
+  - ALKUPERÄINEN NIMI (original title) and KESTO ("1h 34 min");
+  - LISÄTIEDOT "puhuttu kieli: saksa" (the spoken language; KIELI only says "Alkuperäinen");
+  - TEKSTITYS "Suomi-Ruotsi", or "Ei tekstitystä" (none).
+
+  The runtime is what lets the matcher link title-only listings like "Rose". The age limit is **not** read: every page seen says "Ikäraja ei vielä tiedossa" while its CSS class names a limit. A failed page (the Barnsöndagar post was a 404 once) gives `film-page-missing`.
+
+- **Not read:** posters (Johku's images; TMDB only), seats, prices.
 - **Coordinates:** OSM node 2493674692 "Kino Engel" (Sofiankatu 4, 00170 Helsinki).
-- **First run:** 16 films, 49 screenings, no warnings; 9 matched (the rest: aliases).
+- **First run:** 16 films, 49 screenings, no warnings; 9 matched from the front page alone, all 16 once film pages were read.
 
 ---
 
