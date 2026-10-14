@@ -13,10 +13,10 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 ## Current state
 
-- **Data:** 99 venues in 71 cities from 54 providers on nine source types:
+- **Data:** 100 venues in 71 cities from 55 providers on ten source types:
   - one chain: Finnkino (Vista OCAPI), and Vista's open public web services (Korjaamo Kino);
   - five multi-site platforms: MyCloudCinema (BioRex, Cine Mäntsälä, and Gilda through its own WordPress facade), Nexxo, eTiketti, Kinola and Johku;
-  - two HTML sources: TMB Cinema (four cinemas) and the WordPress `cinema-reservations` plugin (Kino Piispanristi, Kino Lumo, Laitilan Kino).
+  - three HTML sources: TMB Cinema (four cinemas), the WordPress `cinema-reservations` plugin (Kino Piispanristi, Kino Lumo, Laitilan Kino) and Kino Tapiola's own theme.
 
   Fetched into JSON (`pnpm pull`), matched to TMDB, stored with history in PostgreSQL (`pnpm ingest`).
 
@@ -175,7 +175,7 @@ packages/fetcher/               @pgtm/fetcher: fetch, normalize, match → data/
   src/providers/language-codes.ts   FI / OV / FI-SE / XX codes (Nexxo, Johku)
   src/providers/overrides.ts    config/venue-overrides.json for chain venues; venue-without-geo warnings
   src/providers/<source>/       raw.ts, fetch.ts, parse.ts; sites.ts on platforms; finnkino/token.ts
-                                (mycloudcinema [BioRex, Cine Mäntsälä], gilda [MyCloudCinema via WordPress], tmb [HTML], cinemahouse [HTML], vista [public JSON], finnkino, nexxo, etiketti [HTML, cheerio], kinola, johku)
+                                (mycloudcinema [BioRex, Cine Mäntsälä], gilda [MyCloudCinema via WordPress], tmb [HTML], cinemahouse [HTML], vista [public JSON], tapiola [HTML], finnkino, nexxo, etiketti [HTML, cheerio], kinola, johku)
   src/matching/                 TMDB matching: score.ts (pure), match.ts, titles.ts, aliases.ts, catalog.ts, run.ts
   src/tmdb/, src/ratings/       TMDB client and toFilm; OMDb ratings
   src/geo/                      Finland bounds and sources, Overpass, Nominatim, OSM matching (venues:locate)

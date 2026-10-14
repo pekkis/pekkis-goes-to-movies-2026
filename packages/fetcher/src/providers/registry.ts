@@ -18,6 +18,9 @@ import { CINEMAHOUSE_SITES, type CinemahouseSite } from "./cinemahouse/sites.ts"
 import { fetchVista } from "./vista/fetch.ts";
 import { parseVista } from "./vista/parse.ts";
 import { VISTA_SITES, type VistaSite } from "./vista/sites.ts";
+import { fetchTapiola } from "./tapiola/fetch.ts";
+import { parseTapiola } from "./tapiola/parse.ts";
+import { TAPIOLA_SITES, type TapiolaSite } from "./tapiola/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -169,12 +172,25 @@ const vistaAdapter = (site: VistaSite): Adapter => ({
   },
 });
 
+/** Kino Tapiola's own theme: the programme list, then one run page per title. */
+const tapiolaAdapter = (site: TapiolaSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient({ intervalMs: 1000, ...contact(env) });
+    onlyVenues(site, venues);
+    const raw = await fetchTapiola(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseTapiola(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
   ...TMB_SITES.map(tmbAdapter),
   ...CINEMAHOUSE_SITES.map(cinemahouseAdapter),
   ...VISTA_SITES.map(vistaAdapter),
+  ...TAPIOLA_SITES.map(tapiolaAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",

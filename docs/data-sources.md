@@ -312,6 +312,34 @@ Probed 2026-10-13, two GETs. Adapter: `packages/fetcher/src/providers/vista/`, s
 
 ---
 
+## Kino Tapiola (its own WordPress theme)
+
+Probed 2026-10-14, four GETs. Adapter: `packages/fetcher/src/providers/tapiola/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/tapiola.py`, re-verified.
+
+- **Programme:** `GET https://www.kinotapiola.fi/elokuvat/` renders `div.movie-list` with one `div.movie-list-movie` block per screening **[V]**:
+  - the title, with version markers ("Kojootti vs. ACME (dub)" / "(orig)");
+  - the date with its year ("keskiviikko 14.10.2026 – Klo 15:00");
+  - a link to the screening's run page (`/naytos/{slug}/`, or `/ooppera-ja-baletti-naytos/{slug}/` for event cinema);
+  - strand classes on the block (`cat-seniorikino`), mapped in the site config; an unknown one goes to `unmappedLabels`.
+
+  The list reaches months ahead (Royal Opera into 2027); the window cuts it.
+
+- **A slug is a run, not a film:** `tony-4`, `tony-5` are separate posts with the same page. The film is therefore the title; a screening's id is its slug plus its start minute **[V]**.
+- **Run pages:** one GET per distinct title in the window (the first run's page; 16 at the first run), paced 1 s. Labelled boxes in `div.info-icons` **[V]**:
+  - the age limit as a class (`info-icon age-limit-K-16`);
+  - "Elokuvan kesto 1h 49min";
+  - "Kieli Englanti" (a Finnish language name, or "OV" for an original version, which leaves audio unknown);
+  - "Tekstitys Suomi/Ruotsi"; no box means unknown, not "none".
+
+  A page that fails gives a `film-page-missing` warning: the details stay unknown, the screenings (which come from the list) stay complete. Opera pages state their language only in the description text **[A]** (Leffavuoro); not read.
+
+- **Not read:** stills behind the titles and the cinema's synopses (TMDB only); seats and prices (the Johku widget draws them client-side, and its API key is never used, per the rules).
+- **Tickets:** the run page is the ticket page (Johku's widget on it), so `ticketUrl` is that page, copied.
+- **Coordinates:** OSM node 1430315541 "Kino Tapiola"; address from the site's footer (Mäntyviita 2, 02110 Espoo).
+- **First run:** 16 films, 26 screenings over 31 days, no warnings.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

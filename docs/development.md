@@ -79,6 +79,7 @@ Printed by `pnpm pull` and stored in each batch. Codes marked **data missing** m
 | `unclaimed-room` (Nexxo), `unclaimed-place` (eTiketti), `unclaimed-venue` (Kinola), `unclaimed-hall` (Johku) | A row belongs to no configured venue (a deliberate skip)                         | Add the venue, or the room or place, to the platform's `sites.ts`      |
 | `venue-without-city`                                                                                         | A chain venue lacked a city and was skipped                                      | Check the chain's data; add an override if needed                      |
 | `venue-without-geo`                                                                                          | A venue has no coordinates                                                       | `pnpm venues:locate`, then `sites.ts` or `config/venue-overrides.json` |
+| `film-page-missing` (Kino Tapiola)                                                                           | A film's own page failed; its details stay unknown, its screenings are complete  | Usually transient; check the page if it repeats                        |
 
 ## After the daily run
 
@@ -96,7 +97,7 @@ Printed by `pnpm pull` and stored in each batch. Codes marked **data missing** m
 ## Testing
 
 - **Where:** `packages/*/test/` mirrors `src/`. Fixtures are in `packages/fetcher/test/fixtures/<source>/`, named `<site>-<case>.json|html`, and loaded with `loadFixture()` (`test/fixtures.ts`). Imports use `../../../src/…/x.ts` with the extension.
-- **Fixtures are trimmed real responses.** Keep one example per case and only the fields the parser reads. Remove synopses, posters and other images, descriptions, and personal data. Never invent a payload shape; take it from a real response. Small synthetic edits inside a test (removing a link, duplicating a row) are fine when they are named.
+- **Fixtures are trimmed real responses.** Keep one example per case and only the fields the parser reads. Remove synopses, posters and other images, descriptions, and personal data. Never invent a payload shape; take it from a real response. Small synthetic edits inside a test (removing a link, duplicating a row) are fine when they are named. HTML the formatter cannot parse stays as served (Kino Tapiola's `</br>`): its fixture folder is in `.oxfmtrc.json`'s `ignorePatterns`.
 - **Parser tests:**
   1. The output passes `ProviderBatch.parse` with no warnings.
   2. A representative row is checked field by field.
