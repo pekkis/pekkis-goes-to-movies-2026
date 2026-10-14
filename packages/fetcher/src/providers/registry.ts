@@ -24,6 +24,9 @@ import { TAPIOLA_SITES, type TapiolaSite } from "./tapiola/sites.ts";
 import { fetchKuvakukko } from "./kuvakukko/fetch.ts";
 import { parseKuvakukko } from "./kuvakukko/parse.ts";
 import { KUVAKUKKO_SITES, type KuvakukkoSite } from "./kuvakukko/sites.ts";
+import { fetchIsohannu } from "./isohannu/fetch.ts";
+import { parseIsohannu } from "./isohannu/parse.ts";
+import { ISOHANNU_SITES, type IsohannuSite } from "./isohannu/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -199,6 +202,18 @@ const kuvakukkoAdapter = (site: KuvakukkoSite): Adapter => ({
   },
 });
 
+/** Iso-Hannu's own site: the front page's show table, then one page per film. */
+const isohannuAdapter = (site: IsohannuSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient({ intervalMs: 1000, ...contact(env) });
+    onlyVenues(site, venues);
+    const raw = await fetchIsohannu(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseIsohannu(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
@@ -207,6 +222,7 @@ export const ADAPTERS: Adapter[] = [
   ...VISTA_SITES.map(vistaAdapter),
   ...TAPIOLA_SITES.map(tapiolaAdapter),
   ...KUVAKUKKO_SITES.map(kuvakukkoAdapter),
+  ...ISOHANNU_SITES.map(isohannuAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",

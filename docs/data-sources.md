@@ -365,6 +365,35 @@ Probed 2026-10-14, one GET. Adapter: `packages/fetcher/src/providers/kuvakukko/`
 
 ---
 
+## Iso-Hannu (its own PHP site)
+
+Probed 2026-10-14, four GETs. Adapter: `packages/fetcher/src/providers/isohannu/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/isohannu.py`, re-verified.
+
+- **Programme:** `GET https://www.isohannu.fi/` renders `#showtable`, a week ahead **[V]**:
+  - an `h3.showtable-title` per day, with the year ("Keskiviikko 14.10.2026");
+  - then one `.showtable-container` per hall (`.showtable-hall`: Sali 1–3), one `.showtable-row` per screening.
+- **A row** sits inside a link to the film's page, `/leffasivu.php?id={film}`; that id is the film, not the run. The row holds:
+  - `.showtable-time` and `.showtable-name`, titles in capitals, as published;
+  - the ticket link **nested inside** the film link (`http://lipunmyynti.isohannu.fi/app/movies/{film}/shows/{show}/products/list.html`). The page is parsed with htmlparser2, which keeps that nesting; an HTML5 parser would undo it.
+  - The show id from the ticket link is the screening's id. The link is copied as printed (http) and never requested.
+- **Tags:** `showtable-{name}` classes, mapped in the site config:
+  - `children` → kids, `premiere`, `finalshow` → last-screening, `3d` → 3D;
+  - `tickets` (the buy button) is ignored; unknown ones go to `unmappedLabels`.
+- **Not screenings:** "Salissa yksityisvaraus" (a private booking of a hall) has a row and a ticket button; titles listed in the config are skipped.
+- **Film pages:** one GET per film in the window, paced 1 s. `#kuvaus` holds "Label: value" lines between `<hr>`s **[V]**:
+  - "Elokuvan kesto: 109 min";
+  - "Elokuvan ikäraja: K16" (written without the hyphen);
+  - "Genre: draama";
+  - "Puhekieli: englanti", or several ("Ruotsi, Italia").
+
+  No subtitles are stated, so they stay unknown. A failed page gives `film-page-missing`.
+
+- **Not read:** prices. The front page states Mon–Thu and Fri–Sun tariffs, but there are surcharges for films over two hours, and public holidays move the tariff.
+- **Coordinates:** OSM way 128190368 "Iso-Hannu"; the address is from the cinema's own page (Savilankatu 4, 26100 Rauma).
+- **First run:** 18 films (all matched to TMDB), 83 screenings over 7 days, no warnings.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

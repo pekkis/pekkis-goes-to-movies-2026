@@ -79,7 +79,7 @@ Printed by `pnpm pull` and stored in each batch. Codes marked **data missing** m
 | `unclaimed-room` (Nexxo), `unclaimed-place` (eTiketti), `unclaimed-venue` (Kinola), `unclaimed-hall` (Johku) | A row belongs to no configured venue (a deliberate skip)                         | Add the venue, or the room or place, to the platform's `sites.ts`      |
 | `venue-without-city`                                                                                         | A chain venue lacked a city and was skipped                                      | Check the chain's data; add an override if needed                      |
 | `venue-without-geo`                                                                                          | A venue has no coordinates                                                       | `pnpm venues:locate`, then `sites.ts` or `config/venue-overrides.json` |
-| `film-page-missing` (Kino Tapiola)                                                                           | A film's own page failed; its details stay unknown, its screenings are complete  | Usually transient; check the page if it repeats                        |
+| `film-page-missing` (Kino Tapiola, Iso-Hannu)                                                                | A film's own page failed; its details stay unknown, its screenings are complete  | Usually transient; check the page if it repeats                        |
 
 ## After the daily run
 
