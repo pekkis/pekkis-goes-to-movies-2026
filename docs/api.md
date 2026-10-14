@@ -98,6 +98,29 @@ if (res.ok) {
 - **TMDB:** film data and images come from TMDB. Show the TMDB logo and the notice "This product uses the TMDB API but is not endorsed or certified by TMDB."
 - **OpenStreetMap:** some venue coordinates are © OpenStreetMap contributors (ODbL). Any map tiles need their own attribution too.
 
+## MCP for chatbots
+
+The same data as an [MCP](https://modelcontextprotocol.io) server, so a chatbot (Claude, ChatGPT, …) can be the interface. The user's chatbot does the AI work; we only serve the tools. Code: `packages/backend/src/mcp/server.ts`, on `@modelcontextprotocol/sdk` with `@hono/mcp`'s Streamable HTTP transport.
+
+- **Off by default.** Set `MCP_TOKEN` (24+ random characters of `A-Z a-z 0-9 _ -`) and the API serves `POST /mcp/{MCP_TOKEN}`. Generate one with `openssl rand -base64 32 | tr '+/' '-_' | tr -d '='`.
+- **Internal testing only:** the token keeps the URL unlisted and stays out of the request log. Publishing the URL counts as going public, and AGENTS.md says every cinema is notified first.
+- **Stateless:** a fresh server per request, with no sessions to keep, so any number of chatbots can call at once.
+- **Tools**, all read-only:
+
+  | Tool          | Arguments                                                                                                                             | Returns                                                                                                                          |
+  | ------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+  | `find_film`   | `query` (any title, typos fine), `include_ratings`                                                                                    | film ids, titles, year, runtime, age rating                                                                                      |
+  | `whats_on`    | `date`, `city` or `near {lat, lon, radius_km}`, `after` / `before` (HH:MM), `film_id`, `venue_id`, `include_ratings`, `limit` (≤ 100) | screenings in start order: time, film, venue, hall, languages, availability, price, `ticket_url` (and `distance_km` with `near`) |
+  | `list_venues` | `city`                                                                                                                                | cinemas: id, name, city, address                                                                                                 |
+
+- **Behaviour the model is told about** (server instructions):
+  - times are Helsinki local, and the programme day runs past midnight; `before` counts 05:00 as the day's start;
+  - always give the ticket link;
+  - mention critics' scores only when asked (`include_ratings` defaults to false);
+  - the TMDB and OpenStreetMap attributions.
+- **Connecting:** add the URL `https://{host}/mcp/{MCP_TOKEN}` as a custom connector (Claude) or app / connector in developer mode (ChatGPT). Whether the Gemini web app accepts custom remote MCP servers hasn't been checked here **[A]**; Gemini CLI supports them.
+- **Tested** with the SDK's own client, in-process (`test/mcp/`), and checked in the Docker image with plain JSON-RPC over HTTP **[V 2026-10-14]**.
+
 ## Deployment
 
 The image (`Dockerfile` at the repo root) holds a tsdown bundle (`dist/serve.mjs`, `dist/migrate.mjs`) and production dependencies only. It runs as the `node` user and has a healthcheck. It is configured entirely by environment variables:

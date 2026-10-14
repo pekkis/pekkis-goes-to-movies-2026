@@ -5,7 +5,7 @@ import { loadEnv } from "../lib/env.ts";
 
 const env = loadEnv();
 const db = createDb(env.DATABASE_URL);
-const app = createApp({ db, corsOrigins: env.CORS_ORIGINS, log: true });
+const app = createApp({ db, corsOrigins: env.CORS_ORIGINS, log: true, mcpToken: env.MCP_TOKEN });
 
 const server = serve({ fetch: app.fetch, port: env.PORT, hostname: env.HOST }, (info) => {
   console.log(`API listening on http://${info.address}:${info.port} (docs: /docs)`);

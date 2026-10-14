@@ -13,6 +13,14 @@ const Env = z.object({
   /** API server. HOST is 0.0.0.0 inside the container, localhost otherwise. */
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   HOST: z.string().default("127.0.0.1"),
+  /**
+   * Turns on the MCP endpoint at `/mcp/{MCP_TOKEN}` for chatbots. A long random string:
+   * it keeps the endpoint unlisted while it is for internal testing. Unset: no MCP.
+   */
+  MCP_TOKEN: z
+    .string()
+    .regex(/^[A-Za-z0-9_-]{24,}$/, "24+ characters of A-Z, a-z, 0-9, _ or -")
+    .optional(),
   /** "*" or comma-separated origins allowed to call the API from browsers. */
   CORS_ORIGINS: z
     .string()

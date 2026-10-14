@@ -22,7 +22,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 - **Interfaces:**
   - the `showtimes` CLI;
-  - a read-only HTTP API (Hono, OpenAPI);
+  - a read-only HTTP API (Hono, OpenAPI), and an MCP server on it for chatbots (`/mcp/{MCP_TOKEN}`, off unless the token is set; internal testing);
   - a Flutter map app by a teammate in `apps/fpgm` (an early scaffold);
   - the public website in `apps/web-front`: Astro (SSR) + React + Vanilla Extract. City pages, venue pages and a venue map (MapLibre). See [docs/web.md](docs/web.md).
 
@@ -87,6 +87,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 - Venue slugs are part of ids (`{provider}:venue:{slug}`): never rename one, or its history is orphaned.
 - **The website stays out of search engines** (`noindex` meta and `X-Robots-Tag`) until every cinema has been notified; only that production deployment sets `INDEXING=on`. Every page credits TMDB (logo and notice) and OpenStreetMap, and OMDb wherever scores show.
 - **Ratings are opt-in** in every UI (the CLI shows them only with `--ratings` or a score filter): some people do not want critics' verdicts beforehand.
+- **MCP:** the endpoint stays unlisted (behind `MCP_TOKEN`) until every cinema has been notified, like the website's `noindex`. Its tools are read-only, return the cinemas' own ticket links, and give critics' scores only with `include_ratings`.
 - **API:** responses are the public shapes in `packages/backend/src/api/schemas.ts`, never database rows; change them deliberately (Flutter and React clients depend on them). Read-only, no auth. Keep the TMDB, OMDb and OpenStreetMap attributions in the OpenAPI description.
 - **Database:** migrations are append-only and listed in `migrations/index.ts` (a test checks). After one, run `pnpm migrate && pnpm db:types` and commit the regenerated `types.ts` (never edit it by hand). The fetcher stays database-agnostic.
 
@@ -143,6 +144,7 @@ pnpm vendor:leffavuoro --sync   # sync the pekkis/kino fork with upstream, refre
 - `CONTACT`: optional; goes into the User-Agent.
 - `DATABASE_URL`, `TEST_DATABASE_URL`.
 - `PORT`, `HOST`, `CORS_ORIGINS`: for the API.
+- `MCP_TOKEN`: optional; turns on the MCP endpoint at `/mcp/{MCP_TOKEN}` (24+ random characters; redacted from logs).
 
 ## Layout
 
@@ -183,6 +185,7 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
   src/ingest/                   rows.ts (pure model → rows), ingest.ts (upserts, history, removals)
   src/search/, src/geo/         showtimes CLI: fuzzy search, filters, formatting; --here / --address
   src/api/, src/queries/        Hono app (schemas.ts = public shapes, routes/); Kysely queries for it
+  src/mcp/                      MCP server for chatbots: find_film, whats_on, list_venues (same queries)
   src/cli/                      migrate, ingest, db-types, showtimes, serve
   test/                         unit + integration tests against TEST_DATABASE_URL (global-setup rebuilds it)
 ```
