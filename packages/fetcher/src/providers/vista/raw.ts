@@ -60,6 +60,6 @@ export type VistaRawSnapshot = {
   fetchedAt: string;
   from: string;
   days: number;
-  /** area id -> `/xml/Schedule/?area={id}&nrOfDays=31` */
+  /** area id (or "all") -> `/xml/Schedule/?area={id}&nrOfDays=31`: parsed JSON, or XML text. */
   schedules: Record<string, unknown>;
 };

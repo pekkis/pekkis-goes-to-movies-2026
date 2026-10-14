@@ -295,7 +295,7 @@ Probed 2026-10-13, one GET per site. Adapter: `packages/fetcher/src/providers/ci
 
 ---
 
-## Vista public web services (Korjaamo Kino)
+## Vista public web services (Korjaamo Kino, Riviera)
 
 Probed 2026-10-13, two GETs. Adapter: `packages/fetcher/src/providers/vista/`, sites in `sites.ts`. Origin: Leffavuoro's `scripts/providers/vista.py`, re-verified.
 
@@ -309,6 +309,23 @@ Probed 2026-10-13, two GETs. Adapter: `packages/fetcher/src/providers/vista/`, s
 - **Title prefixes** (site config): "Kirjastokino:" and "Tekijätorstai:" / "TEKIJÄTORSTAI:", both series.
 - **Coordinates:** OSM node 4394184115 "Korjaamo Kino"; address from the cinema's own page (Töölönkatu 51 B, 00250 Helsinki).
 - **First run:** 12 films, 13 screenings over 31 days, 8 matched to TMDB (the rest mostly classics: aliases later), no warnings.
+
+### Riviera (Kallio, Punavuori)
+
+Probed 2026-10-14, two GETs.
+
+- **Not the website's listing:** rivieracinemas.fi builds its programme with a WordPress `admin-ajax.php` POST (Leffavuoro reads that). We are GET only, and the ticket host has the same open schedule as Korjaamo: `GET https://tickets.rivieracinemas.fi/xml/Schedule/?nrOfDays=31` **[V]**.
+- **XML only:** it answers `text/xml` whatever the `Accept` header, so the site config says `format: "xml"`. The parser turns each `<Show>` into the object the JSON answer gives (empty elements absent, numeric fields numbers).
+- **No `area` needed:** one request covers every theatre. Theatres 1075 (Kallio, "Sali 1") and 1114 (Punavuori, "Sali 1" and "Sali 2"); 88–90 shows over a month.
+- **Languages are filled in:**
+  - `SpokenLanguage` and `SubtitleLanguage1/2` are given on most shows, sometimes with only the ISO code;
+  - shows without them leave audio and subtitles unknown.
+- **Ratings** read "K16/13", "K12/9" (the lower age is allowed with an adult), "S" or "(none)" (unknown).
+- **`ProductionYear` is the release year, not the film's:** "Scream (1996)" says 2026. With `releaseYearAsProductionYear` set, the year comes only from a trailing "(1996)" in the title; otherwise it stays unknown. `OriginalTitle` repeats prefixes and years, and is cleaned like the title.
+- **Title prefixes** (site config): "3 Kaveria jäätelönäytös:", "Afternoon Tea:", "Leffabrunssi:", "Mykkäleffakonsertti:", plus the common "Vauvakino:".
+- **Tickets:** `ShowURL` (`http://tickets.rivieracinemas.fi/websales/show/{id}/`), copied as printed and never requested. A link is accepted when its host is the site's.
+- **Coordinates:** OSM nodes 5175303248 (Harjukatu 2, 00500) and 10186691049 (Telakkakatu 7, 00150); the addresses match the cinema's own site.
+- **First run:** 32 films, 88 screenings, no warnings; 23 matched. The rest are repertory screenings without a reliable year: aliases.
 
 ---
 

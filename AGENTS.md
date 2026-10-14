@@ -13,8 +13,8 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 ## Current state
 
-- **Data:** 105 venues in 74 cities from 59 providers on thirteen source types:
-  - one chain: Finnkino (Vista OCAPI), and Vista's open public web services (Korjaamo Kino);
+- **Data:** 107 venues in 74 cities from 60 providers on thirteen source types:
+  - one chain: Finnkino (Vista OCAPI), and Vista's open public web services (Korjaamo Kino, Riviera Kallio and Punavuori);
   - six multi-site platforms: MyCloudCinema (BioRex, Cine Mäntsälä, and Gilda through its own WordPress facade), Nexxo, eTiketti, Kinola, Johku, and The Events Calendar for WordPress (Ritz Vaasa, Tähti Kino Muhos);
   - four HTML sources: TMB Cinema (four cinemas), the WordPress `cinema-reservations` plugin (Kino Piispanristi, Kino Lumo, Laitilan Kino), Kino Tapiola's own theme, Kuvakukko's shared programme page (Kino Kuvakukko, Kino Manttu), and Iso-Hannu's own site.
 

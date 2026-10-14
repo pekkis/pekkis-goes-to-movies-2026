@@ -4,7 +4,7 @@ import type { VistaSite } from "./sites.ts";
 
 export type FetchOptions = { from: string; days: number; now?: () => Date };
 
-/** I/O only: one GET per area; 31 days covers the whole published window. */
+/** I/O only: one GET per area (or one for all); 31 days covers the whole published window. */
 export const fetchVista = async (
   http: HttpClient,
   site: VistaSite,
@@ -12,8 +12,14 @@ export const fetchVista = async (
 ): Promise<VistaRawSnapshot> => {
   const fetchedAt = now().toISOString();
   const schedules: Record<string, unknown> = {};
-  for (const area of site.areas) {
-    schedules[area] = await http.getJson(`${site.base}/xml/Schedule/`, { area, nrOfDays: 31 });
+  const url = `${site.base}/xml/Schedule/`;
+  for (const area of site.areas ?? ["all"]) {
+    const params = { ...(area !== "all" && { area: String(area) }), nrOfDays: "31" };
+    // XML stays text here; the parser reads it.
+    schedules[area] =
+      site.format === "xml"
+        ? await http.getText(`${url}?${new URLSearchParams(params)}`)
+        : await http.getJson(url, params);
   }
   return { fetchedAt, from, days, schedules };
 };

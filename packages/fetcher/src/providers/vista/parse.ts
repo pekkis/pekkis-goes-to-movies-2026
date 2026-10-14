@@ -10,6 +10,7 @@ import {
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, toHelsinkiIso } from "@pgtm/model/time";
+import { load } from "cheerio";
 import { normalizeLang } from "../../lib/lang.ts";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
@@ -27,7 +28,61 @@ const RATINGS: Record<string, FinnishRating> = {
   "K-18": "K-18",
 };
 /** Stated as not known. */
-const UNKNOWN_RATING = "EI TIEDOSSA";
+const UNKNOWN_RATINGS = new Set(["EI TIEDOSSA", "(NONE)"]);
+
+/**
+ * "K-12", "K12", and Riviera's "K16/13" (the lower age is allowed with an adult): the
+ * limit itself, hyphenated.
+ */
+const ratingKey = (rating: string) => rating.replace(/\/\d+$/, "").replace(/^K(\d)/, "K-$1");
+
+/** A trailing "(1996)" is the production year, not part of the title. */
+const YEAR_SUFFIX = /\s*\((\d{4})\)$/;
+
+/** Fields that are numbers in the JSON answer; XML has only text. */
+const NUMERIC = new Set([
+  "ID",
+  "EventID",
+  "TheatreID",
+  "ProductionYear",
+  "LengthInMinutes",
+  "AvailableSeats",
+  "TotalSeats",
+]);
+
+/** XML `<Show>` elements as the objects the JSON answer gives: empty means absent. */
+const xmlShows = (xml: string): unknown[] | undefined => {
+  const $ = load(xml, { xml: true });
+  if ($("Schedule").length === 0) {
+    return undefined;
+  }
+  const value = (el: Parameters<typeof $>[0]) => {
+    const node = $(el);
+    if (node.children().length > 0) {
+      return Object.fromEntries(
+        node
+          .children()
+          .toArray()
+          .map((child) => [child.tagName, $(child).text().trim() || null]),
+      );
+    }
+    const text = node.text().trim();
+    if (!text) {
+      return null;
+    }
+    return NUMERIC.has((el as { tagName: string }).tagName) ? Number(text) : text;
+  };
+  return $("Schedule > Shows > Show")
+    .toArray()
+    .map((show) =>
+      Object.fromEntries(
+        $(show)
+          .children()
+          .toArray()
+          .map((field) => [field.tagName, value(field)]),
+      ),
+    );
+};
 
 type Language =
   | { Name?: string | null | undefined; ISOTwoLetterCode?: string | null | undefined }
@@ -57,6 +112,9 @@ const subtitlesOf = (s: VistaShow, unmapped: string[]): Subtitles => {
 };
 
 const showsOf = (payload: unknown): unknown[] | undefined => {
+  if (typeof payload === "string") {
+    return xmlShows(payload);
+  }
   const parsed = ScheduleResponse.safeParse(payload);
   if (!parsed.success) {
     return undefined;
@@ -122,10 +180,16 @@ export const parseVista = (raw: VistaRawSnapshot, site: VistaSite): ProviderBatc
 
       const unmapped: string[] = [];
       const { title: unprefixed, rule } = splitTitlePrefix(s.Title, prefixRules);
-      const { title, version } = splitVersion(unprefixed);
+      const titleYear = unprefixed.match(YEAR_SUFFIX)?.[1];
+      const { title, version } = splitVersion(unprefixed.replace(YEAR_SUFFIX, ""));
+      const year = titleYear
+        ? Number(titleYear)
+        : site.releaseYearAsProductionYear
+          ? undefined
+          : s.ProductionYear;
       const ratingText = s.Rating?.trim().toUpperCase() ?? "";
-      const rating = own(RATINGS, ratingText);
-      if (ratingText && !rating && ratingText !== UNKNOWN_RATING) {
+      const rating = own(RATINGS, ratingKey(ratingText));
+      if (ratingText && !rating && !UNKNOWN_RATINGS.has(ratingText)) {
         unmapped.push(`rating:${s.Rating}`);
       }
       const audio = language(s.SpokenLanguage);
@@ -143,7 +207,10 @@ export const parseVista = (raw: VistaRawSnapshot, site: VistaSite): ProviderBatc
 
       const listingId = makeId(P, "film", s.EventID);
       if (!listings.has(listingId)) {
-        const original = s.OriginalTitle?.trim();
+        // Cleaned like the title: Riviera repeats prefixes and years in it.
+        const original =
+          s.OriginalTitle &&
+          splitTitlePrefix(s.OriginalTitle, prefixRules).title.replace(YEAR_SUFFIX, "").trim();
         listings.set(listingId, {
           id: listingId,
           provider: P,
@@ -151,7 +218,7 @@ export const parseVista = (raw: VistaRawSnapshot, site: VistaSite): ProviderBatc
           title: { fi: title },
           ...(original &&
             original.toLowerCase() !== title.toLowerCase() && { originalTitle: original }),
-          ...(s.ProductionYear && { year: s.ProductionYear }),
+          ...(year && { year }),
           ...(s.LengthInMinutes && s.LengthInMinutes > 0 && { runtimeMinutes: s.LengthInMinutes }),
           ...(rating && { rating }),
           genres: (s.Genres ?? "")
@@ -201,8 +268,8 @@ export const parseVista = (raw: VistaRawSnapshot, site: VistaSite): ProviderBatc
             ? { free: s.AvailableSeats, capacity: s.TotalSeats }
             : {},
         ),
-        // The show's own ticket page, copied from the schedule.
-        ticketUrl: url?.startsWith(`${site.base}/`) ? url : site.homepage,
+        // The show's own ticket page, copied from the schedule (Riviera's say http).
+        ticketUrl: url && URL.parse(url)?.host === new URL(site.base).host ? url : site.homepage,
         unmappedLabels: unmapped,
         fetchedAt: raw.fetchedAt,
       });
