@@ -7,7 +7,7 @@ import { defineConfig } from "tsdown";
  * `pnpm deploy --prod`.
  */
 export default defineConfig({
-  entry: { serve: "src/cli/serve.ts", migrate: "src/cli/migrate.ts" },
+  entry: { serve: "src/cli/serve.ts", migrate: "src/cli/migrate.ts", ingest: "src/cli/ingest.ts" },
   outDir: "dist",
   format: "esm",
   platform: "node",

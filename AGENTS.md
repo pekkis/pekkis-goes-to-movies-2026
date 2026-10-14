@@ -1,6 +1,6 @@
 # AGENTS.md – Pekkis goes to movies
 
-Instructions for AI agents (and humans) working in this repository. Rules first, then how the code is built, then reference. Details live in `docs/`: [development.md](docs/development.md) (principles, testing, warnings, recipes), [data-sources.md](docs/data-sources.md), [data-model.md](docs/data-model.md), [database.md](docs/database.md), [api.md](docs/api.md), [cli.md](docs/cli.md), [web.md](docs/web.md).
+Instructions for AI agents (and humans) working in this repository. Rules first, then how the code is built, then reference. Details live in `docs/`: [development.md](docs/development.md) (principles, testing, warnings, recipes), [data-sources.md](docs/data-sources.md), [data-model.md](docs/data-model.md), [database.md](docs/database.md), [api.md](docs/api.md), [cli.md](docs/cli.md), [web.md](docs/web.md), [deploy.md](docs/deploy.md).
 
 ## What this is
 
@@ -117,6 +117,7 @@ pnpm pull                    # fetch every provider, 6 at a time, then match fil
 pnpm pull --provider nexxo   # a provider id or a platform name; --days, --from, --venue: docs/cli.md
 pnpm match                   # re-run TMDB matching only (after editing aliases)
 pnpm ingest                  # upsert data/normalized/*.json into Postgres, keeping history
+pnpm data:push               # ship data/normalized/ to the server and ingest it there (docs/deploy.md)
 pnpm venues:locate           # suggest OSM coordinates; --address geocodes an address
 pnpm showtimes odysey        # film search; with no film, everything on (--here, --after, …: docs/cli.md)
 pnpm api:dev / api:up / api:down   # the HTTP API on :3000 (dev with reload / Docker)
@@ -130,7 +131,7 @@ pnpm vendor:leffavuoro --sync   # sync the pekkis/kino fork with upstream, refre
 - **`pnpm fetch` is built into pnpm**, which is why the fetch script is `pull`.
 - **Finnkino opens a visible Chrome window** for a few seconds when its 12-hour token needs renewing (cached in `data/cache/finnkino-token.json`).
 
-**Daily routine:** the maintainer runs `pnpm pull && pnpm ingest` by hand, about once a day (no scheduler: Finnkino needs a visible Chrome, and the laptop is often closed). Programmes change most on Tuesday and Wednesday; programme weeks run Friday to Thursday. Afterwards, check the run as listed in [docs/development.md](docs/development.md#after-the-daily-run):
+**Daily routine:** the maintainer runs `pnpm pull && pnpm ingest` (and `pnpm data:push` for the server) by hand, about once a day (no scheduler: Finnkino needs a visible Chrome, and the laptop is often closed). Programmes change most on Tuesday and Wednesday; programme weeks run Friday to Thursday. Afterwards, check the run as listed in [docs/development.md](docs/development.md#after-the-daily-run):
 
 - warnings and unmapped labels;
 - unmatched films;
@@ -144,14 +145,16 @@ pnpm vendor:leffavuoro --sync   # sync the pekkis/kino fork with upstream, refre
 - `CONTACT`: optional; goes into the User-Agent.
 - `DATABASE_URL`, `TEST_DATABASE_URL`.
 - `PORT`, `HOST`, `CORS_ORIGINS`: for the API.
+- `DEPLOY_TARGET` (home), `POSTGRES_PASSWORD`, `API_PORT`, `WEB_PORT`, `SITE_URL` (server): deployment, see [docs/deploy.md](docs/deploy.md).
 - `MCP_TOKEN`: optional; turns on the MCP endpoint at `/mcp/{MCP_TOKEN}` (24+ random characters; redacted from logs).
 
 ## Layout
 
 ```
 package.json, pnpm-workspace.yaml, tsconfig.base.json   workspace root; .oxlintrc.json, .oxfmtrc.json
-compose.yaml, docker/           Postgres 18 (+ pgtm_test via docker/postgres/init); profile "app": migrate + api
-Dockerfile, .dockerignore       API image: tsdown bundle + `pnpm deploy --prod` node_modules
+compose.yaml, docker/           Postgres 18 (+ pgtm_test via docker/postgres/init); profile "app": migrate, api, web; profile "ingest": ingest
+Dockerfile, .dockerignore       API image (serve, migrate, ingest): tsdown bundle + `pnpm deploy --prod` node_modules
+apps/web-front/Dockerfile       website image (Astro standalone server); its own Dockerfile.dockerignore
 .env, data/                     gitignored: secrets; raw/, normalized/, cache/ (tmdb, omdb, osm, geocode, token)
 docs/                           development, data-sources, data-model, database, api, cli
 vendor/leffavuoro/, scripts/    Leffavuoro reference copy (not built, linted or formatted) and its refresher

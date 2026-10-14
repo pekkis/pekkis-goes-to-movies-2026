@@ -14,6 +14,7 @@
     "migrate": "pnpm --filter @pgtm/backend migrate",
     "db:types": "pnpm --filter @pgtm/backend db:types",
     "ingest": "pnpm --filter @pgtm/backend ingest",
+    "data:push": "node --env-file-if-exists=.env scripts/push-data.ts",
     "showtimes": "pnpm --filter @pgtm/backend showtimes",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",

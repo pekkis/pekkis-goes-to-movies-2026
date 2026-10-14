@@ -7,11 +7,11 @@ services:
     image: postgres:18-alpine
     environment:
       POSTGRES_USER: pgtm
-      POSTGRES_PASSWORD: pgtm
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pgtm}
       POSTGRES_DB: pgtm
     ports:
       # Local development only: bound to localhost.
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${PG_PORT:-5432}:5432"
     volumes:
       - postgres:/var/lib/postgresql
       - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
@@ -28,7 +28,7 @@ services:
     image: pgtm-api
     command: ["node", "dist/migrate.mjs"]
     environment:
-      DATABASE_URL: postgres://pgtm:pgtm@postgres:5432/pgtm
+      DATABASE_URL: postgres://pgtm:${POSTGRES_PASSWORD:-pgtm}@postgres:5432/pgtm
     depends_on:
       postgres:
         condition: service_healthy
@@ -38,19 +38,55 @@ services:
     build: .
     image: pgtm-api
     environment:
-      DATABASE_URL: postgres://pgtm:pgtm@postgres:5432/pgtm
+      DATABASE_URL: postgres://pgtm:${POSTGRES_PASSWORD:-pgtm}@postgres:5432/pgtm
       CORS_ORIGINS: "*"
       # Set in .env to turn on the MCP endpoint /mcp/{MCP_TOKEN} (unlisted, internal testing).
       MCP_TOKEN: ${MCP_TOKEN:-}
     ports:
       # Bound to localhost: a reverse proxy (nginx) in front publishes it.
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:${API_PORT:-3000}:3000"
     depends_on:
       postgres:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
     restart: unless-stopped
+
+  # The website (Astro SSR). Reads the API over the Compose network.
+  web:
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: apps/web-front/Dockerfile
+    image: pgtm-web
+    environment:
+      API_URL: http://api:3000
+      # The public address, for canonical links (the container sees itself as localhost).
+      SITE_URL: ${SITE_URL:-}
+      # Search engines stay out until every cinema has been notified (AGENTS.md).
+      INDEXING: ${INDEXING:-off}
+    ports:
+      - "127.0.0.1:${WEB_PORT:-4321}:4321"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # One-shot, on demand: `docker compose run --rm ingest` loads ./data/normalized (the
+  # files `pnpm data:push` sends from the machine that pulls) into Postgres.
+  ingest:
+    profiles: [ingest]
+    build: .
+    image: pgtm-api
+    command: ["node", "dist/ingest.mjs", "--dir", "/data/normalized"]
+    environment:
+      DATABASE_URL: postgres://pgtm:${POSTGRES_PASSWORD:-pgtm}@postgres:5432/pgtm
+    volumes:
+      - ./data/normalized:/data/normalized:ro
+    # Run it with the stack up: `migrate` has already brought the schema up to date.
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres:

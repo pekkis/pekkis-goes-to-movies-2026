@@ -104,7 +104,7 @@ The same data as an [MCP](https://modelcontextprotocol.io) server, so a chatbot 
 
 - **Off by default.** Set `MCP_TOKEN` (24+ random characters of `A-Z a-z 0-9 _ -`) and the API serves `POST /mcp/{MCP_TOKEN}`. Generate one with `openssl rand -base64 32 | tr '+/' '-_' | tr -d '='`.
 - **Internal testing only:** the token keeps the URL unlisted and stays out of the request log. Publishing the URL counts as going public, and AGENTS.md says every cinema is notified first.
-- **Stateless:** a fresh server per request, with no sessions to keep, so any number of chatbots can call at once.
+- **Stateless:** a fresh server per request, with no sessions to keep, so any number of chatbots can call at once. Only `POST` is served: a `GET` (which would open a stream the server never uses, and in a browser just hangs) gets an immediate `405`, which the spec allows and clients handle.
 - **Tools**, all read-only:
 
   | Tool          | Arguments                                                                                                                             | Returns                                                                                                                          |
@@ -118,33 +118,10 @@ The same data as an [MCP](https://modelcontextprotocol.io) server, so a chatbot 
   - always give the ticket link;
   - mention critics' scores only when asked (`include_ratings` defaults to false);
   - the TMDB and OpenStreetMap attributions.
-- **Connecting:** add the URL `https://{host}/mcp/{MCP_TOKEN}` as a custom connector (Claude) or app / connector in developer mode (ChatGPT). Whether the Gemini web app accepts custom remote MCP servers hasn't been checked here **[A]**; Gemini CLI supports them.
+- **Connecting:** add the URL `https://{host}/mcp/{MCP_TOKEN}` as a custom connector (Claude), an app / connector in developer mode (ChatGPT), or an MCP server in Gemini.
 - **Tested** with the SDK's own client, in-process (`test/mcp/`), and checked in the Docker image with plain JSON-RPC over HTTP **[V 2026-10-14]**.
+- **Verified in real use:** Claude Desktop's custom connector against the live server (`https://api.movies.pekkis.eu/mcp/…`, behind nginx), 2026-10-14 **[V]**. It worked end to end, as the maintainer reported. **Gemini** connects too, 2026-10-14 **[V]**, but only after the endpoint started answering `GET` with `405`: while the idle `GET` stream hung, Gemini could not connect. Not yet tried: ChatGPT's developer mode.
 
 ## Deployment
 
-The image (`Dockerfile` at the repo root) holds a tsdown bundle (`dist/serve.mjs`, `dist/migrate.mjs`) and production dependencies only. It runs as the `node` user and has a healthcheck. It is configured entirely by environment variables:
-
-| Variable       | Default                | Meaning                        |
-| -------------- | ---------------------- | ------------------------------ |
-| `DATABASE_URL` | (required)             | `postgres://…`                 |
-| `PORT`         | `3000`                 | Listen port                    |
-| `HOST`         | `0.0.0.0` in the image | Listen address                 |
-| `CORS_ORIGINS` | `*`                    | `*` or comma-separated origins |
-
-**On a server with Docker Compose and nginx:**
-
-1. Run the same `compose.yaml` with the `app` profile. Put a real database password in a compose override or an env file (not committed).
-2. `migrate` runs once per deploy, before `api` starts.
-3. The API listens on `127.0.0.1:3000`. nginx terminates TLS and proxies to it:
-
-```nginx
-location / {
-    proxy_pass http://127.0.0.1:3000;
-    proxy_set_header Host $host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-}
-```
-
-**Open question:** how data reaches the server's database. The fetcher runs on the maintainer's laptop (Finnkino needs a visible Chrome). Options are running `pnpm ingest` against the remote database over an SSH tunnel, or shipping a dump. Not decided yet.
+See [deploy.md](deploy.md): Docker Compose behind nginx, and how the daily data reaches the server (`pnpm data:push`).

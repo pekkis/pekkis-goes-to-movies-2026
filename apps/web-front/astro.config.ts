@@ -22,6 +22,8 @@ export default defineConfig({
         access: "secret",
         default: "http://127.0.0.1:3000",
       }),
+      // The public address (https://elokuvat.example), for canonical links behind a proxy.
+      SITE_URL: envField.string({ context: "server", access: "secret", optional: true }),
       // Search engines stay out until every cinema has been notified (AGENTS.md).
       INDEXING: envField.enum({
         context: "server",
