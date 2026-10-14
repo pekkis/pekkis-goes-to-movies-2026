@@ -394,6 +394,29 @@ Probed 2026-10-14, four GETs. Adapter: `packages/fetcher/src/providers/isohannu/
 
 ---
 
+## The Events Calendar (WordPress): Ritz Vaasa, Tähti Kino Muhos
+
+Probed 2026-10-14, two GETs. Adapter: `packages/fetcher/src/providers/tribe/`, sites in `sites.ts`. Origin: Leffavuoro's `scripts/providers/tribe.py`, re-verified.
+
+- **API** **[V]**: `GET {base}/?rest_route=/tribe/events/v1/events&per_page=50&page=N&start_date=…&end_date=…&categories={id}`, public JSON with no key. `?rest_route=` works whatever the permalinks are. `total_pages` is followed to the end (budget 10).
+- **A calendar is not a programme:** the film category is configured by its numeric id (Ritz 19 "kino", Muhos 106 "elokuvat"). An event outside it (a filter the server ignored) is skipped with `unclaimed-event`.
+- **Times:** `start_date` (local) and `utc_start_date` must agree through Europe/Helsinki; a disagreement gives `invalid-start` and the event is skipped. All-day events have no time and are skipped (`all-day-event`).
+- **Price:** `cost_details.values` with exactly one value is this screening's price (Muhos: 11 €, 13 €). Several values are a band ("10€ – 12€" at Ritz) and settle nothing.
+- **Facts come from the description's labelled lines, never its prose:**
+  - Ritz writes English labels ("Language: English, Lithuanian", "Subtitles: Finnish, English") and a runtime line ("114 min");
+  - Muhos uses headings: "Ikäraja sallittu." / "Ikäraja K-7. Aikuisen seurassa …", or "Kesto 2 h 38 min | K-16 | Liput 13 €".
+- **Titles:**
+  - Muhos ends every title in "-elokuvanäytös" (a configured suffix).
+  - Ritz puts the year ("Wholetrain (2006)") or an age limit ("Knitting Cinema! (K18)") in a trailing parenthesis; both are read off the title.
+  - Other parentheses stay: "Two Seasons, Two Strangers (Tabi to hibi)".
+- **Event series** ("Knitting Cinema!", "Ritz Horrorfest!") are listed as events of their own name; which film plays is not stated, so they stay unmatched.
+- **Tickets:** at the door at both ("sold at the door", "ovelta"); `ticketUrl` is the event's own page, copied.
+- **Not read:** images (a generic calendar picture at Muhos; posters come from TMDB) and synopses.
+- **Coordinates:** Ritz: OSM node 3060592153 (Kirkkopuistikko 22a, 65100 Vaasa). Tähti Kino: OSM node 4946909729, the cinema at Muhostie 2, the address the events' venue gives ("Muhoksen Koivu ja Tähti -sali").
+- **First run:** Ritz 6 films, 10 screenings; Muhos 4 films, 17 screenings; no warnings.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

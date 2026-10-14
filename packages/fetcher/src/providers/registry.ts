@@ -27,6 +27,9 @@ import { KUVAKUKKO_SITES, type KuvakukkoSite } from "./kuvakukko/sites.ts";
 import { fetchIsohannu } from "./isohannu/fetch.ts";
 import { parseIsohannu } from "./isohannu/parse.ts";
 import { ISOHANNU_SITES, type IsohannuSite } from "./isohannu/sites.ts";
+import { fetchTribe } from "./tribe/fetch.ts";
+import { parseTribe } from "./tribe/parse.ts";
+import { TRIBE_SITES, type TribeSite } from "./tribe/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -214,6 +217,18 @@ const isohannuAdapter = (site: IsohannuSite): Adapter => ({
   },
 });
 
+/** The Events Calendar (WordPress): the film category's events over REST. */
+const tribeAdapter = (site: TribeSite): Adapter => ({
+  id: site.provider,
+  platform: "events-calendar",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchTribe(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseTribe(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
@@ -223,6 +238,7 @@ export const ADAPTERS: Adapter[] = [
   ...TAPIOLA_SITES.map(tapiolaAdapter),
   ...KUVAKUKKO_SITES.map(kuvakukkoAdapter),
   ...ISOHANNU_SITES.map(isohannuAdapter),
+  ...TRIBE_SITES.map(tribeAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",

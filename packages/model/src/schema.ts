@@ -40,6 +40,7 @@ const IsoDate = z.iso.date();
 export const Platform = z.enum([
   "vista-ocapi",
   "vista-public",
+  "events-calendar",
   "mycloudcinema",
   "etiketti",
   "kinola",

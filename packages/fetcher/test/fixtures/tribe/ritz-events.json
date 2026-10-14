@@ -1,0 +1,72 @@
+{
+  "events": [
+    {
+      "id": 10003749,
+      "title": "Wholetrain (2006)",
+      "start_date": "2026-10-18 13:00:00",
+      "utc_start_date": "2026-10-18 10:00:00",
+      "all_day": false,
+      "categories": [
+        {
+          "id": 19,
+          "slug": "kino"
+        }
+      ],
+      "cost": "8€ – 12€",
+      "cost_details": {
+        "currency_symbol": "€",
+        "currency_code": "EUR",
+        "currency_position": "suffix",
+        "values": ["8", "10", "12"]
+      },
+      "url": "https://ritz.fi/event/wholetrain-2006/2026-10-18/",
+      "description": "<p>Tickets: 12/10€, sold at the door. Doors open 20 minutes before the first screening.<br />\nLanguage: German<br />\nSubtitles: English<br />\n82 min</p>"
+    },
+    {
+      "id": 10003757,
+      "title": "Svečias – The Visitor",
+      "start_date": "2026-10-18 15:00:00",
+      "utc_start_date": "2026-10-18 12:00:00",
+      "all_day": false,
+      "categories": [
+        {
+          "id": 19,
+          "slug": "kino"
+        }
+      ],
+      "cost": "10€ – 12€",
+      "cost_details": {
+        "currency_symbol": "€",
+        "currency_code": "EUR",
+        "currency_position": "suffix",
+        "values": ["10", "12"]
+      },
+      "url": "https://ritz.fi/event/svecias-the-visitor/2026-10-18/",
+      "description": "<p>Tickets: 12/10€, sold at the door. Doors open 20 minutes before the first screening.<br />\nLanguage: English, Lithuanian<br />\nSubtitles: Finnish, English<br />\n114 min</p>"
+    },
+    {
+      "id": 10003775,
+      "title": "Knitting Cinema! (K18)",
+      "start_date": "2026-10-28 18:30:00",
+      "utc_start_date": "2026-10-28 16:30:00",
+      "all_day": false,
+      "categories": [
+        {
+          "id": 19,
+          "slug": "kino"
+        }
+      ],
+      "cost": "10€ – 12€",
+      "cost_details": {
+        "currency_symbol": "€",
+        "currency_code": "EUR",
+        "currency_position": "suffix",
+        "values": ["10", "12"]
+      },
+      "url": "https://ritz.fi/event/knitting-cinema-k18/2026-10-28/",
+      "description": ""
+    }
+  ],
+  "total": 3,
+  "total_pages": 1
+}

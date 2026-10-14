@@ -80,6 +80,8 @@ Printed by `pnpm pull` and stored in each batch. Codes marked **data missing** m
 | `venue-without-city`                                                                                         | A chain venue lacked a city and was skipped                                      | Check the chain's data; add an override if needed                      |
 | `venue-without-geo`                                                                                          | A venue has no coordinates                                                       | `pnpm venues:locate`, then `sites.ts` or `config/venue-overrides.json` |
 | `film-page-missing` (Kino Tapiola, Iso-Hannu)                                                                | A film's own page failed; its details stay unknown, its screenings are complete  | Usually transient; check the page if it repeats                        |
+| `unclaimed-event` (Events Calendar)                                                                          | An event outside the configured film category (a deliberate skip)                | Check the site's category id in `tribe/sites.ts`                       |
+| `all-day-event` (Events Calendar)                                                                            | An event without a time was skipped                                              | Check whether it is a screening; usually not                           |
 
 ## After the daily run
 

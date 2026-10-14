@@ -4,7 +4,7 @@ All Finnish cinema showtimes on one site. Find a film by time and place ("what's
 
 For now the repository contains the data collection and an API:
 
-- **Sources:** showtimes from Finnkino, BioRex and small cinemas on the MyCloudCinema, Nexxo, eTiketti, Kinola, Johku, TMB and cinema-reservations platforms, plus the own sites of Kino Tapiola, Kuvakukko and Iso-Hannu (103 venues in 73 towns).
+- **Sources:** showtimes from Finnkino, BioRex and small cinemas on the MyCloudCinema, Nexxo, eTiketti, Kinola, Johku, TMB, cinema-reservations and Events Calendar platforms, plus the own sites of Kino Tapiola, Kuvakukko and Iso-Hannu (105 venues in 74 towns).
 - **Processing:** the showtimes are normalized into a typed model, matched to films on TMDB (with optional Rotten Tomatoes, Metacritic and IMDb scores via OMDb), and stored in PostgreSQL with history.
 - **Access:** a read-only HTTP API and a command-line search serve the data.
 
