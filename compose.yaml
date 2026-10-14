@@ -40,6 +40,8 @@ services:
     environment:
       DATABASE_URL: postgres://pgtm:pgtm@postgres:5432/pgtm
       CORS_ORIGINS: "*"
+      # Set in .env to turn on the MCP endpoint /mcp/{MCP_TOKEN} (unlisted, internal testing).
+      MCP_TOKEN: ${MCP_TOKEN:-}
     ports:
       # Bound to localhost: a reverse proxy (nginx) in front publishes it.
       - "127.0.0.1:3000:3000"

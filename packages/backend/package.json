@@ -22,8 +22,10 @@
     "build": "tsdown"
   },
   "dependencies": {
+    "@hono/mcp": "^0.3.2",
     "@hono/node-server": "^2.1.4",
     "@hono/zod-openapi": "^1.6.3",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@pgtm/model": "workspace:*",
     "@scalar/hono-api-reference": "^0.12.11",
     "hono": "^4.13.13",
