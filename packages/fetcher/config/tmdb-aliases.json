@@ -73,5 +73,165 @@
     "tmdb": 1781923,
     "title": "Pikku Kummitus Lapanen keppostelee",
     "note": "Lilla spöket Laban busar vidare (2026, sv); Laban = Lapanen in Finnish. TMDB has no Finnish title, runtime or countries yet, so search cannot find it. Identified by the maintainer; Swedish release 2026-10-09 matches the Finnish run. Cinemas give 62-63 min (Kino Myyri says 45)."
+  },
+  "biorex:film:1572": {
+    "tmdb": 1545391,
+    "title": "Matka Piemonteen",
+    "note": "Resan till Piemonte (2026). 27 other cinemas link it there; BioRex lists 120 vs 111–112 min, outside the sibling tolerance. verified by the maintainer 2026-10-14."
+  },
+  "biorex:film:1589": {
+    "tmdb": 70160,
+    "title": "Nälkäpeli",
+    "note": "The Hunger Games (2012), in BioRex's run of the whole series (each film shown separately); 140 vs 142 min. verified by the maintainer 2026-10-14."
+  },
+  "laitilankino:film:pikku-kummitus-lapanen-keppostelee-2": {
+    "tmdb": 1781923,
+    "title": "Pikku Kummitus Lapanen keppostelee",
+    "note": "The film about 15 cinemas link as tmdb 1781923; Laitila states no runtime, so the sibling pass cannot link it. verified by the maintainer 2026-10-14."
+  },
+  "kinovirta:film:599": {
+    "tmdb": 1781923,
+    "title": "Pikku Kummitus Lapanen",
+    "note": "Its original title is 'Pikku Kummitus Lapanen keppostelee', 63 min like the others: tmdb 1781923. verified by the maintainer 2026-10-14."
+  },
+  "kinoelo:film:867": {
+    "tmdb": 1477104,
+    "title": "Late Lammas -elokuva: Hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as biorex:film:1548; no runtime here. verified by the maintainer 2026-10-14."
+  },
+  "kinomania:film:867": {
+    "tmdb": 1477104,
+    "title": "Late Lammas -elokuva: Hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as biorex:film:1548; no runtime here. verified by the maintainer 2026-10-14."
+  },
+  "kinopiispanristi:film:ennakko-late-lammas-elokuva-hamarapuuhissa-suomeksi": {
+    "tmdb": 1477104,
+    "title": "Late Lammas: Hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), preview; 81 min both. verified by the maintainer 2026-10-14."
+  },
+  "kinolumo:film:katyrit-monsterit-suomeksi": {
+    "tmdb": 1315772,
+    "title": "Kätyrit ja Monsterit",
+    "note": "Minions & Monsters (2026), Finnish dub; 85 vs 90 min. verified by the maintainer 2026-10-14."
+  },
+  "kinopiispanristi:film:katyrit-monsterit-suomeksi": {
+    "tmdb": 1315772,
+    "title": "Kätyrit ja Monsterit",
+    "note": "Minions & Monsters (2026), Finnish dub; 85 vs 90 min. verified by the maintainer 2026-10-14."
+  },
+  "ritzvaasa:film:svecias-the-visitor": {
+    "tmdb": 1427167,
+    "title": "Svečias – The Visitor",
+    "note": "Svečias (2025, Lithuania); 114 vs 111 min. verified by the maintainer 2026-10-14."
+  },
+  "korjaamo:film:5232": {
+    "tmdb": 1686683,
+    "title": "Kuzma: Fearlessly Cheerful",
+    "note": "Кузьма: Страшно веселий (2026); 133 min both. verified by the maintainer 2026-10-14."
+  },
+  "biosade:film:879": {
+    "tmdb": 1192645,
+    "title": "Hollywood Fallout",
+    "note": "The Conqueror: Hollywood Fallout (2024), a festival screening; 116 min both. verified by the maintainer 2026-10-14."
+  },
+  "cinemaorion:film:c2b2ea40-0aeb-4c06-9799-7f8b279e4012": {
+    "tmdb": 1178620,
+    "title": "Montreal, ma belle",
+    "note": "Montréal, ma belle (2026); 118 min both. verified by the maintainer 2026-10-14."
+  },
+  "cinemaorion:film:029d8d5b-6c66-4987-b182-0483c0d743da": {
+    "tmdb": 1514847,
+    "title": "Ivan and Hadoum",
+    "note": "Iván & Hadoum (2026); 100 min both. verified by the maintainer 2026-10-14."
+  },
+  "biosade:film:868": {
+    "tmdb": 1562438,
+    "title": "Last Prometheus of Donbas",
+    "note": "Останній Прометей Донбасу (2026); 104 min both. verified by the maintainer 2026-10-14."
+  },
+  "kinoiiris:film:3270": {
+    "tmdb": 1035047,
+    "title": "Hyvä talo (Dom dobry)",
+    "note": "Dom dobry (2025), Polish film weekend; 107 vs 108 min. verified by the maintainer 2026-10-14."
+  },
+  "kinoiiris:film:3271": {
+    "tmdb": 1374313,
+    "title": "Junat (Pociągi)",
+    "note": "Pociągi (2025), Polish film weekend; 80 min both. verified by the maintainer 2026-10-14."
+  },
+  "korjaamo:film:5215": {
+    "tmdb": 683363,
+    "title": "Tytöt Tytöt Tytöt",
+    "note": "Tytöt tytöt tytöt (2022); 101 vs 100 min. Korjaamo's year is the screening's. verified by the maintainer 2026-10-14."
+  },
+  "korjaamo:film:5210": {
+    "tmdb": 1700,
+    "title": "Misery",
+    "note": "Misery (1990); 107 min both. Korjaamo's year 2026 is the screening's. verified by the maintainer 2026-10-14."
+  },
+  "korjaamo:film:5211": {
+    "tmdb": 1245,
+    "title": "Remains of the Day",
+    "note": "The Remains of the Day (1993); 135 vs 134 min. verified by the maintainer 2026-10-14."
+  },
+  "riviera:film:32342": {
+    "tmdb": 4951,
+    "title": "10 Things I Hate About You",
+    "note": "10 Things I Hate About You (1999); 97 min both. verified by the maintainer 2026-10-14."
+  },
+  "riviera:film:32511": {
+    "tmdb": 398818,
+    "title": "Call Me By Your Name",
+    "note": "Call Me by Your Name (2017); 132 min both. verified by the maintainer 2026-10-14."
+  },
+  "riviera:film:32512": {
+    "tmdb": 313369,
+    "title": "La La Land",
+    "note": "La La Land (2016); 127 vs 128 min. verified by the maintainer 2026-10-14."
+  },
+  "riviera:film:32510": {
+    "tmdb": 120467,
+    "title": "The Grand Budapest Hotel",
+    "note": "The Grand Budapest Hotel (2014); 99 vs 101 min. verified by the maintainer 2026-10-14."
+  },
+  "riviera:film:32638": {
+    "tmdb": 4232,
+    "title": "Scream",
+    "note": "Scream (1996), title says (1996); 111 vs 112 min. verified by the maintainer 2026-10-14."
+  },
+  "riviera:film:28163": {
+    "tmdb": 653,
+    "title": "Nosferatu",
+    "note": "Nosferatu (1922), silent film concert; 91 vs 94 min. verified by the maintainer 2026-10-14."
+  },
+  "riviera:film:30034": {
+    "tmdb": 653762,
+    "title": "Piemonten tryffelinmetsästäjät",
+    "note": "The Truffle Hunters (2020), a baby-cinema screening; 84 min both. verified by the maintainer 2026-10-14."
+  },
+  "kuvakukko:film:huviretki-hirttopaikalle": {
+    "tmdb": 11020,
+    "title": "Huviretki hirttopaikalle",
+    "note": "Picnic at Hanging Rock (1975), Hyvät Kuvat club screening. verified by the maintainer 2026-10-14."
+  },
+  "cinemaniagara:film:93": {
+    "tmdb": 15301,
+    "title": "Twilight Zone: The Movie",
+    "note": "Twilight Zone: The Movie (1983); 101 vs 97 min. verified by the maintainer 2026-10-14."
+  },
+  "biosade:film:867": {
+    "tmdb": 1769550,
+    "title": "Se tavallinen tarina",
+    "note": "Se tavallinen tarina (1972), art film festival; 94 min both. verified by the maintainer 2026-10-14."
+  },
+  "biosade:film:872": {
+    "tmdb": 125499,
+    "title": "Sven Klangs kvintett",
+    "note": "Sven Klangs kvintett (1976), art film festival; 114 min both. verified by the maintainer 2026-10-14."
+  },
+  "kinolaika:film:4908c1c4-7543-489a-80a6-6569e44299c0": {
+    "tmdb": 3,
+    "title": "Varjoja Paratiisissa 40-vuotta -juhlanäytös",
+    "note": "Varjoja paratiisissa (1986), 40th anniversary screening; 75 min both. verified by the maintainer 2026-10-14."
   }
 }
