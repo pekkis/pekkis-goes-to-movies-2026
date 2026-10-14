@@ -20,7 +20,7 @@ Everything binds to localhost; nginx publishes it. The server never fetches show
 2. **Write `.env` there** (gitignored); see [.env.example](../.env.example):
    ```sh
    POSTGRES_PASSWORD=…        # before the first `up`: Postgres keeps the password it was created with
-   API_PORT=3000              # free local ports for nginx
+   API_PORT=3579              # free local ports for nginx (3000 is often taken)
    WEB_PORT=4321
    SITE_URL=https://movies.pekkis.eu
    MCP_TOKEN=…                # optional: openssl rand -base64 32 | tr '+/' '-_' | tr -d '='
@@ -82,7 +82,7 @@ server {
 
     # MCP (Streamable HTTP): responses may stream as server-sent events.
     location /mcp/ {
-        proxy_pass http://127.0.0.1:3000;
+        proxy_pass http://127.0.0.1:3579;
         proxy_http_version 1.1;
         proxy_set_header Connection "";
         proxy_buffering off;
@@ -90,11 +90,11 @@ server {
         proxy_read_timeout 300s;
     }
 
-    location / { proxy_pass http://127.0.0.1:3000; }
+    location / { proxy_pass http://127.0.0.1:3579; }
 }
 ```
 
-Use your `API_PORT` / `WEB_PORT` if you changed them. `listen 443 ssl http2` works on every nginx version; from 1.25.1 on it's deprecated in favour of a separate `http2 on;`, which older versions reject as an unknown directive.
+These match `API_PORT=3579` and `WEB_PORT=4321`; use your own if they differ. `listen 443 ssl http2` works on every nginx version; from 1.25.1 on it's deprecated in favour of a separate `http2 on;`, which older versions reject as an unknown directive.
 
 ## Backups
 
