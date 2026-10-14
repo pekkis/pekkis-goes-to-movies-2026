@@ -3,6 +3,7 @@
     "vendor/**",
     "apps/fpgm/**",
     "apps/web-front/.astro/**",
-    "apps/web-front/dist/**"
+    "apps/web-front/dist/**",
+    "packages/fetcher/test/fixtures/tapiola/**"
   ]
 }

@@ -15,6 +15,24 @@ import { TMB_SITES, type TmbSite } from "./tmb/sites.ts";
 import { fetchCinemahouse } from "./cinemahouse/fetch.ts";
 import { parseCinemahouse } from "./cinemahouse/parse.ts";
 import { CINEMAHOUSE_SITES, type CinemahouseSite } from "./cinemahouse/sites.ts";
+import { fetchVista } from "./vista/fetch.ts";
+import { parseVista } from "./vista/parse.ts";
+import { VISTA_SITES, type VistaSite } from "./vista/sites.ts";
+import { fetchTapiola } from "./tapiola/fetch.ts";
+import { parseTapiola } from "./tapiola/parse.ts";
+import { TAPIOLA_SITES, type TapiolaSite } from "./tapiola/sites.ts";
+import { fetchKuvakukko } from "./kuvakukko/fetch.ts";
+import { parseKuvakukko } from "./kuvakukko/parse.ts";
+import { KUVAKUKKO_SITES, type KuvakukkoSite } from "./kuvakukko/sites.ts";
+import { fetchIsohannu } from "./isohannu/fetch.ts";
+import { parseIsohannu } from "./isohannu/parse.ts";
+import { ISOHANNU_SITES, type IsohannuSite } from "./isohannu/sites.ts";
+import { fetchTribe } from "./tribe/fetch.ts";
+import { parseTribe } from "./tribe/parse.ts";
+import { TRIBE_SITES, type TribeSite } from "./tribe/sites.ts";
+import { fetchEngel } from "./engel/fetch.ts";
+import { parseEngel } from "./engel/parse.ts";
+import { ENGEL_SITES, type EngelSite } from "./engel/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -154,11 +172,89 @@ const cinemahouseAdapter = (site: CinemahouseSite): Adapter => ({
   },
 });
 
+/** Vista's open public web services: one GET per area. */
+const vistaAdapter = (site: VistaSite): Adapter => ({
+  id: site.provider,
+  platform: "vista-public",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchVista(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseVista(raw, site), venues) };
+  },
+});
+
+/** Kino Tapiola's own theme: the programme list, then one run page per title. */
+const tapiolaAdapter = (site: TapiolaSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient({ intervalMs: 1000, ...contact(env) });
+    onlyVenues(site, venues);
+    const raw = await fetchTapiola(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseTapiola(raw, site), venues) };
+  },
+});
+
+/** Kuvakukko and Kino Manttu: one shared programme page. */
+const kuvakukkoAdapter = (site: KuvakukkoSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient({ intervalMs: 1500, ...contact(env) });
+    onlyVenues(site, venues);
+    const raw = await fetchKuvakukko(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseKuvakukko(raw, site), venues) };
+  },
+});
+
+/** Iso-Hannu's own site: the front page's show table, then one page per film. */
+const isohannuAdapter = (site: IsohannuSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient({ intervalMs: 1000, ...contact(env) });
+    onlyVenues(site, venues);
+    const raw = await fetchIsohannu(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseIsohannu(raw, site), venues) };
+  },
+});
+
+/** The Events Calendar (WordPress): the film category's events over REST. */
+const tribeAdapter = (site: TribeSite): Adapter => ({
+  id: site.provider,
+  platform: "events-calendar",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchTribe(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseTribe(raw, site), venues) };
+  },
+});
+
+/** Kino Engel's front page; from a home connection only (it challenges datacenters). */
+const engelAdapter = (site: EngelSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient({ intervalMs: 1000, ...contact(env) });
+    onlyVenues(site, venues);
+    const raw = await fetchEngel(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseEngel(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
   ...TMB_SITES.map(tmbAdapter),
   ...CINEMAHOUSE_SITES.map(cinemahouseAdapter),
+  ...VISTA_SITES.map(vistaAdapter),
+  ...TAPIOLA_SITES.map(tapiolaAdapter),
+  ...KUVAKUKKO_SITES.map(kuvakukkoAdapter),
+  ...ISOHANNU_SITES.map(isohannuAdapter),
+  ...TRIBE_SITES.map(tribeAdapter),
+  ...ENGEL_SITES.map(engelAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",

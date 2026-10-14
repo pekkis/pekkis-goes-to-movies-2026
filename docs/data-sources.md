@@ -295,6 +295,174 @@ Probed 2026-10-13, one GET per site. Adapter: `packages/fetcher/src/providers/ci
 
 ---
 
+## Vista public web services (Korjaamo Kino, Riviera)
+
+Probed 2026-10-13, two GETs. Adapter: `packages/fetcher/src/providers/vista/`, sites in `sites.ts`. Origin: Leffavuoro's `scripts/providers/vista.py`, re-verified.
+
+- **What it is:** Vista's older public web services, left open by some Vista cinemas: no token, unlike Finnkino's OCAPI. `GET {base}/xml/Schedule/?area={id}&nrOfDays=31` answers **JSON** by default **[V]**. One request covers the published window (13 shows over 31 days at Korjaamo).
+- **Korjaamo Kino** (Helsinki): area 1007, theatre 1045, one hall "Sali" **[V]**.
+- **Fields** **[V]**:
+  - times: `dttmShowStartUTC` (UTC), and `dtAccounting`, the programme day at local midnight (used as the business date);
+  - film: `Rating` ("K-12", "Sallittu" = S, "Ei tiedossa" = unknown), `LengthInMinutes`, `ProductionYear`, `Genres`, `EventSeries`, `PresentationMethod` ("2D");
+  - languages: `SpokenLanguage` with an ISO code, or the name "useita kieliä" (several languages: audio stays unknown, unflagged); `SubtitleLanguage1/2`, both empty on every show seen, so subtitles stay unknown, never "none";
+  - booking: `AvailableSeats` / `TotalSeats` (empty at Korjaamo), and `ShowURL`, the show's own ticket page `/websales/show/{id}`, copied.
+- **Title prefixes** (site config): "Kirjastokino:" and "Tekijätorstai:" / "TEKIJÄTORSTAI:", both series.
+- **Coordinates:** OSM node 4394184115 "Korjaamo Kino"; address from the cinema's own page (Töölönkatu 51 B, 00250 Helsinki).
+- **First run:** 12 films, 13 screenings over 31 days, 8 matched to TMDB (the rest mostly classics: aliases later), no warnings.
+
+### Riviera (Kallio, Punavuori)
+
+Probed 2026-10-14, two GETs.
+
+- **Not the website's listing:** rivieracinemas.fi builds its programme with a WordPress `admin-ajax.php` POST (Leffavuoro reads that). We are GET only, and the ticket host has the same open schedule as Korjaamo: `GET https://tickets.rivieracinemas.fi/xml/Schedule/?nrOfDays=31` **[V]**.
+- **XML only:** it answers `text/xml` whatever the `Accept` header, so the site config says `format: "xml"`. The parser turns each `<Show>` into the object the JSON answer gives (empty elements absent, numeric fields numbers).
+- **No `area` needed:** one request covers every theatre. Theatres 1075 (Kallio, "Sali 1") and 1114 (Punavuori, "Sali 1" and "Sali 2"); 88–90 shows over a month.
+- **Languages are filled in:**
+  - `SpokenLanguage` and `SubtitleLanguage1/2` are given on most shows, sometimes with only the ISO code;
+  - shows without them leave audio and subtitles unknown.
+- **Ratings** read "K16/13", "K12/9" (the lower age is allowed with an adult), "S" or "(none)" (unknown).
+- **`ProductionYear` is the release year, not the film's:** "Scream (1996)" says 2026. With `releaseYearAsProductionYear` set, the year comes only from a trailing "(1996)" in the title; otherwise it stays unknown. `OriginalTitle` repeats prefixes and years, and is cleaned like the title.
+- **Title prefixes** (site config): "3 Kaveria jäätelönäytös:", "Afternoon Tea:", "Leffabrunssi:", "Mykkäleffakonsertti:", plus the common "Vauvakino:".
+- **Tickets:** `ShowURL` (`http://tickets.rivieracinemas.fi/websales/show/{id}/`), copied as printed and never requested. A link is accepted when its host is the site's.
+- **Coordinates:** OSM nodes 5175303248 (Harjukatu 2, 00500) and 10186691049 (Telakkakatu 7, 00150); the addresses match the cinema's own site.
+- **First run:** 32 films, 88 screenings, no warnings; 23 matched. The rest are repertory screenings without a reliable year: aliases.
+
+---
+
+## Kino Tapiola (its own WordPress theme)
+
+Probed 2026-10-14, four GETs. Adapter: `packages/fetcher/src/providers/tapiola/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/tapiola.py`, re-verified.
+
+- **Programme:** `GET https://www.kinotapiola.fi/elokuvat/` renders `div.movie-list` with one `div.movie-list-movie` block per screening **[V]**:
+  - the title, with version markers ("Kojootti vs. ACME (dub)" / "(orig)");
+  - the date with its year ("keskiviikko 14.10.2026 – Klo 15:00");
+  - a link to the screening's run page (`/naytos/{slug}/`, or `/ooppera-ja-baletti-naytos/{slug}/` for event cinema);
+  - strand classes on the block (`cat-seniorikino`), mapped in the site config; an unknown one goes to `unmappedLabels`.
+
+  The list reaches months ahead (Royal Opera into 2027); the window cuts it.
+
+- **A slug is a run, not a film:** `tony-4`, `tony-5` are separate posts with the same page. The film is therefore the title; a screening's id is its slug plus its start minute **[V]**.
+- **Run pages:** one GET per distinct title in the window (the first run's page; 16 at the first run), paced 1 s. Labelled boxes in `div.info-icons` **[V]**:
+  - the age limit as a class (`info-icon age-limit-K-16`);
+  - "Elokuvan kesto 1h 49min";
+  - "Kieli Englanti" (a Finnish language name, or "OV" for an original version, which leaves audio unknown);
+  - "Tekstitys Suomi/Ruotsi"; no box means unknown, not "none".
+
+  A page that fails gives a `film-page-missing` warning: the details stay unknown, the screenings (which come from the list) stay complete. Opera pages state their language only in the description text **[A]** (Leffavuoro); not read.
+
+- **Not read:** stills behind the titles and the cinema's synopses (TMDB only); seats and prices (the Johku widget draws them client-side, and its API key is never used, per the rules).
+- **Tickets:** the run page is the ticket page (Johku's widget on it), so `ticketUrl` is that page, copied.
+- **Coordinates:** OSM node 1430315541 "Kino Tapiola"; address from the site's footer (Mäntyviita 2, 02110 Espoo).
+- **First run:** 16 films, 26 screenings over 31 days, no warnings.
+
+---
+
+## Kuvakukko and Kino Manttu (one shared WordPress page)
+
+Probed 2026-10-14: the programme page, then the linked film pages. Adapter: `packages/fetcher/src/providers/kuvakukko/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/kuvakukko.py`, re-verified.
+
+- **The page:** `https://www.kuvakukko.fi/ohjelmisto/kuvakukon-ja-kino-mantun-ohjelmisto/` holds both of the city of Kuopio's cinemas **[V]**:
+  - under each `<h2>` heading ("Kino Kuvakukon esitysaikataulu", "Nilsiän Kino Mantun esitysaikataulu"), paragraphs of `<br>`-separated lines;
+  - a day line ("Keskiviikko 14.10.", no year; a new day can start mid-paragraph after an empty line) and rows ("Klo 13: Title", "Klo 17.30: Title").
+
+  The heading is the venue boundary; the config names a word of each heading.
+
+- **The year** is inferred (`nearestDate`, at most 30 days back) and checked against the weekday. A mismatch places nothing and warns.
+- **Titles:**
+  - The first link with text is the title (one row opens with an empty link); an unlinked row is the rest of the line.
+  - Configured series prefixes: "Kuvin aluesarja:", "Hyvät Kuvat-kerho:", "Hopeatähti-sarja:", and "Kino Manttu:" (no meaning).
+  - A trailing parenthesis opening with a configured word ("tekijävierailu…", "vapaa pääsy…") is a note, closed or not, and is dropped.
+  - Festival rows keep their full title ("Kuopion mediataidefestarit: Näytös B"), as the part after the colon means nothing alone.
+- **Links are not used:** the rows link to reused pages of other films (`/kino-manttu-digger/` holds "Two Seasons, Two Strangers"), or even to an image. Tickets are sold at the door only ("lipunmyynti vain Kuvakukossa", "Ei ennakkovarauksia … vain käteinen"), so `booking` is `door` and every screening links to the programme page.
+- **No ids:** a screening is venue, title and start minute.
+- **Kino Manttu** publishes every other weekend, so its section is often a weekend already past: no screenings in the window is normal for it.
+- **Film pages:** one GET per linked title in the window, paced 1.5 s (images and off-site links skipped). A facts line **[V]**: "Italia 2025 • draama • 133 min • K7 • kieli: italia • tekstitys: suomi/ruotsi".
+  - The first segment's year is the production year; "K7" is K-7; "tekstitys: –" stays unknown.
+  - Exactly one such line (a runtime segment, all segments short), or nothing is read.
+  - **A page counts only when its `<h1>` names the row's film:** pages are reused (`/the-invite/` holds LA GRAZIA, `/kino-manttu-digger/` other films).
+  - Values outside the Finnish classes are flagged, not published ("K17" on Matka Piemonteen, a typo for K-7).
+- **Not read:** `/liput/` states each cinema's ticket price **[A]** (Leffavuoro), with exceptions for outside organisers; left out.
+- **Coordinates:** Kuvakukko: OSM node 5520821567. Manttu: OSM way 487580170 (the building on Mantunsuora); the cinema gives its address as Vesitornintie 1.
+- **First run:** 18 films, 35 screenings (all Kuvakukko), no warnings. With film pages, Rose, Tony and Matka Piemonteen match too; what stays unmatched is festival shows and classics (aliases).
+
+---
+
+## Iso-Hannu (its own PHP site)
+
+Probed 2026-10-14, four GETs. Adapter: `packages/fetcher/src/providers/isohannu/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/isohannu.py`, re-verified.
+
+- **Programme:** `GET https://www.isohannu.fi/` renders `#showtable`, a week ahead **[V]**:
+  - an `h3.showtable-title` per day, with the year ("Keskiviikko 14.10.2026");
+  - then one `.showtable-container` per hall (`.showtable-hall`: Sali 1–3), one `.showtable-row` per screening.
+- **A row** sits inside a link to the film's page, `/leffasivu.php?id={film}`; that id is the film, not the run. The row holds:
+  - `.showtable-time` and `.showtable-name`, titles in capitals, as published;
+  - the ticket link **nested inside** the film link (`http://lipunmyynti.isohannu.fi/app/movies/{film}/shows/{show}/products/list.html`). The page is parsed with htmlparser2, which keeps that nesting; an HTML5 parser would undo it.
+  - The show id from the ticket link is the screening's id. The link is copied as printed (http) and never requested.
+- **Tags:** `showtable-{name}` classes, mapped in the site config:
+  - `children` → kids, `premiere`, `finalshow` → last-screening, `3d` → 3D;
+  - `tickets` (the buy button) is ignored; unknown ones go to `unmappedLabels`.
+- **Not screenings:** "Salissa yksityisvaraus" (a private booking of a hall) has a row and a ticket button; titles listed in the config are skipped.
+- **Film pages:** one GET per film in the window, paced 1 s. `#kuvaus` holds "Label: value" lines between `<hr>`s **[V]**:
+  - "Elokuvan kesto: 109 min";
+  - "Elokuvan ikäraja: K16" (written without the hyphen);
+  - "Genre: draama";
+  - "Puhekieli: englanti", or several ("Ruotsi, Italia").
+
+  No subtitles are stated, so they stay unknown. A failed page gives `film-page-missing`.
+
+- **Not read:** prices. The front page states Mon–Thu and Fri–Sun tariffs, but there are surcharges for films over two hours, and public holidays move the tariff.
+- **Coordinates:** OSM way 128190368 "Iso-Hannu"; the address is from the cinema's own page (Savilankatu 4, 26100 Rauma).
+- **First run:** 18 films (all matched to TMDB), 83 screenings over 7 days, no warnings.
+
+---
+
+## The Events Calendar (WordPress): Ritz Vaasa, Tähti Kino Muhos
+
+Probed 2026-10-14, two GETs. Adapter: `packages/fetcher/src/providers/tribe/`, sites in `sites.ts`. Origin: Leffavuoro's `scripts/providers/tribe.py`, re-verified.
+
+- **API** **[V]**: `GET {base}/?rest_route=/tribe/events/v1/events&per_page=50&page=N&start_date=…&end_date=…&categories={id}`, public JSON with no key. `?rest_route=` works whatever the permalinks are. `total_pages` is followed to the end (budget 10).
+- **A calendar is not a programme:** the film category is configured by its numeric id (Ritz 19 "kino", Muhos 106 "elokuvat"). An event outside it (a filter the server ignored) is skipped with `unclaimed-event`.
+- **Times:** `start_date` (local) and `utc_start_date` must agree through Europe/Helsinki; a disagreement gives `invalid-start` and the event is skipped. All-day events have no time and are skipped (`all-day-event`).
+- **Price:** `cost_details.values` with exactly one value is this screening's price (Muhos: 11 €, 13 €). Several values are a band ("10€ – 12€" at Ritz) and settle nothing.
+- **Facts come from the description's labelled lines, never its prose:**
+  - Ritz writes English labels ("Language: English, Lithuanian", "Subtitles: Finnish, English") and a runtime line ("114 min");
+  - Muhos uses headings: "Ikäraja sallittu." / "Ikäraja K-7. Aikuisen seurassa …", or "Kesto 2 h 38 min | K-16 | Liput 13 €".
+- **Titles:**
+  - Muhos ends every title in "-elokuvanäytös" (a configured suffix).
+  - Ritz puts the year ("Wholetrain (2006)") or an age limit ("Knitting Cinema! (K18)") in a trailing parenthesis; both are read off the title.
+  - Other parentheses stay: "Two Seasons, Two Strangers (Tabi to hibi)".
+- **Event series** ("Knitting Cinema!", "Ritz Horrorfest!") are listed as events of their own name; which film plays is not stated, so they stay unmatched.
+- **Tickets:** at the door at both ("sold at the door", "ovelta"); `ticketUrl` is the event's own page, copied.
+- **Not read:** images (a generic calendar picture at Muhos; posters come from TMDB) and synopses.
+- **Coordinates:** Ritz: OSM node 3060592153 (Kirkkopuistikko 22a, 65100 Vaasa). Tähti Kino: OSM node 4946909729, the cinema at Muhostie 2, the address the events' venue gives ("Muhoksen Koivu ja Tähti -sali").
+- **First run:** Ritz 6 films, 10 screenings; Muhos 4 films, 17 screenings; no warnings.
+
+---
+
+## Kino Engel (WordPress, the Johku schedule rendered server-side)
+
+Probed 2026-10-14 from a home connection: the front page, then the film pages. Adapter: `packages/fetcher/src/providers/engel/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/engel.py`, re-verified.
+
+- **Access:** kinoengel.fi (SiteGround) challenges datacenter addresses with a captcha **[A]** (Leffavuoro: HTTP 202 and `SG-Captcha: challenge`). From home it answered 200 with the page **[V]**. A challenge fails the pull with a clear error, so the previous data stands; it is never solved or worked around. Like Finnkino, this runs from the maintainer's machine only.
+- **The page:** a WordPress plugin renders Johku's schedule on the cinema's own server; we read only the HTML. Johku and its API key are never touched **[V]**.
+  - `.rs-johku-movies` holds one `.johku-movie-matrix` per day, its id the full date (`rsj_2026-10-14`), so no year is inferred.
+  - Each `.rs-johku-schedule` row has `.movie-name`, "Ke 14.10." (checked against the block's date) and "klo 18:30", in a link to the film's page `/elokuva/{slug}/`, where "Osta liput" leads. That link is the ticket link.
+- **Every day appears twice** on the page (about 110 rows for 55 screenings); a screening is film plus start minute, so the copies merge.
+- **"Coming soon" entries** have an opening day and no time ("Pe 30.10. Osta liput", "Lue lisää"); they are not screenings and are skipped.
+- **Strands:** "BARNSÖNDAGAR:" (series, kids) and "KESÄKINO:" (the summer outdoor screen; series) as title prefixes.
+- **Film pages** (`/elokuva/{slug}/`, one GET per film in the window, paced 1 s): `<label>`/`<span>` pairs **[V]**:
+  - ALKUPERÄINEN NIMI (original title) and KESTO ("1h 34 min");
+  - LISÄTIEDOT "puhuttu kieli: saksa" (the spoken language; KIELI only says "Alkuperäinen");
+  - TEKSTITYS "Suomi-Ruotsi", or "Ei tekstitystä" (none).
+
+  The runtime is what lets the matcher link title-only listings like "Rose". The age limit is **not** read: every page seen says "Ikäraja ei vielä tiedossa" while its CSS class names a limit. A failed page (the Barnsöndagar post was a 404 once) gives `film-page-missing`.
+
+- **Not read:** posters (Johku's images; TMDB only), seats, prices.
+- **Coordinates:** OSM node 2493674692 "Kino Engel" (Sofiankatu 4, 00170 Helsinki).
+- **First run:** 16 films, 49 screenings, no warnings; 9 matched from the front page alone, all 16 once film pages were read.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

@@ -7,6 +7,8 @@ it.each([
   ["en", "en"],
   ["Suomi", "fi"],
   [" Ruotsi ", "sv"],
+  ["pashtu", "ps"],
+  ["dari", "fa"],
   ["", undefined],
   ["Klingon", undefined],
 ])("normalizeLang(%s) = %s", (input, expected) => {

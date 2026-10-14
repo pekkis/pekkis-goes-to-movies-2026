@@ -1,0 +1,172 @@
+<?xml version="1.0"?>
+<Schedule>
+  <PubDate>2026-10-14T00:00:00+00:00</PubDate>
+  <Shows>
+    <Show>
+      <ID>985149</ID>
+      <dtAccounting>2026-10-14T00:00:00</dtAccounting>
+      <dttmShowStartUTC>2026-10-14T11:15:00Z</dttmShowStartUTC>
+      <dttmShowEndUTC>2026-10-14T12:49:00Z</dttmShowEndUTC>
+      <EventID>30034</EventID>
+      <Title>Vauvakino: Piemonten tryffelinmetsästäjät</Title>
+      <OriginalTitle>Vauvakino: Piemonten tryffelinmetsästäjät</OriginalTitle>
+      <ProductionYear>2025</ProductionYear>
+      <LengthInMinutes>84</LengthInMinutes>
+      <Rating>S</Rating>
+      <EventType>Movie</EventType>
+      <Genres>Dokumentti</Genres>
+      <TheatreID>1114</TheatreID>
+      <Theatre>Punavuori</Theatre>
+      <TheatreAuditorium>Sali 1</TheatreAuditorium>
+      <PresentationMethod>2D</PresentationMethod>
+      <ShowURL>http://tickets.rivieracinemas.fi/websales/show/985149/</ShowURL>
+      <SpokenLanguage>
+        <Name />
+        <ISOTwoLetterCode>it</ISOTwoLetterCode>
+      </SpokenLanguage>
+      <SubtitleLanguage1>
+        <Name>Suomi</Name>
+        <ISOTwoLetterCode>fi</ISOTwoLetterCode>
+      </SubtitleLanguage1>
+    </Show>
+    <Show>
+      <ID>988254</ID>
+      <dtAccounting>2026-10-14T00:00:00</dtAccounting>
+      <dttmShowStartUTC>2026-10-14T15:00:00Z</dttmShowStartUTC>
+      <dttmShowEndUTC>2026-10-14T16:59:00Z</dttmShowEndUTC>
+      <EventID>32489</EventID>
+      <Title>Tony</Title>
+      <OriginalTitle>Tony</OriginalTitle>
+      <ProductionYear>2026</ProductionYear>
+      <LengthInMinutes>109</LengthInMinutes>
+      <Rating>K16/13</Rating>
+      <EventType>Movie</EventType>
+      <Genres>Draama</Genres>
+      <TheatreID>1075</TheatreID>
+      <Theatre>Kallio</Theatre>
+      <TheatreAuditorium>Sali 1</TheatreAuditorium>
+      <PresentationMethod>2D</PresentationMethod>
+      <ShowURL>http://tickets.rivieracinemas.fi/websales/show/988254/</ShowURL>
+      <SpokenLanguage>
+        <Name>Englanti</Name>
+        <ISOTwoLetterCode>en</ISOTwoLetterCode>
+      </SpokenLanguage>
+      <SubtitleLanguage1>
+        <Name>Suomi</Name>
+        <ISOTwoLetterCode>fi</ISOTwoLetterCode>
+      </SubtitleLanguage1>
+      <SubtitleLanguage2>
+        <Name>Ruotsi</Name>
+        <ISOTwoLetterCode>sv</ISOTwoLetterCode>
+      </SubtitleLanguage2>
+    </Show>
+    <Show>
+      <ID>988267</ID>
+      <dtAccounting>2026-10-14T00:00:00</dtAccounting>
+      <dttmShowStartUTC>2026-10-14T15:00:00Z</dttmShowStartUTC>
+      <dttmShowEndUTC>2026-10-14T17:07:00Z</dttmShowEndUTC>
+      <EventID>32320</EventID>
+      <Title>Verityn varjo</Title>
+      <OriginalTitle>Verityn varjo</OriginalTitle>
+      <ProductionYear>2026</ProductionYear>
+      <LengthInMinutes>117</LengthInMinutes>
+      <Rating>K12/9</Rating>
+      <EventType>Movie</EventType>
+      <Genres>Draama, Trilleri</Genres>
+      <TheatreID>1114</TheatreID>
+      <Theatre>Punavuori</Theatre>
+      <TheatreAuditorium>Sali 2</TheatreAuditorium>
+      <PresentationMethod>2D</PresentationMethod>
+      <ShowURL>http://tickets.rivieracinemas.fi/websales/show/988267/</ShowURL>
+      <SpokenLanguage>
+        <Name>Englanti</Name>
+        <ISOTwoLetterCode>en</ISOTwoLetterCode>
+      </SpokenLanguage>
+      <SubtitleLanguage1>
+        <Name>Suomi</Name>
+        <ISOTwoLetterCode>fi</ISOTwoLetterCode>
+      </SubtitleLanguage1>
+      <SubtitleLanguage2>
+        <Name>Ruotsi</Name>
+        <ISOTwoLetterCode>sv</ISOTwoLetterCode>
+      </SubtitleLanguage2>
+    </Show>
+    <Show>
+      <ID>988259</ID>
+      <dtAccounting>2026-10-14T00:00:00</dtAccounting>
+      <dttmShowStartUTC>2026-10-14T16:50:00Z</dttmShowStartUTC>
+      <dttmShowEndUTC>2026-10-14T18:48:00Z</dttmShowEndUTC>
+      <EventID>31917</EventID>
+      <Title>The Invite</Title>
+      <OriginalTitle>The Invite</OriginalTitle>
+      <ProductionYear>2026</ProductionYear>
+      <LengthInMinutes>108</LengthInMinutes>
+      <Rating>(none)</Rating>
+      <EventType>Movie</EventType>
+      <Genres>Komedia, Draama</Genres>
+      <TheatreID>1114</TheatreID>
+      <Theatre>Punavuori</Theatre>
+      <TheatreAuditorium>Sali 1</TheatreAuditorium>
+      <PresentationMethod>2D</PresentationMethod>
+      <ShowURL>http://tickets.rivieracinemas.fi/websales/show/988259/</ShowURL>
+      <SpokenLanguage>
+        <Name>Englanti</Name>
+        <ISOTwoLetterCode>en</ISOTwoLetterCode>
+      </SpokenLanguage>
+      <SubtitleLanguage1>
+        <Name>Suomi</Name>
+        <ISOTwoLetterCode>fi</ISOTwoLetterCode>
+      </SubtitleLanguage1>
+      <SubtitleLanguage2>
+        <Name>Ruotsi</Name>
+        <ISOTwoLetterCode>sv</ISOTwoLetterCode>
+      </SubtitleLanguage2>
+    </Show>
+    <Show>
+      <ID>985246</ID>
+      <dtAccounting>2026-10-17T00:00:00</dtAccounting>
+      <dttmShowStartUTC>2026-10-17T09:30:00Z</dttmShowStartUTC>
+      <dttmShowEndUTC>2026-10-17T11:29:00Z</dttmShowEndUTC>
+      <EventID>32318</EventID>
+      <Title>Leffabrunssi: Paholainen pukeutuu Pradaan (2006)</Title>
+      <OriginalTitle>Leffabrunssi: Paholainen pukeutuu Pradaan (2006)</OriginalTitle>
+      <ProductionYear>2026</ProductionYear>
+      <LengthInMinutes>109</LengthInMinutes>
+      <Rating>S</Rating>
+      <EventType>Movie</EventType>
+      <Genres>Komedia</Genres>
+      <TheatreID>1114</TheatreID>
+      <Theatre>Punavuori</Theatre>
+      <TheatreAuditorium>Sali 1</TheatreAuditorium>
+      <PresentationMethod>2D</PresentationMethod>
+      <ShowURL>http://tickets.rivieracinemas.fi/websales/show/985246/</ShowURL>
+      <SpokenLanguage>
+        <Name>Englanti</Name>
+        <ISOTwoLetterCode>en</ISOTwoLetterCode>
+      </SpokenLanguage>
+      <SubtitleLanguage1>
+        <Name>Suomi</Name>
+        <ISOTwoLetterCode>fi</ISOTwoLetterCode>
+      </SubtitleLanguage1>
+    </Show>
+    <Show>
+      <ID>988565</ID>
+      <dtAccounting>2026-10-20T00:00:00</dtAccounting>
+      <dttmShowStartUTC>2026-10-20T14:00:00Z</dttmShowStartUTC>
+      <dttmShowEndUTC>2026-10-20T16:02:00Z</dttmShowEndUTC>
+      <EventID>32323</EventID>
+      <Title>Kerro kaikille</Title>
+      <OriginalTitle>Kerro kaikille</OriginalTitle>
+      <ProductionYear>2026</ProductionYear>
+      <LengthInMinutes>112</LengthInMinutes>
+      <Rating>K12/9</Rating>
+      <EventType>Movie</EventType>
+      <Genres>Draama</Genres>
+      <TheatreID>1114</TheatreID>
+      <Theatre>Punavuori</Theatre>
+      <TheatreAuditorium>Sali 1</TheatreAuditorium>
+      <PresentationMethod>2D</PresentationMethod>
+      <ShowURL>http://tickets.rivieracinemas.fi/websales/show/988565/</ShowURL>
+    </Show>
+  </Shows>
+</Schedule>

@@ -1,0 +1,145 @@
+{
+  "PubDate": "2026-10-14T00:00:00+00:00",
+  "Shows": [
+    {
+      "ID": 168068,
+      "EventID": 5210,
+      "TheatreID": 1045,
+      "Theatre": "Korjaamo Kino",
+      "TheatreAuditorium": "Sali",
+      "Title": "Kirjastokino: Misery",
+      "OriginalTitle": "Misery",
+      "ProductionYear": 2026,
+      "LengthInMinutes": 107,
+      "Rating": "K-16",
+      "Genres": "Trilleri",
+      "EventType": "Movie",
+      "EventSeries": "",
+      "PresentationMethod": "2D",
+      "dttmShowStartUTC": "2026-10-15T07:00:00Z",
+      "dttmShowEndUTC": "2026-10-15T08:47:00Z",
+      "dtAccounting": "2026-10-15T00:00:00",
+      "SpokenLanguage": {
+        "Name": "englanti",
+        "NameInLanguage": "englanti",
+        "ISOTwoLetterCode": "en"
+      },
+      "SubtitleLanguage1": null,
+      "SubtitleLanguage2": null,
+      "AvailableSeats": null,
+      "TotalSeats": null,
+      "ShowURL": "https://korjaamokino.fi/websales/show/168068"
+    },
+    {
+      "ID": 168074,
+      "EventID": 5216,
+      "TheatreID": 1045,
+      "Theatre": "Korjaamo Kino",
+      "TheatreAuditorium": "Sali",
+      "Title": "TEKIJÄTORSTAI: Kerro Kaikille",
+      "OriginalTitle": "Kerro Kaikille",
+      "ProductionYear": 2026,
+      "LengthInMinutes": 112,
+      "Rating": "K-12",
+      "Genres": "Draama",
+      "EventType": "Movie",
+      "EventSeries": "",
+      "PresentationMethod": "2D",
+      "dttmShowStartUTC": "2026-10-15T17:15:00Z",
+      "dttmShowEndUTC": "2026-10-15T19:07:00Z",
+      "dtAccounting": "2026-10-15T00:00:00",
+      "SpokenLanguage": {
+        "Name": "suomi",
+        "NameInLanguage": "suomi",
+        "ISOTwoLetterCode": "fi"
+      },
+      "SubtitleLanguage1": {
+        "Name": "suomi",
+        "NameInLanguage": "suomi",
+        "ISOTwoLetterCode": "fi"
+      },
+      "SubtitleLanguage2": {
+        "Name": "ruotsi",
+        "NameInLanguage": "ruotsi",
+        "ISOTwoLetterCode": ""
+      },
+      "AvailableSeats": null,
+      "TotalSeats": null,
+      "ShowURL": "https://korjaamokino.fi/websales/show/168074"
+    },
+    {
+      "ID": 168081,
+      "EventID": 5221,
+      "TheatreID": 1045,
+      "Theatre": "Korjaamo Kino",
+      "TheatreAuditorium": "Sali",
+      "Title": "Digger",
+      "OriginalTitle": "Digger",
+      "ProductionYear": 2026,
+      "LengthInMinutes": 129,
+      "Rating": "K-12",
+      "Genres": "Draama",
+      "EventType": "Movie",
+      "EventSeries": "",
+      "PresentationMethod": "2D",
+      "dttmShowStartUTC": "2026-10-17T11:00:00Z",
+      "dttmShowEndUTC": "2026-10-17T13:09:00Z",
+      "dtAccounting": "2026-10-17T00:00:00",
+      "SpokenLanguage": {
+        "Name": "englanti",
+        "NameInLanguage": "englanti",
+        "ISOTwoLetterCode": "en"
+      },
+      "SubtitleLanguage1": {
+        "Name": "suomi",
+        "NameInLanguage": "suomi",
+        "ISOTwoLetterCode": "fi"
+      },
+      "SubtitleLanguage2": {
+        "Name": "ruotsi",
+        "NameInLanguage": "ruotsi",
+        "ISOTwoLetterCode": ""
+      },
+      "AvailableSeats": null,
+      "TotalSeats": null,
+      "ShowURL": "https://korjaamokino.fi/websales/show/168081"
+    },
+    {
+      "ID": 168082,
+      "EventID": 5219,
+      "TheatreID": 1045,
+      "Theatre": "Korjaamo Kino",
+      "TheatreAuditorium": "Sali",
+      "Title": "The Secret Reading Club of Kabul",
+      "OriginalTitle": "The Secret Reading Club of Kabul",
+      "ProductionYear": 2026,
+      "LengthInMinutes": 94,
+      "Rating": "K-16",
+      "Genres": "Dokumentti",
+      "EventType": "Movie",
+      "EventSeries": "",
+      "PresentationMethod": "2D",
+      "dttmShowStartUTC": "2026-10-20T14:00:00Z",
+      "dttmShowEndUTC": "2026-10-20T15:34:00Z",
+      "dtAccounting": "2026-10-20T00:00:00",
+      "SpokenLanguage": {
+        "Name": "useita kieliä",
+        "NameInLanguage": "useita kieliä",
+        "ISOTwoLetterCode": ""
+      },
+      "SubtitleLanguage1": {
+        "Name": "suomi",
+        "NameInLanguage": "suomi",
+        "ISOTwoLetterCode": "fi"
+      },
+      "SubtitleLanguage2": {
+        "Name": "ruotsi",
+        "NameInLanguage": "ruotsi",
+        "ISOTwoLetterCode": ""
+      },
+      "AvailableSeats": null,
+      "TotalSeats": null,
+      "ShowURL": "https://korjaamokino.fi/websales/show/168082"
+    }
+  ]
+}

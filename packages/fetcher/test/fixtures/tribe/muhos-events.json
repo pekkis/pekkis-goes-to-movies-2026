@@ -1,0 +1,80 @@
+{
+  "events": [
+    {
+      "id": 45286,
+      "title": "Pirjo i Sverige -elokuvanäytös",
+      "start_date": "2026-10-19 18:00:00",
+      "utc_start_date": "2026-10-19 15:00:00",
+      "all_day": false,
+      "categories": [
+        {
+          "id": 106,
+          "slug": "elokuvat"
+        }
+      ],
+      "cost": "13 €",
+      "cost_details": {
+        "currency_symbol": " €",
+        "currency_code": "EUR",
+        "currency_position": "suffix",
+        "values": ["13"]
+      },
+      "url": "https://muhos.fi/tapahtuma/pirjo-i-sverige-elokuvanaytos/",
+      "description": "<h6>Liput 13€. Käteis- ja korttimaksu ovelta.</h6>\n<h6>Ikäraja sallittu.</h6>"
+    },
+    {
+      "id": 45343,
+      "title": "Lapin sota -elokuvanäytös",
+      "start_date": "2026-10-24 17:30:00",
+      "utc_start_date": "2026-10-24 14:30:00",
+      "all_day": false,
+      "categories": [
+        {
+          "id": 106,
+          "slug": "elokuvat"
+        },
+        {
+          "id": 136,
+          "slug": "syysloma"
+        }
+      ],
+      "cost": "13 €",
+      "cost_details": {
+        "currency_symbol": " €",
+        "currency_code": "EUR",
+        "currency_position": "suffix",
+        "values": ["13"]
+      },
+      "url": "https://muhos.fi/tapahtuma/lapin-sota-elokuvanaytos-2/",
+      "description": "<h3>Kesto 2 h 38 min | K-16 | Liput 13 €</h3>\n<h6>Käteis- ja korttimaksu ovelta.</h6>"
+    },
+    {
+      "id": 45266,
+      "title": "Ryhmä Hau: Dinoelokuva -elokuvanäytös",
+      "start_date": "2026-10-19 13:30:00",
+      "utc_start_date": "2026-10-19 10:30:00",
+      "all_day": false,
+      "categories": [
+        {
+          "id": 106,
+          "slug": "elokuvat"
+        },
+        {
+          "id": 136,
+          "slug": "syysloma"
+        }
+      ],
+      "cost": "11 €",
+      "cost_details": {
+        "currency_symbol": " €",
+        "currency_code": "EUR",
+        "currency_position": "suffix",
+        "values": ["11"]
+      },
+      "url": "https://muhos.fi/tapahtuma/ryhma-hau-dinoelokuva-elokuvanaytos-3/",
+      "description": "<h6>Liput 11€. Käteis- ja korttimaksu ovelta.</h6>\n<h6>Ikäraja K-7. Aikuisen seurassa 4 vuotta täyttäneille.</h6>"
+    }
+  ],
+  "total": 3,
+  "total_pages": 1
+}
