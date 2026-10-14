@@ -4,6 +4,11 @@
     "title": "Ryhmä Hau: Dinoelokuva",
     "note": "PAW Patrol: The Dino Movie (2026). TMDB has no Finnish title; 88 min, CA/US match."
   },
+  "tahtikino:film:ryhma-hau-dinoelokuva": {
+    "tmdb": 1185806,
+    "title": "Ryhmä Hau: Dinoelokuva",
+    "note": "PAW Patrol: The Dino Movie (2026), as biorex:film:1518. Muhos states no runtime, so the sibling pass cannot link it; K-7 as elsewhere."
+  },
   "biorex:film:1548": {
     "tmdb": 1477104,
     "title": "Late Lammas -elokuva: Hämäräpuuhissa",
