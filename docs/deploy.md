@@ -27,7 +27,7 @@ Everything binds to localhost; nginx publishes it. The server never fetches show
    ```
    `INDEXING` stays unset (off) until every cinema has been notified (AGENTS.md).
 3. **Start the stack:** `docker compose --profile app up -d --build --wait`. This builds both images, starts Postgres, runs the migrations, and starts the API and the website.
-4. **Configure nginx** (below) and get a certificate (e.g. `certbot --nginx -d elokuvat.dr-kobros.com`).
+4. **Configure nginx** (below) and get a certificate for both names.
 5. **First data** from home: `pnpm pull && pnpm data:push`.
 
 **Updating:** `git pull && docker compose --profile app up -d --build --wait` on the server. Migrations run by themselves.
@@ -47,19 +47,35 @@ Set `DEPLOY_TARGET=user@host:/srv/pgtm` in your home `.env`; it needs SSH access
 
 ## nginx
 
-One domain, split by path: the API's paths go to the API, everything else to the website. Same origin, so no CORS.
+Two names: the website at `elokuvat.dr-kobros.com`, the API (with `/docs` and MCP) at `api.elokuvat.dr-kobros.com`. The website reads the API over the Compose network, so it doesn't care where the API is published. Browsers and apps calling the API from elsewhere are allowed by `CORS_ORIGINS` (`*` by default). One certificate covers both: `certbot --nginx -d elokuvat.dr-kobros.com -d api.elokuvat.dr-kobros.com`.
 
 ```nginx
 server {
     listen 80;
-    server_name elokuvat.dr-kobros.com;
+    server_name elokuvat.dr-kobros.com api.elokuvat.dr-kobros.com;
     return 301 https://$host$request_uri;
 }
 
+# The website.
 server {
     listen 443 ssl;
     http2 on;
     server_name elokuvat.dr-kobros.com;
+    # ssl_certificate / ssl_certificate_key: from certbot
+
+    location / {
+        proxy_pass http://127.0.0.1:4321;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# The API: /v1/…, /openapi.json, /docs, and MCP at /mcp/{MCP_TOKEN}.
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name api.elokuvat.dr-kobros.com;
     # ssl_certificate / ssl_certificate_key: from certbot
 
     proxy_set_header Host $host;
@@ -76,13 +92,7 @@ server {
         proxy_read_timeout 300s;
     }
 
-    # The HTTP API and its docs.
-    location /v1/ { proxy_pass http://127.0.0.1:3000; }
-    location = /openapi.json { proxy_pass http://127.0.0.1:3000; }
-    location /docs { proxy_pass http://127.0.0.1:3000; }
-
-    # Everything else: the website.
-    location / { proxy_pass http://127.0.0.1:4321; }
+    location / { proxy_pass http://127.0.0.1:3000; }
 }
 ```
 
@@ -102,5 +112,5 @@ Restore with `pg_restore -U pgtm -d pgtm --clean` inside the container.
 
 - `https://elokuvat.dr-kobros.com/fi/` shows the cities. `/fi/kartta` draws the map: the browser fetches its tiles and fonts from OpenFreeMap directly.
 - `curl -I https://elokuvat.dr-kobros.com/fi/` includes `X-Robots-Tag: noindex, nofollow`.
-- `https://elokuvat.dr-kobros.com/v1/health` answers `{"ok":true,…}`.
-- MCP: add `https://elokuvat.dr-kobros.com/mcp/{MCP_TOKEN}` as a custom connector in Claude and ask "mitä Tampereella tänään illalla?".
+- `https://api.elokuvat.dr-kobros.com/v1/health` answers `{"ok":true,…}`; the API docs are at `https://api.elokuvat.dr-kobros.com/docs`.
+- MCP: add `https://api.elokuvat.dr-kobros.com/mcp/{MCP_TOKEN}` as a custom connector in Claude and ask "mitä Tampereella tänään illalla?".
