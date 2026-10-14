@@ -1,5 +1,5 @@
 ---
-import { INDEXING } from "astro:env/server";
+import { INDEXING, SITE_URL } from "astro:env/server";
 import "../styles/reset.css.ts";
 import { fi } from "../lib/text.ts";
 import { sprinkles } from "../styles/sprinkles.css.ts";
@@ -8,7 +8,7 @@ import * as css from "./Base.css.ts";
 type Props = { title: string; description?: string };
 const { title, description = fi.tagline } = Astro.props;
 // Filters (?date=) are variations of one page: the canonical URL leaves them out.
-const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
+const canonical = new URL(Astro.url.pathname, SITE_URL || Astro.site || Astro.url).href;
 ---
 
 <!doctype html>
