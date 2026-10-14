@@ -21,6 +21,9 @@ import { VISTA_SITES, type VistaSite } from "./vista/sites.ts";
 import { fetchTapiola } from "./tapiola/fetch.ts";
 import { parseTapiola } from "./tapiola/parse.ts";
 import { TAPIOLA_SITES, type TapiolaSite } from "./tapiola/sites.ts";
+import { fetchKuvakukko } from "./kuvakukko/fetch.ts";
+import { parseKuvakukko } from "./kuvakukko/parse.ts";
+import { KUVAKUKKO_SITES, type KuvakukkoSite } from "./kuvakukko/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -184,6 +187,18 @@ const tapiolaAdapter = (site: TapiolaSite): Adapter => ({
   },
 });
 
+/** Kuvakukko and Kino Manttu: one shared programme page. */
+const kuvakukkoAdapter = (site: KuvakukkoSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchKuvakukko(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseKuvakukko(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
@@ -191,6 +206,7 @@ export const ADAPTERS: Adapter[] = [
   ...CINEMAHOUSE_SITES.map(cinemahouseAdapter),
   ...VISTA_SITES.map(vistaAdapter),
   ...TAPIOLA_SITES.map(tapiolaAdapter),
+  ...KUVAKUKKO_SITES.map(kuvakukkoAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",

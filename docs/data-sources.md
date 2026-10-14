@@ -340,6 +340,31 @@ Probed 2026-10-14, four GETs. Adapter: `packages/fetcher/src/providers/tapiola/`
 
 ---
 
+## Kuvakukko and Kino Manttu (one shared WordPress page)
+
+Probed 2026-10-14, one GET. Adapter: `packages/fetcher/src/providers/kuvakukko/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/kuvakukko.py`, re-verified.
+
+- **The page:** `https://www.kuvakukko.fi/ohjelmisto/kuvakukon-ja-kino-mantun-ohjelmisto/` holds both of the city of Kuopio's cinemas **[V]**:
+  - under each `<h2>` heading ("Kino Kuvakukon esitysaikataulu", "Nilsiän Kino Mantun esitysaikataulu"), paragraphs of `<br>`-separated lines;
+  - a day line ("Keskiviikko 14.10.", no year; a new day can start mid-paragraph after an empty line) and rows ("Klo 13: Title", "Klo 17.30: Title").
+
+  The heading is the venue boundary; the config names a word of each heading.
+
+- **The year** is inferred (`nearestDate`, at most 30 days back) and checked against the weekday. A mismatch places nothing and warns.
+- **Titles:**
+  - The first link with text is the title (one row opens with an empty link); an unlinked row is the rest of the line.
+  - Configured series prefixes: "Kuvin aluesarja:", "Hyvät Kuvat-kerho:", "Hopeatähti-sarja:", and "Kino Manttu:" (no meaning).
+  - A trailing parenthesis opening with a configured word ("tekijävierailu…", "vapaa pääsy…") is a note, closed or not, and is dropped.
+  - Festival rows keep their full title ("Kuopion mediataidefestarit: Näytös B"), as the part after the colon means nothing alone.
+- **Links are not used:** the rows link to reused pages of other films (`/kino-manttu-digger/` holds "Two Seasons, Two Strangers"), or even to an image. Tickets are sold at the door only ("lipunmyynti vain Kuvakukossa", "Ei ennakkovarauksia … vain käteinen"), so `booking` is `door` and every screening links to the programme page.
+- **No ids:** a screening is venue, title and start minute.
+- **Kino Manttu** publishes every other weekend, so its section is often a weekend already past: no screenings in the window is normal for it.
+- **Not read yet:** each film's page has a facts line (runtime, age limit, language, subtitles), and `/liput/` states each cinema's ticket price **[A]** (Leffavuoro). Both need care (reused pages, price exceptions); left for later.
+- **Coordinates:** Kuvakukko: OSM node 5520821567. Manttu: OSM way 487580170 (the building on Mantunsuora); the cinema gives its address as Vesitornintie 1.
+- **First run:** 18 films, 35 screenings (all Kuvakukko), no warnings.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
