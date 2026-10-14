@@ -15,6 +15,9 @@ import { TMB_SITES, type TmbSite } from "./tmb/sites.ts";
 import { fetchCinemahouse } from "./cinemahouse/fetch.ts";
 import { parseCinemahouse } from "./cinemahouse/parse.ts";
 import { CINEMAHOUSE_SITES, type CinemahouseSite } from "./cinemahouse/sites.ts";
+import { fetchVista } from "./vista/fetch.ts";
+import { parseVista } from "./vista/parse.ts";
+import { VISTA_SITES, type VistaSite } from "./vista/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -154,11 +157,24 @@ const cinemahouseAdapter = (site: CinemahouseSite): Adapter => ({
   },
 });
 
+/** Vista's open public web services: one GET per area. */
+const vistaAdapter = (site: VistaSite): Adapter => ({
+  id: site.provider,
+  platform: "vista-public",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchVista(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseVista(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
   ...TMB_SITES.map(tmbAdapter),
   ...CINEMAHOUSE_SITES.map(cinemahouseAdapter),
+  ...VISTA_SITES.map(vistaAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",

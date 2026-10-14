@@ -295,6 +295,23 @@ Probed 2026-10-13, one GET per site. Adapter: `packages/fetcher/src/providers/ci
 
 ---
 
+## Vista public web services (Korjaamo Kino)
+
+Probed 2026-10-13, two GETs. Adapter: `packages/fetcher/src/providers/vista/`, sites in `sites.ts`. Origin: Leffavuoro's `scripts/providers/vista.py`, re-verified.
+
+- **What it is:** Vista's older public web services, left open by some Vista cinemas: no token, unlike Finnkino's OCAPI. `GET {base}/xml/Schedule/?area={id}&nrOfDays=31` answers **JSON** by default **[V]**. One request covers the published window (13 shows over 31 days at Korjaamo).
+- **Korjaamo Kino** (Helsinki): area 1007, theatre 1045, one hall "Sali" **[V]**.
+- **Fields** **[V]**:
+  - times: `dttmShowStartUTC` (UTC), and `dtAccounting`, the programme day at local midnight (used as the business date);
+  - film: `Rating` ("K-12", "Sallittu" = S, "Ei tiedossa" = unknown), `LengthInMinutes`, `ProductionYear`, `Genres`, `EventSeries`, `PresentationMethod` ("2D");
+  - languages: `SpokenLanguage` with an ISO code, or the name "useita kieliä" (several languages: audio stays unknown, unflagged); `SubtitleLanguage1/2`, both empty on every show seen, so subtitles stay unknown, never "none";
+  - booking: `AvailableSeats` / `TotalSeats` (empty at Korjaamo), and `ShowURL`, the show's own ticket page `/websales/show/{id}`, copied.
+- **Title prefixes** (site config): "Kirjastokino:" and "Tekijätorstai:" / "TEKIJÄTORSTAI:", both series.
+- **Coordinates:** OSM node 4394184115 "Korjaamo Kino"; address from the cinema's own page (Töölönkatu 51 B, 00250 Helsinki).
+- **First run:** 12 films, 13 screenings over 31 days, 8 matched to TMDB (the rest mostly classics: aliases later), no warnings.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
