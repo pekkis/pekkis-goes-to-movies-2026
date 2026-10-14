@@ -233,5 +233,35 @@
     "tmdb": 3,
     "title": "Varjoja Paratiisissa 40-vuotta -juhlanäytös",
     "note": "Varjoja paratiisissa (1986), 40th anniversary screening; 75 min both. verified by the maintainer 2026-10-14."
+  },
+  "biosade:film:871": {
+    "tmdb": 40715,
+    "title": "Big Jim McLain (Taidekaupungin elokuvajuhlat)",
+    "note": "Big Jim McLain (1952), art film festival; 77 vs 90 min, the title is unambiguous. Verified by the maintainer 2026-10-14."
+  },
+  "cinemaniagara:film:155": {
+    "tmdb": 11838,
+    "title": "Kauna",
+    "note": "Ju-on: The Grudge (Takashi Shimizu, 2002 in Japan, 2003 abroad), per the cinema's synopsis (Rika, the old woman's carer); 92 min both. Verified by the maintainer 2026-10-14."
+  },
+  "cinemaorion:film:1083cf1a-c592-4552-a40f-d8aeb8fcd0a9": {
+    "tmdb": 1522183,
+    "title": "I Rarely Wake Up Dreaming",
+    "note": "Selten wache ich träumend auf; 110 vs 100 min (a festival screening with an introduction, likely). Verified by the maintainer 2026-10-14."
+  },
+  "kinokonepaja:film:42e715d6-19b7-4dbb-9d23-3f83fd12ebf8": {
+    "tmdb": 136746,
+    "title": "Cinemaissi: Archipielago",
+    "note": "Archipiélago (1992), in the Cinemaissi strand; 80 min both. Verified by the maintainer 2026-10-14."
+  },
+  "kinolaika:film:3bc508d5-abf7-44d4-bede-90c2ed588e54": {
+    "tmdb": 136746,
+    "title": "Archipelago",
+    "note": "Archipiélago (1992); 80 min both. Verified by the maintainer 2026-10-14."
+  },
+  "kuvakukko:film:omenaleikki": {
+    "tmdb": 80094,
+    "title": "Omenaleikki",
+    "note": "Hra o jablko (Věra Chytilová), the Czechoslovak satire; 'Omenaleikki' is its Finnish title. Verified by the maintainer 2026-10-14."
   }
 }
