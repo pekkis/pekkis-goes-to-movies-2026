@@ -52,6 +52,12 @@ export const createApp = ({ db, corsOrigins = "*", log = false, mcpToken }: AppO
   if (mcpToken) {
     // Stateless (no session id generator): a fresh server and transport per request.
     app.all(`/mcp/${mcpToken}`, async (c) => {
+      // GET would open a stream for server-sent messages, which a stateless server never
+      // sends: it would just hang (in a browser, forever). The spec lets servers answer 405.
+      if (c.req.method !== "POST") {
+        c.header("allow", "POST");
+        return c.json({ error: "MCP over Streamable HTTP: POST JSON-RPC here" }, 405);
+      }
       const server = createMcpServer(db);
       const transport = new StreamableHTTPTransport();
       await server.connect(transport);

@@ -104,7 +104,7 @@ The same data as an [MCP](https://modelcontextprotocol.io) server, so a chatbot 
 
 - **Off by default.** Set `MCP_TOKEN` (24+ random characters of `A-Z a-z 0-9 _ -`) and the API serves `POST /mcp/{MCP_TOKEN}`. Generate one with `openssl rand -base64 32 | tr '+/' '-_' | tr -d '='`.
 - **Internal testing only:** the token keeps the URL unlisted and stays out of the request log. Publishing the URL counts as going public, and AGENTS.md says every cinema is notified first.
-- **Stateless:** a fresh server per request, with no sessions to keep, so any number of chatbots can call at once.
+- **Stateless:** a fresh server per request, with no sessions to keep, so any number of chatbots can call at once. Only `POST` is served: a `GET` (which would open a stream the server never uses, and in a browser just hangs) gets an immediate `405`, which the spec allows and clients handle.
 - **Tools**, all read-only:
 
   | Tool          | Arguments                                                                                                                             | Returns                                                                                                                          |

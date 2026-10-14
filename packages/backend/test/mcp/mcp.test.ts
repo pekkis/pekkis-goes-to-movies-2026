@@ -64,6 +64,15 @@ describe("MCP endpoint", () => {
     expect((await without.request(`/mcp/${TOKEN}`, { method: "POST" })).status).toBe(404);
   });
 
+  it("answers GET at once with 405 instead of holding a stream open", async () => {
+    const res = await app.request(`/mcp/${TOKEN}`, {
+      method: "GET",
+      headers: { accept: "text/event-stream" },
+    });
+    expect(res.status).toBe(405);
+    expect(res.headers.get("allow")).toBe("POST");
+  });
+
   it("offers three read-only tools", async () => {
     const client = await connect();
     const { tools } = await client.listTools();
