@@ -22,7 +22,7 @@ Everything binds to localhost; nginx publishes it. The server never fetches show
    POSTGRES_PASSWORD=…        # before the first `up`: Postgres keeps the password it was created with
    API_PORT=3000              # free local ports for nginx
    WEB_PORT=4321
-   SITE_URL=https://elokuvat.dr-kobros.com
+   SITE_URL=https://movies.pekkis.eu
    MCP_TOKEN=…                # optional: openssl rand -base64 32 | tr '+/' '-_' | tr -d '='
    ```
    `INDEXING` stays unset (off) until every cinema has been notified (AGENTS.md).
@@ -47,12 +47,12 @@ Set `DEPLOY_TARGET=user@host:/srv/pgtm` in your home `.env`; it needs SSH access
 
 ## nginx
 
-Two names: the website at `elokuvat.dr-kobros.com`, the API (with `/docs` and MCP) at `api.elokuvat.dr-kobros.com`. The website reads the API over the Compose network, so it doesn't care where the API is published. Browsers and apps calling the API from elsewhere are allowed by `CORS_ORIGINS` (`*` by default). One certificate covers both: `certbot --nginx -d elokuvat.dr-kobros.com -d api.elokuvat.dr-kobros.com`.
+Two names: the website at `movies.pekkis.eu`, the API (with `/docs` and MCP) at `api.movies.pekkis.eu`. The website reads the API over the Compose network, so it doesn't care where the API is published. Browsers and apps calling the API from elsewhere are allowed by `CORS_ORIGINS` (`*` by default). One certificate covers both: `certbot --nginx -d movies.pekkis.eu -d api.movies.pekkis.eu`.
 
 ```nginx
 server {
     listen 80;
-    server_name elokuvat.dr-kobros.com api.elokuvat.dr-kobros.com;
+    server_name movies.pekkis.eu api.movies.pekkis.eu;
     return 301 https://$host$request_uri;
 }
 
@@ -60,7 +60,7 @@ server {
 server {
     listen 443 ssl;
     http2 on;
-    server_name elokuvat.dr-kobros.com;
+    server_name movies.pekkis.eu;
     # ssl_certificate / ssl_certificate_key: from certbot
 
     location / {
@@ -75,7 +75,7 @@ server {
 server {
     listen 443 ssl;
     http2 on;
-    server_name api.elokuvat.dr-kobros.com;
+    server_name api.movies.pekkis.eu;
     # ssl_certificate / ssl_certificate_key: from certbot
 
     proxy_set_header Host $host;
@@ -110,7 +110,7 @@ Restore with `pg_restore -U pgtm -d pgtm --clean` inside the container.
 
 ## Checks after deploying
 
-- `https://elokuvat.dr-kobros.com/fi/` shows the cities. `/fi/kartta` draws the map: the browser fetches its tiles and fonts from OpenFreeMap directly.
-- `curl -I https://elokuvat.dr-kobros.com/fi/` includes `X-Robots-Tag: noindex, nofollow`.
-- `https://api.elokuvat.dr-kobros.com/v1/health` answers `{"ok":true,…}`; the API docs are at `https://api.elokuvat.dr-kobros.com/docs`.
-- MCP: add `https://api.elokuvat.dr-kobros.com/mcp/{MCP_TOKEN}` as a custom connector in Claude and ask "mitä Tampereella tänään illalla?".
+- `https://movies.pekkis.eu/fi/` shows the cities. `/fi/kartta` draws the map: the browser fetches its tiles and fonts from OpenFreeMap directly.
+- `curl -I https://movies.pekkis.eu/fi/` includes `X-Robots-Tag: noindex, nofollow`.
+- `https://api.movies.pekkis.eu/v1/health` answers `{"ok":true,…}`; the API docs are at `https://api.movies.pekkis.eu/docs`.
+- MCP: add `https://api.movies.pekkis.eu/mcp/{MCP_TOKEN}` as a custom connector in Claude and ask "mitä Tampereella tänään illalla?".
