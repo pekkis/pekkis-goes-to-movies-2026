@@ -120,6 +120,7 @@ The same data as an [MCP](https://modelcontextprotocol.io) server, so a chatbot 
   - the TMDB and OpenStreetMap attributions.
 - **Connecting:** add the URL `https://{host}/mcp/{MCP_TOKEN}` as a custom connector (Claude) or app / connector in developer mode (ChatGPT). Whether the Gemini web app accepts custom remote MCP servers hasn't been checked here **[A]**; Gemini CLI supports them.
 - **Tested** with the SDK's own client, in-process (`test/mcp/`), and checked in the Docker image with plain JSON-RPC over HTTP **[V 2026-10-14]**.
+- **Verified in real use:** Claude Desktop's custom connector against the live server (`https://api.movies.pekkis.eu/mcp/…`, behind nginx), 2026-10-14 **[V]**. It worked end to end, as the maintainer reported. Not yet tried: ChatGPT's developer mode, Gemini.
 
 ## Deployment
 
