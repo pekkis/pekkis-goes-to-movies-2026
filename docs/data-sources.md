@@ -434,6 +434,23 @@ Probed 2026-10-14, two GETs. Adapter: `packages/fetcher/src/providers/tribe/`, s
 
 ---
 
+## Kino Engel (WordPress, the Johku schedule rendered server-side)
+
+Probed 2026-10-14 from a home connection, one GET. Adapter: `packages/fetcher/src/providers/engel/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/engel.py`, re-verified.
+
+- **Access:** kinoengel.fi (SiteGround) challenges datacenter addresses with a captcha **[A]** (Leffavuoro: HTTP 202 and `SG-Captcha: challenge`). From home it answered 200 with the page **[V]**. A challenge fails the pull with a clear error, so the previous data stands; it is never solved or worked around. Like Finnkino, this runs from the maintainer's machine only.
+- **The page:** a WordPress plugin renders Johku's schedule on the cinema's own server; we read only the HTML. Johku and its API key are never touched **[V]**.
+  - `.rs-johku-movies` holds one `.johku-movie-matrix` per day, its id the full date (`rsj_2026-10-14`), so no year is inferred.
+  - Each `.rs-johku-schedule` row has `.movie-name`, "Ke 14.10." (checked against the block's date) and "klo 18:30", in a link to the film's page `/elokuva/{slug}/`, where "Osta liput" leads. That link is the ticket link.
+- **Every day appears twice** on the page (about 110 rows for 55 screenings); a screening is film plus start minute, so the copies merge.
+- **"Coming soon" entries** have an opening day and no time ("Pe 30.10. Osta liput", "Lue lisää"); they are not screenings and are skipped.
+- **Strands:** "BARNSÖNDAGAR:" (series, kids) and "KESÄKINO:" (the summer outdoor screen; series) as title prefixes.
+- **Not read:** posters (Johku's images; TMDB only), seats, prices, languages (not on the front page).
+- **Coordinates:** OSM node 2493674692 "Kino Engel" (Sofiankatu 4, 00170 Helsinki).
+- **First run:** 16 films, 49 screenings, no warnings; 9 matched (the rest: aliases).
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

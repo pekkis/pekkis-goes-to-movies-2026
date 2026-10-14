@@ -30,6 +30,9 @@ import { ISOHANNU_SITES, type IsohannuSite } from "./isohannu/sites.ts";
 import { fetchTribe } from "./tribe/fetch.ts";
 import { parseTribe } from "./tribe/parse.ts";
 import { TRIBE_SITES, type TribeSite } from "./tribe/sites.ts";
+import { fetchEngel } from "./engel/fetch.ts";
+import { parseEngel } from "./engel/parse.ts";
+import { ENGEL_SITES, type EngelSite } from "./engel/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -229,6 +232,18 @@ const tribeAdapter = (site: TribeSite): Adapter => ({
   },
 });
 
+/** Kino Engel's front page; from a home connection only (it challenges datacenters). */
+const engelAdapter = (site: EngelSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchEngel(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseEngel(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
@@ -239,6 +254,7 @@ export const ADAPTERS: Adapter[] = [
   ...KUVAKUKKO_SITES.map(kuvakukkoAdapter),
   ...ISOHANNU_SITES.map(isohannuAdapter),
   ...TRIBE_SITES.map(tribeAdapter),
+  ...ENGEL_SITES.map(engelAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",
