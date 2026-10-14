@@ -58,8 +58,7 @@ server {
 
 # The website.
 server {
-    listen 443 ssl;
-    http2 on;
+    listen 443 ssl http2;
     server_name movies.pekkis.eu;
     # ssl_certificate / ssl_certificate_key: from certbot
 
@@ -73,8 +72,7 @@ server {
 
 # The API: /v1/…, /openapi.json, /docs, and MCP at /mcp/{MCP_TOKEN}.
 server {
-    listen 443 ssl;
-    http2 on;
+    listen 443 ssl http2;
     server_name api.movies.pekkis.eu;
     # ssl_certificate / ssl_certificate_key: from certbot
 
@@ -96,7 +94,7 @@ server {
 }
 ```
 
-Use your `API_PORT` / `WEB_PORT` if you changed them.
+Use your `API_PORT` / `WEB_PORT` if you changed them. `listen 443 ssl http2` works on every nginx version; from 1.25.1 on it's deprecated in favour of a separate `http2 on;`, which older versions reject as an unknown directive.
 
 ## Backups
 
