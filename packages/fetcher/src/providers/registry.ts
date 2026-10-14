@@ -201,7 +201,7 @@ const kuvakukkoAdapter = (site: KuvakukkoSite): Adapter => ({
   id: site.provider,
   platform: "custom",
   pull: async ({ env }, { from, days, venues }) => {
-    const http = createHttpClient(contact(env));
+    const http = createHttpClient({ intervalMs: 1500, ...contact(env) });
     onlyVenues(site, venues);
     const raw = await fetchKuvakukko(http, site, { from, days });
     return { raw, batch: restrictToVenues(parseKuvakukko(raw, site), venues) };
@@ -237,7 +237,7 @@ const engelAdapter = (site: EngelSite): Adapter => ({
   id: site.provider,
   platform: "custom",
   pull: async ({ env }, { from, days, venues }) => {
-    const http = createHttpClient(contact(env));
+    const http = createHttpClient({ intervalMs: 1000, ...contact(env) });
     onlyVenues(site, venues);
     const raw = await fetchEngel(http, site, { from, days });
     return { raw, batch: restrictToVenues(parseEngel(raw, site), venues) };

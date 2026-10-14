@@ -1,12 +1,15 @@
 import {
   makeId,
   type FilmListing,
+  type Lang,
   type ProviderBatch,
   type Screening,
+  type Subtitles,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime } from "@pgtm/model/time";
 import { load } from "cheerio";
+import { normalizeLang } from "../../lib/lang.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
 import { byStartThenId, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
@@ -21,6 +24,94 @@ const TIME = /klo\s*(\d{1,2})[:.](\d{2})/i;
 
 const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
+/** "1h 34 min", "95 min" */
+const DURATION = /^(?:(\d+)\s*h)?\s*(\d+)\s*min$/i;
+
+type Details = {
+  originalTitle?: string;
+  runtime?: number;
+  audio?: Lang;
+  subtitles: Subtitles;
+  unmapped: string[];
+};
+
+/**
+ * A film page's "LABEL value" pairs: ALKUPERÄINEN NIMI, KESTO "1h 34 min", LISÄTIEDOT
+ * "puhuttu kieli: saksa", TEKSTITYS "Suomi-Ruotsi" or "Ei tekstitystä". The age limit is
+ * not read: every page seen says "Ikäraja ei vielä tiedossa" while its class names one.
+ */
+const detailsOf = (html: string): Details => {
+  const $ = load(html);
+  const fields = new Map<string, string>();
+  $("label").each((_index, el) => {
+    const value = text($(el).next("span").text());
+    if (value) {
+      fields.set(text($(el).text()).toUpperCase(), value);
+    }
+  });
+  const unmapped: string[] = [];
+  const duration = fields.get("KESTO")?.match(DURATION);
+  const runtime = duration ? Number(duration[1] ?? 0) * 60 + Number(duration[2]) : 0;
+  const spoken = fields
+    .get("LISÄTIEDOT")
+    ?.match(/puhuttu kieli:\s*([^,.;]+)/i)?.[1]
+    ?.trim();
+  const audio = spoken ? normalizeLang(spoken) : undefined;
+  if (spoken && !audio) {
+    unmapped.push(`audio:${spoken}`);
+  }
+  const subtitleText = fields.get("TEKSTITYS");
+  let subtitles: Subtitles = { kind: "unknown" };
+  if (subtitleText && /^ei tekstitystä$/i.test(subtitleText)) {
+    subtitles = { kind: "none" };
+  } else if (subtitleText) {
+    const names = subtitleText
+      .split(/[-/,]| ja /)
+      .map((n) => n.trim())
+      .filter(Boolean);
+    const codes = names.map(normalizeLang);
+    if (names.length > 0 && codes.every(Boolean)) {
+      subtitles = { kind: "languages", languages: [...new Set(codes as Lang[])] };
+    } else {
+      unmapped.push(`subtitles:${subtitleText}`);
+    }
+  }
+  const originalTitle = fields.get("ALKUPERÄINEN NIMI");
+  return {
+    ...(originalTitle && { originalTitle }),
+    ...(runtime > 0 && { runtime }),
+    ...(audio && { audio }),
+    subtitles,
+    unmapped,
+  };
+};
+
+/** The film pages to read: each film linked from a screening in the window. */
+export const filmPages = (html: string, site: EngelSite, from: string, days: number) => {
+  const window = dateWindow(from, days);
+  const $ = load(html);
+  const urls = new Set<string>();
+  $(".johku-movie-matrix").each((_index, day) => {
+    const date = ($(day).attr("id") ?? "").match(DAY_ID);
+    const iso = date ? `${date[1]}-${date[2]}-${date[3]}` : "";
+    if (iso < window.from || iso > window.to) {
+      return;
+    }
+    $(day)
+      .find(".rs-johku-schedule")
+      .each((_r, el) => {
+        const href = $(el).find("a").first().attr("href") ?? "";
+        if (
+          /\bklo\b/i.test($(el).find(".movie-date-time").text()) &&
+          href.startsWith(`${site.base}/`)
+        ) {
+          urls.add(href);
+        }
+      });
+  });
+  return [...urls].toSorted();
+};
+
 /** Pure: the front page + site config -> normalized batch. */
 export const parseEngel = (raw: EngelRawSnapshot, site: EngelSite): ProviderBatch => {
   const P = site.provider;
@@ -31,6 +122,19 @@ export const parseEngel = (raw: EngelRawSnapshot, site: EngelSite): ProviderBatc
   const prefixRules = { ...COMMON_TITLE_PREFIXES, ...site.titlePrefixes };
   const listings = new Map<string, FilmListing>();
   const screenings = new Map<string, Screening>();
+
+  const details = new Map<string, Details>();
+  for (const [url, html] of Object.entries(raw.films)) {
+    if (html === null) {
+      warnings.push({
+        code: "film-page-missing",
+        message: "Film page unreadable; the film's details stay unknown",
+        context: { url },
+      });
+      continue;
+    }
+    details.set(url, detailsOf(html));
+  }
 
   const $ = load(raw.html);
   if ($(".rs-johku-movies").length === 0) {
@@ -75,6 +179,7 @@ export const parseEngel = (raw: EngelRawSnapshot, site: EngelSite): ProviderBatc
 
         const { title: unprefixed, rule } = splitTitlePrefix(rawTitle, prefixRules);
         const { title, version } = splitVersion(unprefixed);
+        const film = details.get(href);
         const filmKey = slugify(title);
         const listingId = makeId(P, "film", filmKey);
         if (!listings.has(listingId)) {
@@ -83,6 +188,11 @@ export const parseEngel = (raw: EngelRawSnapshot, site: EngelSite): ProviderBatc
             provider: P,
             sourceId: filmKey,
             title: { fi: title },
+            ...(film?.originalTitle &&
+              film.originalTitle.toLowerCase() !== title.toLowerCase() && {
+                originalTitle: film.originalTitle,
+              }),
+            ...(film?.runtime && { runtimeMinutes: film.runtime }),
             genres: [],
             countries: [],
             kind: rule?.event ? "event" : "film",
@@ -104,15 +214,15 @@ export const parseEngel = (raw: EngelRawSnapshot, site: EngelSite): ProviderBatc
             dimension: version.dimension ?? "2d",
             formats: [],
           },
-          audio: version.audio ? [version.audio] : [],
+          audio: version.audio ? [version.audio] : film?.audio ? [film.audio] : [],
           ...(version.dubbed !== undefined && { dubbed: version.dubbed }),
-          subtitles: { kind: "unknown" },
+          subtitles: film?.subtitles ?? { kind: "unknown" },
           tags: [...(rule?.tags ?? [])],
           series: rule?.series ? [rule.series] : [],
           availability: "unknown",
           // The film's page, where its "Osta liput" button leads: copied.
           ticketUrl: href,
-          unmappedLabels: [],
+          unmappedLabels: [...(film?.unmapped ?? [])],
           fetchedAt: raw.fetchedAt,
         });
       });
