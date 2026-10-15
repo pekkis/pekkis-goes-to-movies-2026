@@ -25,18 +25,6 @@ contract change is explained here, never in `docs/research/`.
 
 ## Active work
 
-### Non-browser GitHub Actions bottlenecks
-
-Measured 2026-10-14. One main run repeated a commit its branch had already verified; the
-verifier now names what a refused step looked like. Since the same day `run-cloud.log` lists
-each site's host group and its queued, started and ended seconds. Over 113 runs to
-2026-10-13 the 8 workers were busy a median 81% of the wall, so a better submission order
-could save at most a median 37 s a run. More workers stay declined
-([docs/archive/2026-09-pipeline.md](docs/archive/2026-09-pipeline.md)). Poster mirroring
-and the TMDB retry are unchanged.
-**Next action:** after five cloud runs with the site lines, replay registry order against
-longest first offline. No order or worker change until the maintainer decides.
-
 ### Provider coverage, and what is next
 
 86 providers, 141 venues, 100 cities, declared and committed alike, measured 2026-10-13.

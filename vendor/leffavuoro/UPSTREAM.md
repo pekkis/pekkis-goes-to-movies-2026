@@ -8,8 +8,8 @@ linted or formatted here.
 | --- | --- |
 | Source | https://github.com/pekkis/kino (our fork of [Shady-Dev/kino](https://github.com/Shady-Dev/kino)) |
 | Branch | `main` |
-| Commit | `44d05b4aada3eb1dd3dcc0c7b06f5900f7282699` |
-| Commit date | 2026-10-14T23:20:21Z |
+| Commit | `50546d6d81f0ddd0ed64b1d0307cf8b044b1e616` |
+| Commit date | 2026-10-15T11:18:49Z |
 | Commit message | Update cloud provider data |
 | Vendored on | 2026-10-15 |
 
