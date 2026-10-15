@@ -748,6 +748,23 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/localhub/`,
 
 ---
 
+## Bio Pallas (Karjaa, Raasepori)
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/biopallas/`. Origin: Leffavuoro's `scripts/providers/pallas.py`, re-verified.
+
+- **A Wix front page, server-rendered:** the rich-text blocks (`[data-testid=richTextElement]`), in document order, are the structure **[V]**:
+  - the title block: "Kerro kaikille", an optional version line ("På svenska", "Suomeksi"), "1h 52min -K12-";
+  - the date-and-time block: "Ke/Ons 14.10" and "Klo 19.00" (bilingual weekday, Finnish first; no year, inferred and checked against the weekday);
+  - the price block: "13€", or "12€ med kaffeserv./kahvitarjoilulla" (one amount is published; "22/25€" is not).
+
+  Component ids change on every edit, so nothing is keyed on them. Day headings repeat the dates and are not read. The coming-soon list has a lone date with no "Klo" and is not a screening.
+
+- **Tickets at the door**; screenings link the page.
+- **Coordinates:** OSM node 2068950851 "Bio Pallas" (Nils Grabbegatan, no number, so no address). The city is Raasepori, as with Bio Forum.
+- **First run:** 11 films, 23 screenings, no warnings. Hetki ennen valoa is listed at 97 min (TMDB 87), so it waits for an alias.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
