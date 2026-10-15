@@ -535,6 +535,23 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/vaakuna/`, 
 
 ---
 
+## Kino Kirkkonummi
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/kirkkonummi/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/kirkkonummi.py`, re-verified.
+
+- **One Elementor page:** each film is an `.elementor-heading-title` followed by `.elementor-icon-list-text` rows, read in document order (a row belongs to the last heading) **[V]**.
+  - "16.10. Perjantai klo18.00" / "18.10. Su klo18.00 / 21.10. Ke klo18.30": no year (inferred and checked against the weekday, full or short); two screenings may share a row.
+  - Cast lists and notes are rows too; only rows shaped like a screening are read.
+  - "Puhumme suomea" under a film marks its screenings dubbed into Finnish.
+  - "Tulossa 23.10. alkaen" is an opening day, not a screening.
+- **Every block is on the page twice** (desktop and mobile); a screening is film plus start minute, so the copies merge.
+- **Titles** may be "Finnish / Swedish" ("Matka Piemonteen / Resan till Piemonte"), read into `title.fi` and `title.sv`.
+- **Reservations by phone**; there are no film pages, so every screening links the page.
+- **Coordinates:** OSM way 136880152 (Munkinmäentie 17, 02400 Kirkkonummi).
+- **First run:** 4 films, 14 screenings, no warnings. Title-only, so Matka Piemonteen (aliased) and TONY need aliases.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

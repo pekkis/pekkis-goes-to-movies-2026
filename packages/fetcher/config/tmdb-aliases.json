@@ -263,5 +263,10 @@
     "tmdb": 80094,
     "title": "Omenaleikki",
     "note": "Hra o jablko (Věra Chytilová), the Czechoslovak satire; 'Omenaleikki' is its Finnish title. Verified by the maintainer 2026-10-14."
+  },
+  "kinokirkkonummi:film:matka-piemonteen": {
+    "tmdb": 1545391,
+    "title": "Matka Piemonteen",
+    "note": "Resan till Piemonte (2026), the film the maintainer confirmed for biorex:film:1572; Kirkkonummi states no runtime."
   }
 }
