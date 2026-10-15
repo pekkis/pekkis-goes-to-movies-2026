@@ -6,7 +6,7 @@ import { z } from "zod";
  */
 
 export const ExtractedShow = z.object({
-  /** `date-10.10.2026` class on the row: the calendar date. */
+  /** The calendar date: a `date-10.10.2026` class, or `data-dates` in the newer template. */
   date: z.string().regex(/^\d{1,2}\.\d{1,2}\.\d{4}$/),
   /** "18.40" -> "18:40". */
   time: z.string().regex(/^\d{2}:\d{2}$/),

@@ -291,3 +291,30 @@ describe("parseEtiketti", () => {
     expect(batch.screenings).toEqual([]);
   });
 });
+
+describe("parseEtiketti: the data-dates template (Savon Kinot, Leffabuumi, 2026-10-15)", () => {
+  const page = html("savonkinot-data-dates");
+  const at = (films: Record<string, string>) =>
+    parseEtiketti(
+      snapshot(films, { fetchedAt: "2026-10-15T06:00:00.000Z", from: "2026-10-15", days: 30 }),
+      site("savonkinot"),
+    );
+
+  it("reads the date from data-dates and files rows under their cinemas", () => {
+    const batch = at({ "/elokuvat/107/couture-muodin-ehdoilla": page });
+    expect(batch.warnings).toEqual([]);
+    expect(batch.screenings).toHaveLength(4);
+    expect(batch.screenings[0]).toMatchObject({
+      startsAt: "2026-10-17T15:30:00+03:00",
+      venueId: "savonkinot:venue:killa",
+      ticketUrl: "https://www.savonkinot.fi/salikartta?id=55930",
+    });
+  });
+
+  it("warns, as missing data, about a screening row with no readable date", () => {
+    const undated = page.replace(/\s*data-dates=(?:"[^"]*"|'[^']*')/, "");
+    const batch = at({ "/elokuvat/107/couture-muodin-ehdoilla": undated });
+    expect(batch.warnings.map((w) => w.code)).toEqual(["invalid-show"]);
+    expect(batch.screenings).toHaveLength(3);
+  });
+});
