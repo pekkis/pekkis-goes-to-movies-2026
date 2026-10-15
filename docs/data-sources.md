@@ -879,6 +879,31 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Le
 - **Address:** the site states none; OSM's Virtain Pirtti node (Virtaintie 15, 34800 Virrat).
 - **First run:** 10 screenings of 5 films, no warnings, all matched.
 
+## Not read yet: candidates (2026-10-15)
+
+Cinemas we know of and do not read, for the next batch. Found by comparing our venues with elokuviin.com's list of cinemas (157 cinemas in 101 towns, read once as a directory, 2026-10-15; its showtimes are not used) and Finnish Wikipedia's list, with sites supplied by the maintainer. "Shows" is elokuviin.com's count for the next 7 days, a hint that a source exists somewhere.
+
+**A lead, needs work:**
+
+| Cinema                                                | Shows | What we know [V]                                                                                                                                                                                                                             |
+| ----------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bio-Salo (Salo)                                       | 43    | biosalo.fi runs Nexxo Scope, but `exportdailyshows`, `exportmovies` and `exporttimetable` all answer empty, also with the empty `data-location` its own widgets send. The programme comes from somewhere we have not found. The largest gap. |
+| Oulun Elokuvakeskus (Studio, Oulu)                    | 4     | oulunelokuvakeskus.fi `/oek`: rows give weekdays without dates ("la, su klo 16.00"), the dates only as a range in a note ("Studiossa 17.-18.10."). Readable if the range is parsed.                                                          |
+| Kulttuuritalo Wiljami / Rovaniemen Cinema (Rovaniemi) | 4     | rovaniemencinema.fi: prose ("Lokakuun aloittaa 5.10. …"). The town's calendar (tapahtumat.rovaniemi.fi) may be structured; not checked.                                                                                                      |
+| Biobio Showtime (Närpiö)                              | 5     | mittistan.fi now redirects to visitnarpes.fi; its event calendar is not checked.                                                                                                                                                             |
+| Sysmän Kino (Sysmä)                                   | 3     | sysma.fi runs The Events Calendar (a platform we read), but its "elokuvat" category (id 127) has no upcoming event; the films may be in another category or only in the iCal feed.                                                           |
+| Kino Kellokas (Kolari)                                | 4     | kinoyllas.net carries no programme; the source is unknown.                                                                                                                                                                                   |
+| WHS Teatteri Union (Helsinki)                         | 5     | Leffavuoro judged it a stage, not a cinema (2026-09-15); elokuviin.com lists screenings. Worth a second look.                                                                                                                                |
+| Annantalo "Lomakino" (Helsinki)                       | –     | Holiday children's screenings in Helsinki's Linked Events ("Lomakino: Ella ja kaverit – Operaatio Saukko (S) – Annantalon syysloma"); one more label and a suffix to strip. Small.                                                           |
+
+**Facebook only** (no site of their own found; unreachable unless they sell on a ticket platform): Kino Jalasjärvi (14), Bio Stara, Paimio (14), Bio Jukola, Somero (9), Bio Dux, Kristiinankaupunki (8), Vimpelin Nuorisokuvat (3). Kino Mantsi's page on ilomantsi.fi answers 404.
+
+**Out by our rules:** the Sun Kino group (Alareksi, Kino Kyntäjä, Y-Kino, Sun Kino), Kauttuan Kuva and Kuvala load their showtimes only through the Johku widget's `X-ApiKey`.
+
+**No programme now** (re-check later): Kino Hetta, KinoPattery, Lapinsuu, Kino Visio, Tuiskula, Kino Sihis, Virta-sali, Kinokellari, Tuulensuun Palatsi, KannuKino, Kinopoli, Louhisali, Kino Caisa (festivals only), Rekolan Kino, Juvan Kino. **Skipped earlier:** Heureka (complex schedule), Kino K13 (prose), Kinotour (touring rows), Iobio (duplicate calendars).
+
+**Elsewhere:** nytleffaan.fi's directory answers 403 to a plain client (2026-10-15); not pursued. kinossa.fi renders client-side; its own list of cinemas is not checked.
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
@@ -1047,6 +1072,7 @@ Reviewed on 2026-10-09: <https://github.com/Shady-Dev/kino>, site <https://leffa
 - **Technology:** Python stdlib, about 21,000 lines of adapter code and about 200 test files. Data is fetched ahead of time and committed as static JSON served from GitHub Pages. Some sources are fetched from a home machine (`where="local"`), others in GitHub Actions.
 - **Maintenance:** a single developer, created 2026-08-26, very active (over 1,200 commits). Clearly AI-assisted (CLAUDE.md is 29 kB).
 - **Finnkino:** the token is passed in the `FINNKINO_TOKEN` environment variable and obtained by a private local wrapper that is **not in the repository**. The fallback is a direct fetch in which an `eyJ…` regex picks the token from the front page HTML. In our tests that fallback is challenged even from a residential IP. Language code fixes: `SE→SV`, `TU→TR`, `MA→ML`, `LI→LT`.
+- **Coverage, 2026-10-15 [V]:** we read every source Leffavuoro reads except Heureka, Kino K13 and Kinotour (skipped, see the candidates above). We also read sources it does not: Kurikan Kino, KisaKino, Pajakkakino, Bio Marlon, Kino-Kuva, Cinema Levi Summit, Kino Tervakoski, Virtain Pirtti, and Kino Kuutamo and HopeaCine in Kanneltalo and Vuotalo. Kino Helios and Kannusali we read by GET through Linked Events where Leffavuoro POSTs to the houses' own calendars.
 - **BioRex:** Leffavuoro reads WordPress `admin-ajax.php` (POST + a cinema selection cookie). We found a more direct route, `webshop.biorex.fi/webservices` (GET, no cookies).
 - **Data model:** shaped for the frontend and string-heavy (`len: "129"`, `lang: "EN-A, FI-S, SV-S"`). Films are matched through TMDB (`enrich_tmdb.py`, 1,670 lines), with hand-written aliases.
 - **Ethics rules (CLAUDE.md):** own User-Agent with contact details; no residential proxies, fingerprint spoofing or captcha solving; no booking or payment endpoints; ticket links are copied, never constructed.
