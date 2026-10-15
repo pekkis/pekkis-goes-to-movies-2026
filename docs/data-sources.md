@@ -729,6 +729,25 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/navetta/`. 
 
 ---
 
+## Localhub (a town's event calendar): Kino Akustiikka
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/localhub/`, sites in `sites.ts`. Origin: Leffavuoro's `scripts/providers/localhub.py`, re-verified.
+
+- **The calendar's search** (Ylivieska's `tapahtumat.ylivieska.fi`) **[V]**: `GET {base}/api/collection/{collection}/content/general-search?lang=fi&country=FI&q=kinoakustiikka&mode=event&sort=score` returns `{pages, count}`, one page per screening (31 on 2026-10-15).
+- **A page is a screening only when** its `globalContentCategories` include "Movies / Cinema" and its hashtags include the cinema's; the calendar is the whole town's.
+- **Fields:**
+  - `event.dates[].start` (UTC), its timezone required to be Europe/Helsinki;
+  - cancelled dates skipped, sold-out read;
+  - `price` `{min, max, currency}`, published only when min equals max (12 €);
+  - `event.urlPurchaseTicket`: the town's shop, copied;
+  - the rating as a hashtag ("k-12");
+  - a trailing "(2026)" in the name is the year.
+- **A cut answer** (`count` larger than the pages returned) is missing data.
+- **Coordinates:** OSM node 2507982005 "Kulttuurikeskus Akustiikka" (Koulukatu 2 B, 84100 Ylivieska).
+- **First run:** 10 films, 26 screenings, no warnings. Late Lammas and Resident Evil (no runtime here) are aliased.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

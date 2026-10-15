@@ -1,0 +1,99 @@
+{
+  "pages": [
+    {
+      "_id": "6a8dd37cc621e104883ab4c3",
+      "name": "Resident Evil (2026)",
+      "globalContentCategories": [
+        "Movies / Cinema",
+        "Other events",
+        "Adults",
+        "Youths",
+        "Sanoma content"
+      ],
+      "hashtags": ["kinoakustiikka"],
+      "price": {
+        "min": 12,
+        "max": 12,
+        "currency": "EUR"
+      },
+      "event": {
+        "timezone": "Europe/Helsinki",
+        "urlPurchaseTicket": "https://verkkokauppa.ylivieska.fi/tuote/resident-evil-2026/",
+        "isCancelled": false,
+        "isSoldOut": false,
+        "dates": [
+          {
+            "start": "2026-10-18T12:00:00.000Z",
+            "isCancelled": false,
+            "isSoldOut": false,
+            "urlPurchaseTicket": null
+          }
+        ]
+      }
+    },
+    {
+      "_id": "6ab4daaa6760d204a52942e1",
+      "name": "Kerro kaikille",
+      "globalContentCategories": [
+        "Movies / Cinema",
+        "Exhibitions",
+        "Arts",
+        "Adults",
+        "Sanoma content"
+      ],
+      "hashtags": ["k-12", "kinoakustiikka"],
+      "price": {
+        "min": 12,
+        "max": 12,
+        "currency": "EUR"
+      },
+      "event": {
+        "timezone": "Europe/Helsinki",
+        "urlPurchaseTicket": "https://verkkokauppa.ylivieska.fi/tuote/kerro-kaikille/",
+        "isCancelled": false,
+        "isSoldOut": false,
+        "dates": [
+          {
+            "start": "2026-10-17T14:00:00.000Z",
+            "isCancelled": false,
+            "isSoldOut": false,
+            "urlPurchaseTicket": null
+          }
+        ]
+      }
+    },
+    {
+      "_id": "6ac5f688f38e5d048631c157",
+      "name": "Pikkuli ja Tähtipeura (suomeksi puhuttu)",
+      "globalContentCategories": [
+        "Movies / Cinema",
+        "Culture",
+        "Other events",
+        "Kids and family",
+        "Sanoma content"
+      ],
+      "hashtags": ["kinoakustiikka"],
+      "price": {
+        "min": 12,
+        "max": 12,
+        "currency": "EUR"
+      },
+      "event": {
+        "timezone": "Europe/Helsinki",
+        "urlPurchaseTicket": "https://verkkokauppa.ylivieska.fi/tuote/pikkuli-ja-tahtipeura/",
+        "isCancelled": false,
+        "isSoldOut": false,
+        "dates": [
+          {
+            "start": "2026-11-01T13:00:00.000Z",
+            "isCancelled": false,
+            "isSoldOut": false,
+            "urlPurchaseTicket": null
+          }
+        ]
+      }
+    }
+  ],
+  "sort": "score",
+  "count": 3
+}

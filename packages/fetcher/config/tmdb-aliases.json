@@ -293,5 +293,15 @@
     "tmdb": 1477104,
     "title": "Late Lammas- elokuva: Hämäräpuuhissa",
     "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), the film the maintainer confirmed for other cinemas; VPK states no runtime."
+  },
+  "kinoakustiikka:film:late-lammas-elokuva-hamarapuuhissa": {
+    "tmdb": 1477104,
+    "title": "Late Lammas -elokuva: Hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), the film the maintainer confirmed for other cinemas; no runtime here."
+  },
+  "kinoakustiikka:film:resident-evil": {
+    "tmdb": 1423191,
+    "title": "Resident Evil (2026)",
+    "note": "Resident Evil (2026), the film other cinemas match automatically by runtime (94 min, K-16); two 2026 titles on TMDB and no runtime here."
   }
 }

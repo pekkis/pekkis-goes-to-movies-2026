@@ -78,6 +78,9 @@ import { MYCALENDAR_SITES, type MyCalendarSite } from "./mycalendar/sites.ts";
 import { fetchNavetta } from "./navetta/fetch.ts";
 import { parseNavetta } from "./navetta/parse.ts";
 import { NAVETTA_SITES, type NavettaSite } from "./navetta/sites.ts";
+import { fetchLocalhub } from "./localhub/fetch.ts";
+import { parseLocalhub } from "./localhub/parse.ts";
+import { LOCALHUB_SITES, type LocalhubSite } from "./localhub/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -469,6 +472,18 @@ const navettaAdapter = (site: NavettaSite): Adapter => ({
   },
 });
 
+/** A town's Localhub event calendar: the cinema's hashtag, one page per screening. */
+const localhubAdapter = (site: LocalhubSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchLocalhub(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseLocalhub(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
@@ -495,6 +510,7 @@ export const ADAPTERS: Adapter[] = [
   ...MATINTUPA_SITES.map(matinTupaAdapter),
   ...MYCALENDAR_SITES.map(myCalendarAdapter),
   ...NAVETTA_SITES.map(navettaAdapter),
+  ...LOCALHUB_SITES.map(localhubAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",
