@@ -50,7 +50,11 @@ try {
     const result = await ingestBatch(db, batch);
     console.log(
       `${batch.provider.id} (${file}): ${result.inserted} new, ${result.updated} updated, ${result.removed} removed screenings` +
-        (result.removalsSkipped ? " (incomplete batch: removals not inferred)" : ""),
+        (result.removalsSkipped === "incomplete"
+          ? " (incomplete batch: removals not inferred)"
+          : result.removalsSkipped === "empty"
+            ? " (empty batch: removals not inferred; check the source)"
+            : ""),
     );
   }
 } finally {

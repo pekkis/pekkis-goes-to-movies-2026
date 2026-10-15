@@ -65,8 +65,11 @@ export type BatchResult = {
   inserted: number;
   updated: number;
   removed: number;
-  /** True when the batch was incomplete and removals were not inferred (see isIncomplete). */
-  removalsSkipped: boolean;
+  /**
+   * Why removals were not inferred, or false when they were: "incomplete" (data-missing
+   * warnings, see isIncomplete) or "empty" (no screenings at all and no warning to say why).
+   */
+  removalsSkipped: false | "incomplete" | "empty";
 };
 
 /**
@@ -76,6 +79,9 @@ export type BatchResult = {
  * - missing from the batch, at one of its venues, inside its date window and still in
  *   the future: removed_at = batch.fetchedAt. Past screenings are never touched, and
  *   venues the batch does not list (a partial `--venue` pull) are left alone.
+ *   Nothing is marked removed from an incomplete batch, or from an empty one: a source
+ *   whose whole programme vanishes without a warning is far more often a parser that
+ *   silently stopped matching than a cinema cancelling everything.
  * Films must be ingested first (listings and screenings refer to them).
  */
 export const ingestBatch = (db: Kysely<DB>, batch: ProviderBatch): Promise<BatchResult> =>
@@ -115,7 +121,11 @@ export const ingestBatch = (db: Kysely<DB>, batch: ProviderBatch): Promise<Batch
 
     // Part of the source failed to parse: absence proves nothing this time.
     if (isIncomplete(batch)) {
-      return { inserted, updated, removed: 0, removalsSkipped: true };
+      return { inserted, updated, removed: 0, removalsSkipped: "incomplete" };
+    }
+    // Nothing at all, and nothing said why: assume the parser, not the cinema.
+    if (batch.screenings.length === 0) {
+      return { inserted, updated, removed: 0, removalsSkipped: "empty" };
     }
 
     const removed = await trx
