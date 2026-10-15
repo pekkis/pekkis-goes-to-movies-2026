@@ -499,6 +499,21 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/linkedevents/`, site
 
 ---
 
+## Elokuvateatteri Julia (Hyvinkää)
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/julia/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/julia.py`, re-verified.
+
+- **The programme:** `GET https://juliaelokuvat.fi/ohjelmisto/` has one `div.elokuva` per film **[V]**:
+  - `h2` title in a link to the film's page;
+  - `div#b{id}` with the screenings, one per line: "15.10.26 klo 16:00, 1. sali". The year is published with two digits (20YY); the hall becomes "Sali 1".
+  - Labelled facts after it: Ikäraja "S" / "7", Kesto "1t 28min" or "2t 55min + väliaika" (an intermission besides), Genre "Komedia Kotimainen" (spaces, or commas), Hinta "14€ / 12€" (two prices, not read).
+- **Events:** an "Ooppera:" title prefix, or a genre listed in `eventGenres` (Ooppera, Baletti, Konsertti), makes the listing an event.
+- **Tickets** at the door; each screening links the film's page.
+- **Coordinates:** OSM node 2388923543 (Hämeenkatu 34, 05800 Hyvinkää; the number from the cinema's page).
+- **First run:** 4 films, 19 screenings, no warnings; 3 matched, the opera left for an alias.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

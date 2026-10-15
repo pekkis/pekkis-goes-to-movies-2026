@@ -36,6 +36,9 @@ import { ENGEL_SITES, type EngelSite } from "./engel/sites.ts";
 import { fetchLinkedEvents } from "./linkedevents/fetch.ts";
 import { parseLinkedEvents } from "./linkedevents/parse.ts";
 import { LINKED_EVENTS_SITES, type LinkedEventsSite } from "./linkedevents/sites.ts";
+import { fetchJulia } from "./julia/fetch.ts";
+import { parseJulia } from "./julia/parse.ts";
+import { JULIA_SITES, type JuliaSite } from "./julia/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -259,6 +262,18 @@ const linkedEventsAdapter = (site: LinkedEventsSite): Adapter => ({
   },
 });
 
+/** Elokuvateatteri Julia's programme page. */
+const juliaAdapter = (site: JuliaSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchJulia(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseJulia(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
@@ -271,6 +286,7 @@ export const ADAPTERS: Adapter[] = [
   ...TRIBE_SITES.map(tribeAdapter),
   ...ENGEL_SITES.map(engelAdapter),
   ...LINKED_EVENTS_SITES.map(linkedEventsAdapter),
+  ...JULIA_SITES.map(juliaAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",
