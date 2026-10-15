@@ -636,6 +636,20 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/kuusamotalo
 
 ---
 
+## Lieksan Kino
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/lieksa/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/lieksa.py`, re-verified.
+
+- **One hand-written page** (`https://www.lieksanelokuvat.net/`) **[V]**:
+  - `#section-b` ("Elokuvissa nyt") has one `article.entry` per film: `h3` title (capitals), "Liput: 13 €", "Kesto: 112 min", the rating as an icon's name (`rating-icon-12.svg`, `-s`), and `.showtimes li` lines.
+  - Lines read "La 17.10. 15.00"; no year (inferred and checked against the weekday). A note may follow the time: "Tekstitetty" means Finnish subtitles; any other note is flagged as unmapped.
+  - `#section-c` ("Tulossa esitettäväksi") uses the same markup for coming films and is not read.
+- **Tickets at the door** ("Lieksan kulttuurikeskuksen aulasta noin 30 minuuttia ennen"); screenings link the page.
+- **Coordinates:** OSM node 14184528958 "Brahe-sali", in the culture centre (Pielisentie 9–11, 81720 Lieksa, from the cinema's page).
+- **First run:** 3 films (all matched), 7 screenings, no warnings.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

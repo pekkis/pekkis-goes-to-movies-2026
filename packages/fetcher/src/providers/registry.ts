@@ -60,6 +60,9 @@ import { ELAVIENKUVIEN_SITES, type ElavienkuvienSite } from "./elavienkuvien/sit
 import { fetchKuusamotalo } from "./kuusamotalo/fetch.ts";
 import { parseKuusamotalo } from "./kuusamotalo/parse.ts";
 import { KUUSAMOTALO_SITES, type KuusamotaloSite } from "./kuusamotalo/sites.ts";
+import { fetchLieksa } from "./lieksa/fetch.ts";
+import { parseLieksa } from "./lieksa/parse.ts";
+import { LIEKSA_SITES, type LieksaSite } from "./lieksa/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -379,6 +382,18 @@ const kuusamotaloAdapter = (site: KuusamotaloSite): Adapter => ({
   },
 });
 
+/** Lieksan Kino's hand-written page. */
+const lieksaAdapter = (site: LieksaSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchLieksa(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseLieksa(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
@@ -399,6 +414,7 @@ export const ADAPTERS: Adapter[] = [
   ...HAMINA_SITES.map(haminaAdapter),
   ...ELAVIENKUVIEN_SITES.map(elavienkuvienAdapter),
   ...KUUSAMOTALO_SITES.map(kuusamotaloAdapter),
+  ...LIEKSA_SITES.map(lieksaAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",
