@@ -66,6 +66,30 @@ import { LIEKSA_SITES, type LieksaSite } from "./lieksa/sites.ts";
 import { fetchMarita } from "./marita/fetch.ts";
 import { parseMarita } from "./marita/parse.ts";
 import { MARITA_SITES, type MaritaSite } from "./marita/sites.ts";
+import { fetchBioMarlon } from "./biomarlon/fetch.ts";
+import { parseBioMarlon } from "./biomarlon/parse.ts";
+import { BIOMARLON_SITES, type BioMarlonSite } from "./biomarlon/sites.ts";
+import { fetchKisaKino } from "./kisakino/fetch.ts";
+import { fetchVirtainPirtti } from "./virtainpirtti/fetch.ts";
+import { parseVirtainPirtti } from "./virtainpirtti/parse.ts";
+import { VIRTAINPIRTTI_SITES, type VirtainPirttiSite } from "./virtainpirtti/sites.ts";
+import { fetchTervakoski } from "./tervakoski/fetch.ts";
+import { parseTervakoski } from "./tervakoski/parse.ts";
+import { TERVAKOSKI_SITES, type TervakoskiSite } from "./tervakoski/sites.ts";
+import { fetchLeviSummit } from "./levisummit/fetch.ts";
+import { parseLeviSummit } from "./levisummit/parse.ts";
+import { LEVISUMMIT_SITES, type LeviSummitSite } from "./levisummit/sites.ts";
+import { fetchKinoKuva } from "./kinokuva/fetch.ts";
+import { parseKinoKuva } from "./kinokuva/parse.ts";
+import { KINOKUVA_SITES, type KinoKuvaSite } from "./kinokuva/sites.ts";
+import { fetchPajakkakino } from "./pajakkakino/fetch.ts";
+import { parsePajakkakino } from "./pajakkakino/parse.ts";
+import { PAJAKKAKINO_SITES, type PajakkakinoSite } from "./pajakkakino/sites.ts";
+import { parseKisaKino } from "./kisakino/parse.ts";
+import { KISAKINO_SITES, type KisaKinoSite } from "./kisakino/sites.ts";
+import { fetchKurikanKino } from "./kurikankino/fetch.ts";
+import { parseKurikanKino } from "./kurikankino/parse.ts";
+import { KURIKANKINO_SITES, type KurikanKinoSite } from "./kurikankino/sites.ts";
 import { fetchKinoHuovi } from "./kinohuovi/fetch.ts";
 import { parseKinoHuovi } from "./kinohuovi/parse.ts";
 import { KINOHUOVI_SITES, type KinoHuoviSite } from "./kinohuovi/sites.ts";
@@ -433,6 +457,102 @@ const maritaAdapter = (site: MaritaSite): Adapter => ({
   },
 });
 
+/** Pajakkakino's WordPress posts. */
+const pajakkakinoAdapter = (site: PajakkakinoSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchPajakkakino(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parsePajakkakino(raw, site), venues) };
+  },
+});
+
+/** Bio Marlon's Elementor front page. */
+const bioMarlonAdapter = (site: BioMarlonSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchBioMarlon(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseBioMarlon(raw, site), venues) };
+  },
+});
+
+/** Kino-Kuva's front page (ISO-8859-1). */
+const kinoKuvaAdapter = (site: KinoKuvaSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchKinoKuva(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseKinoKuva(raw, site), venues) };
+  },
+});
+
+/** Cinema Levi Summit's show calendar. */
+const leviSummitAdapter = (site: LeviSummitSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchLeviSummit(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseLeviSummit(raw, site), venues) };
+  },
+});
+
+/** Kino Tervakoski's programme page (Janakkala). */
+const tervakoskiAdapter = (site: TervakoskiSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchTervakoski(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseTervakoski(raw, site), venues) };
+  },
+});
+
+/** Virtain Pirtti's programme page (Weebly). */
+const virtainPirttiAdapter = (site: VirtainPirttiSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchVirtainPirtti(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseVirtainPirtti(raw, site), venues) };
+  },
+});
+
+/** KisaKino's front page and film pages. */
+const kisaKinoAdapter = (site: KisaKinoSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchKisaKino(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseKisaKino(raw, site), venues) };
+  },
+});
+
+/** Kurikan Kino's front page. */
+const kurikanKinoAdapter = (site: KurikanKinoSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchKurikanKino(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseKurikanKino(raw, site), venues) };
+  },
+});
+
 /** Kino-Huovi's Duda front page. */
 const kinoHuoviAdapter = (site: KinoHuoviSite): Adapter => ({
   id: site.provider,
@@ -551,6 +671,14 @@ export const ADAPTERS: Adapter[] = [
   ...KUUSAMOTALO_SITES.map(kuusamotaloAdapter),
   ...LIEKSA_SITES.map(lieksaAdapter),
   ...MARITA_SITES.map(maritaAdapter),
+  ...KURIKANKINO_SITES.map(kurikanKinoAdapter),
+  ...KISAKINO_SITES.map(kisaKinoAdapter),
+  ...PAJAKKAKINO_SITES.map(pajakkakinoAdapter),
+  ...BIOMARLON_SITES.map(bioMarlonAdapter),
+  ...KINOKUVA_SITES.map(kinoKuvaAdapter),
+  ...LEVISUMMIT_SITES.map(leviSummitAdapter),
+  ...TERVAKOSKI_SITES.map(tervakoskiAdapter),
+  ...VIRTAINPIRTTI_SITES.map(virtainPirttiAdapter),
   ...KINOHUOVI_SITES.map(kinoHuoviAdapter),
   ...MATINTUPA_SITES.map(matinTupaAdapter),
   ...MYCALENDAR_SITES.map(myCalendarAdapter),

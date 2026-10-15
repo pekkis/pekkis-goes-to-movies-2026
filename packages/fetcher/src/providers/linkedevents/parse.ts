@@ -31,6 +31,13 @@ const PRICE = /^(\d{1,3}(?:[.,]\d{1,2})?)\s*€$/;
 /** The place id from its URL: ".../place/tprek:8740/" -> "tprek:8740". */
 const placeOf = (url: string | undefined) => url?.match(/\/place\/([^/]+)\/?$/)?.[1];
 
+/** "Name Surname: Title" (two or three capitalised words) or "Title, ohj. Name" -> "Title". */
+export const withoutCredits = (title: string): string =>
+  title
+    .replace(/,\s*ohj\.\s+[^,]+$/i, "")
+    .replace(/^\p{Lu}[\p{L}'-]+(?:\s+\p{Lu}[\p{L}'-]+){1,2}:\s+(?=\S)/u, "")
+    .trim();
+
 /** Pure: the locations' events + site config -> normalized batch. */
 export const parseLinkedEvents = (
   raw: LinkedEventsRawSnapshot,
@@ -86,9 +93,10 @@ export const parseLinkedEvents = (
         continue;
       }
 
-      const age = labelled.match(AGE);
+      const credited = site.credits ? withoutCredits(labelled) : labelled;
+      const age = credited.match(AGE);
       const rating = age ? own(RATINGS, age[2]!.toUpperCase().replace(/^K-?/, "")) : undefined;
-      const { title, version } = splitVersion(age ? age[1]! : labelled);
+      const { title, version } = splitVersion(age ? age[1]! : credited);
       const filmKey = slugify(title);
       const listingId = makeId(P, "film", filmKey);
       if (!listings.has(listingId)) {

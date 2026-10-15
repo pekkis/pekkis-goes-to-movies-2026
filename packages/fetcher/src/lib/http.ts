@@ -33,6 +33,20 @@ export type HttpClientOptions = {
  * Polite HTTP client: identifiable User-Agent, retries, and per-host pacing so that
  * one source is never hit with parallel bursts.
  */
+/**
+ * Decodes a body by the charset its Content-Type states ("text/html;charset=ISO-8859-1",
+ * Kino-Kuva); UTF-8 when none is stated or the label is unknown. Response.text() would
+ * always assume UTF-8.
+ */
+export const decodeBody = (body: ArrayBuffer, contentType: string | null): string => {
+  const label = contentType?.match(/charset\s*=\s*"?([^";\s]+)/i)?.[1] ?? "utf-8";
+  try {
+    return new TextDecoder(label).decode(body);
+  } catch {
+    return new TextDecoder("utf-8").decode(body);
+  }
+};
+
 export const createHttpClient = ({
   intervalCap = 1,
   intervalMs = 750,
@@ -61,9 +75,12 @@ export const createHttpClient = ({
     getJson: (url, searchParams) =>
       queueFor(new URL(url).host).add(() => client.get(url, { searchParams }).json<unknown>()),
     getText: (url) =>
-      queueFor(new URL(url).host).add(() =>
-        client.get(url, { headers: { accept: "text/html,application/xhtml+xml" } }).text(),
-      ),
+      queueFor(new URL(url).host).add(async () => {
+        const response = await client.get(url, {
+          headers: { accept: "text/html,application/xhtml+xml" },
+        });
+        return decodeBody(await response.arrayBuffer(), response.headers.get("content-type"));
+      }),
     postForm: (url, form) =>
       queueFor(new URL(url).host).add(() =>
         client

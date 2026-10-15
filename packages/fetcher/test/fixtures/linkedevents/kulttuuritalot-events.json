@@ -1,0 +1,170 @@
+{
+  "meta": {
+    "count": 5,
+    "next": null,
+    "previous": null
+  },
+  "data": [
+    {
+      "id": "kulke:68960",
+      "name": {
+        "fi": "Aleksi Salmenperä: Isänpäivä – Kino Kuutamo | Maksuttomat maanantait",
+        "sv": "Aleksi Salmenperä: Isänpäivä – Kino Kuutamo | Kostnadsfria måndagar",
+        "en": "Aleksi Salmenperä: Father’s Day – Kino Kuutamo | Free Mondays"
+      },
+      "start_time": "2026-11-02T15:00:00Z",
+      "end_time": null,
+      "event_status": "EventRescheduled",
+      "deleted": false,
+      "location": {
+        "@id": "https://api.hel.fi/linkedevents/v1/place/tprek:7255/"
+      },
+      "offers": [
+        {
+          "is_free": true,
+          "offer_price_groups": [],
+          "price": null,
+          "description": null,
+          "info_url": null
+        }
+      ],
+      "info_url": {
+        "fi": "http://www.kanneltalo.fi/fi/tapahtumat/event/46E706CE9605ECF08829141FE543DC0B/Aleksi_Salmenpera_Isanpaiva",
+        "sv": "http://www.kanneltalo.fi/sv/evenemang/event/46E706CE9605ECF08829141FE543DC0B/Aleksi_Salmenpera_Isanpaiva",
+        "en": "http://www.kanneltalo.fi/en/events/event/46E706CE9605ECF08829141FE543DC0B/Aleksi_Salmenpera_Father_s_Day"
+      }
+    },
+    {
+      "id": "kulke:69579",
+      "name": {
+        "fi": "HopeaCine: Lapin sota, ohj. Aku Louhimies",
+        "sv": "HopeaCine: Lapin sota, ohj. Aku Louhimies",
+        "en": "HopeaCine: Lapland War, ohj. Aku Louhimies"
+      },
+      "start_time": "2026-11-24T12:00:00Z",
+      "end_time": "2026-11-24T14:00:00Z",
+      "event_status": "EventRescheduled",
+      "deleted": false,
+      "location": {
+        "@id": "https://api.hel.fi/linkedevents/v1/place/tprek:7260/"
+      },
+      "offers": [
+        {
+          "is_free": false,
+          "offer_price_groups": [],
+          "info_url": {
+            "fi": "https://www.lippu.fi/event/hopeacine-vuotalo-vuotalo-21877353/",
+            "sv": "https://www.lippu.fi/event/hopeacine-vuotalo-vuotalo-21877353/",
+            "en": "https://www.lippu.fi/event/hopeacine-vuotalo-vuotalo-21877353/"
+          },
+          "description": null,
+          "price": {
+            "fi": "10€",
+            "sv": "10€",
+            "en": "10€"
+          }
+        }
+      ],
+      "info_url": {
+        "fi": "http://www.vuotalo.fi/fi/tapahtumat/event/D004A81239A9CEF08EEFFF07872F2DAC/HopeaCine_Lapin_sota_ohj_Aku_Louhimies",
+        "sv": "http://www.vuotalo.fi/sv/evenemang/event/D004A81239A9CEF08EEFFF07872F2DAC/HopeaCine_Lapin_sota_ohj_Aku_Louhimies",
+        "en": "http://www.vuotalo.fi/en/events/event/D004A81239A9CEF08EEFFF07872F2DAC/HopeaCine_Lapland_War_ohj_Aku_Louhimies"
+      }
+    },
+    {
+      "id": "kulke:69568",
+      "name": {
+        "fi": "HopeaCine: Presidentin kyyditys",
+        "sv": "HopeaCine: Presidentin kyyditys",
+        "en": "HopeaCiné: The Kidnapping of a President"
+      },
+      "start_time": "2026-10-27T12:00:00Z",
+      "end_time": "2026-10-27T14:00:00Z",
+      "event_status": "EventRescheduled",
+      "deleted": false,
+      "location": {
+        "@id": "https://api.hel.fi/linkedevents/v1/place/tprek:7260/"
+      },
+      "offers": [
+        {
+          "is_free": false,
+          "offer_price_groups": [],
+          "price": {
+            "fi": "10 €",
+            "sv": "10 €",
+            "en": "10 €"
+          },
+          "description": null,
+          "info_url": {
+            "fi": "https://www.lippu.fi/event/hopeacine-vuotalo-vuotalo-21877352/",
+            "sv": "https://www.lippu.fi/event/hopeacine-vuotalo-vuotalo-21877352/",
+            "en": "https://www.lippu.fi/event/hopeacine-vuotalo-vuotalo-21877352/"
+          }
+        }
+      ],
+      "info_url": {
+        "fi": "http://www.vuotalo.fi/fi/tapahtumat/event/7890304F6FBC3A55358461C73FB9FAD1/HopeaCine_Presidentin_kyyditys",
+        "sv": "http://www.vuotalo.fi/sv/evenemang/event/7890304F6FBC3A55358461C73FB9FAD1/HopeaCine_Presidentin_kyyditys",
+        "en": "http://www.vuotalo.fi/en/events/event/7890304F6FBC3A55358461C73FB9FAD1/HopeaCin_The_Kidnapping_of_a_President_"
+      }
+    },
+    {
+      "id": "kulke:69505",
+      "name": {
+        "fi": "Yläkoulukino: Jossain on valo joka ei sammu (12) – Elokuvanäytös kouluryhmille",
+        "sv": "Högstadiekino: Det finns ett ljus som aldrig slocknar (12) – Filmvisning för skolgrupper",
+        "en": "Yläkoulukino: A Light That Never Goes Out (12) – Film screening for school groups"
+      },
+      "start_time": "2026-10-28T07:00:00Z",
+      "end_time": "2026-10-28T08:50:00Z",
+      "event_status": "EventRescheduled",
+      "deleted": false,
+      "location": {
+        "@id": "https://api.hel.fi/linkedevents/v1/place/tprek:7260/"
+      },
+      "offers": [
+        {
+          "is_free": true,
+          "offer_price_groups": [],
+          "price": null,
+          "description": null,
+          "info_url": null
+        }
+      ],
+      "info_url": {
+        "fi": "http://www.vuotalo.fi/fi/tapahtumat/event/8CB11A999774B3F4BA2BD87F1CD828D3/Ylakoulukino_Jossain_on_valo_joka_ei_sammu_12_",
+        "sv": "http://www.vuotalo.fi/sv/evenemang/event/8CB11A999774B3F4BA2BD87F1CD828D3/Hogstadiekino_Det_finns_ett_ljus_som_aldrig_slocknar_12_",
+        "en": "http://www.vuotalo.fi/en/events/event/8CB11A999774B3F4BA2BD87F1CD828D3/Ylakoulukino_A_Light_That_Never_Goes_Out_12_"
+      }
+    },
+    {
+      "id": "kulke:69830",
+      "name": {
+        "fi": "Kohina Film Festival",
+        "sv": "Kohina Film Festival",
+        "en": "Kohina Film Festival"
+      },
+      "start_time": "2026-10-22T14:00:00Z",
+      "end_time": "2026-10-22T18:00:00Z",
+      "event_status": "EventRescheduled",
+      "deleted": false,
+      "location": {
+        "@id": "https://api.hel.fi/linkedevents/v1/place/tprek:7260/"
+      },
+      "offers": [
+        {
+          "is_free": true,
+          "offer_price_groups": [],
+          "price": null,
+          "description": null,
+          "info_url": null
+        }
+      ],
+      "info_url": {
+        "fi": "http://www.vuotalo.fi/fi/tapahtumat/event/99240F684247DEAC0331FC62A17DFBBC/Kohina_Film_Festival",
+        "sv": "http://www.vuotalo.fi/sv/evenemang/event/99240F684247DEAC0331FC62A17DFBBC/Kohina_Film_Festival",
+        "en": "http://www.vuotalo.fi/en/events/event/99240F684247DEAC0331FC62A17DFBBC/Kohina_Film_Festival"
+      }
+    }
+  ]
+}
