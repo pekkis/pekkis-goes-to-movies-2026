@@ -552,6 +552,20 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/kirkkonummi
 
 ---
 
+## Bio Savoy (Maarianhamina / Mariehamn)
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/biosavoy/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/biosavoy.py`, re-verified.
+
+- **HTTP only:** the host refuses port 443 **[A]** (Leffavuoro, 2026-09-15); `http://www.biosavoy.ax/` answered 200 **[V]**. Links are published as http.
+- **The front page** (Drupal) has an `h2.block-title` "Filmvisningar - Sal 1" / "Sal 2" per hall, then rows **[V]**: `<a href="/film/{slug}"><span content="2026-10-15T18:00:00+03:00">18:00</span> - BORTGLÖMDA ÖN</a>`. The `content` attribute is the start, with date and offset: nothing is inferred. The slug is the film's id; the link (the film's page) is copied.
+- **Titles are Swedish**, in capitals, stored as `title.sv`. The API falls back to the Swedish title when a listing has no Finnish one.
+- **Reservations by phone**; no age limits or runtimes on the page.
+- **City** is Maarianhamina, the Finnish name, like our other cities (Pietarsaari, Raasepori).
+- **Coordinates:** OSM node 1459454818; the address is from the cinema's page (Nygatan 14, AX-22100).
+- **First run:** 8 films (all matched), 36 screenings, no warnings.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
