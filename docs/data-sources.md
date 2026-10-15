@@ -714,6 +714,21 @@ Probed 2026-10-15, two GETs. Adapter: `packages/fetcher/src/providers/mycalendar
 
 ---
 
+## Navettakino (Konnevesi)
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/navetta/`. Origin: Leffavuoro's `scripts/providers/navetta.py`, re-verified.
+
+- **The front page is prose** (WordPress blocks) **[V]**. After the "Tulevan viikonlopun näytökset" paragraph:
+  - screening lines, either "Pirjo i Sverige la 17.10 klo 15:00" (title on the line) or a title line then "la 17.10 klo 15:00";
+  - film blocks: a title paragraph, a figure (the poster, not read), the cinema's synopsis (not read), and a facts line "S, 88 min, liput 10 €" / "Kesto 1 h 27 min, K12, liput 10 €".
+- **Each block's facts** attach to its title (the paragraph before its figure). A screening may be listed twice (in the list and in its block); film plus start minute makes it one.
+- **No year** in the dates: inferred and checked against the weekday. The editor sometimes splits a title's markup ("Presidentin kyydity</strong>s"); the text is read, not the markup.
+- **Weekends only, tickets at the door.**
+- **Coordinates:** the cinema's contact page gives the visiting address, Pyhälahdentie 972, 44370 Konnevesi, and GPS N 62° 48.330′, E 26° 5.232′ (`geoSource: manual`); it is not in OSM.
+- **First run:** 1 film (matched), 1 screening, no warnings.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

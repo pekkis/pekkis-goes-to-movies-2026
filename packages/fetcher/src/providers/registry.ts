@@ -75,6 +75,9 @@ import { MATINTUPA_SITES, type MatinTupaSite } from "./matintupa/sites.ts";
 import { fetchMyCalendar } from "./mycalendar/fetch.ts";
 import { parseMyCalendar } from "./mycalendar/parse.ts";
 import { MYCALENDAR_SITES, type MyCalendarSite } from "./mycalendar/sites.ts";
+import { fetchNavetta } from "./navetta/fetch.ts";
+import { parseNavetta } from "./navetta/parse.ts";
+import { NAVETTA_SITES, type NavettaSite } from "./navetta/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -454,6 +457,18 @@ const myCalendarAdapter = (site: MyCalendarSite): Adapter => ({
   },
 });
 
+/** Navettakino's front page. */
+const navettaAdapter = (site: NavettaSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchNavetta(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseNavetta(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
@@ -479,6 +494,7 @@ export const ADAPTERS: Adapter[] = [
   ...KINOHUOVI_SITES.map(kinoHuoviAdapter),
   ...MATINTUPA_SITES.map(matinTupaAdapter),
   ...MYCALENDAR_SITES.map(myCalendarAdapter),
+  ...NAVETTA_SITES.map(navettaAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",
