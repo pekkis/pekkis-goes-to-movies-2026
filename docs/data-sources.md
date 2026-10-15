@@ -871,6 +871,14 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Le
 - **Tickets** at the door: booking `door`, links to the programme page.
 - **First run:** 4 screenings of 4 films (the page lists the current week), all matched.
 
+## Virtain Pirtti (Virrat)
+
+- **Found** by the maintainer (virtainpirtti.fi), 2026-10-15; not in Leffavuoro.
+- **The programme page** [V] (`/ohjelmistossa-nyt.html`, Weebly): one `div.paragraph` per film, its lines split by `<br>`: "Kerro kaikille K-12" (title and rating; "K-7 dub." is Finnish-dubbed), notes ("Ennakkonäytös" tags the rows `preview`, "(Ensi-ilta 30.10.)" is ignored), rows ("pe 16.10. klo 15.15*"; no year, the weekday must fit), a footnote for starred rows ("*16.10. ja 21.10. tekstitys suomeksi": those rows get Finnish subtitles) and "Kesto 1 h 52 min". A row may start with a zero-width space.
+- **Tickets** at the door: booking `door`, links to the programme page.
+- **Address:** the site states none; OSM's Virtain Pirtti node (Virtaintie 15, 34800 Virrat).
+- **First run:** 10 screenings of 5 films, no warnings, all matched.
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
