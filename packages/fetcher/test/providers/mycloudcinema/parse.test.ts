@@ -247,7 +247,13 @@ describe("field parsers", () => {
     ["ORIG", [], []],
     ["4DX", [], ["title_extension:4DX"]],
   ])("parseTitleExtension(%s)", (input, formats, unmapped) => {
-    expect(parseTitleExtension(input)).toEqual({ formats, tags: [], series: [], unmapped });
+    expect(parseTitleExtension(input)).toEqual({
+      formats,
+      tags: [],
+      series: [],
+      event: false,
+      unmapped,
+    });
   });
 
   it("reads a whole label by the shared rules (Cine Mäntsälä)", () => {
@@ -255,6 +261,7 @@ describe("field parsers", () => {
       formats: [],
       tags: ["preview"],
       series: [],
+      event: false,
       unmapped: [],
     });
   });
@@ -265,8 +272,23 @@ describe("field parsers", () => {
       formats: [],
       tags: [],
       series: ["Cine Matinea"],
+      event: false,
       unmapped: [],
     });
+  });
+
+  it("reads a concert label as event cinema, with or without the exclamation mark", () => {
+    const labels = {
+      "Cine Konsertti": { series: "Cine Konsertti", tags: ["event-cinema" as const], event: true },
+    };
+    for (const raw of ["Cine Konsertti", "Cine Konsertti!"]) {
+      expect(parseTitleExtension(raw, labels)).toMatchObject({
+        tags: ["event-cinema"],
+        series: ["Cine Konsertti"],
+        event: true,
+        unmapped: [],
+      });
+    }
   });
 
   it.each([

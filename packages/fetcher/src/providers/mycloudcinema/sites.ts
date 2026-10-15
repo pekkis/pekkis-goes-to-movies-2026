@@ -45,8 +45,13 @@ const sites = z.array(MyCloudCinemaSite).parse([
     api: "https://mantsala.cine.fi/webservices",
     ticketBase: "https://mantsala.cine.fi",
     cinemaIds: [1],
-    // The cinema's matinée strand (seen 2026-10-15).
-    titleExtensions: { "Cine Matinea - näytös": { series: "Cine Matinea" } },
+    // The cinema's matinée and concert strands, written with and without "- näytös" / "!"
+    // (seen 2026-10-15).
+    titleExtensions: {
+      "Cine Matinea - näytös": { series: "Cine Matinea" },
+      "Cine Matinea": { series: "Cine Matinea" },
+      "Cine Konsertti": { series: "Cine Konsertti", tags: ["event-cinema"], event: true },
+    },
     verifiedAt: "2026-10-13",
     notes:
       "The API also lists cinema 2, Cine Keuda-talo (Kerava), which we read from eTiketti " +

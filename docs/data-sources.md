@@ -116,7 +116,7 @@ Origin: Leffavuoro's `scripts/providers/cinemantsala.py`, re-verified with three
   - two halls, "Sali 1" and "Sali 2";
   - `audio_lang` codes and `movie_audio_style_id` for dubs.
 - **`subtitle_lang` is a Finnish phrase**, not a code **[V]**: "Suomeksi ja ruotsiksi", "Ruotsiksi", "suomeksi", "Ei" (none). The platform parser reads both vocabularies.
-- **`title_extension` is a label:** "Ennakkonäytös!" **[V]**, read by the shared title-label rules as a `preview` tag. A site's own whole labels are site config (`titleExtensions`): Cine Mäntsälä's "Cine Matinea - näytös" is the series Cine Matinea (its matinée strand) **[V]** 2026-10-15. Leffavuoro also saw "Leffa & Kaffe - näytös" **[A]**; it would show as an unmapped label until added.
+- **`title_extension` is a label:** "Ennakkonäytös!" **[V]**, read by the shared title-label rules as a `preview` tag. A site's own whole labels are site config (`titleExtensions`): Cine Mäntsälä's "Cine Matinea" (also "- näytös") is the series Cine Matinea (its matinée strand), and "Cine Konsertti" (also "!") the series Cine Konsertti, event cinema, which makes the listing an event **[V]** 2026-10-15. Leffavuoro also saw "Leffa & Kaffe - näytös" **[A]**; it would show as an unmapped label until added.
 - **Days per request:** Leffavuoro measured `number_of_days` as a cap of 7 **[A]**, so the platform fetches in windows of at most 7 days and deduplicates by show id. A 7-day pull is still one request per cinema.
 - **Ticket links:** `https://mantsala.cine.fi/#/book/{show_time_id}`, the anchor the cinema's own programme page renders **[A, Leffavuoro]**. Copied by pattern, never requested.
 - **First run:** 18 films, 30 screenings, all films matched to TMDB, no warnings.

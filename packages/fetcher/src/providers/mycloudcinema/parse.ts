@@ -83,13 +83,20 @@ const labelRule = (raw: string, site: Record<string, LabelRule>) => {
 export const parseTitleExtension = (
   raw: string | null | undefined,
   siteLabels: Record<string, LabelRule> = {},
-): { formats: Feature[]; tags: ScreeningTag[]; series: string[]; unmapped: string[] } => {
+): {
+  formats: Feature[];
+  tags: ScreeningTag[];
+  series: string[];
+  event: boolean;
+  unmapped: string[];
+} => {
   const rule = raw ? labelRule(raw, siteLabels) : undefined;
   if (rule) {
     return {
       formats: [],
       tags: [...(rule.tags ?? [])],
       series: rule.series ? [rule.series] : [],
+      event: rule.event ?? false,
       unmapped: [],
     };
   }
@@ -105,7 +112,7 @@ export const parseTitleExtension = (
       unmapped.push(`title_extension:${token}`);
     }
   }
-  return { formats, tags: [], series: [], unmapped };
+  return { formats, tags: [], series: [], event: false, unmapped };
 };
 
 /** "6 REX (K-18)" -> features and the hall's own age limit. */
@@ -265,8 +272,9 @@ const parseScreening = (
   };
 };
 
-const parseListing = (P: string, s: RawShowtime): FilmListing => {
+const parseListing = (P: string, site: MyCloudCinemaSite, s: RawShowtime): FilmListing => {
   const rating = parseRating(s.rating);
+  const extension = parseTitleExtension(s.title_extension, site.titleExtensions);
   return {
     id: makeId(P, "film", s.movie_id),
     provider: P,
@@ -276,8 +284,8 @@ const parseListing = (P: string, s: RawShowtime): FilmListing => {
     ...(rating && { rating }),
     genres: splitList(s.genre),
     countries: splitList(s.countries),
-    // The platform does not mark event cinema.
-    kind: "film",
+    // The platform does not mark event cinema; a site's label may ("Cine Konsertti").
+    kind: extension.event ? "event" : "film",
   };
 };
 
@@ -374,7 +382,7 @@ export const parseMyCloudCinema = (
       const auditorium = parseAuditorium(P, row.data, venue.id);
       auditoriums.set(auditorium.id, auditorium);
 
-      const listing = parseListing(P, row.data);
+      const listing = parseListing(P, site, row.data);
       if (!listings.has(listing.id)) {
         listings.set(listing.id, listing);
       }

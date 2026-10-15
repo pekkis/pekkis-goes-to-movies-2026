@@ -9,6 +9,7 @@ it.each([
   [" Ruotsi ", "sv"],
   ["pashtu", "ps"],
   ["pushto", "ps"],
+  ["kannada", "kn"],
   ["mykkä elokuva", "zxx"],
   ["dari", "fa"],
   ["", undefined],

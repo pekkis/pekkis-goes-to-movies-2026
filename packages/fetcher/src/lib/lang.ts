@@ -82,6 +82,7 @@ const ENGLISH_NAMES: Record<string, Lang> = {
   estonian: "et",
   lithuanian: "lt",
   tamil: "ta",
+  kannada: "kn",
   hindi: "hi",
   georgian: "ka",
   yiddish: "yi",
