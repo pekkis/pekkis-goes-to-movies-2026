@@ -55,9 +55,8 @@ We read with GET wherever a source allows it. These cinemas publish their progra
 | Cinema             | City     | The request                                                                                                                | Notes                                                         |
 | ------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
 | Kino Regina (KAVI) | Helsinki | `POST kinoregina.fi/wp-content/themes/kinoregina2/assets/functions/getShowtimesMoviesV2.php` (`getShowtimesMovies={date}`) | A GET answers empty; the screenings are not in Linked Events. |
-| Kannusali          | Espoo    | `POST espoo.fi/api/events` (place `tprId` 21430, topic "Elokuvat")                                                         | A GET answers 500; not in Linked Events.                      |
 
-Already solved without a POST: Riviera (the ticket host's open schedule) and Kino Helios (Linked Events).
+Already solved without a POST: Riviera (the ticket host's open schedule), Kino Helios (Helsinki's Linked Events) and Kannusali (Espoo's own Linked Events instance).
 
 ## Acknowledgements
 

@@ -473,7 +473,7 @@ Probed 2026-10-14 from a home connection: the front page, then the film pages. A
 
 ---
 
-## Linked Events (City of Helsinki): Kino Helios
+## Linked Events (Helsinki, Espoo): Kino Helios, Kannusali
 
 Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/linkedevents/`, sites in `sites.ts`.
 
@@ -498,6 +498,12 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/linkedevents/`, site
 - **First run:** 7 films (all matched), 15 screenings, no warnings.
 
 ---
+
+- **Kannusali** (Espoo, 2026-10-15) **[V]**: Espoo runs its own Linked Events instance; `GET https://api.espoo.fi/events/v1/event/?location=tprek:21430&…` answers like Helsinki's. Its `meta.next` points at the instance's canonical host (`espooevents.prod.espoon-voltti.fi`), so `next` is followed when it is an https events URL. Leffavuoro POSTs to `espoo.fi/api/events` instead; that is not needed.
+  - Labels: "Elokuva: Kevlarsjäl (K12)", "Lasten viikonloppu, Elokuva: …" (kids), "… - Elokuvakonsertti" (event cinema). Plays and concerts at the house carry none and are not read. The age limit is "(K12)" or "(16)".
+  - Free screenings (`is_free`); no ticket page, so screenings link the house's page.
+  - License assumed CC BY 4.0 like Helsinki's **[A]**; credited with it.
+  - Coordinates: OSM node 13744741583 (Kannusillankatu 4, 02770 Espoo).
 
 ## Elokuvateatteri Julia (Hyvinkää)
 

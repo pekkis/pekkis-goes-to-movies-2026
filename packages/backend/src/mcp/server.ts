@@ -17,7 +17,7 @@ export const ATTRIBUTION =
   "Showtimes come from each cinema; every ticket link goes to the cinema's own page. " +
   "Film data from TMDB (this product uses the TMDB API but is not endorsed or certified by " +
   "TMDB). Venue coordinates partly © OpenStreetMap contributors (ODbL). Some showtimes " +
-  "from the City of Helsinki's Linked Events API (CC BY 4.0).";
+  "from the Linked Events APIs of the Cities of Helsinki and Espoo (CC BY 4.0).";
 
 const INSTRUCTIONS =
   "Showtimes of Finnish cinemas. Times are Helsinki local time; a programme day runs into " +
