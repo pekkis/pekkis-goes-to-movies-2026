@@ -667,6 +667,21 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/marita/`, s
 
 ---
 
+## Kino-Huovi (Harjavalta)
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/kinohuovi/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/kinohuovi.py`, re-verified.
+
+- **A Duda front page:** one `.postArticle` card per film; the `.postDescription` text holds everything **[V]**:
+  - groups of screenings: "12.10. MA klo 18.00" or a range with its weekdays, "23.-27.10. PE, LA, SU, MA ja TI klo 18.00", several groups per card;
+  - "Dub." (dubbed into Finnish), "Kestoaika n. 2t 35min." (runtime), "Liput 15€." (a bare amount is published).
+- **A range expands only when its weekdays prove its dates,** one weekday per date in order, ending on the range's last day. Otherwise the group is not placed and warns. There is no year: it is inferred, and the weekdays check it.
+- **The card's link is a recycled alias** (Kerro kaikille at `/kero kaikille`, Lapin sota at `/kopio-seuraavasta-…`), so the film is its title and screenings link the front page.
+- **No rating** is printed. Tickets at the door.
+- **Coordinates:** OSM way 1154064070 "Kino-Huovi" (Harjavallankatu 33, 29200 Harjavalta).
+- **First run:** 3 films (all matched), 8 screenings, no warnings.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
