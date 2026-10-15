@@ -57,7 +57,7 @@ output JSON  →  pnpm ingest  →  PostgreSQL (history kept)
 
 - **Fetch and parse are separate.** Parsers are pure functions, tested against recorded responses without network access. This is the biggest structural difference from Leffavuoro.
 - Every adapter returns `ProviderBatch { provider, fetchedAt, window, venues, auditoriums, listings, screenings, warnings }`.
-- A batch with a data-missing warning (`invalid-*`, `unknown-*`, `result-code`) is **incomplete** (`isIncomplete`): ingest stores it but infers no removed screenings from it. Codes: [development.md](development.md#warning-codes).
+- A batch with a data-missing warning (`invalid-*`, `unknown-*`, `result-code`) is **incomplete** (`isIncomplete`): ingest stores it but infers no removed screenings from it. Neither does an empty batch with no warnings (a parser gone silent; see [database.md](database.md)). Codes: [development.md](development.md#warning-codes).
 - `unmappedLabels` and `warnings` make visible what the parser does not understand yet. New values are added to the mappings together with tests.
 
 ## TMDB matching

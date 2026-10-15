@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="fi">
+  <body>
+    <h1>Couture - Muodin ehdoilla</h1>
+    <img
+      src="https://cdn.etiketti.app/savonkinot/img/ikarajat/fi-12.svg"
+      alt="Sallittu yli 12-vuotiaille"
+      title="Sallittu yli 12-vuotiaille"
+    />
+    <div class="screenings">
+      <div class="filters">
+        <div>
+          <select title="Teatterin valinta" id="location-select" onchange="filterItems()">
+            <option value="">Kaikki teatterit</option>
+            <option value="joensuu">Joensuu</option>
+            <option value="savonlinna">Savonlinna</option>
+            <option value="iisalmi">Iisalmi</option>
+            <option value="varkaus">Varkaus</option>
+            <option value="kitee">Kitee</option>
+          </select>
+        </div>
+        <div>
+          <select title="Päivän valinta" id="date-select" onchange="filterItems()">
+            <option value="">Kaikki päivät</option>
+          </select>
+        </div>
+      </div>
+      <div class="no-results" id="no-results" style="display: none">
+        <p>Ei näytöksiä valitsemallasi päivämäärällä.</p>
+      </div>
+      <div class="item" data-locations='["savonlinna"]' data-dates='["17.10.2026"]'>
+        <div>
+          <p>
+            <strong><span>LA 17.10. klo 15.30</span></strong>
+          </p>
+          <div class="movie-specs">
+            <span class="tag" style="background-color: #beedfc">Matinea</span>
+          </div>
+          <p></p>
+          <p>
+            SAVONLINNA | KILLA<br />
+            Lippu 12,50€<br />
+            Vapaat paikat 141/141
+          </p>
+        </div>
+        <div>
+          <a class="button-screening" href="/salikartta?id=55930"> Osta liput </a>
+        </div>
+      </div>
+      <div class="item" data-locations='["iisalmi"]' data-dates='["17.10.2026"]'>
+        <div>
+          <p>
+            <strong><span>LA 17.10. klo 17.00</span></strong>
+          </p>
+          <div class="movie-specs">
+            <span class="tag" style="background-color: #beedfc">Matinea</span>
+          </div>
+          <p></p>
+          <p>
+            IISALMI | KUVALIPAS | LOISTE<br />
+            Lippu 15,50€<br />
+            Vapaat paikat 29/31
+          </p>
+        </div>
+        <div>
+          <a class="button-screening" href="/salikartta?id=55906"> Osta liput </a>
+        </div>
+      </div>
+      <div class="item" data-locations='["varkaus"]' data-dates='["18.10.2026"]'>
+        <div>
+          <p>
+            <strong><span>SU 18.10. klo 14.30</span></strong>
+          </p>
+          <div class="movie-specs">
+            <span class="tag" style="background-color: #beedfc">Matinea</span>
+          </div>
+          <p></p>
+          <p>
+            VARKAUS | MAXIM | MAXIM 2<br />
+            Lippu 12,50€<br />
+            Vapaat paikat 41/43
+          </p>
+        </div>
+        <div>
+          <a class="button-screening" href="/salikartta?id=55862"> Osta liput </a>
+        </div>
+      </div>
+      <div class="item" data-locations='["kitee"]' data-dates='["18.10.2026"]'>
+        <div>
+          <p>
+            <strong><span>SU 18.10. klo 15.10</span></strong>
+          </p>
+          <div class="movie-specs">
+            <span class="tag" style="background-color: #beedfc">Matinea</span>
+          </div>
+          <p></p>
+          <p>
+            KITEE | KINO-HOVI<br />
+            Lippu 12,50€<br />
+            Vapaat paikat 184/184
+          </p>
+        </div>
+        <div>
+          <a class="button-screening" href="/salikartta?id=55887"> Osta liput </a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

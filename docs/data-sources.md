@@ -314,7 +314,7 @@ Probed 2026-10-13, two GETs. Adapter: `packages/fetcher/src/providers/vista/`, s
 
 Probed 2026-10-14, two GETs.
 
-- **Not the website's listing:** rivieracinemas.fi builds its programme with a WordPress `admin-ajax.php` POST (Leffavuoro reads that). We are GET only, and the ticket host has the same open schedule as Korjaamo: `GET https://tickets.rivieracinemas.fi/xml/Schedule/?nrOfDays=31` **[V]**.
+- **Not the website's listing:** rivieracinemas.fi builds its programme with a WordPress `admin-ajax.php` POST (Leffavuoro reads that). We prefer GET, and the ticket host has the same open schedule as Korjaamo: `GET https://tickets.rivieracinemas.fi/xml/Schedule/?nrOfDays=31` **[V]**.
 - **XML only:** it answers `text/xml` whatever the `Accept` header, so the site config says `format: "xml"`. The parser turns each `<Show>` into the object the JSON answer gives (empty elements absent, numeric fields numbers).
 - **No `area` needed:** one request covers every theatre. Theatres 1075 (Kallio, "Sali 1") and 1114 (Punavuori, "Sali 1" and "Sali 2"); 88–90 shows over a month.
 - **Languages are filled in:**
@@ -473,11 +473,11 @@ Probed 2026-10-14 from a home connection: the front page, then the film pages. A
 
 ---
 
-## Linked Events (City of Helsinki): Kino Helios
+## Linked Events (Helsinki, Espoo): Kino Helios, Kannusali
 
 Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/linkedevents/`, sites in `sites.ts`.
 
-- **Why not Malmitalo's own calendar:** Leffavuoro (`helios.py`) POSTs to Malmitalo's `EventCalendarService.svc/GetEvents`; we are GET only. The same events are in the city's open **Linked Events** API **[V]**: `GET https://api.hel.fi/linkedevents/v1/event/?location=tprek:8740&start=…&end=…&page_size=100&sort=start_time`, with `meta.next` followed to the end (budget 10 pages).
+- **Why not Malmitalo's own calendar:** Leffavuoro (`helios.py`) POSTs to Malmitalo's `EventCalendarService.svc/GetEvents`; we prefer GET. The same events are in the city's open **Linked Events** API **[V]**: `GET https://api.hel.fi/linkedevents/v1/event/?location=tprek:8740&start=…&end=…&page_size=100&sort=start_time`, with `meta.next` followed to the end (budget 10 pages).
 - **License:** the city publishes Linked Events data under CC BY 4.0 **[A]**. It is credited on every page of the website, in the OpenAPI description and in the MCP server's text.
 - **A culture house's calendar is not a programme:** Malmitalo's place also holds concerts, courses (Nuorten elokuvakerho) and library groups. An event is a screening only when its title carries a configured label **[V]**:
   - "Tony (16) – Kino Helios" (the cinema's name);
@@ -498,6 +498,12 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/linkedevents/`, site
 - **First run:** 7 films (all matched), 15 screenings, no warnings.
 
 ---
+
+- **Kannusali** (Espoo, 2026-10-15) **[V]**: Espoo runs its own Linked Events instance; `GET https://api.espoo.fi/events/v1/event/?location=tprek:21430&…` answers like Helsinki's. Its `meta.next` points at the instance's canonical host (`espooevents.prod.espoon-voltti.fi`), so `next` is followed when it is an https events URL. Leffavuoro POSTs to `espoo.fi/api/events` instead; that is not needed.
+  - Labels: "Elokuva: Kevlarsjäl (K12)", "Lasten viikonloppu, Elokuva: …" (kids), "… - Elokuvakonsertti" (event cinema). Plays and concerts at the house carry none and are not read. The age limit is "(K12)" or "(16)".
+  - Free screenings (`is_free`); no ticket page, so screenings link the house's page.
+  - License assumed CC BY 4.0 like Helsinki's **[A]**; credited with it.
+  - Coordinates: OSM node 13744741583 (Kannusillankatu 4, 02770 Espoo).
 
 ## Elokuvateatteri Julia (Hyvinkää)
 
@@ -636,6 +642,177 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/kuusamotalo
 
 ---
 
+## Lieksan Kino
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/lieksa/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/lieksa.py`, re-verified.
+
+- **One hand-written page** (`https://www.lieksanelokuvat.net/`) **[V]**:
+  - `#section-b` ("Elokuvissa nyt") has one `article.entry` per film: `h3` title (capitals), "Liput: 13 €", "Kesto: 112 min", the rating as an icon's name (`rating-icon-12.svg`, `-s`), and `.showtimes li` lines.
+  - Lines read "La 17.10. 15.00"; no year (inferred and checked against the weekday). A note may follow the time: "Tekstitetty" means Finnish subtitles; any other note is flagged as unmapped.
+  - `#section-c` ("Tulossa esitettäväksi") uses the same markup for coming films and is not read.
+- **Tickets at the door** ("Lieksan kulttuurikeskuksen aulasta noin 30 minuuttia ennen"); screenings link the page.
+- **Coordinates:** OSM node 14184528958 "Brahe-sali", in the culture centre (Pielisentie 9–11, 81720 Lieksa, from the cinema's page).
+- **First run:** 3 films (all matched), 7 screenings, no warnings.
+
+---
+
+## Elokuvateatteri Marita (Outokumpu)
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/marita/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/marita.py`, re-verified.
+
+- **The front page's `#show-times` module** has one `.movie-info` block per screening **[V]**:
+  - `h3` title linking the film's page;
+  - "Hinta: 10 €" (a single amount is published; "10/8 €" is not);
+  - "Kieli: Suomi", the print's spoken language (no subtitles are stated anywhere);
+  - `img.age-img` named after the limit (`12.png`, `s.png`); the `label-img` images beside it are content warnings, not ratings;
+  - the date with its year ("17.10.2026") and "klo 16.00".
+- **The film pages** carry runtime and genre **[A]** (Leffavuoro); not read yet.
+- **Tickets at the door**; screenings link the film's page.
+- **Coordinates:** OSM node 7202242999 "Elokuvateatteri Marita" (Koulukatu 1, 83500 Outokumpu).
+- **First run:** 4 films (all matched), 5 screenings, no warnings.
+
+---
+
+## Kino-Huovi (Harjavalta)
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/kinohuovi/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/kinohuovi.py`, re-verified.
+
+- **A Duda front page:** one `.postArticle` card per film; the `.postDescription` text holds everything **[V]**:
+  - groups of screenings: "12.10. MA klo 18.00" or a range with its weekdays, "23.-27.10. PE, LA, SU, MA ja TI klo 18.00", several groups per card;
+  - "Dub." (dubbed into Finnish), "Kestoaika n. 2t 35min." (runtime), "Liput 15€." (a bare amount is published).
+- **A range expands only when its weekdays prove its dates,** one weekday per date in order, ending on the range's last day. Otherwise the group is not placed and warns. There is no year: it is inferred, and the weekdays check it.
+- **The card's link is a recycled alias** (Kerro kaikille at `/kero kaikille`, Lapin sota at `/kopio-seuraavasta-…`), so the film is its title and screenings link the front page.
+- **No rating** is printed. Tickets at the door.
+- **Coordinates:** OSM way 1154064070 "Kino-Huovi" (Harjavallankatu 33, 29200 Harjavalta).
+- **First run:** 3 films (all matched), 8 screenings, no warnings.
+
+---
+
+## Elokuvateatteri Matin-Tupa (Ylistaro)
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/matintupa/`. Origin: Leffavuoro's `scripts/providers/matintupa.py`, re-verified.
+
+- **`/ohjelmistossa/`** renders one `div.col-sm-6` per film **[V]**:
+  - an `h2` link to `/elokuvat/{slug}/` (the slug is the film's id);
+  - "Esitysajat:" lines ("ti 13.10. klo 19.20"; no year, inferred and checked against the weekday);
+  - "Liput:" (a bare amount is published; "Alle 9 -vuotiaat 11 €, muut 14 €" is not), "Kesto: 1 t 28 min", "Genre:";
+  - the rating image `ikaraja_{sallittu|7|12|16|18}`;
+  - free notes, of which "Puhumme suomea" (dubbed) and the KAVI sentence are read.
+- **Tickets at the door.** Ylistaro is part of Seinäjoki; OSM way 243044340 (Västilänkuja, no number).
+- **First run:** 5 films, 16 screenings, no warnings. Unohdettu saari is listed at 98 min (TMDB 109), so it needs an alias.
+
+---
+
+## My Calendar (WordPress): Pyhäsalmen VPK
+
+Probed 2026-10-15, two GETs. Adapter: `packages/fetcher/src/providers/mycalendar/`, sites in `sites.ts`. Origin: Leffavuoro's `scripts/providers/vpk.py`, re-verified.
+
+- **API** **[V]**: `GET {base}/wp-json/my-calendar/v1/events?from=…&to=…&category=1` returns `{date: [occurrence…]}`, or `[]` for none. Each occurrence has:
+  - `occur_id` (the screening's id), `event_title`, `category_id`;
+  - `occur_begin` (local) and `ts_occur_begin` (Unix), which must agree.
+
+  An occurrence outside the configured category is skipped with `unclaimed-event`. Events carry no location, runtime or rating.
+
+- **Price:** the cinema's page says "Elokuvalipun hinta: 12 euroa", one price for every screening, read by a configured pattern. If that page fails, the programme still publishes, without a price.
+- **Pyhäsalmen VPK** (a volunteer fire brigade's cinema since 1944): category 1 "Elokuvat"; tickets at the door; screenings link the cinema's page.
+- **Coordinates:** Palotie 4, 86800 Pyhäsalmi (from its page), geocoded with Nominatim; OSM has the building unnamed. The city is the municipality, Pyhäjärvi.
+- **First run:** 2 films, 7 screenings, no warnings. Late Lammas is aliased (no runtime to match on).
+
+---
+
+## Navettakino (Konnevesi)
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/navetta/`. Origin: Leffavuoro's `scripts/providers/navetta.py`, re-verified.
+
+- **The front page is prose** (WordPress blocks) **[V]**. After the "Tulevan viikonlopun näytökset" paragraph:
+  - screening lines, either "Pirjo i Sverige la 17.10 klo 15:00" (title on the line) or a title line then "la 17.10 klo 15:00";
+  - film blocks: a title paragraph, a figure (the poster, not read), the cinema's synopsis (not read), and a facts line "S, 88 min, liput 10 €" / "Kesto 1 h 27 min, K12, liput 10 €".
+- **Each block's facts** attach to its title (the paragraph before its figure). A screening may be listed twice (in the list and in its block); film plus start minute makes it one.
+- **No year** in the dates: inferred and checked against the weekday. The editor sometimes splits a title's markup ("Presidentin kyydity</strong>s"); the text is read, not the markup.
+- **Weekends only, tickets at the door.**
+- **Coordinates:** the cinema's contact page gives the visiting address, Pyhälahdentie 972, 44370 Konnevesi, and GPS N 62° 48.330′, E 26° 5.232′ (`geoSource: manual`); it is not in OSM.
+- **First run:** 1 film (matched), 1 screening, no warnings.
+
+---
+
+## Localhub (a town's event calendar): Kino Akustiikka
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/localhub/`, sites in `sites.ts`. Origin: Leffavuoro's `scripts/providers/localhub.py`, re-verified.
+
+- **The calendar's search** (Ylivieska's `tapahtumat.ylivieska.fi`) **[V]**: `GET {base}/api/collection/{collection}/content/general-search?lang=fi&country=FI&q=kinoakustiikka&mode=event&sort=score` returns `{pages, count}`, one page per screening (31 on 2026-10-15).
+- **A page is a screening only when** its `globalContentCategories` include "Movies / Cinema" and its hashtags include the cinema's; the calendar is the whole town's.
+- **Fields:**
+  - `event.dates[].start` (UTC), its timezone required to be Europe/Helsinki;
+  - cancelled dates skipped, sold-out read;
+  - `price` `{min, max, currency}`, published only when min equals max (12 €);
+  - `event.urlPurchaseTicket`: the town's shop, copied;
+  - the rating as a hashtag ("k-12");
+  - a trailing "(2026)" in the name is the year.
+- **A cut answer** (`count` larger than the pages returned) is missing data.
+- **Coordinates:** OSM node 2507982005 "Kulttuurikeskus Akustiikka" (Koulukatu 2 B, 84100 Ylivieska).
+- **First run:** 10 films, 26 screenings, no warnings. Late Lammas and Resident Evil (no runtime here) are aliased.
+
+---
+
+## Bio Pallas (Karjaa, Raasepori)
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/biopallas/`. Origin: Leffavuoro's `scripts/providers/pallas.py`, re-verified.
+
+- **A Wix front page, server-rendered:** the rich-text blocks (`[data-testid=richTextElement]`), in document order, are the structure **[V]**:
+  - the title block: "Kerro kaikille", an optional version line ("På svenska", "Suomeksi"), "1h 52min -K12-";
+  - the date-and-time block: "Ke/Ons 14.10" and "Klo 19.00" (bilingual weekday, Finnish first; no year, inferred and checked against the weekday);
+  - the price block: "13€", or "12€ med kaffeserv./kahvitarjoilulla" (one amount is published; "22/25€" is not).
+
+  Component ids change on every edit, so nothing is keyed on them. Day headings repeat the dates and are not read. The coming-soon list has a lone date with no "Klo" and is not a screening.
+
+- **Tickets at the door**; screenings link the page.
+- **Coordinates:** OSM node 2068950851 "Bio Pallas" (Nils Grabbegatan, no number, so no address). The city is Raasepori, as with Bio Forum.
+- **First run:** 11 films, 23 screenings, no warnings. Hetki ennen valoa is listed at 97 min (TMDB 87), so it waits for an alias.
+
+---
+
+## Freehand programmes: Movie Company Alatalo and Huvimylly
+
+Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/alatalo/`, sites in `sites.ts`. Origin: Leffavuoro's `alatalo.py` and `huvimylly.py`, re-verified. One author types both programmes by hand, in the same grammar **[V]**:
+
+- **Sources:**
+  - Alatalo, a touring operator in northern Finland: `http://www.moviecompanyalatalo.fi/` (HTTP only; 443 refused).
+  - Huvimylly in Raahe: its WordPress front page's content through `/wp-json/wp/v2/pages?slug=etusivu`.
+- **Lines** (split on block tags and `<br>`):
+  - **Town heading** (Alatalo): "Haapajärvi Teatterisali", matched by its first word in the config. A line followed by a date heading that names no configured town clears the venue, and its rows warn `unclaimed-venue` instead of landing under the town above.
+  - **Date heading:** "Lauantaina 17.10", the weekday by its first two letters (misspellings are common). No year: inferred, and checked against the weekday. Consecutive headings share the rows below them.
+  - **Row:** "Klo 14.00 Title -k16/13-", also "16.30 Title", "Kl 18.00". The rating marker ("-k12/9-", "k16/13", "-s-") closes the title; the second number (the age allowed with an adult) is not read. "k6/13" is a typo and is flagged.
+  - **Continuation:** a row without a marker takes the next line as the rest of its title when that line has a marker or the row has no title yet ("Klo 13.00" then "Pikkuli ja Tähtipeura -s-"). A bare marker line ("-k16/13-") rates the unmarked rows of one film above it.
+- **Price:** the page's one line ("Liput elokuviin vain10-€"; Huvimylly "Liput vain 10-€"), by a configured pattern. Tickets at the door, cash; screenings link the page.
+- **Titles are typed freely** ("Kero se kaikille", "Pirjo", "Saapasajalkakissa tekiöiltä Unohdettu saari"); they're kept as published and aliased by hand.
+- **Coordinates:**
+  - Kemijärvi's culture centre: OSM way 221824429.
+  - Huvimylly: Raahesali, OSM node 8827057758.
+  - Pudasjärvi (Pohjantähti), Haapajärvi (Teatterisali) and Kiuruvesi (Kiurusali): not in OSM under these names, so no coordinates yet (`venue-without-geo`).
+- **First run:** Alatalo 7 films, 13 screenings in four towns; Huvimylly 2 films, 3 screenings.
+
+---
+
+## Kino Regina (KAVI, Oodi): the first POST source
+
+Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Leffavuoro's `scripts/providers/regina.py`, re-verified.
+
+- **The programme is only a POST** **[V]**: `POST …/themes/kinoregina2/assets/functions/getShowtimesMoviesV2.php` with the form field `getShowtimesMovies={YYYY-MM-DD}` answers HTML for the whole published window from that date (40 screenings to 1.11. on 2026-10-15). A GET of the same address answers empty; the programme page itself draws the list with script; KAVI's shop has no open schedule; Linked Events does not carry it. The maintainer allowed this read-only POST (it is the request the cinema's own page makes) through `HttpClient.postForm`.
+- **Rows:** `div.movie`, each with:
+  - `a.title`, linking `/elokuva/{id}` (the film's id; titles are in capitals);
+  - `.add-to-calendar .start`: "15-10-2026 17:30", with its year;
+  - `a.add-to-cart`: KAVI's shop for the screening (`kauppa.kavi.fi/…/event_buybox/show/{id}`), copied, never requested.
+
+  "grey" rows have closed online sales but are still screenings. Rows without a film link (events) are skipped.
+
+- **Film pages** (`/elokuva/{id}/`, GET, one per film in the window, paced 1 s):
+  - `#main-content h1` "CASABLANCA (1942)" gives the **year**, which the classics need to be matched;
+  - the `.movie-details` grid: Maa ("Espanja/Portugali/Ranska"), Tekstitys ("suom. tekstit/svenska texter", "ei tekstitystä"), Kesto ("102 min"), Teemat (series), Kopiotieto ("35 mm", "DCP", "4k dcp" → projection), Ikäraja (an image, `alt="Ikäraja: K12"`).
+- **Coordinates:** OSM node 9628528752 "Kino Regina" (Töölönlahdenkatu 4, 00100 Helsinki, as on its info page).
+- **First run:** 30 films, 40 screenings, no warnings; 17 matched with the years. The rest are lectures and workshops, Laurel & Hardy shorts, and classics TMDB's search ranks below namesakes (Casablanca, Nosferatu): aliases.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
@@ -705,6 +882,9 @@ Profiled on 2026-10-10 against all 21 sites (listing + 2 film pages each). Adapt
 - A test fails if any eTiketti venue lacks coordinates.
 
 ---
+
+- **Kino Kaustinen** (2026-10-15): a real eTiketti tenant (kinokaustinen.fi) that Leffavuoro found with no programme in September; now five films, place line "KINO KAUSTINEN". One site entry. Coordinates: OSM way 768088981 (Pajalantie 19, 69600 Kaustinen) **[V]**.
+- **The `data-dates` template** (2026-10-15) **[V]**: some sites' film pages moved a screening row's date from a `date-17.10.2026` class to a JSON attribute, `data-dates='["17.10.2026"]'`. The rows were then silently skipped: Savon Kinot (6 cinemas) and Leffabuumi (3) published nothing, and others lost part of their rows. Both forms are read now. A row inside the screenings block without a readable date warns `invalid-show` (missing data) instead of disappearing.
 
 ## Kinola (public JSON API)
 

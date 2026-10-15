@@ -106,7 +106,10 @@ describe("ingestBatch", () => {
     await ingestBatch(db, batch([screening("1"), screening("2")]));
     const broken = batch([screening("1")], { fetchedAt: later(batch([]).fetchedAt, 6) });
     broken.warnings = [{ code: "invalid-response", message: "location 2 did not parse" }];
-    expect(await ingestBatch(db, broken)).toMatchObject({ removed: 0, removalsSkipped: true });
+    expect(await ingestBatch(db, broken)).toMatchObject({
+      removed: 0,
+      removalsSkipped: "incomplete",
+    });
     const second = await db
       .selectFrom("screenings")
       .select("removedAt")
@@ -118,6 +121,22 @@ describe("ingestBatch", () => {
     const skipped = batch([screening("1")], { fetchedAt: later(batch([]).fetchedAt, 7) });
     skipped.warnings = [{ code: "unclaimed-room", message: "room 24 belongs to no venue" }];
     expect(await ingestBatch(db, skipped)).toMatchObject({ removed: 1, removalsSkipped: false });
+  });
+
+  it("infers no removals from an empty batch with no warnings (a parser gone silent)", async () => {
+    await ingestBatch(db, batch([screening("1"), screening("2")]));
+    const empty = batch([], { fetchedAt: later(batch([]).fetchedAt, 1) });
+    expect(await ingestBatch(db, empty)).toMatchObject({ removed: 0, removalsSkipped: "empty" });
+    const removed = await db
+      .selectFrom("screenings")
+      .select("id")
+      .where("removedAt", "is not", null)
+      .execute();
+    expect(removed).toEqual([]);
+
+    // One screening left is a programme, not a silence: the other is removed.
+    const one = batch([screening("1")], { fetchedAt: later(batch([]).fetchedAt, 2) });
+    expect(await ingestBatch(db, one)).toMatchObject({ removed: 1, removalsSkipped: false });
   });
 
   it("leaves venues the batch does not list alone (a partial --venue pull)", async () => {

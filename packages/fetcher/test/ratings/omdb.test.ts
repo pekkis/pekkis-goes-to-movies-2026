@@ -51,6 +51,7 @@ describe("fetchOmdb", () => {
         });
       },
       getText: async () => "",
+      postForm: async () => "",
     };
     const error = await fetchOmdb(failing, noCache, "SECRETKEY", "tt0087544").catch(
       (e: Error) => e,

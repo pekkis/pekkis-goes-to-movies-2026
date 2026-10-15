@@ -38,7 +38,8 @@ export const fi = {
   sourceNote: "Näytöstiedot tulevat teattereilta; liput ostetaan aina teatterin omalta sivulta.",
   tmdbNotice: "This product uses the TMDB API but is not endorsed or certified by TMDB.",
   osmNotice: "Teattereiden sijainnit © OpenStreetMap-tekijät (ODbL).",
-  helsinkiNotice: "Osa näytöksistä Helsingin kaupungin Linked Events -rajapinnasta (CC BY 4.0).",
+  helsinkiNotice:
+    "Osa näytöksistä Helsingin ja Espoon kaupunkien Linked Events -rajapinnoista (CC BY 4.0).",
 } as const;
 
 const languageNames = new Intl.DisplayNames(["fi"], { type: "language" });

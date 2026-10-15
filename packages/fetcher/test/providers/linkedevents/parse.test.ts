@@ -77,3 +77,47 @@ describe("parseLinkedEvents: Kino Helios", () => {
     expect(result.warnings.map((w) => w.code)).toEqual(["unclaimed-place"]);
   });
 });
+
+describe("parseLinkedEvents: Kannusali (Espoo's instance)", () => {
+  const KANNUSALI = LINKED_EVENTS_SITES.find((s) => s.provider === "kannusali")!;
+  const event = (name: string, id: string) => ({
+    id,
+    name: { fi: name },
+    start_time: "2026-11-04T12:00:00Z",
+    event_status: "EventScheduled",
+    location: {
+      "@id": "https://espooevents.prod.espoon-voltti.fi/api/events/v1/place/tprek:21430/",
+    },
+    offers: [{ is_free: true, price: null, info_url: null }],
+    info_url: null,
+  });
+  const batch = parseLinkedEvents(
+    snapshot({
+      pages: [
+        {
+          meta: { next: null },
+          data: [
+            event("Elokuva: Kevlarsjäl (K12)", "espooevents:agqam3geym"),
+            event("Lasten viikonloppu, Elokuva: Flow. (K7)", "espooevents:agqaw7ipcm"),
+            event("Lumiukko - Elokuvakonsertti", "espooevents:agqbi7fj4u"),
+            event("Teatteri Rajapinta: Monttu auki", "espooevents:agqopjlyuy"),
+          ],
+        },
+      ],
+    }),
+    KANNUSALI,
+  );
+
+  it("keeps the labelled films and the film concert, not the play", () => {
+    expect(batch.warnings).toEqual([]);
+    expect(batch.listings.map((l) => [l.title.fi, l.rating, l.kind])).toEqual([
+      ["Kevlarsjäl", "K-12", "film"],
+      ["Flow.", "K-7", "film"],
+      ["Lumiukko", undefined, "event"],
+    ]);
+    expect(batch.screenings.find((s) => s.sourceId === "espooevents:agqaw7ipcm")?.tags).toEqual([
+      "kids",
+    ]);
+    expect(batch.screenings[0]?.price).toEqual({ amountCents: 0, currency: "EUR" });
+  });
+});

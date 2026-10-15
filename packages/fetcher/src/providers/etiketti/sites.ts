@@ -482,6 +482,26 @@ export const ETIKETTI_SITES: EtikettiSite[] = defineSites(EtikettiSite, [
     ],
   },
   {
+    provider: "kinokaustinen",
+    name: "Kino Kaustinen",
+    homepage: "https://kinokaustinen.fi",
+    verifiedAt: "2026-10-15",
+    notes:
+      "No programme in September 2026 (Leffavuoro); five films on 2026-10-15. Address from OSM (the cinema's page prints none).",
+    venues: [
+      {
+        slug: "kaustinen",
+        name: "Kino Kaustinen",
+        city: "Kaustinen",
+        address: "Pajalantie 19",
+        postalCode: "69600",
+        geo: { lat: 63.5451684, lon: 23.6965105 },
+        geoSource: "osm:way/768088981",
+        place: "KINO KAUSTINEN",
+      },
+    ],
+  },
+  {
     provider: "cinemaniagara",
     name: "Cinema Niagara",
     homepage: "https://cinemaniagara.fi",

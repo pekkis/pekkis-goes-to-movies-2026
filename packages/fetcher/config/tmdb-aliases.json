@@ -44,6 +44,21 @@
     "title": "Unohdettu saari - Bortglömda Ön (på svenska)",
     "note": "Swedish-dubbed screening of Forgotten Island (2026); 109 min both."
   },
+  "matintupa:film:unohdettu-saari": {
+    "tmdb": 1465063,
+    "title": "Unohdettu saari",
+    "note": "Forgotten Island (2026), confirmed by the maintainer; Matin-Tupa states 98 min against 109, so the sibling pass cannot link it."
+  },
+  "alatalo:film:saapasajalkakissa-tekioilta-unohdettu-saari": {
+    "tmdb": 1465063,
+    "title": "Saapasajalkakissa tekiöiltä Unohdettu saari",
+    "note": "Forgotten Island (2026), billed as from the makers of Puss in Boots (misspelt); confirmed by the maintainer."
+  },
+  "alatalo:film:saapasjalkakissa-tekioilta-unohdettu-saari": {
+    "tmdb": 1465063,
+    "title": "Saapasjalkakissa tekiöiltä Unohdettu saari",
+    "note": "Forgotten Island (2026), the same billing spelt another way; confirmed by the maintainer."
+  },
   "ihmekompleksi:film:3346": {
     "tmdb": 1781923,
     "title": "Pikku Kummitus Lapanen keppostelee",
@@ -288,5 +303,20 @@
     "tmdb": 1743488,
     "title": "Unesta tehty mies",
     "note": "A documentary; only the exact title and 94 min to go on. Accepted by the maintainer 2026-10-15."
+  },
+  "pyhasalmenvpk:film:late-lammas-elokuva-hamarapuuhissa": {
+    "tmdb": 1477104,
+    "title": "Late Lammas- elokuva: Hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), the film the maintainer confirmed for other cinemas; VPK states no runtime."
+  },
+  "kinoakustiikka:film:late-lammas-elokuva-hamarapuuhissa": {
+    "tmdb": 1477104,
+    "title": "Late Lammas -elokuva: Hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), the film the maintainer confirmed for other cinemas; no runtime here."
+  },
+  "kinoakustiikka:film:resident-evil": {
+    "tmdb": 1423191,
+    "title": "Resident Evil (2026)",
+    "note": "Resident Evil (2026), the film other cinemas match automatically by runtime (94 min, K-16); two 2026 titles on TMDB and no runtime here."
   }
 }

@@ -44,6 +44,7 @@ Screenings are **never deleted**, so the data accumulates over time.
 - `removed_at`: set when a later fetch **covered the screening's business date** (`ProviderBatch.window`) but no longer listed it, while it was still in the future (cancelled or rescheduled). Cleared if it reappears.
 - Past screenings and dates outside the fetched window are never marked removed. Only the batch's own venues are considered.
 - An **incomplete** batch (a data-missing warning, `isIncomplete` in the model) marks nothing removed: a failed payload must not look like a cancelled programme. `pnpm ingest` then prints "(incomplete batch: removals not inferred)".
+- An **empty** batch (no screenings and no warning) marks nothing removed either [V, test]: a whole programme vanishing in silence is almost always a parser that stopped matching (eTiketti's `data-dates` rows, 2026-10-15), not a cinema cancelling everything. `pnpm ingest` prints "(empty batch: removals not inferred; check the source)". A cinema that truly cancels all its shows stays listed until they pass.
 
 "Current programme" is `where removed_at is null and starts_at > now()`.
 

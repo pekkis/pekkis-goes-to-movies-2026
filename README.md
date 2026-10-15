@@ -4,7 +4,7 @@ All Finnish cinema showtimes on one site. Find a film by time and place ("what's
 
 For now the repository contains the data collection and an API:
 
-- **Sources:** showtimes from Finnkino, BioRex and small cinemas on the MyCloudCinema, Nexxo, eTiketti, Kinola, Johku, TMB, cinema-reservations and Events Calendar platforms, plus the own sites of Kino Tapiola, Kuvakukko, Iso-Hannu and Kino Engel (119 venues in 81 towns).
+- **Sources:** showtimes from Finnkino, BioRex and small cinemas on the MyCloudCinema, Nexxo, eTiketti, Kinola, Johku, TMB, cinema-reservations and Events Calendar platforms, plus the own sites of Kino Tapiola, Kuvakukko, Iso-Hannu and Kino Engel (135 venues in 94 towns).
 - **Processing:** the showtimes are normalized into a typed model, matched to films on TMDB (with optional Rotten Tomatoes, Metacritic and IMDb scores via OMDb), and stored in PostgreSQL with history.
 - **Access:** a read-only HTTP API and a command-line search serve the data.
 
@@ -47,6 +47,16 @@ More:
 - Showtime data belongs to the cinemas. It is not committed (`data/` is gitignored). Test fixtures contain a small, trimmed sample.
 - Sources are read rarely and at a measured pace, with an identifiable User-Agent. Ticket purchase and payment APIs are never called.
 - If you represent a cinema and would rather not be included, open an issue and we will remove the source.
+
+## Sources read with a POST
+
+We read with GET wherever a source allows it. A few cinemas publish their programme only through a read-only POST, the same request their own listing page makes; those are added one by one, with care, and listed here:
+
+| Cinema             | City     | The request                                                                                                                                       | Since      |
+| ------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Kino Regina (KAVI) | Helsinki | `POST kinoregina.fi/wp-content/themes/kinoregina2/assets/functions/getShowtimesMoviesV2.php` (`getShowtimesMovies={date}`); the film pages by GET | 2026-10-15 |
+
+Solved without a POST: Riviera (the ticket host's open schedule), Kino Helios (Helsinki's Linked Events) and Kannusali (Espoo's own Linked Events instance).
 
 ## Acknowledgements
 

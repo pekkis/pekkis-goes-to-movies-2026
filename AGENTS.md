@@ -13,11 +13,13 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 ## Current state
 
-- **Data:** 119 venues in 81 cities from 71 providers on twenty-three source types:
+- **Data:** 135 venues in 94 cities from 84 providers on thirty-three source types:
   - one chain: Finnkino (Vista OCAPI), and Vista's open public web services (Korjaamo Kino, Riviera Kallio and Punavuori, Bio-Kaari);
   - six multi-site platforms: MyCloudCinema (BioRex, Cine Mäntsälä, and Gilda through its own WordPress facade), Nexxo, eTiketti, Kinola, Johku, and The Events Calendar for WordPress (Ritz Vaasa, Tähti Kino Muhos);
-  - the City of Helsinki's open Linked Events API (Kino Helios in Malmitalo);
-  - fourteen HTML sources: TMB Cinema (four cinemas), the WordPress `cinema-reservations` plugin (Kino Piispanristi, Kino Lumo, Laitilan Kino), Kino Tapiola's own theme, Kuvakukko's shared programme page (Kino Kuvakukko, Kino Manttu), Iso-Hannu's own site, Kino Engel's front page (home connection only), Julia's programme page, Kino Vaakuna's front page, Kino Kirkkonummi's one page, Bio Savoy's front page (HTTP only), Kino Akseli's front page (home connection only), Kino Hamina's page on the town's site, Elävienkuvien teatteri's listing and film pages, and Kino Kuusamotalo's WordPress posts.
+  - the open Linked Events APIs of Helsinki and Espoo (Kino Helios in Malmitalo, Kannusali);
+  - the My Calendar WordPress plugin's REST route (Pyhäsalmen VPK);
+  - a town's Localhub event calendar (Kino Akustiikka, Ylivieska);
+  - twenty-two HTML sources: TMB Cinema (four cinemas), the WordPress `cinema-reservations` plugin (Kino Piispanristi, Kino Lumo, Laitilan Kino), Kino Tapiola's own theme, Kuvakukko's shared programme page (Kino Kuvakukko, Kino Manttu), Iso-Hannu's own site, Kino Engel's front page (home connection only), Julia's programme page, Kino Vaakuna's front page, Kino Kirkkonummi's one page, Bio Savoy's front page (HTTP only), Kino Akseli's front page (home connection only), Kino Hamina's page on the town's site, Kino Regina's programme (a read-only POST), Elävienkuvien teatteri's listing and film pages, Kino Kuusamotalo's WordPress posts, Lieksan Kino's page, Elokuvateatteri Marita's front page, Kino-Huovi's front page, Matin-Tupa's programme page, Navettakino's front page, Bio Pallas's Wix front page, and the freehand programmes of Movie Company Alatalo (touring) and Huvimylly.
 
   Fetched into JSON (`pnpm pull`), matched to TMDB, stored with history in PostgreSQL (`pnpm ingest`).
 
@@ -55,7 +57,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 **Sources: politeness and ethics**
 
-- Identifiable User-Agent. GET only. Few, paced requests (see per-adapter pacing in the registry). No residential proxies, fingerprint spoofing or captcha solving; do not try hard to get around Cloudflare.
+- Identifiable User-Agent. **GET by default**: a read-only POST (the request the cinema's own listing makes) only for sources that offer nothing else, one at a time and with the maintainer; they are listed in the README's "Sources read with a POST" (`HttpClient.postForm`). Few, paced requests (see per-adapter pacing in the registry). No residential proxies, fingerprint spoofing or captcha solving; do not try hard to get around Cloudflare.
 - Never call ticket purchase, booking or payment endpoints. Ticket links are **copied** from the source into `ticketUrl`, never constructed and never requested (eTiketti's `/salikartta`, Kinola's and Johku's `/checkout/…`).
 - **Johku:** only storefronts whose own code reads the schedule anonymously. Never a widget's `X-ApiKey` (KuvaTähti loads its shows only that way, so it is out). Kino Engel and Kino Tapiola merely embed the Johku widget for tickets: their own server-rendered pages may be read like any HTML source (Engel challenges datacenter IPs; if it challenges us too, skip it).
 - **Finnkino:** only the token step uses a (visible) browser; never defeat Cloudflare by other means. It does not run in CI or the cloud.
@@ -86,7 +88,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 - **Certain or nothing:** a film is linked to TMDB only when the match is certain; otherwise it stays unmatched and gets an alias (verified on TMDB, reasoning in its `note`). Never loosen matching without a regression test in `test/matching/score.test.ts`.
 - **Unknown stays unknown:** an absent field (NULL in the database), never a guess. Labels the parser does not understand go to `unmappedLabels`; rows the config does not explain become **warnings**, which are to-dos for `sites.ts`.
 - Venue slugs are part of ids (`{provider}:venue:{slug}`): never rename one, or its history is orphaned.
-- **The website stays out of search engines** (`noindex` meta and `X-Robots-Tag`) until every cinema has been notified; only that production deployment sets `INDEXING=on`. Every page credits TMDB (logo and notice), OpenStreetMap and the City of Helsinki's Linked Events (CC BY 4.0, Kino Helios's showtimes), and OMDb wherever scores show.
+- **The website stays out of search engines** (`noindex` meta and `X-Robots-Tag`) until every cinema has been notified; only that production deployment sets `INDEXING=on`. Every page credits TMDB (logo and notice), OpenStreetMap and the Linked Events of the Cities of Helsinki and Espoo (CC BY 4.0: Kino Helios, Kannusali), and OMDb wherever scores show.
 - **Ratings are opt-in** in every UI (the CLI shows them only with `--ratings` or a score filter): some people do not want critics' verdicts beforehand.
 - **MCP:** the endpoint stays unlisted (behind `MCP_TOKEN`) until every cinema has been notified, like the website's `noindex`. Its tools are read-only, return the cinemas' own ticket links, and give critics' scores only with `include_ratings`.
 - **API:** responses are the public shapes in `packages/backend/src/api/schemas.ts`, never database rows; change them deliberately (Flutter and React clients depend on them). Read-only, no auth. Keep the TMDB, OMDb, OpenStreetMap and Linked Events attributions in the OpenAPI description.
@@ -100,7 +102,7 @@ The principles the code follows; [docs/development.md](docs/development.md) expl
 - **Zod at every boundary:** raw responses (`raw.ts`, loose objects with only the fields we read), the model (`@pgtm/model`), env, CLI input, API requests and responses. Parsers `safeParse` each item and turn failures into `invalid-*` warnings.
 - **A site is data, not code.** Multi-site platforms have one adapter per site, generated from the platform's `sites.ts`. Everything that differs between sites is a Zod-validated config field (named quirks with platform defaults, `verifiedAt`, `notes`), never an `if (site === "x")`.
 - **Shared meaning, shared code:** Helsinki time, the programme day and calendar arithmetic (`@pgtm/model/time`, shared by every package), prices, seats, room ids and ordering (`providers/parsing.ts`), labels and version markers (`providers/labels.ts`), language codes (`providers/language-codes.ts`), venues from config (`providers/sites.ts`). A new parser uses these instead of its own copy.
-- **Incomplete batches infer no removals:** data-missing warnings (`invalid-*`, `unknown-*`, `result-code`; `isIncomplete` in the model) stop ingest from marking absent screenings as removed.
+- **Incomplete batches infer no removals:** data-missing warnings (`invalid-*`, `unknown-*`, `result-code`; `isIncomplete` in the model) stop ingest from marking absent screenings as removed; so does an empty batch with no warnings (a parser gone silent).
 - **Native TypeScript first.** Node 26 runs `.ts` directly (no build step, except the API's Docker bundle). Erasable syntax only: no `enum`, `namespace` or parameter properties. Prefer built-ins (`toSorted`, `Object.groupBy`, `Set` methods, iterator helpers) over utility libraries; lookup tables keyed by outside text use `own()` (`lib/records.ts`).
 - **Dates and times are Temporal** (no date library). Calendar and time-zone logic (Helsinki wall-clock time, the programme day, adding days, minutes until a show) lives in `@pgtm/model/time` and nowhere else. Plain `Date` only for timestamps and at library boundaries (`pg` returns `Date`); `currentInstant()` reads the clock through `Date.now()` so tests can fake it. The website loads `temporal-polyfill` (native where available; Safari lacks Temporal) and formats with `Intl` in `src/lib/time.ts`.
 - `strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`: optional fields are spread in only when set (`...(x && { x })`).
@@ -167,7 +169,7 @@ apps/web-front/                 @pgtm/web-front: the website (Astro SSR, React, 
   src/lib/                      typed API client (hc<AppType>), page loaders, cities, time, text (Finnish UI text)
 packages/model/                 @pgtm/model: src/schema.ts, the domain model (Zod + types); src/time.ts (`@pgtm/model/time`): Temporal dates and times; source-only
 packages/fetcher/               @pgtm/fetcher: fetch, normalize, match → data/normalized/*.json
-  src/lib/                      env, paths, http (ky + p-queue, per-host pacing), lang, cache, records
+  src/lib/                      env, paths, http (ky + p-queue, per-host pacing; GET, and postForm for POST sources), lang, cache, records
   src/providers/adapter.ts      Adapter (id, platform, pull), restrictToVenues
   src/providers/registry.ts     every adapter (one per site on platforms), pacing, selectAdapters
   src/providers/sites.ts        SiteBase, SiteVenue, defineSites, toVenue: the multi-site base
@@ -176,7 +178,7 @@ packages/fetcher/               @pgtm/fetcher: fetch, normalize, match → data/
   src/providers/language-codes.ts   FI / OV / FI-SE / XX codes (Nexxo, Johku)
   src/providers/overrides.ts    config/venue-overrides.json for chain venues; venue-without-geo warnings
   src/providers/<source>/       raw.ts, fetch.ts, parse.ts; sites.ts on platforms; finnkino/token.ts
-                                (mycloudcinema [BioRex, Cine Mäntsälä], gilda [MyCloudCinema via WordPress], tmb [HTML], cinemahouse [HTML], vista [public JSON/XML], tapiola [HTML], kuvakukko [HTML], isohannu [HTML], tribe [Events Calendar REST], engel [HTML], linkedevents [City of Helsinki], julia [HTML], vaakuna [HTML], kirkkonummi [HTML], biosavoy [HTML], kinoakseli [HTML], hamina [HTML], elavienkuvien [HTML], kuusamotalo [WordPress REST], finnkino, nexxo, etiketti [HTML, cheerio], kinola, johku)
+                                (mycloudcinema [BioRex, Cine Mäntsälä], gilda [MyCloudCinema via WordPress], tmb [HTML], cinemahouse [HTML], vista [public JSON/XML], tapiola [HTML], kuvakukko [HTML], isohannu [HTML], tribe [Events Calendar REST], engel [HTML], linkedevents [City of Helsinki], julia [HTML], vaakuna [HTML], kirkkonummi [HTML], biosavoy [HTML], kinoakseli [HTML], hamina [HTML], elavienkuvien [HTML], kuusamotalo [WordPress REST], lieksa [HTML], marita [HTML], kinohuovi [HTML], matintupa [HTML], mycalendar [My Calendar REST], navetta [HTML], localhub [calendar search], biopallas [Wix HTML], alatalo [freehand HTML: Alatalo, Huvimylly], regina [form POST + film pages], finnkino, nexxo, etiketti [HTML, cheerio], kinola, johku)
   src/matching/                 TMDB matching: score.ts (pure), match.ts, titles.ts, aliases.ts, catalog.ts, run.ts
   src/tmdb/, src/ratings/       TMDB client and toFilm; OMDb ratings
   src/geo/                      Finland bounds and sources, Overpass, Nominatim, OSM matching (venues:locate)

@@ -105,11 +105,16 @@ export const extractFilmPage = (
     genres: genres.length ? genres : (facts["Genre"]?.split(/\s*,\s*/).filter(Boolean) ?? []),
   };
 
-  const shows = $("div.item")
-    .filter((_, el) => /\bdate-\d/.test($(el).attr("class") ?? ""))
+  // A row's date is a class ("date-17.10.2026") or, in the newer template (seen at Savon
+  // Kinot and Leffabuumi, 2026-10-15), a JSON attribute: data-dates='["17.10.2026"]'.
+  const rowDate = (el: Parameters<typeof $>[0]) =>
+    ($(el).attr("class") ?? "").match(/\bdate-(\d{1,2}\.\d{1,2}\.\d{4})\b/)?.[1] ??
+    ($(el).attr("data-dates") ?? "").match(/(\d{1,2}\.\d{1,2}\.\d{4})/)?.[1];
+  const rows = $("div.screenings div.item, div.item[data-dates], div.item[class*='date-']");
+  const shows = rows
     .map((_, el) => {
       const row = $(el);
-      const date = (row.attr("class") ?? "").match(/\bdate-(\d{1,2}\.\d{1,2}\.\d{4})\b/)?.[1];
+      const date = rowDate(el);
       const timeMatch =
         row.text().match(/klo\s*(\d{1,2})[.:](\d{2})/) ??
         row

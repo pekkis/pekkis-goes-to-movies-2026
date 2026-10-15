@@ -94,7 +94,7 @@ describe("site configs", () => {
     expect(selectAdapters(["etiketti"])?.map((a) => a.id)).toEqual(
       ETIKETTI_SITES.map((s) => s.provider),
     );
-    expect(ETIKETTI_SITES).toHaveLength(21);
+    expect(ETIKETTI_SITES).toHaveLength(22);
   });
 
   it("every configured Nexxo venue has coordinates", () => {

@@ -91,7 +91,7 @@ Printed by `pnpm pull` and stored in each batch. Codes marked **data missing** m
 2. **Unmatched films** (the end of `pull` or `pnpm match`). Add aliases to `config/tmdb-aliases.json` after verifying on TMDB (runtime, year, countries), with the reasoning in `note`. Event cinema is never listed.
 3. **Counts per provider** in the `ingest` output.
    - A provider dropping to 0, or by a third, is suspect.
-   - Large `removed` counts are suspect too; "(incomplete batch: removals not inferred)" means warnings stopped them.
+   - Large `removed` counts are suspect too; "(incomplete batch: removals not inferred)" means warnings stopped them; "(empty batch: …)" means a source returned nothing without saying why: check it, as a parser has probably stopped matching.
    - Removals that cover a single venue and day are usually the cinema's own change (e.g. BioRex Verkatehdas's Thursday, 2026-10-12).
 4. **Sanity queries:** every venue has coordinates; every upcoming screening has an `https` ticket link; no shows between 02:00 and 05:00; prices between 0 and 60 €. Duplicates must be compared per hall: two versions of one film often start at the same time in different halls.
 5. **Ground truth:** spot-check a cinema you can see in person (Kino Myyri for the maintainer) against the CLI: `pnpm showtimes --address "Kinorinne 6, Vantaa" --radius 1`.

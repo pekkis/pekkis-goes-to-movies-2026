@@ -9,6 +9,11 @@ export type HttpClient = {
   getJson: (url: string, searchParams?: Record<string, string | number>) => Promise<unknown>;
   /** For server-rendered pages (eTiketti). */
   getText: (url: string) => Promise<string>;
+  /**
+   * A read-only form POST, for the few sources that publish their programme no other way
+   * (Kino Regina): the same request the cinema's own listing makes. Never for booking.
+   */
+  postForm: (url: string, form: Record<string, string>) => Promise<string>;
 };
 
 export type HttpClientOptions = {
@@ -58,6 +63,12 @@ export const createHttpClient = ({
     getText: (url) =>
       queueFor(new URL(url).host).add(() =>
         client.get(url, { headers: { accept: "text/html,application/xhtml+xml" } }).text(),
+      ),
+    postForm: (url, form) =>
+      queueFor(new URL(url).host).add(() =>
+        client
+          .post(url, { body: new URLSearchParams(form), headers: { accept: "text/html" } })
+          .text(),
       ),
   };
 };
