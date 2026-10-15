@@ -48,6 +48,17 @@ More:
 - Sources are read rarely and at a measured pace, with an identifiable User-Agent. Ticket purchase and payment APIs are never called.
 - If you represent a cinema and would rather not be included, open an issue and we will remove the source.
 
+## Sources waiting for a POST
+
+We read with GET wherever a source allows it. These cinemas publish their programme only through a read-only POST (the same request their own listing page makes). We'll add them one by one, carefully, after the GET sources are done:
+
+| Cinema             | City     | The request                                                                                                                | Notes                                                         |
+| ------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Kino Regina (KAVI) | Helsinki | `POST kinoregina.fi/wp-content/themes/kinoregina2/assets/functions/getShowtimesMoviesV2.php` (`getShowtimesMovies={date}`) | A GET answers empty; the screenings are not in Linked Events. |
+| Kannusali          | Espoo    | `POST espoo.fi/api/events` (place `tprId` 21430, topic "Elokuvat")                                                         | A GET answers 500; not in Linked Events.                      |
+
+Already solved without a POST: Riviera (the ticket host's open schedule) and Kino Helios (Linked Events).
+
 ## Acknowledgements
 
 - [Leffavuoro / Shady-Dev/kino](https://github.com/Shady-Dev/kino) (AGPL-3.0) served as a map of the ticketing platforms.

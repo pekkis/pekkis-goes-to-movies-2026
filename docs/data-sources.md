@@ -314,7 +314,7 @@ Probed 2026-10-13, two GETs. Adapter: `packages/fetcher/src/providers/vista/`, s
 
 Probed 2026-10-14, two GETs.
 
-- **Not the website's listing:** rivieracinemas.fi builds its programme with a WordPress `admin-ajax.php` POST (Leffavuoro reads that). We are GET only, and the ticket host has the same open schedule as Korjaamo: `GET https://tickets.rivieracinemas.fi/xml/Schedule/?nrOfDays=31` **[V]**.
+- **Not the website's listing:** rivieracinemas.fi builds its programme with a WordPress `admin-ajax.php` POST (Leffavuoro reads that). We prefer GET, and the ticket host has the same open schedule as Korjaamo: `GET https://tickets.rivieracinemas.fi/xml/Schedule/?nrOfDays=31` **[V]**.
 - **XML only:** it answers `text/xml` whatever the `Accept` header, so the site config says `format: "xml"`. The parser turns each `<Show>` into the object the JSON answer gives (empty elements absent, numeric fields numbers).
 - **No `area` needed:** one request covers every theatre. Theatres 1075 (Kallio, "Sali 1") and 1114 (Punavuori, "Sali 1" and "Sali 2"); 88–90 shows over a month.
 - **Languages are filled in:**
@@ -477,7 +477,7 @@ Probed 2026-10-14 from a home connection: the front page, then the film pages. A
 
 Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/linkedevents/`, sites in `sites.ts`.
 
-- **Why not Malmitalo's own calendar:** Leffavuoro (`helios.py`) POSTs to Malmitalo's `EventCalendarService.svc/GetEvents`; we are GET only. The same events are in the city's open **Linked Events** API **[V]**: `GET https://api.hel.fi/linkedevents/v1/event/?location=tprek:8740&start=…&end=…&page_size=100&sort=start_time`, with `meta.next` followed to the end (budget 10 pages).
+- **Why not Malmitalo's own calendar:** Leffavuoro (`helios.py`) POSTs to Malmitalo's `EventCalendarService.svc/GetEvents`; we prefer GET. The same events are in the city's open **Linked Events** API **[V]**: `GET https://api.hel.fi/linkedevents/v1/event/?location=tprek:8740&start=…&end=…&page_size=100&sort=start_time`, with `meta.next` followed to the end (budget 10 pages).
 - **License:** the city publishes Linked Events data under CC BY 4.0 **[A]**. It is credited on every page of the website, in the OpenAPI description and in the MCP server's text.
 - **A culture house's calendar is not a programme:** Malmitalo's place also holds concerts, courses (Nuorten elokuvakerho) and library groups. An event is a screening only when its title carries a configured label **[V]**:
   - "Tony (16) – Kino Helios" (the cinema's name);
