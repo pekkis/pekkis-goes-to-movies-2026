@@ -13,10 +13,10 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 ## Current state
 
-- **Data:** 137 venues in 96 cities from 86 providers on thirty-five source types:
+- **Data:** 139 venues in 96 cities from 87 providers on thirty-five source types:
   - one chain: Finnkino (Vista OCAPI), and Vista's open public web services (Korjaamo Kino, Riviera Kallio and Punavuori, Bio-Kaari);
   - six multi-site platforms: MyCloudCinema (BioRex, Cine Mäntsälä, and Gilda through its own WordPress facade), Nexxo, eTiketti, Kinola, Johku, and The Events Calendar for WordPress (Ritz Vaasa, Tähti Kino Muhos);
-  - the open Linked Events APIs of Helsinki and Espoo (Kino Helios in Malmitalo, Kannusali);
+  - the open Linked Events APIs of Helsinki and Espoo (Kino Helios in Malmitalo, Kino Kuutamo and HopeaCine in Kanneltalo and Vuotalo, Kannusali);
   - the My Calendar WordPress plugin's REST route (Pyhäsalmen VPK);
   - a town's Localhub event calendar (Kino Akustiikka, Ylivieska);
   - twenty-four HTML sources: TMB Cinema (four cinemas), the WordPress `cinema-reservations` plugin (Kino Piispanristi, Kino Lumo, Laitilan Kino), Kino Tapiola's own theme, Kuvakukko's shared programme page (Kino Kuvakukko, Kino Manttu), Iso-Hannu's own site, Kino Engel's front page (home connection only), Julia's programme page, Kino Vaakuna's front page, Kino Kirkkonummi's one page, Bio Savoy's front page (HTTP only), Kino Akseli's front page (home connection only), Kino Hamina's page on the town's site, Kino Regina's programme (a read-only POST), Elävienkuvien teatteri's listing and film pages, Kino Kuusamotalo's WordPress posts, Lieksan Kino's page, Elokuvateatteri Marita's front page, Kino-Huovi's front page, Matin-Tupa's programme page, Navettakino's front page, Bio Pallas's Wix front page, Kurikan Kino's front page, KisaKino's film pages, and the freehand programmes of Movie Company Alatalo (touring) and Huvimylly.

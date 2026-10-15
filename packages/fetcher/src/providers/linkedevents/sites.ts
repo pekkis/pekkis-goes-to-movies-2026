@@ -22,6 +22,11 @@ export const LinkedEventsSite = SiteBase.extend({
    * screenings. `{}` marks the cinema's own name ("Tony (16) – Kino Helios").
    */
   labels: z.record(z.string(), LabelRule),
+  /**
+   * Titles carry the director: "Aleksi Salmenperä: Isänpäivä" or "Lapin sota, ohj. Aku
+   * Louhimies". Per site, since "Name: Title" is a franchise title anywhere else.
+   */
+  credits: z.boolean().optional(),
 });
 export type LinkedEventsSite = z.infer<typeof LinkedEventsSite>;
 
@@ -49,6 +54,43 @@ export const LINKED_EVENTS_SITES: LinkedEventsSite[] = defineSites(LinkedEventsS
         geo: { lat: 60.2505382, lon: 25.014476 },
         geoSource: "osm:way/29553571",
         place: "tprek:8740",
+      },
+    ],
+  },
+  {
+    provider: "helsinginkulttuuritalot",
+    name: "Kanneltalo ja Vuotalo",
+    homepage: "https://www.kanneltalo.fi",
+    api: "https://api.hel.fi/linkedevents/v1/event/",
+    verifiedAt: "2026-10-15",
+    labels: {
+      "Kino Kuutamo": { series: "Kino Kuutamo" },
+      "Kino Kuutamo | Maksuttomat maanantait": { series: "Kino Kuutamo" },
+      HopeaCine: { series: "HopeaCine", tags: ["senior"] },
+    },
+    credits: true,
+    notes:
+      "The city's culture houses with a public film strand: Kino Kuutamo at Kanneltalo (free Mondays) and HopeaCine at Vuotalo. School screenings (Yläkoulukino, Alakoulukino) and festivals carry no label and are not read.",
+    venues: [
+      {
+        slug: "kanneltalo",
+        name: "Kanneltalo",
+        city: "Helsinki",
+        address: "Klaneettitie 5",
+        postalCode: "00420",
+        geo: { lat: 60.2388282, lon: 24.8761733 },
+        geoSource: "osm:way/24620989",
+        place: "tprek:7255",
+      },
+      {
+        slug: "vuotalo",
+        name: "Vuotalo",
+        city: "Helsinki",
+        address: "Mosaiikkitori 2",
+        postalCode: "00980",
+        geo: { lat: 60.2088791, lon: 25.1432892 },
+        geoSource: "osm:way/95032033",
+        place: "tprek:7260",
       },
     ],
   },

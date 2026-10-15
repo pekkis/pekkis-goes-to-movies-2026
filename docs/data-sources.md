@@ -473,7 +473,7 @@ Probed 2026-10-14 from a home connection: the front page, then the film pages. A
 
 ---
 
-## Linked Events (Helsinki, Espoo): Kino Helios, Kannusali
+## Linked Events (Helsinki, Espoo): Kino Helios, Kanneltalo and Vuotalo, Kannusali
 
 Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/linkedevents/`, sites in `sites.ts`.
 
@@ -494,7 +494,8 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/linkedevents/`, site
   - `event_status` "EventCancelled" and "EventPostponed" are skipped; "EventRescheduled" (on almost every event, meaning edited) is kept.
   - Ids ("kulke:68847") are source ids; our ids use a dash instead of the colon.
 - **Coordinates:** OSM way 29553571 "Malmitalo" (Ala-Malmin tori 1, 00700 Helsinki).
-- **Other houses:** Stoa, Kanneltalo, Vuotalo and Caisa are in Linked Events too; a house showing films is a site entry with its place id and labels.
+- **Kanneltalo and Vuotalo** (2026-10-15) [V]: one site, `helsinginkulttuuritalot`, for the two houses with a public film strand: Kino Kuutamo at Kanneltalo (free Mondays, about monthly; "Aleksi Salmenperä: Isänpäivä – Kino Kuutamo | Maksuttomat maanantait") and HopeaCine at Vuotalo ("HopeaCine: Lapin sota, ohj. Aku Louhimies"). Their titles carry the director, so the site sets `credits`: a leading "Name Surname:" (two or three capitalised words) or a trailing ", ohj. Name" is dropped. Per site only, since elsewhere "Name: Title" is a franchise. School screenings (Yläkoulukino, Alakoulukino, Skidikino) and festivals carry no label and stay out. First run (60 days): 4 screenings, all matched.
+- **Other houses:** Stoa, Caisa and Annantalo hold only school screenings, festival date ranges or holiday children's screenings (2026-10-15); a house showing films is a site entry with its place id and labels.
 - **First run:** 7 films (all matched), 15 screenings, no warnings.
 
 ---

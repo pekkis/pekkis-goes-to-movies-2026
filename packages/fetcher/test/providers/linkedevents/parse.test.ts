@@ -1,6 +1,6 @@
 import { ProviderBatch } from "@pgtm/model";
 import { describe, expect, it } from "vitest";
-import { parseLinkedEvents } from "../../../src/providers/linkedevents/parse.ts";
+import { parseLinkedEvents, withoutCredits } from "../../../src/providers/linkedevents/parse.ts";
 import type { LinkedEventsRawSnapshot } from "../../../src/providers/linkedevents/raw.ts";
 import { LINKED_EVENTS_SITES } from "../../../src/providers/linkedevents/sites.ts";
 import { loadFixture } from "../../fixtures.ts";
@@ -119,5 +119,58 @@ describe("parseLinkedEvents: Kannusali (Espoo's instance)", () => {
       "kids",
     ]);
     expect(batch.screenings[0]?.price).toEqual({ amountCents: 0, currency: "EUR" });
+  });
+});
+
+describe("parseLinkedEvents: Kanneltalo and Vuotalo (credited titles)", () => {
+  const site = LINKED_EVENTS_SITES.find((s) => s.provider === "helsinginkulttuuritalot")!;
+  const batch = parseLinkedEvents(
+    snapshot({ days: 60, pages: [loadFixture("linkedevents", "kulttuuritalot-events.json")] }),
+    site,
+  );
+  const show = (id: string) => batch.screenings.find((s) => s.sourceId === id)!;
+  const titleOf = (id: string) => batch.listings.find((l) => l.id === show(id).listingId)?.title.fi;
+
+  it("reads the labelled strands only, not school screenings or festivals", () => {
+    expect(() => ProviderBatch.parse(batch)).not.toThrow();
+    expect(batch.warnings).toEqual([]);
+    expect(batch.screenings.map((s) => s.sourceId).toSorted()).toEqual([
+      "kulke:68960",
+      "kulke:69568",
+      "kulke:69579",
+    ]);
+  });
+
+  it("drops the director from either end of the title", () => {
+    expect(titleOf("kulke:68960")).toBe("Isänpäivä");
+    expect(titleOf("kulke:69579")).toBe("Lapin sota");
+    expect(titleOf("kulke:69568")).toBe("Presidentin kyyditys");
+  });
+
+  it("places each strand in its house", () => {
+    expect(show("kulke:68960")).toMatchObject({
+      venueId: "helsinginkulttuuritalot:venue:kanneltalo",
+      series: ["Kino Kuutamo"],
+      price: { amountCents: 0 },
+    });
+    expect(show("kulke:69568")).toMatchObject({
+      venueId: "helsinginkulttuuritalot:venue:vuotalo",
+      series: ["HopeaCine"],
+      tags: ["senior"],
+      price: { amountCents: 1000 },
+    });
+  });
+});
+
+describe("withoutCredits", () => {
+  it.each([
+    ["Aleksi Salmenperä: Isänpäivä", "Isänpäivä"],
+    ["Pamela Tola: Teräsleidit – kuin viimeistä päivää", "Teräsleidit – kuin viimeistä päivää"],
+    ["Lapin sota, ohj. Aku Louhimies", "Lapin sota"],
+    // One word before the colon is a title, not a name.
+    ["Dyyni: Osa kaksi", "Dyyni: Osa kaksi"],
+    ["Tony", "Tony"],
+  ])("%s -> %s", (raw, expected) => {
+    expect(withoutCredits(raw)).toBe(expected);
   });
 });
