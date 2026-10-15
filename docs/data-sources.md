@@ -116,7 +116,7 @@ Origin: Leffavuoro's `scripts/providers/cinemantsala.py`, re-verified with three
   - two halls, "Sali 1" and "Sali 2";
   - `audio_lang` codes and `movie_audio_style_id` for dubs.
 - **`subtitle_lang` is a Finnish phrase**, not a code **[V]**: "Suomeksi ja ruotsiksi", "Ruotsiksi", "suomeksi", "Ei" (none). The platform parser reads both vocabularies.
-- **`title_extension` is a label:** "Ennakkonäytös!" **[V]**, read by the shared title-label rules as a `preview` tag. Leffavuoro also saw "Cine Matinea" and "Leffa & Kaffe - näytös" **[A]**; they'd show as unmapped labels until added.
+- **`title_extension` is a label:** "Ennakkonäytös!" **[V]**, read by the shared title-label rules as a `preview` tag. A site's own whole labels are site config (`titleExtensions`): Cine Mäntsälä's "Cine Matinea - näytös" is the series Cine Matinea (its matinée strand) **[V]** 2026-10-15. Leffavuoro also saw "Leffa & Kaffe - näytös" **[A]**; it would show as an unmapped label until added.
 - **Days per request:** Leffavuoro measured `number_of_days` as a cap of 7 **[A]**, so the platform fetches in windows of at most 7 days and deduplicates by show id. A 7-day pull is still one request per cinema.
 - **Ticket links:** `https://mantsala.cine.fi/#/book/{show_time_id}`, the anchor the cinema's own programme page renders **[A, Leffavuoro]**. Copied by pattern, never requested.
 - **First run:** 18 films, 30 screenings, all films matched to TMDB, no warnings.
@@ -196,7 +196,7 @@ Base: `https://digital-api.finnkino.fi/WSVistaWebClient/ocapi/v1` (Vista tenant 
   | `IMAX`, `iSense`, `LUXE`                             | premium formats                                                                                              |
   | `Annisk_K18`                                         | alcohol served, K-18                                                                                         |
   | `Anniskelu`                                          | licensed auditorium                                                                                          |
-  | `Ennakko`, `EventCine`                               | preview, event cinema                                                                                        |
+  | `Ennakko`, `EventCine`, `Klassikko`                  | preview, event cinema, classic (a re-run, seen 2026-10-15)                                                   |
   | `Tampere`, `Pkseutu`, `TKU & R`, `Maxim`, `Varaus20` | regional marketing groups, a site name, an internal booking setting: ignored                                 |
 
 - **Advance booking:** `restrictions: ["FilmAdvanceBookingRule"]` on 667 shows. All 82 rules had a single period with `restriction: "None"`; the period's `startsAt` is when sales open. Before that the show is not bookable.

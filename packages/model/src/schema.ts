@@ -219,6 +219,7 @@ export const ScreeningTag = z.enum([
   "premiere",
   "preview",
   "last-screening",
+  "classic",
   "event-cinema",
   "senior",
   "kids",

@@ -95,6 +95,9 @@ const ENGLISH_NAMES: Record<string, Lang> = {
  */
 const OTHER_NAMES: Record<string, Lang> = {
   "ei puhetta": "zxx",
+  // A silent film has no spoken language (Kino Myyri, 2026-10-15).
+  "mykkä elokuva": "zxx",
+  mykkä: "zxx",
   englanniksi: "en",
   suomeksi: "fi",
   ruotsiksi: "sv",
@@ -113,6 +116,7 @@ const OTHER_NAMES: Record<string, Lang> = {
   paštu: "ps",
   pastu: "ps",
   pashtu: "ps",
+  pushto: "ps",
   dari: "fa",
   farsi: "fa",
   urdu: "ur",

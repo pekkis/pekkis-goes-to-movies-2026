@@ -247,13 +247,24 @@ describe("field parsers", () => {
     ["ORIG", [], []],
     ["4DX", [], ["title_extension:4DX"]],
   ])("parseTitleExtension(%s)", (input, formats, unmapped) => {
-    expect(parseTitleExtension(input)).toEqual({ formats, tags: [], unmapped });
+    expect(parseTitleExtension(input)).toEqual({ formats, tags: [], series: [], unmapped });
   });
 
   it("reads a whole label by the shared rules (Cine Mäntsälä)", () => {
     expect(parseTitleExtension("Ennakkonäytös!")).toEqual({
       formats: [],
       tags: ["preview"],
+      series: [],
+      unmapped: [],
+    });
+  });
+
+  it("reads a site's own whole label (Cine Mäntsälä's matinée strand)", () => {
+    const labels = { "Cine Matinea - näytös": { series: "Cine Matinea" } };
+    expect(parseTitleExtension("Cine Matinea - näytös", labels)).toEqual({
+      formats: [],
+      tags: [],
+      series: ["Cine Matinea"],
       unmapped: [],
     });
   });

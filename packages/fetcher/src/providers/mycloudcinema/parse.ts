@@ -19,7 +19,7 @@ import { Envelope, RawCinema, RawShowtime, type MyCloudCinemaRawSnapshot } from 
 import type { MyCloudCinemaSite } from "./sites.ts";
 import { providerOf } from "../sites.ts";
 import { own } from "../../lib/records.ts";
-import { COMMON_TITLE_PREFIXES } from "../labels.ts";
+import { COMMON_TITLE_PREFIXES, type LabelRule } from "../labels.ts";
 import { byStartThenId } from "../parsing.ts";
 
 /** The pattern the cinema's own programme page links to: `{ticketBase}/#/book/{id}`. */
@@ -68,10 +68,10 @@ export const parseSubtitles = (raw: string | null | undefined): Subtitles => {
 /** Tokens of `title_extension` that only repeat what audio/dubbing fields already say. */
 const LANGUAGE_TOKENS = new Set(["FI", "SWE", "DUB", "ORIG"]);
 
-/** A whole `title_extension` that is a known label ("Ennakkonäytös!"), by the shared rules. */
-const labelRule = (raw: string) => {
+/** A whole `title_extension` that is a known label ("Ennakkonäytös!"): the site's, then shared. */
+const labelRule = (raw: string, site: Record<string, LabelRule>) => {
   const phrase = raw.trim().replace(/!+$/, "").toLowerCase();
-  return Object.entries(COMMON_TITLE_PREFIXES).find(
+  return Object.entries({ ...COMMON_TITLE_PREFIXES, ...site }).find(
     ([label]) => label.toLowerCase() === phrase,
   )?.[1];
 };
@@ -82,10 +82,16 @@ const labelRule = (raw: string) => {
  */
 export const parseTitleExtension = (
   raw: string | null | undefined,
-): { formats: Feature[]; tags: ScreeningTag[]; unmapped: string[] } => {
-  const rule = raw ? labelRule(raw) : undefined;
+  siteLabels: Record<string, LabelRule> = {},
+): { formats: Feature[]; tags: ScreeningTag[]; series: string[]; unmapped: string[] } => {
+  const rule = raw ? labelRule(raw, siteLabels) : undefined;
   if (rule) {
-    return { formats: [], tags: [...(rule.tags ?? [])], unmapped: [] };
+    return {
+      formats: [],
+      tags: [...(rule.tags ?? [])],
+      series: rule.series ? [rule.series] : [],
+      unmapped: [],
+    };
   }
   const formats: Feature[] = [];
   const unmapped: string[] = [];
@@ -99,7 +105,7 @@ export const parseTitleExtension = (
       unmapped.push(`title_extension:${token}`);
     }
   }
-  return { formats, tags: [], unmapped };
+  return { formats, tags: [], series: [], unmapped };
 };
 
 /** "6 REX (K-18)" -> features and the hall's own age limit. */
@@ -188,7 +194,7 @@ const parseScreening = (
   venueId: string,
   fetchedAt: string,
 ): Screening => {
-  const title = parseTitleExtension(s.title_extension);
+  const title = parseTitleExtension(s.title_extension, site.titleExtensions);
   const unmapped = [...title.unmapped];
   for (const [key, value] of Object.entries(s)) {
     if (key.startsWith("version_") && value === 1 && !MAPPED_VERSION_FLAGS.has(key)) {
@@ -251,7 +257,7 @@ const parseScreening = (
     subtitles,
     ...(ageLimit && { ageLimit }),
     tags,
-    series: [],
+    series: title.series,
     availability: status,
     ...(status !== "not-bookable" && { ticketUrl: ticketUrl(site, s.show_time_id) }),
     unmappedLabels: unmapped,

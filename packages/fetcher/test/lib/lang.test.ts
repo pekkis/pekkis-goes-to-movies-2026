@@ -8,6 +8,8 @@ it.each([
   ["Suomi", "fi"],
   [" Ruotsi ", "sv"],
   ["pashtu", "ps"],
+  ["pushto", "ps"],
+  ["mykkä elokuva", "zxx"],
   ["dari", "fa"],
   ["", undefined],
   ["Klingon", undefined],

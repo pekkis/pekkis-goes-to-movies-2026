@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { LabelRule } from "../labels.ts";
 import { SiteBase } from "../sites.ts";
 
 /**
@@ -20,6 +21,8 @@ export const MyCloudCinemaSite = SiteBase.extend({
   cinemaIds: z.array(z.number().int().positive()).optional(),
   /** Cities for cinemas whose API record leaves `city` empty, by cinema id. */
   cityOverrides: z.record(z.string(), z.string()).default({}),
+  /** Whole `title_extension` labels of this site, besides the shared ones, any case. */
+  titleExtensions: z.record(z.string(), LabelRule).default({}),
 });
 export type MyCloudCinemaSite = z.infer<typeof MyCloudCinemaSite>;
 
@@ -42,6 +45,8 @@ const sites = z.array(MyCloudCinemaSite).parse([
     api: "https://mantsala.cine.fi/webservices",
     ticketBase: "https://mantsala.cine.fi",
     cinemaIds: [1],
+    // The cinema's matinée strand (seen 2026-10-15).
+    titleExtensions: { "Cine Matinea - näytös": { series: "Cine Matinea" } },
     verifiedAt: "2026-10-13",
     notes:
       "The API also lists cinema 2, Cine Keuda-talo (Kerava), which we read from eTiketti " +
