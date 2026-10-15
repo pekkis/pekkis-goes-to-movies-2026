@@ -603,6 +603,22 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/hamina/`, s
 
 ---
 
+## Elävienkuvien teatteri (Forssa)
+
+Probed 2026-10-15: the listing and the film pages. Adapter: `packages/fetcher/src/providers/elavienkuvien/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/elavienkuvien.py`, re-verified.
+
+- **Listing:** `/ohjelmisto/`. Film links (`ohjelmisto/{slug}/`, relative to `<base href>`) are read from `.movielifts` only; the sub-navigation shares the path space (`ohjelmisto/erikoisnaytokset/`) **[V]**.
+- **Film pages** (one GET each, about 16, paced 1 s) **[V]**:
+  - `h2` title;
+  - `p.movielength`: "Kesto 1 h 52 min" and the age limit as an image's name (`agelimit_12.png`; `agelimit_notset` is none);
+  - `div.screenings`: one line per screening, "to 15.10.2026 klo 17:00 | Osta liput | 13€ / 11€", the year printed. The line's link (`lipunvaraus/?movieid=…&date=…&time=…`, the cinema's own reservation page) is copied, never requested. A date without a time ("ke 16.12.2026", an opening day) is skipped.
+- **No price:** every line has two fares and nothing says which applies.
+- **A film page that fails** is `invalid-film-page`, which is missing data (the screenings are only on the film pages), so removals are not inferred that run.
+- **Coordinates:** OSM node 6733240707 (Keskuskatu 1, 30100 Forssa).
+- **First run:** 14 films, 48 screenings; 13 matched (Unesta tehty mies, title only, needs an alias).
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

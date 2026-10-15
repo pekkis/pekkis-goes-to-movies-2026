@@ -54,6 +54,9 @@ import { KINOAKSELI_SITES, type KinoAkseliSite } from "./kinoakseli/sites.ts";
 import { fetchHamina } from "./hamina/fetch.ts";
 import { parseHamina } from "./hamina/parse.ts";
 import { HAMINA_SITES, type HaminaSite } from "./hamina/sites.ts";
+import { fetchElavienkuvien } from "./elavienkuvien/fetch.ts";
+import { parseElavienkuvien } from "./elavienkuvien/parse.ts";
+import { ELAVIENKUVIEN_SITES, type ElavienkuvienSite } from "./elavienkuvien/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -349,6 +352,18 @@ const haminaAdapter = (site: HaminaSite): Adapter => ({
   },
 });
 
+/** Elävienkuvien teatteri: the listing, then each film's page. */
+const elavienkuvienAdapter = (site: ElavienkuvienSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient({ intervalMs: 1000, ...contact(env) });
+    onlyVenues(site, venues);
+    const raw = await fetchElavienkuvien(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseElavienkuvien(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
@@ -367,6 +382,7 @@ export const ADAPTERS: Adapter[] = [
   ...BIOSAVOY_SITES.map(bioSavoyAdapter),
   ...KINOAKSELI_SITES.map(kinoAkseliAdapter),
   ...HAMINA_SITES.map(haminaAdapter),
+  ...ELAVIENKUVIEN_SITES.map(elavienkuvienAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",
