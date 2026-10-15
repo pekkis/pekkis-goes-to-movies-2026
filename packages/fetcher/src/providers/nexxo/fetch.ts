@@ -30,6 +30,9 @@ export const fetchNexxo = async (
     payloads[locationId] = await http.getJson(apiUrl(site), {
       action: "exportdailyshows",
       locationid: locationId,
+      // All films, as the plugin's own showlist widget asks. Without it plugin 25.051
+      // (Bio-Salo) answers nothing and some older sites only part (Kino Metso, Marilyn).
+      movieid: 0,
       days: span,
       lang: "fi",
       upcoming: 0,

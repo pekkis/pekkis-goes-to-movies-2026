@@ -218,8 +218,10 @@ Profiled on 2026-10-10 over 214 shows on 10 locations. Adapter: `packages/fetche
 
 ### API [V]
 
-`GET {host}/wp-content/plugins/nexxo-scope/public_api.php?action=exportdailyshows&locationid=N&days=D&lang=fi&upcoming=0`
+`GET {host}/wp-content/plugins/nexxo-scope/public_api.php?action=exportdailyshows&locationid=N&movieid=0&days=D&lang=fi&upcoming=0`
 
+- **`movieid=0` is required** [V, 2026-10-15]. The plugin's own showlist widget always sends it (0 = all films). Without it, plugin 25.051 (Bio-Salo) answers `{"shows": []}` whatever else is sent, and older installations return only part of the programme: Kino Metso's location 7 of 13 screenings over 14 days (Toivakka and Hankasalmi were missing entirely), Kino Marilyn 21 of 31. The other sites answered identically with or without it. Found by the maintainer via the slider endpoint (`action=exportbackgrounds`, which answered all along); reported to Leffavuoro (Shady-Dev/kino#19).
+- A screening can appear under several dates in `shows`; rows are deduplicated by `showId`.
 - No authentication, plain JSON. `{"shows": {"2026-10-10": [rows…]}}`, or `{"shows": []}` when the programme is empty.
 - `days` counts from **today**; there is no start date. A later `--from` asks for more days and the parser trims to the window.
 - Each row is a movie merged with a show; **every value is a string**. Fields we read: `showId`, `movieId`, `movieTitle`, `startTime` (Helsinki local, `2026-10-10 15:00:00`), `startDate`, `roomId`, `roomTitle`, `ageLimit`, `duration`, `genre`, `priceIncludingTax` (`0.00` = not set), `code_language`, `code_subtitles`, `showTypeTitle`, `release_year`, `is3D`, `isUpcoming`.
@@ -227,7 +229,7 @@ Profiled on 2026-10-10 over 214 shows on 10 locations. Adapter: `packages/fetche
 - Seen values:
   - `code_language`: `FI`, `EN`, `SE` (= Swedish), `IW` (= Hebrew), `OV` (original version: language unknown), and ISO codes.
   - `code_subtitles`: `FI-SE`, `FI`, `EN`, `XX` (none), `OV` (unknown).
-  - `ageLimit`: `S`, `s`, `7`, `12`, `16`, `18`, empty, `Tapahtuma K18` (an event with an age limit; becomes the screening's `ageLimit` and marks the listing an event).
+  - `ageLimit`: `S`, `s`, `7`, `12`, `16`, `18`, `7/4` (K-7, from 4 with an adult; plugin 25.051), empty, `Tapahtuma K18` (an event with an age limit; becomes the screening's `ageLimit` and marks the listing an event).
   - `release_year`: `2026`, empty, or a range such as `1937-1949` for a shorts programme (ignored).
   - `showTypeTitle`: `Tavallinen näytös` / `Viikko-ohjelmisto` (regular), `Konsertti`, `Taikashow`, `Muut tapahtumat` (events), otherwise festival and series names (kept as `series`).
   - Titles: some sites put labels before a colon (`Ennakkoensi-ilta: …`, `Rauhanviikko: …`). Only prefixes listed in the config (`titlePrefixes`) are stripped; `Ryhmä Hau: Dinoelokuva` is a title.
@@ -237,7 +239,9 @@ Profiled on 2026-10-10 over 214 shows on 10 locations. Adapter: `packages/fetche
 `locationId`s cannot be guessed; ask the API. One host can serve several cinemas, and a cinema's data can live on another host:
 
 - **Bio Säde** (Mänttä): biosade.fi's own API is empty; its page reads kinohirvi.fi's API, location 4 (`apiBase`).
-- **Kino Metso** (KSEK's touring cinema): location 2 on kinoaurora.fi, where each **room is a town** (`roomIds` per venue; Riihivuori, room 21, is folded into Muurame as KSEK's site does). Laukaa (24) and Viitasaari (10) were not in Leffavuoro's list; the `unclaimed-room` warning found them.
+- **Kino Metso** (KSEK's touring cinema): location 2 on kinoaurora.fi, where each **room is a town** (`roomIds` per venue; Riihivuori, room 21, is folded into Muurame as KSEK's site does). Laukaa (24) and Viitasaari (10) were not in Leffavuoro's list; the `unclaimed-room` warning found them. Toivakka (23, the library hall) and Hankasalmi (19, Monitoimitalo) appeared only once `movieid=0` was sent.
+- **Bio-Salo** (Salo) and **Bio Stara** (Paimio): one tenant on biosalo.fi, location 1 (rooms Bio-Salo 1–3) and location 2 (Bio Stara 1–2); location 3 is empty. biostara.fi's widgets read biosalo.fi's API (`apiBase`). Each links to its own front page. Both were thought to publish nothing until `movieid=0`.
+- **Kino Marilyn** (Loviisa): location 1 also books Loviisa's Kulttuurikeskus (room 2), which shows films too (a Lions Club screening) besides concerts; concerts are events by their show type, so the room is read.
 - No seat counts (`availability: "unknown"`) and no per-show booking links in the API. **Ticket links point to the venue's programme page** (`programmePath?location=N`, or the venue's own `page`), which differs per site. Each was opened by hand on 2026-10-10 and shows the plugin's showlist.
 
 ### Adding a Nexxo cinema
@@ -885,22 +889,23 @@ Cinemas we know of and do not read, for the next batch. Found by comparing our v
 
 **A lead, needs work:**
 
-| Cinema                                                | Shows | What we know [V]                                                                                                                                                                                                                             |
-| ----------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Bio-Salo (Salo)                                       | 43    | biosalo.fi runs Nexxo Scope, but `exportdailyshows`, `exportmovies` and `exporttimetable` all answer empty, also with the empty `data-location` its own widgets send. The programme comes from somewhere we have not found. The largest gap. |
-| Oulun Elokuvakeskus (Studio, Oulu)                    | 4     | oulunelokuvakeskus.fi `/oek`: rows give weekdays without dates ("la, su klo 16.00"), the dates only as a range in a note ("Studiossa 17.-18.10."). Readable if the range is parsed.                                                          |
-| Kulttuuritalo Wiljami / Rovaniemen Cinema (Rovaniemi) | 4     | rovaniemencinema.fi: prose ("Lokakuun aloittaa 5.10. …"). The town's calendar (tapahtumat.rovaniemi.fi) may be structured; not checked.                                                                                                      |
-| Biobio Showtime (Närpiö)                              | 5     | mittistan.fi now redirects to visitnarpes.fi; its event calendar is not checked.                                                                                                                                                             |
-| Sysmän Kino (Sysmä)                                   | 3     | sysma.fi runs The Events Calendar (a platform we read), but its "elokuvat" category (id 127) has no upcoming event; the films may be in another category or only in the iCal feed.                                                           |
-| Kino Kellokas (Kolari)                                | 4     | kinoyllas.net carries no programme; the source is unknown.                                                                                                                                                                                   |
-| WHS Teatteri Union (Helsinki)                         | 5     | Leffavuoro judged it a stage, not a cinema (2026-09-15); elokuviin.com lists screenings. Worth a second look.                                                                                                                                |
-| Annantalo "Lomakino" (Helsinki)                       | –     | Holiday children's screenings in Helsinki's Linked Events ("Lomakino: Ella ja kaverit – Operaatio Saukko (S) – Annantalon syysloma"); one more label and a suffix to strip. Small.                                                           |
+| Cinema                                                | Shows | What we know [V]                                                                                                                                                                    |
+| ----------------------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Oulun Elokuvakeskus (Studio, Oulu)                    | 4     | oulunelokuvakeskus.fi `/oek`: rows give weekdays without dates ("la, su klo 16.00"), the dates only as a range in a note ("Studiossa 17.-18.10."). Readable if the range is parsed. |
+| Kulttuuritalo Wiljami / Rovaniemen Cinema (Rovaniemi) | 4     | rovaniemencinema.fi: prose ("Lokakuun aloittaa 5.10. …"). The town's calendar (tapahtumat.rovaniemi.fi) may be structured; not checked.                                             |
+| Biobio Showtime (Närpiö)                              | 5     | mittistan.fi now redirects to visitnarpes.fi; its event calendar is not checked.                                                                                                    |
+| Sysmän Kino (Sysmä)                                   | 3     | sysma.fi runs The Events Calendar (a platform we read), but its "elokuvat" category (id 127) has no upcoming event; the films may be in another category or only in the iCal feed.  |
+| Kino Kellokas (Kolari)                                | 4     | kinoyllas.net carries no programme; the source is unknown.                                                                                                                          |
+| WHS Teatteri Union (Helsinki)                         | 5     | Leffavuoro judged it a stage, not a cinema (2026-09-15); elokuviin.com lists screenings. Worth a second look.                                                                       |
+| Annantalo "Lomakino" (Helsinki)                       | –     | Holiday children's screenings in Helsinki's Linked Events ("Lomakino: Ella ja kaverit – Operaatio Saukko (S) – Annantalon syysloma"); one more label and a suffix to strip. Small.  |
 
-**Facebook only** (no site of their own found; unreachable unless they sell on a ticket platform): Kino Jalasjärvi (14), Bio Stara, Paimio (14), Bio Jukola, Somero (9), Bio Dux, Kristiinankaupunki (8), Vimpelin Nuorisokuvat (3). Kino Mantsi's page on ilomantsi.fi answers 404.
+**Facebook only** (no site of their own found; unreachable unless they sell on a ticket platform): Kino Jalasjärvi (14), Bio Jukola, Somero (9), Bio Dux, Kristiinankaupunki (8), Vimpelin Nuorisokuvat (3). Kino Mantsi's page on ilomantsi.fi answers 404.
 
 **Out by our rules:** the Sun Kino group (Alareksi, Kino Kyntäjä, Y-Kino, Sun Kino), Kauttuan Kuva and Kuvala load their showtimes only through the Johku widget's `X-ApiKey`.
 
 **No programme now** (re-check later): Kino Hetta, KinoPattery, Lapinsuu, Kino Visio, Tuiskula, Kino Sihis, Virta-sali, Kinokellari, Tuulensuun Palatsi, KannuKino, Kinopoli, Louhisali, Kino Caisa (festivals only), Rekolan Kino, Juvan Kino. **Skipped earlier:** Heureka (complex schedule), Kino K13 (prose), Kinotour (touring rows), Iobio (duplicate calendars).
+
+**Since added:** Bio-Salo and Bio Stara (2026-10-15, through the Nexxo `movieid` fix; see the Nexxo section).
 
 **Elsewhere:** nytleffaan.fi's directory answers 403 to a plain client (2026-10-15); not pursued. kinossa.fi renders client-side; its own list of cinemas is not checked.
 

@@ -33,12 +33,15 @@ const RATINGS: Record<string, FinnishRating> = {
   "18": "K-18",
 };
 
-/** "12" / "s" / "K16" -> rating; "Tapahtuma K18" -> an age limit on the screening. */
+/**
+ * "12" / "s" / "K16" -> rating; "7/4" (K-7, from 4 with an adult; plugin 25.051) too;
+ * "Tapahtuma K18" -> an age limit on the screening.
+ */
 export const parseAge = (
   raw: string | null | undefined,
 ): { rating?: FinnishRating; ageLimit?: FinnishRating } => {
   const value = (raw ?? "").trim().toUpperCase();
-  const strict = value.match(/^(?:K-?)?(S|7|12|16|18)$/)?.[1];
+  const strict = value.match(/^(?:K-?)?(S|7|12|16|18)(?:\/\d{1,2})?$/)?.[1];
   if (strict) {
     return { rating: RATINGS[strict]! };
   }
