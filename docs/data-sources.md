@@ -295,7 +295,7 @@ Probed 2026-10-13, one GET per site. Adapter: `packages/fetcher/src/providers/ci
 
 ---
 
-## Vista public web services (Korjaamo Kino, Riviera)
+## Vista public web services (Korjaamo Kino, Riviera, Bio-Kaari)
 
 Probed 2026-10-13, two GETs. Adapter: `packages/fetcher/src/providers/vista/`, sites in `sites.ts`. Origin: Leffavuoro's `scripts/providers/vista.py`, re-verified.
 
@@ -326,6 +326,16 @@ Probed 2026-10-14, two GETs.
 - **Tickets:** `ShowURL` (`http://tickets.rivieracinemas.fi/websales/show/{id}/`), copied as printed and never requested. A link is accepted when its host is the site's.
 - **Coordinates:** OSM nodes 5175303248 (Harjukatu 2, 00500) and 10186691049 (Telakkakatu 7, 00150); the addresses match the cinema's own site.
 - **First run:** 32 films, 88 screenings, no warnings; 23 matched. The rest are repertory screenings without a reliable year: aliases.
+
+### Bio-Kaari (Forssa)
+
+Probed 2026-10-15, one GET.
+
+- **The same open schedule on its ticket host:** `GET https://bio-kaari.azurewebsites.net/xml/Schedule/?nrOfDays=31`, XML **[V]**. Leffavuoro reads the web shop's pages instead.
+- **One theatre** (1048) whose single hall is named "-", which is read as no auditorium. 29 shows over two weeks; spoken and subtitle languages on every show; ratings like Riviera's ("K16/13").
+- **The cinema's own site** (www.bio-kaari.fi) did not answer at all on 2026-10-15 (no response in 20 s); it is only the homepage link, never read.
+- **Coordinates:** OSM node 1142403445 (Vapaudenkatu, 30300 Forssa; no house number in OSM, so the address is left out).
+- **First run:** 6 films (all matched), 29 screenings, no warnings.
 
 ---
 

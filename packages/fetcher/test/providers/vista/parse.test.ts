@@ -117,6 +117,16 @@ describe("parseVista: Riviera (XML)", () => {
     expect(show("985149").tags).toEqual(["baby"]);
   });
 
+  it('reads a hall named "-" (Bio-Kaari) as no auditorium', () => {
+    const dashed = XML.replace(
+      "<TheatreAuditorium>Sali 2</TheatreAuditorium>",
+      "<TheatreAuditorium>-</TheatreAuditorium>",
+    );
+    const result = parseVista(snapshot({ schedules: { all: dashed } }), RIVIERA);
+    expect(result.screenings.find((s) => s.sourceId === "988267")?.auditoriumId).toBeUndefined();
+    expect(result.auditoriums.map((a) => a.name)).not.toContain("-");
+  });
+
   it("leaves audio unknown when the show names no language", () => {
     expect(show("988565")).toMatchObject({ audio: [], subtitles: { kind: "unknown" } });
   });
