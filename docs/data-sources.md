@@ -588,6 +588,21 @@ Probed 2026-10-15 from a home connection, one GET. Adapter: `packages/fetcher/sr
 
 ---
 
+## Kino Hamina
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/hamina/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/hamina.py`, re-verified.
+
+- **The town's own page**, moved to `https://www.hamina.fi/hyvinvointi-vapaa-aika/kino-hamina/` (the old `/asukkaalle/…` path redirects) **[V]**. One `.large-content-showcase` block per film:
+  - title;
+  - a paragraph of labelled fields: "Ikäraja: 7", "Kesto: 1 h 57 min" or "1 t 28 min", "Liput: 11€", "Versio: DUB" (and Ensi-ilta, Levittäjä, Ohjaus, not read);
+  - a paragraph of screenings: "To 22.10. Klo 15:00 (Liput 8€)", no year (inferred and checked against the weekday). A price on the row overrides the film's.
+- **Versions** by the page's own legend, in the site config: "OG = Alkuperäinen kieli, tekstitys suomeksi (ja) ruotsiksi" gives Finnish subtitles (the Swedish is hedged, not published); "DUB = Puhuttu suomeksi" gives dubbed Finnish.
+- **Tickets at the door**, no reservations; screenings link the page.
+- **Coordinates:** the page gives Isoympyräkatu 30 A, 49400 Hamina; OSM has no cinema there, so the point is the address geocoded with Nominatim (the building's café node).
+- **First run:** 4 films (all matched), 18 screenings, no warnings.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
