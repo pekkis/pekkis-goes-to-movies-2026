@@ -69,6 +69,9 @@ import { MARITA_SITES, type MaritaSite } from "./marita/sites.ts";
 import { fetchKinoHuovi } from "./kinohuovi/fetch.ts";
 import { parseKinoHuovi } from "./kinohuovi/parse.ts";
 import { KINOHUOVI_SITES, type KinoHuoviSite } from "./kinohuovi/sites.ts";
+import { fetchMatinTupa } from "./matintupa/fetch.ts";
+import { parseMatinTupa } from "./matintupa/parse.ts";
+import { MATINTUPA_SITES, type MatinTupaSite } from "./matintupa/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -424,6 +427,18 @@ const kinoHuoviAdapter = (site: KinoHuoviSite): Adapter => ({
   },
 });
 
+/** Elokuvateatteri Matin-Tupa's programme page. */
+const matinTupaAdapter = (site: MatinTupaSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchMatinTupa(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseMatinTupa(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
@@ -447,6 +462,7 @@ export const ADAPTERS: Adapter[] = [
   ...LIEKSA_SITES.map(lieksaAdapter),
   ...MARITA_SITES.map(maritaAdapter),
   ...KINOHUOVI_SITES.map(kinoHuoviAdapter),
+  ...MATINTUPA_SITES.map(matinTupaAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",

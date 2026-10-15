@@ -682,6 +682,21 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/kinohuovi/`
 
 ---
 
+## Elokuvateatteri Matin-Tupa (Ylistaro)
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/matintupa/`. Origin: Leffavuoro's `scripts/providers/matintupa.py`, re-verified.
+
+- **`/ohjelmistossa/`** renders one `div.col-sm-6` per film **[V]**:
+  - an `h2` link to `/elokuvat/{slug}/` (the slug is the film's id);
+  - "Esitysajat:" lines ("ti 13.10. klo 19.20"; no year, inferred and checked against the weekday);
+  - "Liput:" (a bare amount is published; "Alle 9 -vuotiaat 11 €, muut 14 €" is not), "Kesto: 1 t 28 min", "Genre:";
+  - the rating image `ikaraja_{sallittu|7|12|16|18}`;
+  - free notes, of which "Puhumme suomea" (dubbed) and the KAVI sentence are read.
+- **Tickets at the door.** Ylistaro is part of Seinäjoki; OSM way 243044340 (Västilänkuja, no number).
+- **First run:** 5 films, 16 screenings, no warnings. Unohdettu saari is listed at 98 min (TMDB 109), so it needs an alias.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
