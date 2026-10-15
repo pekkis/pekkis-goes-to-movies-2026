@@ -70,6 +70,9 @@ import { fetchBioMarlon } from "./biomarlon/fetch.ts";
 import { parseBioMarlon } from "./biomarlon/parse.ts";
 import { BIOMARLON_SITES, type BioMarlonSite } from "./biomarlon/sites.ts";
 import { fetchKisaKino } from "./kisakino/fetch.ts";
+import { fetchTervakoski } from "./tervakoski/fetch.ts";
+import { parseTervakoski } from "./tervakoski/parse.ts";
+import { TERVAKOSKI_SITES, type TervakoskiSite } from "./tervakoski/sites.ts";
 import { fetchLeviSummit } from "./levisummit/fetch.ts";
 import { parseLeviSummit } from "./levisummit/parse.ts";
 import { LEVISUMMIT_SITES, type LeviSummitSite } from "./levisummit/sites.ts";
@@ -499,6 +502,18 @@ const leviSummitAdapter = (site: LeviSummitSite): Adapter => ({
   },
 });
 
+/** Kino Tervakoski's programme page (Janakkala). */
+const tervakoskiAdapter = (site: TervakoskiSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchTervakoski(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseTervakoski(raw, site), venues) };
+  },
+});
+
 /** KisaKino's front page and film pages. */
 const kisaKinoAdapter = (site: KisaKinoSite): Adapter => ({
   id: site.provider,
@@ -647,6 +662,7 @@ export const ADAPTERS: Adapter[] = [
   ...BIOMARLON_SITES.map(bioMarlonAdapter),
   ...KINOKUVA_SITES.map(kinoKuvaAdapter),
   ...LEVISUMMIT_SITES.map(leviSummitAdapter),
+  ...TERVAKOSKI_SITES.map(tervakoskiAdapter),
   ...KINOHUOVI_SITES.map(kinoHuoviAdapter),
   ...MATINTUPA_SITES.map(matinTupaAdapter),
   ...MYCALENDAR_SITES.map(myCalendarAdapter),

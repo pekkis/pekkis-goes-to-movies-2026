@@ -864,6 +864,13 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Le
 - **No runtime** is stated, so titles that share a name with other films need aliases (The Odyssey, Ryhmä Hau).
 - **Address:** the site states none; OSM's Levi Summit node (Levin portaat, 99130 Sirkka, Kittilä).
 
+## Kino Tervakoski (Janakkala)
+
+- **Found** by the maintainer (janakkala.fi/kino), 2026-10-15; not in Leffavuoro. Run by the municipality's youth services in Tervakosken Seuratalo.
+- **The programme page** [V] (`/kino/ohjelmisto-2-2-2/`, the municipality's WordPress path, which may change): day headings in bold ("Keskiviikko 14.10.", no year; the weekday must fit the nearest date), then one paragraph per screening ("Klo 17.00 – Pirjo i Sverige (S), kotimainen, komedia, kesto 1 t 28 min, lippu 10,00 €"). The title closes with its rating in parentheses; "SUOMEKSI PUHUTTU" marks a Finnish-dubbed print. The list ends at the first separator (`hr`) after the first day; posters and synopses follow it.
+- **Tickets** at the door: booking `door`, links to the programme page.
+- **First run:** 4 screenings of 4 films (the page lists the current week), all matched.
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
