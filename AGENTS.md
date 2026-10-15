@@ -13,7 +13,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 ## Current state
 
-- **Data:** 127 venues in 88 cities from 79 providers on thirty-one source types:
+- **Data:** 128 venues in 89 cities from 80 providers on thirty-one source types:
   - one chain: Finnkino (Vista OCAPI), and Vista's open public web services (Korjaamo Kino, Riviera Kallio and Punavuori, Bio-Kaari);
   - six multi-site platforms: MyCloudCinema (BioRex, Cine Mäntsälä, and Gilda through its own WordPress facade), Nexxo, eTiketti, Kinola, Johku, and The Events Calendar for WordPress (Ritz Vaasa, Tähti Kino Muhos);
   - the City of Helsinki's open Linked Events API (Kino Helios in Malmitalo);

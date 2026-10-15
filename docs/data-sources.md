@@ -835,6 +835,8 @@ Profiled on 2026-10-10 against all 21 sites (listing + 2 film pages each). Adapt
 
 ---
 
+- **Kino Kaustinen** (2026-10-15): a real eTiketti tenant (kinokaustinen.fi) that Leffavuoro found with no programme in September; now five films, place line "KINO KAUSTINEN". One site entry. Coordinates: OSM way 768088981 (Pajalantie 19, 69600 Kaustinen) **[V]**.
+
 ## Kinola (public JSON API)
 
 Found on 2026-10-10. Adapter: `packages/fetcher/src/providers/kinola/`, cinemas in `sites.ts`.
