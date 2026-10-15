@@ -64,6 +64,15 @@ export const KINOLA_SITES: KinolaSite[] = defineSites(KinolaSite, [
         geo: { lat: 60.26131, lon: 24.854139 },
         geoSource: "osm:node/573388225",
       },
+      {
+        // Pop Up Kino (popupkino.fi, Kino Myyri's owner) screens at changing places: in
+        // October 2026 KOM-teatteri in Hakaniemi, next the Salvation Army hall. Its feed
+        // names no place, so no address or coordinates: a fixed point would be wrong.
+        slug: "popup-helsinki",
+        name: "Pop Up Kino Helsinki",
+        city: "Helsinki",
+        kinolaName: "Pop Up Kino Helsinki",
+      },
     ],
   },
   {

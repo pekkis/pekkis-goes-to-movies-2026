@@ -733,6 +733,8 @@ Found on 2026-10-10. Adapter: `packages/fetcher/src/providers/kinola/`, cinemas 
 
 ---
 
+- **Pop Up Kino Helsinki** (2026-10-15): Kino Myyri's feed also carries Pop Up Kino's screenings (popupkino.fi, Myyri's owner) under the venue "Pop Up Kino Helsinki". Pop Up Kino screens at changing places (KOM-teatteri in Hakaniemi in October 2026, next the Salvation Army hall), and the feed names none, so the venue has **no address or coordinates**: it shows in Helsinki's listings but not on the map, with a `venue-without-geo` warning each pull **[V]**.
+
 ## Johku (storefront schedule JSON)
 
 Found on 2026-10-12. Adapter: `packages/fetcher/src/providers/johku/`, cinemas in `sites.ts`.
