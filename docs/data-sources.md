@@ -514,6 +514,27 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/julia/`, si
 
 ---
 
+## Kino Vaakuna (Lohja)
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/vaakuna/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/vaakuna.py`, re-verified.
+
+- **The front page** (`/etusivu.html`) has one `div.MovieCard` per film **[V]**:
+  - the title (`h2`) and the film page (`/elokuvat/{slug}.html`, the film's id);
+  - "Liput: 13 €" or "Liput: 15€ (lahja/sarjalippu +2€)": the first amount is published;
+  - "Kesto: 1 h 42 min";
+  - the age limit as an icon named after it (`icon/12.png`, `icon/s.png`);
+  - a table of screenings.
+- **Rows:**
+  - "Ti 20.10. klo 14:40": no year, so it is inferred and checked against the weekday.
+  - "Ke 14.10. klo 14:10 (dub)" carries the screening's version.
+  - "ENNAKKO Ensi-ilta 31.10. klo 19:30" has labels (preview, premiere) and no weekday.
+  - "Ensi-ilta 30.10.2026" is an opening day without a time and is skipped.
+- **Reservations** by phone or email ("Varaa liput" leads to the film's page): `booking: "reserve"`.
+- **Address:** Koulukatu 4, 08100 Lohja (the cinema's page and OSM way 857803366 agree; Leffavuoro's Laurinkatu 48 is out of date).
+- **First run:** 12 films, 37 screenings, no warnings. "Heart Of Beast" (the site's spelling) needs an alias.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
