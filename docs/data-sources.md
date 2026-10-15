@@ -793,6 +793,26 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/alatalo/`, sites in 
 
 ---
 
+## Kino Regina (KAVI, Oodi): the first POST source
+
+Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Leffavuoro's `scripts/providers/regina.py`, re-verified.
+
+- **The programme is only a POST** **[V]**: `POST …/themes/kinoregina2/assets/functions/getShowtimesMoviesV2.php` with the form field `getShowtimesMovies={YYYY-MM-DD}` answers HTML for the whole published window from that date (40 screenings to 1.11. on 2026-10-15). A GET of the same address answers empty; the programme page itself draws the list with script; KAVI's shop has no open schedule; Linked Events does not carry it. The maintainer allowed this read-only POST (it is the request the cinema's own page makes) through `HttpClient.postForm`.
+- **Rows:** `div.movie`, each with:
+  - `a.title`, linking `/elokuva/{id}` (the film's id; titles are in capitals);
+  - `.add-to-calendar .start`: "15-10-2026 17:30", with its year;
+  - `a.add-to-cart`: KAVI's shop for the screening (`kauppa.kavi.fi/…/event_buybox/show/{id}`), copied, never requested.
+
+  "grey" rows have closed online sales but are still screenings. Rows without a film link (events) are skipped.
+
+- **Film pages** (`/elokuva/{id}/`, GET, one per film in the window, paced 1 s):
+  - `#main-content h1` "CASABLANCA (1942)" gives the **year**, which the classics need to be matched;
+  - the `.movie-details` grid: Maa ("Espanja/Portugali/Ranska"), Tekstitys ("suom. tekstit/svenska texter", "ei tekstitystä"), Kesto ("102 min"), Teemat (series), Kopiotieto ("35 mm", "DCP", "4k dcp" → projection), Ikäraja (an image, `alt="Ikäraja: K12"`).
+- **Coordinates:** OSM node 9628528752 "Kino Regina" (Töölönlahdenkatu 4, 00100 Helsinki, as on its info page).
+- **First run:** 30 films, 40 screenings, no warnings; 17 matched with the years. The rest are lectures and workshops, Laurel & Hardy shorts, and classics TMDB's search ranks below namesakes (Casablanca, Nosferatu): aliases.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

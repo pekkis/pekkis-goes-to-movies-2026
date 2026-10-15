@@ -13,13 +13,13 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 ## Current state
 
-- **Data:** 134 venues in 94 cities from 83 providers on thirty-two source types:
+- **Data:** 135 venues in 94 cities from 84 providers on thirty-three source types:
   - one chain: Finnkino (Vista OCAPI), and Vista's open public web services (Korjaamo Kino, Riviera Kallio and Punavuori, Bio-Kaari);
   - six multi-site platforms: MyCloudCinema (BioRex, Cine Mäntsälä, and Gilda through its own WordPress facade), Nexxo, eTiketti, Kinola, Johku, and The Events Calendar for WordPress (Ritz Vaasa, Tähti Kino Muhos);
   - the open Linked Events APIs of Helsinki and Espoo (Kino Helios in Malmitalo, Kannusali);
   - the My Calendar WordPress plugin's REST route (Pyhäsalmen VPK);
   - a town's Localhub event calendar (Kino Akustiikka, Ylivieska);
-  - twenty-one HTML sources: TMB Cinema (four cinemas), the WordPress `cinema-reservations` plugin (Kino Piispanristi, Kino Lumo, Laitilan Kino), Kino Tapiola's own theme, Kuvakukko's shared programme page (Kino Kuvakukko, Kino Manttu), Iso-Hannu's own site, Kino Engel's front page (home connection only), Julia's programme page, Kino Vaakuna's front page, Kino Kirkkonummi's one page, Bio Savoy's front page (HTTP only), Kino Akseli's front page (home connection only), Kino Hamina's page on the town's site, Elävienkuvien teatteri's listing and film pages, Kino Kuusamotalo's WordPress posts, Lieksan Kino's page, Elokuvateatteri Marita's front page, Kino-Huovi's front page, Matin-Tupa's programme page, Navettakino's front page, Bio Pallas's Wix front page, and the freehand programmes of Movie Company Alatalo (touring) and Huvimylly.
+  - twenty-two HTML sources: TMB Cinema (four cinemas), the WordPress `cinema-reservations` plugin (Kino Piispanristi, Kino Lumo, Laitilan Kino), Kino Tapiola's own theme, Kuvakukko's shared programme page (Kino Kuvakukko, Kino Manttu), Iso-Hannu's own site, Kino Engel's front page (home connection only), Julia's programme page, Kino Vaakuna's front page, Kino Kirkkonummi's one page, Bio Savoy's front page (HTTP only), Kino Akseli's front page (home connection only), Kino Hamina's page on the town's site, Kino Regina's programme (a read-only POST), Elävienkuvien teatteri's listing and film pages, Kino Kuusamotalo's WordPress posts, Lieksan Kino's page, Elokuvateatteri Marita's front page, Kino-Huovi's front page, Matin-Tupa's programme page, Navettakino's front page, Bio Pallas's Wix front page, and the freehand programmes of Movie Company Alatalo (touring) and Huvimylly.
 
   Fetched into JSON (`pnpm pull`), matched to TMDB, stored with history in PostgreSQL (`pnpm ingest`).
 
@@ -57,7 +57,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 **Sources: politeness and ethics**
 
-- Identifiable User-Agent. **GET by default**: a read-only POST (the request the cinema's own listing makes) only for sources that offer nothing else, one at a time and with the maintainer; they wait in the README's "Sources waiting for a POST". Few, paced requests (see per-adapter pacing in the registry). No residential proxies, fingerprint spoofing or captcha solving; do not try hard to get around Cloudflare.
+- Identifiable User-Agent. **GET by default**: a read-only POST (the request the cinema's own listing makes) only for sources that offer nothing else, one at a time and with the maintainer; they are listed in the README's "Sources read with a POST" (`HttpClient.postForm`). Few, paced requests (see per-adapter pacing in the registry). No residential proxies, fingerprint spoofing or captcha solving; do not try hard to get around Cloudflare.
 - Never call ticket purchase, booking or payment endpoints. Ticket links are **copied** from the source into `ticketUrl`, never constructed and never requested (eTiketti's `/salikartta`, Kinola's and Johku's `/checkout/…`).
 - **Johku:** only storefronts whose own code reads the schedule anonymously. Never a widget's `X-ApiKey` (KuvaTähti loads its shows only that way, so it is out). Kino Engel and Kino Tapiola merely embed the Johku widget for tickets: their own server-rendered pages may be read like any HTML source (Engel challenges datacenter IPs; if it challenges us too, skip it).
 - **Finnkino:** only the token step uses a (visible) browser; never defeat Cloudflare by other means. It does not run in CI or the cloud.
@@ -169,7 +169,7 @@ apps/web-front/                 @pgtm/web-front: the website (Astro SSR, React, 
   src/lib/                      typed API client (hc<AppType>), page loaders, cities, time, text (Finnish UI text)
 packages/model/                 @pgtm/model: src/schema.ts, the domain model (Zod + types); src/time.ts (`@pgtm/model/time`): Temporal dates and times; source-only
 packages/fetcher/               @pgtm/fetcher: fetch, normalize, match → data/normalized/*.json
-  src/lib/                      env, paths, http (ky + p-queue, per-host pacing), lang, cache, records
+  src/lib/                      env, paths, http (ky + p-queue, per-host pacing; GET, and postForm for POST sources), lang, cache, records
   src/providers/adapter.ts      Adapter (id, platform, pull), restrictToVenues
   src/providers/registry.ts     every adapter (one per site on platforms), pacing, selectAdapters
   src/providers/sites.ts        SiteBase, SiteVenue, defineSites, toVenue: the multi-site base
@@ -178,7 +178,7 @@ packages/fetcher/               @pgtm/fetcher: fetch, normalize, match → data/
   src/providers/language-codes.ts   FI / OV / FI-SE / XX codes (Nexxo, Johku)
   src/providers/overrides.ts    config/venue-overrides.json for chain venues; venue-without-geo warnings
   src/providers/<source>/       raw.ts, fetch.ts, parse.ts; sites.ts on platforms; finnkino/token.ts
-                                (mycloudcinema [BioRex, Cine Mäntsälä], gilda [MyCloudCinema via WordPress], tmb [HTML], cinemahouse [HTML], vista [public JSON/XML], tapiola [HTML], kuvakukko [HTML], isohannu [HTML], tribe [Events Calendar REST], engel [HTML], linkedevents [City of Helsinki], julia [HTML], vaakuna [HTML], kirkkonummi [HTML], biosavoy [HTML], kinoakseli [HTML], hamina [HTML], elavienkuvien [HTML], kuusamotalo [WordPress REST], lieksa [HTML], marita [HTML], kinohuovi [HTML], matintupa [HTML], mycalendar [My Calendar REST], navetta [HTML], localhub [calendar search], biopallas [Wix HTML], alatalo [freehand HTML: Alatalo, Huvimylly], finnkino, nexxo, etiketti [HTML, cheerio], kinola, johku)
+                                (mycloudcinema [BioRex, Cine Mäntsälä], gilda [MyCloudCinema via WordPress], tmb [HTML], cinemahouse [HTML], vista [public JSON/XML], tapiola [HTML], kuvakukko [HTML], isohannu [HTML], tribe [Events Calendar REST], engel [HTML], linkedevents [City of Helsinki], julia [HTML], vaakuna [HTML], kirkkonummi [HTML], biosavoy [HTML], kinoakseli [HTML], hamina [HTML], elavienkuvien [HTML], kuusamotalo [WordPress REST], lieksa [HTML], marita [HTML], kinohuovi [HTML], matintupa [HTML], mycalendar [My Calendar REST], navetta [HTML], localhub [calendar search], biopallas [Wix HTML], alatalo [freehand HTML: Alatalo, Huvimylly], regina [form POST + film pages], finnkino, nexxo, etiketti [HTML, cheerio], kinola, johku)
   src/matching/                 TMDB matching: score.ts (pure), match.ts, titles.ts, aliases.ts, catalog.ts, run.ts
   src/tmdb/, src/ratings/       TMDB client and toFilm; OMDb ratings
   src/geo/                      Finland bounds and sources, Overpass, Nominatim, OSM matching (venues:locate)

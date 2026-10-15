@@ -71,6 +71,7 @@ describe("fetchKinoAkseli", () => {
     const http: HttpClient = {
       getJson: vi.fn(),
       getText: vi.fn(async () => "<html>sgcaptcha</html>"),
+      postForm: vi.fn(),
     };
     await expect(fetchKinoAkseli(http, SITE, { from: "2026-10-15", days: 7 })).rejects.toThrow(
       /captcha/,

@@ -108,6 +108,7 @@ describe("fetchEngel", () => {
   const http = (html: string): HttpClient => ({
     getJson: vi.fn(),
     getText: vi.fn(async () => html),
+    postForm: vi.fn(),
   });
 
   it("fails on a captcha challenge instead of parsing it", async () => {
