@@ -263,5 +263,30 @@
     "tmdb": 80094,
     "title": "Omenaleikki",
     "note": "Hra o jablko (Věra Chytilová), the Czechoslovak satire; 'Omenaleikki' is its Finnish title. Verified by the maintainer 2026-10-14."
+  },
+  "kinokirkkonummi:film:matka-piemonteen": {
+    "tmdb": 1545391,
+    "title": "Matka Piemonteen",
+    "note": "Resan till Piemonte (2026), the film the maintainer confirmed for biorex:film:1572; Kirkkonummi states no runtime."
+  },
+  "kinoakseli:film:pikku-kummitus-lapanen-keppostelee": {
+    "tmdb": 1781923,
+    "title": "Pikku Kummitus Lapanen keppostelee",
+    "note": "The film about 15 cinemas link as tmdb 1781923 (confirmed by the maintainer for Laitila and Kino Virta); Akseli states no runtime."
+  },
+  "kinokirkkonummi:film:tony": {
+    "tmdb": 1329016,
+    "title": "TONY",
+    "note": "Tony (2026), the film other cinemas link; Kirkkonummi states no runtime. Confirmed by the maintainer 2026-10-15."
+  },
+  "kinovaakuna:film:heart-of-beast": {
+    "tmdb": 1263337,
+    "title": "Heart Of Beast",
+    "note": "Heart of the Beast (2026), the site's spelling; 101 min. Confirmed by the maintainer 2026-10-15."
+  },
+  "elavienkuvien:film:unesta-tehty-mies": {
+    "tmdb": 1743488,
+    "title": "Unesta tehty mies",
+    "note": "A documentary; only the exact title and 94 min to go on. Accepted by the maintainer 2026-10-15."
   }
 }

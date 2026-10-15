@@ -31,6 +31,7 @@ export type FilmColumns = {
   listingId: string;
   listingKind: string;
   listingTitleFi: string | null;
+  listingTitleSv: string | null;
   listingTitleEn: string | null;
   listingOriginalTitle: string | null;
   listingYear: number | null;
@@ -56,7 +57,12 @@ export const toFilmSummary = (r: FilmColumns): z.infer<typeof FilmSummary> =>
         kind: "film",
         isEvent: r.listingKind === "event",
         title:
-          r.filmTitleFi ?? r.listingTitleFi ?? r.filmTitleEn ?? r.filmOriginalTitle ?? r.filmId,
+          r.filmTitleFi ??
+          r.listingTitleFi ??
+          r.listingTitleSv ??
+          r.filmTitleEn ??
+          r.filmOriginalTitle ??
+          r.filmId,
         originalTitle: r.filmOriginalTitle,
         year: yearOf(r.filmReleaseDate),
         runtimeMinutes: r.filmRuntime ?? r.listingRuntime,
@@ -68,7 +74,13 @@ export const toFilmSummary = (r: FilmColumns): z.infer<typeof FilmSummary> =>
         id: r.listingId,
         kind: "listing",
         isEvent: r.listingKind === "event",
-        title: r.listingTitleFi ?? r.listingTitleEn ?? r.listingOriginalTitle ?? r.listingId,
+        // A Swedish-only listing (Bio Savoy) is still better than an id.
+        title:
+          r.listingTitleFi ??
+          r.listingTitleSv ??
+          r.listingTitleEn ??
+          r.listingOriginalTitle ??
+          r.listingId,
         originalTitle: r.listingOriginalTitle,
         year: r.listingYear,
         runtimeMinutes: r.listingRuntime,

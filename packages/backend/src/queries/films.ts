@@ -57,7 +57,8 @@ export const getFilm = async (db: Kysely<DB>, id: string): Promise<FilmOut | und
     id: listing.id,
     kind: "listing",
     isEvent: listing.kind === "event",
-    title: listing.titleFi ?? listing.titleEn ?? listing.originalTitle ?? listing.id,
+    title:
+      listing.titleFi ?? listing.titleSv ?? listing.titleEn ?? listing.originalTitle ?? listing.id,
     originalTitle: listing.originalTitle,
     year: listing.year,
     runtimeMinutes: listing.runtimeMinutes,

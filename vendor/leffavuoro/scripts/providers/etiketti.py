@@ -27,6 +27,12 @@ the screenings on it are part of the programme.
 Showtimes (2026-10-13). `/elokuvat/naytosajat` links every film with a screening, and on 13
 hosts it linked 58 films that neither listing above links. It is read on the same rule.
 
+Screening pages (2026-10-13). Cinema Niagara links no showtimes listing. Its front page lists
+every screening and `/erikoisnaytokset` its special ones, and 6 of its 36 films with a
+screening were linked from nowhere else. A site's `screening_pages` are read on the same rule,
+and only the film links inside their dated screening items count, so the front page's poster
+carousels, which link films with no screening, add no film page.
+
 Empty venues (2026-09-13). A site's film pages carry every screening, so a registered
 venue with no row is either out of programme or renamed. `EMPTY_VENUES_CONFIRMED` lets
 run.py publish a fresh empty file for such a venue instead of keeping its last, past
@@ -222,6 +228,7 @@ SITES = [
     # `match` runs against the item's place class -- "tampere" -- which is what the
     # fallback in parse_movie exists for. arthousecinemaniagara.fi redirects here.
     {"provider": "niagara", "base": "https://cinemaniagara.fi", "label": "Cinema Niagara",
+     "screening_pages": ("/", "/erikoisnaytokset"),
      "venues": [
          {"id": "cn-tampere", "match": "tampere", "name": "Cinema Niagara",
           "short": "Cinema Niagara", "city": "Tampere"},
@@ -303,7 +310,7 @@ def _price(raw):
 # "Cinema Niagara, Tampere").
 SEATS_RE = re.compile(r"(?:Vapaat paikat|Paikkoja vapaana):?\s*(\d+)\s*/\s*(\d+)")
 BOOK_RE = re.compile(r'href="(/salikartta\?id=\d+)"')
-# Niagara's per-screening labels: "Seniorikino", "Ensi-ilta", "Q&amp;A" ... Kotka has none.
+# Per-screening labels: Niagara's "Seniorikino" and "Q&amp;A", Kotka's "Erikoisnäytös".
 TAG_RE = re.compile(r'<span class="tag"[^>]*>(.*?)</span>', re.S)
 AGE_RE = re.compile(r"ikarajat/fi-(\d+|s)\.svg", re.I)
 # Kotka: `Kesto:</span> 1 h 46 min`. Niagara: `Kesto </span> 1 h 48 min`, no colon.
@@ -728,9 +735,23 @@ def links_listing(listing, site, path):
     host = urlsplit(site["base"]).netloc.lower()
     for href in HREF_RE.findall(listing):
         u = urlsplit(html_mod.unescape(href))
-        if u.path.rstrip("/") == path and (not u.netloc or u.netloc.lower() == host):
+        if ((u.path.rstrip("/") or u.path) == path
+                and (not u.netloc or u.netloc.lower() == host)):
             return True
     return False
+
+
+def screened_links(pages, site):
+    """The dated screening items of a site's screening pages -> their markup joined, for
+    MOVIE_LINK_RE. Pages that link films, none of them from a dated item, are a template
+    that moved, and the site fails."""
+    blocks = [m.group(3) for page in pages for m in ITEM_RE.finditer(page)
+              if ITEM_DATE_RE.search(m.group(1)) or DATA_DATES_RE.search(m.group(2))]
+    joined = "".join(blocks)
+    if not MOVIE_LINK_RE.search(joined) and any(MOVIE_LINK_RE.search(p) for p in pages):
+        raise RuntimeError(f"{site['provider']}: the screening pages link films and no dated "
+                           f"screening item links one; the template moved")
+    return joined
 
 
 def fetch_site(site, sleep=1.2):
@@ -740,6 +761,13 @@ def fetch_site(site, sleep=1.2):
     for path in (EVENT_LISTING, SHOWTIMES_LISTING):
         if links_listing(listing, site, path):
             pages.append(get(site["base"] + path))
+    extra = []
+    for path in site.get("screening_pages", ()):
+        if links_listing(listing, site, path):
+            time.sleep(sleep)
+            extra.append(get(site["base"] + path))
+    if extra:
+        pages.append(screened_links(extra, site))
     for page in pages:
         for path, mid in MOVIE_LINK_RE.findall(page):
             if mid not in seen:

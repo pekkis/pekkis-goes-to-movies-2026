@@ -147,6 +147,26 @@ class RowsTest(unittest.TestCase):
         self.assertEqual((shows[1]["rating"], shows[1]["len"], shows[1]["price"]),
                          ("S", "88", "10€"))
 
+    def test_a_title_and_its_date_on_one_line_over_a_block_that_prints_its_date(self):
+        """The shape read 2026-10-13: each screening on one line, and Pirjo's block printing
+        its date between its title and its poster. The block has no synopsis, so the next
+        block's title must not become one."""
+        pirjo = (p("Pirjo i Sverige") + p("la 17.10 klo 15:00") + figure()
+                 + p("S, 88 min, liput 10 €"))
+        shows, _ = self.rows(page(
+            listed=[p("Pirjo i Sverige la 17.10 klo 15:00"),
+                    p("Hetki ennen valoa su 18.10 klo 17:00")],
+            shelf=[pirjo, block("Hetki ennen valoa")], blank=False),
+            today=datetime.date(2026, 10, 13))
+        self.assertEqual([(s["title"], s["start"][:16]) for s in shows], [
+            ("Pirjo i Sverige", "2026-10-17T15:00"),
+            ("Hetki ennen valoa", "2026-10-18T17:00")])
+        self.assertEqual((shows[0]["rating"], shows[0]["len"], shows[0]["price"]),
+                         ("S", "88", "10€"))
+        self.assertTrue(shows[0]["img"].endswith("juliste-719x1024.jpg"))
+        self.assertNotIn("_syn", shows[0])
+        self.assertEqual(shows[1]["_syn"], "Klaus Härön uutuuselokuva kertoo.")
+
     def test_an_unreadable_line_still_fails_when_a_film_block_ends_the_list(self):
         with self.assertRaises(N.ListingError):
             self.rows(self.oct_page(screening("Pirjo i Sverige", "lauantaina illalla")),

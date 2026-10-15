@@ -32,11 +32,12 @@ import pathlib
 import shutil
 import sys
 import tempfile
-import threading
 import unittest
 from datetime import date
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect
+
+import _harness
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -138,7 +139,7 @@ class PagesLayoutTest(unittest.TestCase):
             {"generated": "2026-09-14T09:00:00+00:00", "areas": []}), encoding="utf-8")
         (data / "providers.json").write_text(json.dumps({"providers": [
             {"id": "testi", "label": "Testikino", "host": "example.invalid",
-             "accent": "#1F7A5C", "book": "buy"}]}), encoding="utf-8")
+             "accent": "#1F7A5C", "accentDark": "#5CC9A0", "book": "buy"}]}), encoding="utf-8")
         (data / "tmdb-genres.json").write_text(json.dumps(
             {"fi": {}, "sv": {}, "en": {}}), encoding="utf-8")
         (data / "films-extra.json").write_text(json.dumps({"films": extra}), encoding="utf-8")
@@ -155,9 +156,9 @@ class PagesLayoutTest(unittest.TestCase):
 
         cls.srv = http.server.ThreadingHTTPServer(
             ("127.0.0.1", 0), functools.partial(Handler, directory=str(cls.root)))
-        threading.Thread(target=cls.srv.serve_forever, daemon=True).start()
+        _harness.start(cls.srv)
         cls.origin = f"http://127.0.0.1:{cls.srv.server_port}"
-        cls.pw = sync_playwright().start()
+        cls.pw = _harness.playwright()
         # KINO_BROWSER_ENGINE=webkit runs the same checks in WebKit. The layout that
         # shipped on 2026-09-18 was correct in Chromium and wrong in WebKit, because a
         # negative grid line resolves against the explicit grid and there were no explicit
@@ -169,7 +170,7 @@ class PagesLayoutTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.browser.close(); cls.pw.stop(); cls.srv.shutdown(); cls.tmp.cleanup()
+        cls.browser.close(); _harness.stop(cls.srv); cls.tmp.cleanup()
 
     def geometry(self, width, path=f"/teatteri/{SLUG}/"):
         """-> (rows, overflow). One row per film, every number a rendered box."""
@@ -481,6 +482,44 @@ class PagesLayoutTest(unittest.TestCase):
         got = stub.evaluate("""e => [getComputedStyle(e).borderTopColor, getComputedStyle(e).borderLeftColor,
             getComputedStyle(e.querySelector('.fx > span + span'), '::before').backgroundColor]""")
         self.assertEqual(got, [accent, rest_left, accent])
+
+    def test_a_cinema_page_ticket_turns_its_whole_frame_gold_on_hover(self):
+        """A cinema page draws no chain marker, so the left edge turns with the rest."""
+        ctx = self.browser.new_context(viewport={"width": PHONE, "height": 900},
+                                       service_workers="block")
+        self.addCleanup(ctx.close)
+        page = ctx.new_page()
+        page.goto(self.origin + f"/teatteri/{SLUG}/")
+        stub = page.locator("a.stub").first
+        self.assertNotIn("chain-", stub.get_attribute("class"))
+        accent = page.evaluate("""() => { const i = document.createElement('i');
+            i.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent');
+            document.body.appendChild(i); const c = getComputedStyle(i).color; i.remove(); return c; }""")
+        stub.hover()
+        for side in ("top", "right", "bottom", "left"):
+            expect(stub).to_have_css(f"border-{side}-color", accent)
+
+    def test_the_city_page_draws_the_chain_shade_for_the_theme_in_force(self):
+        """A stored choice wins over the OS, and with no script the OS alone decides."""
+        light, dark = "rgb(31, 122, 92)", "rgb(92, 201, 160)"
+        for scheme, stored, script, want in (("dark", None, True, dark),
+                                             ("dark", "light", True, light),
+                                             ("light", "dark", True, dark),
+                                             ("dark", None, False, dark),
+                                             ("light", None, False, light)):
+            ctx = self.browser.new_context(viewport={"width": PHONE, "height": 900},
+                                           color_scheme=scheme, java_script_enabled=script,
+                                           service_workers="block")
+            self.addCleanup(ctx.close)
+            if stored:
+                ctx.add_init_script(f"localStorage.setItem('kino-theme', '{stored}')")
+            page = ctx.new_page()
+            page.goto(self.origin + "/kaupunki/testila/")
+            with self.subTest(scheme=scheme, stored=stored, script=script):
+                expect(page.locator("a.stub.chain-testi").first).to_have_css(
+                    "border-left-color", want)
+                expect(page.locator(".legend .lg.chain-testi").first).to_have_css(
+                    "border-left-color", want)
 
 
 if __name__ == "__main__":

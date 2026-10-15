@@ -22,13 +22,13 @@ import datetime
 import http.server
 import json
 import os
-import threading
 import time
 import unittest
 import zoneinfo
 
-from playwright.sync_api import expect, sync_playwright
+from playwright.sync_api import expect
 
+import _harness
 import test_client_browser as base
 
 AREA = json.loads((base.FIXTURE / "data/area-or-helsinki.json").read_text(encoding="utf-8"))
@@ -88,16 +88,16 @@ class UpdateCheck(unittest.TestCase):
         cls.srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
         cls.srv.served, cls.srv.requested = [], []
         cls.srv.cfg = {}
-        threading.Thread(target=cls.srv.serve_forever, daemon=True).start()
+        _harness.start(cls.srv)
         cls.origin = f"http://127.0.0.1:{cls.srv.server_port}"
-        cls.pw = sync_playwright().start()
+        cls.pw = _harness.playwright()
         engine = os.environ.get("KINO_BROWSER_ENGINE", "chromium")
         channel = os.environ.get("KINO_BROWSER_CHANNEL") if engine == "chromium" else None
         cls.browser = getattr(cls.pw, engine).launch(channel=channel or None, headless=True)
 
     @classmethod
     def tearDownClass(cls):
-        cls.browser.close(); cls.pw.stop(); cls.srv.shutdown()
+        cls.browser.close(); _harness.stop(cls.srv)
 
     def setUp(self):
         self.srv.cfg.update(generated=hours_ago(24), area_status=200, area_delay=0,
@@ -171,8 +171,10 @@ class UpdateCheck(unittest.TestCase):
 
     def tearDown(self):
         res = getattr(self._outcome, "result", None)
-        failed = any(t is self for t, _ in (res.failures + res.errors)) if res else False
-        name = base.OUT / self.id().split(".")[-1]
+        # A failure inside subTest is recorded against a _SubTest whose test_case is this test.
+        failed = any(t is self or getattr(t, "test_case", None) is self
+                     for t, _ in (res.failures + res.errors)) if res else False
+        name = base.OUT / self.id()
         if failed:
             self.page.screenshot(path=f"{name}.png", full_page=True)
             self.ctx.tracing.stop(path=f"{name}.zip")

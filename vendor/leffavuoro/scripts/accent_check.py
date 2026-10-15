@@ -5,6 +5,7 @@ Run it:
 
     python3 scripts/accent_check.py            # shared-view pairs, worst first
     python3 scripts/accent_check.py --all      # every pair
+    python3 scripts/accent_check.py --theme dark   # the same for the dark shades
     python3 scripts/accent_check.py --candidate '#B47ACC' --city Helsinki,Tampere
     python3 scripts/accent_check.py --selftest # CIEDE2000 against Sharma's test data
 
@@ -229,7 +230,7 @@ def provider_cities():
 def view_pairs(extra=None):
     """-> [(kind, label, a, b)] for every pair of providers that can appear in one list.
 
-    Two views put chains side by side, and the 3 px rule has to survive both:
+    Two views put chains side by side, and the chain marker has to survive both:
 
     - a combined city, where every chain in that town is listed together;
     - a region row, where every chain in any of the region's cities is listed together.
@@ -327,17 +328,74 @@ def row(label, a, b, n, v, m):
     return (f"{n:7.1f} {v:7.1f} {m:7.1f}   {label:<26} {a:<14} {b}")
 
 
-# L* window for the 3 px border. Below ~38 the rule disappears against the dark theme,
-# above ~60 it washes out against the light one. Inherited from the Engel search, which
-# is the one constraint in the old notes that did not depend on the broken metric.
-L_MIN, L_MAX = 38.0, 60.0
+# The surfaces a chain marker touches in each theme (index.html tokens: --chip-bg, --surface
+# and --bg). A shade must reach 3:1 against every one of them (decided 2026-10-13).
+SURFACES = {"light": ("#FFFFFF", "#F6F7F9"), "dark": ("#1C1F28", "#16181F", "#0D0E12")}
+CONTRAST = 3.0
+THEME_KEY = {"light": "accent", "dark": "accentDark"}
+# CIELAB L* range and C*ab floor for a shade `search` proposes: the window the 2026-10-13
+# palette was chosen in. Outside it a light shade reads as black or grey.
+WINDOW = {"light": (25.0, 100.0, 20.0), "dark": (0.0, 80.0, 20.0)}
+# The maintainer's scoped exception of 2026-10-13: in this region row, a pair with one of
+# these chains may fall below FLOOR on the weakest model if it clears FLOOR in normal vision.
+EXCEPTION = {"region": "Pääkaupunkiseutu",
+             "chains": ("kinokonepaja", "kulttuurimylly", "kannusali")}
+
+
+def excepted(kind, label, a, b):
+    """True when EXCEPTION waives the weakest-model floor for this pair in this view."""
+    return (kind == "region" and label == EXCEPTION["region"]
+            and bool({a, b} & set(EXCEPTION["chains"])))
+
+
+def accents(theme="light"):
+    """-> {provider_id: hex} for one theme."""
+    return {p["id"]: p[THEME_KEY[theme]] for p in registry.PROVIDERS}
+
+
+def luminance(hexcolour):
+    r, g, b = (srgb_to_linear(c) for c in hex_to_srgb(hexcolour))
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def contrast(a, b):
+    """WCAG contrast ratio between two hex colours."""
+    x, y = sorted((luminance(a), luminance(b)), reverse=True)
+    return (x + 0.05) / (y + 0.05)
+
+
+def legible(hexcolour, theme):
+    """True when the shade reaches CONTRAST against every surface of its theme."""
+    return all(contrast(hexcolour, s) >= CONTRAST for s in SURFACES[theme])
+
+
+def in_window(hexcolour, theme):
+    """True when the shade sits inside WINDOW for its theme."""
+    L, a, b = labs_for(hexcolour)[0]
+    low, high, chroma = WINDOW[theme]
+    return low <= L <= high and math.hypot(a, b) >= chroma
+
+
+def oklch(hexcolour):
+    """-> (L, C, hue degrees) in Ottosson's OKLab, where hue holds along a lightness ramp."""
+    lin = [srgb_to_linear(c) for c in hex_to_srgb(hexcolour)]
+    lms = [sum(m * v for m, v in zip(row, lin)) for row in (
+        (0.4122214708, 0.5363325363, 0.0514459929),
+        (0.2119034982, 0.6806995451, 0.1073969566),
+        (0.0883024619, 0.2817188376, 0.6299787005))]
+    l_, m_, s_ = (math.copysign(abs(v) ** (1 / 3), v) for v in lms)
+    L = 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_
+    a = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_
+    b = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_
+    return L, math.hypot(a, b), math.degrees(math.atan2(b, a)) % 360
+
 
 # The policy floor, in dE00 on the weakest of the three models. A new or changed accent
 # clears it in every view it enters where that is reachable, and no combined-city pair sits
 # below it. Fixed rather than measured: it is the number CLAUDE.md and the registry state,
 # and tests/test_accent_check.py pins the value and the city-view contract separately from
 # the count the report prints against it. Region rows are measured on the same scale and
-# twelve established pairs sit below; docs/research/accent-colour.md lists them.
+# some established pairs sit below; docs/research/accent-colour.md lists them.
 FLOOR = 14.4
 
 
@@ -375,7 +433,7 @@ def worst_against(hexcolour, fixed):
     return worst_labs(labs_for(hexcolour), fixed)
 
 
-def search(pid, accents, step=6, top=12):
+def search(pid, accents, step=6, top=12, theme="light"):
     """Best replacement accents for one provider.
 
     -> ([(worst_overall, worst_normal, worst_deutan, hex)], rivals), ranked by
@@ -397,9 +455,9 @@ def search(pid, accents, step=6, top=12):
         for g in range(0, 256, step):
             for b in range(0, 256, step):
                 h = f"#{r:02X}{g:02X}{b:02X}"
-                cand = labs_for(h)
-                if not (L_MIN <= cand[0][0] <= L_MAX):
+                if not (legible(h, theme) and in_window(h, theme)):
                     continue
+                cand = labs_for(h)
                 wo, wn, wd = worst_labs(cand, fixed)
                 out.append((wo, wn, wd, h))
     out.sort(reverse=True)
@@ -419,55 +477,56 @@ def main(argv):
     ap.add_argument("--search", metavar="PROVIDER_ID",
                     help="best replacement accent for one chain, against every chain it"
                          " shares a city or a region with")
+    ap.add_argument("--theme", choices=("light", "dark"), default="light",
+                    help="which shade of each chain to measure")
     ap.add_argument("--selftest", action="store_true")
     args = ap.parse_args(argv)
 
     if args.selftest:
         return selftest()
 
-    accents = {p["id"]: p["accent"] for p in registry.PROVIDERS}
+    shades = accents(args.theme)
     labels = {p["id"]: p["label"] for p in registry.PROVIDERS}
     extra = None
     if args.candidate:
         if not args.city:
             ap.error("--candidate needs --city")
-        accents["candidate"] = args.candidate
+        shades["candidate"] = args.candidate
         labels["candidate"] = f"CANDIDATE {args.candidate}"
 
     if args.search:
-        accents = {p["id"]: p["accent"] for p in registry.PROVIDERS}
-        labels = {p["id"]: p["label"] for p in registry.PROVIDERS}
-        if args.search not in accents:
+        if args.search not in shades:
             ap.error(f"unknown provider id: {args.search}")
-        best, rivals = search(args.search, accents)
+        best, rivals = search(args.search, shades, theme=args.theme)
         if not rivals:
             print(f"{labels[args.search]} shares no city or region with another chain, "
                   f"so its accent is unconstrained. Nothing to search.")
             return 0
-        fixed = [labs_for(accents[r]) for r in rivals]
-        co, cn, cd = worst_against(accents[args.search], fixed)
+        fixed = [labs_for(shades[r]) for r in rivals]
+        co, cn, cd = worst_against(shades[args.search], fixed)
         print(f"{labels[args.search]} shares a city or region with: "
               f"{', '.join(labels[r] for r in rivals)}")
-        print(f"current {accents[args.search]}: worst overall {co:.1f} "
+        print(f"current {shades[args.search]}: worst overall {co:.1f} "
               f"(normal {cn:.1f}, deutan {cd:.1f})\n")
-        print(f"best candidates in L* {L_MIN:.0f}-{L_MAX:.0f}, ranked by worst overall:")
+        print(f"best candidates at {CONTRAST}:1 on the {args.theme} surfaces and inside the "
+              f"window, ranked by worst overall:")
         print("  hex       worst overall  worst normal  worst deutan")
         for wo, wn, wd, h in best:
             print(f"  {h}   {wo:12.1f}   {wn:11.1f}   {wd:11.1f}")
         return 0
 
-    print("dE00 between chain accents. Higher is more separable; the number that")
-    print("matters for a set is the smallest one, since that is the pair a reader")
+    print(f"dE00 between chain accents, {args.theme} theme. Higher is more separable; the")
+    print("number that matters for a set is the smallest one, since that is the pair a reader")
     print("has to tell apart. Deutan columns are full dichromacy.\n")
     print(" normal  vienot machado   where                      chain          chain")
     print(" " + "-" * 84)
 
     if args.all:
-        ids = sorted(accents)
+        ids = sorted(shades)
         rows = []
         for i in range(len(ids)):
             for j in range(i + 1, len(ids)):
-                a, b = accents[ids[i]], accents[ids[j]]
+                a, b = shades[ids[i]], shades[ids[j]]
                 n, v, m = dE(a, b)
                 rows.append((separation(a, b), row("(any)", labels[ids[i]],
                                                    labels[ids[j]], n, v, m)))
@@ -484,8 +543,8 @@ def main(argv):
 
     rows = []
     for view, a, b in shared_view_pairs(extra):
-        n, v, m = dE(accents[a], accents[b])
-        rows.append((separation(accents[a], accents[b]), view,
+        n, v, m = dE(shades[a], shades[b])
+        rows.append((separation(shades[a], shades[b]), view,
                      row(view, labels[a], labels[b], n, v, m)))
     if not rows:
         print("no city or region has two chains in it")
@@ -498,9 +557,10 @@ def main(argv):
     print(f"\nworst shared-view pair: {worst[0]:.1f} dE00 across the three models, "
           f"in {worst[1]}")
     print(f"{below} of {len(rows)} pairs are below {FLOOR}")
-    print("L* of each accent (the 3 px rule needs this legible on both themes):")
-    for pid in sorted(accents):
-        print(f"  {labels[pid]:<26} {accents[pid]}  L* {labs_for(accents[pid])[0][0]:5.1f}")
+    print(f"contrast of each {args.theme} shade against its weakest surface (target {CONTRAST}:1):")
+    for pid in sorted(shades):
+        low = min(contrast(shades[pid], s) for s in SURFACES[args.theme])
+        print(f"  {labels[pid]:<26} {shades[pid]}  {low:4.2f}:1")
     return 0
 
 

@@ -71,6 +71,12 @@ export const matchListings = async (
       continue;
     }
 
+    // An opera, ballet or concert recording is one production among many of the same
+    // name: without a runtime to compare, a lone title hit is no evidence. Alias it instead.
+    if (listing.kind === "event" && !listing.runtimeMinutes && !listing.imdbId) {
+      continue;
+    }
+
     // The provider's IMDb id makes the match exact, when TMDB knows the film.
     if (listing.imdbId) {
       const tmdbId = await tmdb.findByImdb(listing.imdbId);

@@ -365,9 +365,9 @@ class RegistryAndPagesTest(unittest.TestCase):
         p = registry.by_id("korjaamo")
         self.assertEqual((p["label"], p["host"], p["book"], p["module"], p["where"]),
                          ("Korjaamo Kino", "korjaamokino.fi", "buy", "vista", "cloud"))
-        # Moved from #C07E7E on 2026-09-21, when Helsinki reached ten chains and its
-        # palette was solved jointly; the record is in docs/archive/2026-09-providers.md.
-        self.assertEqual(p["accent"], "#80709C")
+        # #C07E7E until the ten-chain Helsinki solve of 2026-09-21 and #80709C until the
+        # per-theme palette of 2026-10-13; the records are in docs/archive/.
+        self.assertEqual(p["accent"], "#8B769C")
         self.assertEqual(sum(1 for q in registry.PROVIDERS if q["accent"] == p["accent"]), 1)
         self.assertEqual((VENUE["id"], VENUE["name"], VENUE["short"], VENUE["city"],
                           VENUE["theatre"], VENUE["area"]),

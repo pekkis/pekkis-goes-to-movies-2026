@@ -84,7 +84,7 @@ output JSON  →  pnpm ingest  →  PostgreSQL (history kept)
 
 5. **A contradiction always rejects:** runtime differs by more than 8 minutes, or the countries do not overlap at all.
 6. **Sibling pass:** a listing still unmatched after search is linked to the film another provider's listing was already linked to, if their titles (without qualifiers) are equal and runtimes are within 3 min. This reuses aliases across providers and covers Finnkino's missing countries.
-7. **Events** (`FilmListing.kind: "event"`: operas, concerts, sports) are matched when possible but **never reported as unmatched**, since most of them are not on TMDB.
+7. **Events** (`FilmListing.kind: "event"`: operas, concerts, sports) are matched when possible but **never reported as unmatched**, since most of them are not on TMDB. **An event without a runtime is not searched at all:** an opera recording is one production among many of the same name, and a lone title hit is no evidence (Julia's "Don Giovanni (Vicenza festivaali / Mozart)" matched a 2023 Don Giovanni before this rule, 2026-10-15). Such events are aliased by hand.
 
 Tested regression: "Ryhmä Hau: Dinoelokuva" (PAW Patrol: The Dino Movie) must **not** match "Ryhmä Hau: Mahtipennut" (2023). Another film in the same franchise is not a prefix match.
 

@@ -443,6 +443,24 @@ def main(argv) -> int:
     return 0 if all(m.tally.code() == 0 for m in mods) else 1
 
 
+def site_lines(items, groups, started):
+    """One line per site in publication order: its host group, and when it was queued,
+    started and ended in seconds from the run's start, so an order can be replayed offline."""
+    group = {id(it): n for n, g in enumerate(groups) for it in g}
+    out = []
+    for it in items:
+        head = f"[cloud] site {it.module.name}/{it.label}: group {group[id(it)]}, "
+        if it.started is None or it.finished is None:
+            out.append(head + "not fetched")
+            continue
+        tail = (", no programme" if isinstance(it.error, common.EmptyProgramme)
+                else ", failed" if it.error else "")
+        out.append(head + f"queued {it.queued - started:.1f}s, "
+                   f"started {it.started - started:.1f}s, ended {it.finished - started:.1f}s"
+                   + tail)
+    return out
+
+
 def report(top, mods, items, groups, workers, started, held, aborted):
     """The run's own log: what it read, what each module exited with, and what it held."""
     elapsed = time.monotonic() - started
@@ -451,6 +469,8 @@ def report(top, mods, items, groups, workers, started, held, aborted):
           f"group(s), pool of {min(workers, len(groups) or 1)}", file=top)
     for m in mods:
         print(f"[cloud] {m.name}: exit={m.tally.code() if m.done else 1}", file=top)
+    for line in site_lines(items, groups, started):
+        print(line, file=top)
     print(f"[cloud] {elapsed:.1f}s wall, "
           f"{sum(it.finished - it.started for it in fetched):.1f}s of fetching added up "
           f"across workers that overlap, {len(fetched)} site(s) fetched", file=top)

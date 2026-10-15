@@ -59,6 +59,7 @@ import test_kinohuovi as KH
 import test_localhub as LH
 import test_k13 as K13
 import test_helios as HE
+import test_kannusali as KS
 import test_heureka as H
 import test_nexxo_rooms as N
 import test_orion
@@ -494,6 +495,14 @@ def sample_kuusamotalo():
     return (out, KU.SITE["provider"], [v["id"] for v in KU.SITE["venues"]])
 
 
+def sample_kannusali():
+    """A 49-hour festival row and a second hit at a taken minute beside three screenings,
+    so the two rows that must not reach a venue file are in the input."""
+    out, _ = KS.K.rows(KS.SITE, [KS.KEVLAR, KS.FESTIVAL, KS.FLOW_KIDS, KS.FLOW,
+                                 KS.SNOWMAN])
+    return (out, KS.SITE["provider"], [v["id"] for v in KS.SITE["venues"]])
+
+
 SAMPLES = {
     "orion": sample_orion, "nexxo": sample_nexxo, "regina": sample_regina,
     "riviera": sample_riviera, "tapiola": sample_tapiola, "vista": sample_vista,
@@ -511,7 +520,7 @@ SAMPLES = {
     "alatalo": sample_alatalo, "elavienkuvien": sample_elavienkuvien,
     "matintupa": sample_matintupa, "kuusamotalo": sample_kuusamotalo,
     "kinohuovi": sample_kinohuovi, "localhub": sample_localhub,
-    "k13": sample_k13, "helios": sample_helios,
+    "k13": sample_k13, "helios": sample_helios, "kannusali": sample_kannusali,
 }
 
 

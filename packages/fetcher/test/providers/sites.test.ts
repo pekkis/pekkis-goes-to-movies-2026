@@ -66,7 +66,11 @@ describe("site configs", () => {
   });
 
   it("every Kinola venue has coordinates, and --provider kinola selects all sites", () => {
-    expect(KINOLA_SITES.flatMap((s) => s.venues.filter((v) => !v.geo))).toEqual([]);
+    // Pop Up Kino screens at changing places, so it has no fixed point on purpose.
+    const roaming = new Set(["popup-helsinki"]);
+    expect(
+      KINOLA_SITES.flatMap((s) => s.venues.filter((v) => !v.geo && !roaming.has(v.slug))),
+    ).toEqual([]);
     expect(selectAdapters(["kinola"])?.map((a) => a.id)).toEqual(
       KINOLA_SITES.map((s) => s.provider),
     );

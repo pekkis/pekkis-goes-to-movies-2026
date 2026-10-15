@@ -414,6 +414,27 @@ class PerModuleLogTest(CloudTestCase):
         for n in (1, 2):
             self.assertIn(h.servers[n].netloc, line_b)
 
+    def test_the_runs_own_log_places_every_site(self):
+        """A site's group and its queued, started and ended offsets, so a submission order
+        can be replayed offline. One worker, so the second module's group waits its turn."""
+        h = self.hosts(3, delay=0.15)
+        mods = [module("mod_a", P.site("a0", h.base(0)), P.site("a1", h.base(0))),
+                module("mod_b", P.site("b0", h.base(1)), P.site("b1", h.base(2)))]
+        _, logs = self.cloud(mods, workers=1)
+        line = re.compile(r"^\[cloud\] site (\S+): group (\d+), queued ([\d.]+)s, "
+                          r"started ([\d.]+)s, ended ([\d.]+)s$", re.M)
+        sites = {m[0]: (int(m[1]), *map(float, m[2:])) for m in line.findall(logs["cloud"])}
+        self.assertEqual(list(sites), ["mod_a/a0", "mod_a/a1", "mod_b/b0", "mod_b/b1"])
+        self.assertEqual([g for g, *_ in sites.values()], [0, 0, 1, 2])
+        a0, a1, b0 = sites["mod_a/a0"], sites["mod_a/a1"], sites["mod_b/b0"]
+        self.assertEqual(a1[1], a0[3], "a site behind another on its host is queued when it ends")
+        self.assertEqual(b0[1], 0.0, "a group is queued when the run starts")
+        self.assertGreaterEqual(b0[2], a1[3], "and starts when a worker is free")
+        for name, (_, queued, began, ended) in sites.items():
+            with self.subTest(site=name):
+                self.assertLessEqual(queued, began)
+                self.assertGreaterEqual(ended - began, 0.2)
+
     def test_the_runs_own_log_accounts_for_what_it_held(self):
         """A global pool fetches ahead of the publication order, so results pile up behind
         the slowest early site. Accounted rather than assumed."""
@@ -452,6 +473,31 @@ class FailureTest(CloudTestCase):
         self.assertIn("[a0] no programme published", logs["mod_a"])
         self.assertIn("1 with no programme, 0 failures", logs["mod_a"])
         self.assertNotIn("no programme published", logs["mod_b"])
+
+    def site_lines(self, logs):
+        """-> {"module/site": its line in the run's own log}."""
+        return {l.split(" ", 2)[2].split(":")[0]: l for l in logs["cloud"].splitlines()
+                if l.startswith("[cloud] site ")}
+
+    def test_the_site_line_calls_an_empty_programme_no_programme(self):
+        h = self.hosts(2, delay=0)
+        mods = [module("mod_a", P.site("a0", h.base(0)), P.site("a1", h.base(1)),
+                       empty=("a0",))]
+        code, logs = self.cloud(mods)
+        self.assertEqual(code, 0)
+        lines = self.site_lines(logs)
+        self.assertRegex(lines["mod_a/a0"], r"ended [\d.]+s, no programme$")
+        self.assertRegex(lines["mod_a/a1"], r"ended [\d.]+s$")
+
+    def test_the_site_line_keeps_failed_for_an_error(self):
+        h = self.hosts(2, delay=0)
+        mods = [module("mod_a", P.site("a0", h.base(0)), P.site("a1", h.base(1)),
+                       fail=("a0",))]
+        code, logs = self.cloud(mods)
+        self.assertEqual(code, 1)
+        lines = self.site_lines(logs)
+        self.assertRegex(lines["mod_a/a0"], r"ended [\d.]+s, failed$")
+        self.assertRegex(lines["mod_a/a1"], r"ended [\d.]+s$")
 
     def test_an_empty_programme_clears_the_sites_previous_screenings(self):
         """The coordinator publishes an empty programme as run.run_site does: every venue

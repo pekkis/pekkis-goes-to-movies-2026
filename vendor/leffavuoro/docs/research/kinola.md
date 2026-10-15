@@ -2,11 +2,11 @@
 
 Research notes moved out of `IDEAS.md` on 2026-09-14, when nothing here was built.
 **The adapter shipped on 2026-09-15**, `scripts/providers/kinola.py`, for Kilta and Laika,
-and took Kino Myyri as a third tenant on 2026-09-18; Konepaja still has no registry entry,
-re-read 2026-09-19. What it decided and what it measured are in
-[docs/archive/2026-09-providers.md](../archive/2026-09-providers.md) under "Kino Kilta and
-Kino Laika: the Kinola adapter, under the adopted policy". The findings below are as they
-were read and are not updated by it.
+and took Kino Myyri as a third tenant on 2026-09-18. Konepaja had no registry entry until
+its listing returned on 2026-10-13, read in the last section below. What it decided and
+what it measured are in [docs/archive/2026-09-providers.md](../archive/2026-09-providers.md)
+under "Kino Kilta and Kino Laika: the Kinola adapter, under the adopted policy". The
+findings below are as they were read and are not updated by it.
 
 **The publication policy was decided on 2026-09-15** and the decision, with the reasoning
 and the three corrections it made to the proposal below, is in
@@ -369,3 +369,36 @@ Findings, from the film pages read once as a visitor through `fetch_site`:
 
 Implementation status: `NAMES` in `kinola.py`; a line with an unknown name publishes
 nothing for that part and the run log names the film. `LanguageNamesTest`.
+
+---
+
+## Konepaja's listing returns, and the public API (2026-10-13)
+
+**Findings** (read as a visitor on 2026-10-13 between 12:50 and 13:03 UTC)
+
+- `kinokonepaja.fi/` carries a `kinola-events` container with 43 `kinola-event` blocks, 20
+  films from 13.10. to 15.12., each with a `/checkout/{uuid}` link. `/naytokset/` still
+  redirects to the front page. The date (`ti 13.10.`) and the time (`17:00`) sit in two
+  spans, which none of the four templates read, and the row's poster image has no class.
+- Film pages write each label with its colon inside `<strong>`, runtime as `2 t 13 min`,
+  and the rating as an `Ikäraja` label. `og:image` is the site logo on all 20. Three of
+  the 12 synopses that settle a language are event copy ("Tupac Shakur -teemailta ...").
+- 16 of 20 films carry Ohjaus or Lajityyppi. The other four are feature films with a
+  release year, a distributor, a runtime, a language and an age rating.
+- `https://{tenant}.kinola.ee/api/public/v1/events` answers anonymous GETs for konepaja,
+  kilta, laika, myyri, sheryl and orion. The default page is 15 events; `limit=500` returned
+  every event in one page with `links.next` null. Without `time_from` it lists today's
+  events including those already started.
+- Against each tenant's own listing the API added no screening and missed none, apart from
+  Kilta's 12 `coming_soon` events, which its listing shows. Its event and production lists
+  carry no director, genre or synopsis, which come only from one `productions/{id}` request
+  per film. `checkout_url` is absent on 70 of Kilta's 72 events, and Myyri's and Orion's
+  point at another host than their listings.
+- The API rates some films `L`. Orion's own page shows `S` for one of them.
+
+**Status and next step**
+
+Konepaja is read from its listing by the `konepaja` template, with three include overrides
+for the feature films without labels. "Cinemaissi: Archipielago" stays withheld like Myyri's
+Cinemaissí screenings. The other tenants keep their listings, since the API carries neither
+the classification evidence nor the ticket links they publish. No next step.

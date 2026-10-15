@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseBbox } from "../../src/api/params.ts";
 import { toHelsinkiIso } from "@pgtm/model/time";
+import { toFilmSummary } from "../../src/queries/common.ts";
 import { decodeCursor, encodeCursor } from "../../src/queries/screenings.ts";
 
 describe("toHelsinkiIso", () => {
@@ -32,5 +33,32 @@ describe("cursor", () => {
     const cursor = { startsAt: "2026-10-10T15:00:00.000Z", id: "finnkino:show:1" };
     expect(decodeCursor(encodeCursor(cursor))).toEqual(cursor);
     expect(decodeCursor("bm9wZQ")).toBeUndefined();
+  });
+});
+
+describe("toFilmSummary", () => {
+  const unmatched = {
+    ratings: [],
+    filmId: null,
+    listingId: "biosavoy:film:bortglomda",
+    listingKind: "film",
+    listingTitleFi: null,
+    listingTitleSv: "BORTGLÖMDA ÖN",
+    listingTitleEn: null,
+    listingOriginalTitle: null,
+    listingYear: null,
+    listingRuntime: null,
+    listingRating: null,
+    filmTitleFi: null,
+    filmTitleEn: null,
+    filmOriginalTitle: null,
+    filmReleaseDate: null,
+    filmRuntime: null,
+    filmRating: null,
+    filmPosterPath: null,
+  };
+
+  it("titles a Swedish-only listing in Swedish, not by its id", () => {
+    expect(toFilmSummary(unmatched).title).toBe("BORTGLÖMDA ÖN");
   });
 });

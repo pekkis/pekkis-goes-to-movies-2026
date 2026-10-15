@@ -39,8 +39,13 @@ ticket.empty.display     = not none
 ```
 
 The Ajat list is the one exception in width: its unpriced ticket keeps the full 56 px
-compartment so every ticket in the list is 120 px and the titles share one x. It keeps
-the seam and notches like every other ticket.
+compartment so every ticket in the list is 120 px, and the titles share one x. A ticket
+with a chain marker is 123 px, because the 4 px marker takes the place of the 1 px left
+border. It keeps the seam and notches like every other ticket.
+
+A ticket in a view that lists several chains carries its chain's marker: a 4 px solid left
+border inside the ticket's 7 px corner radius, in the chain's shade for the current theme.
+Each chain has a light and a dark shade, keyed by its id. Accepted 2026-10-13.
 
 ## Tap targets
 

@@ -33,6 +33,33 @@ import { TRIBE_SITES, type TribeSite } from "./tribe/sites.ts";
 import { fetchEngel } from "./engel/fetch.ts";
 import { parseEngel } from "./engel/parse.ts";
 import { ENGEL_SITES, type EngelSite } from "./engel/sites.ts";
+import { fetchLinkedEvents } from "./linkedevents/fetch.ts";
+import { parseLinkedEvents } from "./linkedevents/parse.ts";
+import { LINKED_EVENTS_SITES, type LinkedEventsSite } from "./linkedevents/sites.ts";
+import { fetchJulia } from "./julia/fetch.ts";
+import { parseJulia } from "./julia/parse.ts";
+import { JULIA_SITES, type JuliaSite } from "./julia/sites.ts";
+import { fetchVaakuna } from "./vaakuna/fetch.ts";
+import { parseVaakuna } from "./vaakuna/parse.ts";
+import { VAAKUNA_SITES, type VaakunaSite } from "./vaakuna/sites.ts";
+import { fetchKirkkonummi } from "./kirkkonummi/fetch.ts";
+import { parseKirkkonummi } from "./kirkkonummi/parse.ts";
+import { KIRKKONUMMI_SITES, type KirkkonummiSite } from "./kirkkonummi/sites.ts";
+import { fetchBioSavoy } from "./biosavoy/fetch.ts";
+import { parseBioSavoy } from "./biosavoy/parse.ts";
+import { BIOSAVOY_SITES, type BioSavoySite } from "./biosavoy/sites.ts";
+import { fetchKinoAkseli } from "./kinoakseli/fetch.ts";
+import { parseKinoAkseli } from "./kinoakseli/parse.ts";
+import { KINOAKSELI_SITES, type KinoAkseliSite } from "./kinoakseli/sites.ts";
+import { fetchHamina } from "./hamina/fetch.ts";
+import { parseHamina } from "./hamina/parse.ts";
+import { HAMINA_SITES, type HaminaSite } from "./hamina/sites.ts";
+import { fetchElavienkuvien } from "./elavienkuvien/fetch.ts";
+import { parseElavienkuvien } from "./elavienkuvien/parse.ts";
+import { ELAVIENKUVIEN_SITES, type ElavienkuvienSite } from "./elavienkuvien/sites.ts";
+import { fetchKuusamotalo } from "./kuusamotalo/fetch.ts";
+import { parseKuusamotalo } from "./kuusamotalo/parse.ts";
+import { KUUSAMOTALO_SITES, type KuusamotaloSite } from "./kuusamotalo/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -244,6 +271,114 @@ const engelAdapter = (site: EngelSite): Adapter => ({
   },
 });
 
+/** The City of Helsinki's Linked Events: a culture house's labelled screenings. */
+const linkedEventsAdapter = (site: LinkedEventsSite): Adapter => ({
+  id: site.provider,
+  platform: "linked-events",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchLinkedEvents(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseLinkedEvents(raw, site), venues) };
+  },
+});
+
+/** Elokuvateatteri Julia's programme page. */
+const juliaAdapter = (site: JuliaSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchJulia(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseJulia(raw, site), venues) };
+  },
+});
+
+/** Kino Vaakuna's front page. */
+const vaakunaAdapter = (site: VaakunaSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchVaakuna(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseVaakuna(raw, site), venues) };
+  },
+});
+
+/** Kino Kirkkonummi's one page. */
+const kirkkonummiAdapter = (site: KirkkonummiSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchKirkkonummi(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseKirkkonummi(raw, site), venues) };
+  },
+});
+
+/** Bio Savoy's front page (HTTP only). */
+const bioSavoyAdapter = (site: BioSavoySite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchBioSavoy(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseBioSavoy(raw, site), venues) };
+  },
+});
+
+/** Kino Akseli's front page; from a home connection only (it challenges datacenters). */
+const kinoAkseliAdapter = (site: KinoAkseliSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchKinoAkseli(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseKinoAkseli(raw, site), venues) };
+  },
+});
+
+/** Kino Hamina's page on the town's site. */
+const haminaAdapter = (site: HaminaSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchHamina(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseHamina(raw, site), venues) };
+  },
+});
+
+/** Elävienkuvien teatteri: the listing, then each film's page. */
+const elavienkuvienAdapter = (site: ElavienkuvienSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient({ intervalMs: 1000, ...contact(env) });
+    onlyVenues(site, venues);
+    const raw = await fetchElavienkuvien(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseElavienkuvien(raw, site), venues) };
+  },
+});
+
+/** Kino Kuusamotalo: WordPress posts, one per film. */
+const kuusamotaloAdapter = (site: KuusamotaloSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchKuusamotalo(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseKuusamotalo(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
@@ -255,6 +390,15 @@ export const ADAPTERS: Adapter[] = [
   ...ISOHANNU_SITES.map(isohannuAdapter),
   ...TRIBE_SITES.map(tribeAdapter),
   ...ENGEL_SITES.map(engelAdapter),
+  ...LINKED_EVENTS_SITES.map(linkedEventsAdapter),
+  ...JULIA_SITES.map(juliaAdapter),
+  ...VAAKUNA_SITES.map(vaakunaAdapter),
+  ...KIRKKONUMMI_SITES.map(kirkkonummiAdapter),
+  ...BIOSAVOY_SITES.map(bioSavoyAdapter),
+  ...KINOAKSELI_SITES.map(kinoAkseliAdapter),
+  ...HAMINA_SITES.map(haminaAdapter),
+  ...ELAVIENKUVIEN_SITES.map(elavienkuvienAdapter),
+  ...KUUSAMOTALO_SITES.map(kuusamotaloAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",

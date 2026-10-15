@@ -99,6 +99,28 @@ describe("parseFinnkino", () => {
     expect(show(batch, "1095-7042").tags).toEqual(["event-cinema"]);
   });
 
+  it('maps "Klassikko" to the classic tag', () => {
+    const raw = structuredClone(snapshot());
+    const day = (
+      raw.showtimes as Record<
+        string,
+        {
+          showtimes: { id: string; attributeIds: string[] }[];
+          relatedData: { attributes: unknown[] };
+        }
+      >
+    )["fixture"]!;
+    day.relatedData.attributes.push({
+      id: "0000000017",
+      name: { text: "Klassikko", translations: [] },
+      shortName: { text: "Klassikko", translations: [] },
+    });
+    day.showtimes.find((s) => s.id === "1004-5833")!.attributeIds.push("0000000017");
+    const classic = parseFinnkino(raw);
+    expect(show(classic, "1004-5833").tags).toContain("classic");
+    expect(show(classic, "1004-5833").unmappedLabels).toEqual([]);
+  });
+
   it("marks event cinema listings", () => {
     const listing = batch.listings.find((l) => l.id === show(batch, "1095-7042").listingId);
     expect(listing).toMatchObject({ title: { fi: "Queen Budapest" }, kind: "event" });

@@ -533,7 +533,7 @@ class RegistryAndPagesTest(unittest.TestCase):
         p = registry.by_id("regina")
         self.assertEqual((p["label"], p["host"], p["book"], p["module"], p["where"]),
                          ("Kino Regina", "kinoregina.fi", "buy", "regina", "local"))
-        self.assertEqual(p["accent"], "#8A4854")
+        self.assertEqual(p["accent"], "#8C4853")
         self.assertEqual(sum(1 for q in registry.PROVIDERS if q["accent"] == p["accent"]), 1)
         self.assertEqual((VENUE["id"], VENUE["name"], VENUE["short"], VENUE["city"]),
                          ("regina-helsinki", "Kino Regina", "Kino Regina", "Helsinki"))
@@ -590,8 +590,9 @@ class RegistryAndPagesTest(unittest.TestCase):
         self.assertIn("Kino Regina", city)
         self.assertIn("chain-regina", city)
         # 16 since 2026-09-21: Kino K13 and Kino Helios took Helsinki to ten chains
-        # over sixteen venues.
-        self.assertIn("16 teatteria", city)
+        # over sixteen venues. 18 since 2026-10-13, with Kino Konepaja and Kino
+        # Kulttuurimylly.
+        self.assertIn("18 teatteria", city)
 
 
 class FilmIdentityTest(unittest.TestCase):

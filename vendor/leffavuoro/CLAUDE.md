@@ -244,23 +244,37 @@ provider missing from it loses its venues, not just its label.
   them. No offline test can hold this. A checkout link copied from the listing is the
   exception: it is never requested, so a fixture holds that the exact href is copied, and
   the fallback page, the film page, is the one fetched and checked.
-- **Measure a new accent against the whole set** with `python3 scripts/accent_check.py`.
-  `--search {id}` proposes one, `--candidate HEX --city A,B` tests one, `--selftest`
-  checks its own CIEDE2000 against published reference data. Do not quote an accent number
-  that no script produced: the figures first recorded for these were CIE76 mislabelled as
-  ΔE, and `docs/research/accent-colour.md` carries the corrected ones. Two views list
-  chains together, a combined city and a region row from `REGIONS`, and both are measured:
-  13 cities and 12 of the 14 regions as of 2026-09-21, so a site alone in its town is still
-  constrained by its region. Combined-city pairs hold a strict 14.4 ΔE00 minimum across
-  all three models, the worst being 14.409 of 66 pairs. Region pairs are measured on the
-  same scale, but twenty established ones sit below it, of 166. Score on the weakest of
-  the three models: Kino Engel and Cinema Sheryl are 19.2 apart to a deuteranope and 16.6
-  to everyone else. Clear 14.4 in every view a new accent enters, and never lower an
-  existing regional minimum without recording why in `IDEAS.md`. Colour stays
-  supplementary: both views also print venue names and a chain legend.
+- **Measure a new accent against the whole set, in both themes.** A chain has two shades,
+  `accent` for the light theme and `accentDark` for the dark one, in the same colour
+  family. `python3 scripts/accent_check.py` measures the light shades and `--theme dark`
+  the dark ones. `--search {id}` proposes one, `--candidate HEX --city A,B` tests one,
+  `--selftest` checks its own CIEDE2000 against published reference data. Do not quote an
+  accent number that no script produced: the figures first recorded for these were CIE76
+  mislabelled as ΔE, and `docs/research/accent-colour.md` carries the corrected ones. Two
+  views list chains together, a combined city and a region row from `REGIONS`, and both
+  are measured: 13 cities and 13 of the 15 regions as of 2026-10-13, so a site alone in its
+  town is still constrained by its region. In each theme combined-city pairs hold a strict
+  14.4 ΔE00 minimum across all three models, the worst being 14.403 light and 14.402 dark
+  of 90 pairs. Region pairs are measured on the same scale, but some established ones sit
+  below it, 16 light and 14 dark of 225. Score on the weakest of the three models: Bio
+  Grani and BioRex are 48.3 apart to a deuteranope and 32.0 to everyone else. Clear 14.4
+  in every view a new shade enters, and never lower an existing regional minimum without
+  recording why in `IDEAS.md`. Every shade reaches 3:1 contrast against the surfaces its
+  marker touches, `#FFFFFF` and `#F6F7F9` in the light theme and `#1C1F28`, `#16181F` and
+  `#0D0E12` in the dark one, and a new or moved shade sits inside `accent_check.WINDOW`.
+  Colour stays supplementary: both views also print venue names and a chain legend.
+- **The one exception is the maintainer's, and scoped.** On 2026-10-13 the maintainer let
+  pairs with Kino Konepaja, Kino Kulttuurimylly or Kannusali fall below 14.4 on a
+  deuteranope model in the Pääkaupunkiseutu row, `accent_check.EXCEPTION`. Every
+  combined-city pair still clears 14.4 on all three models, every pair with one of the
+  three clears 14.4 in normal vision in every view, and no existing regional minimum
+  drops. The 12 pairs it covers are in `docs/research/accent-colour.md` with their scores,
+  and `ExceptionTest` holds the list exact. It is a design decision for one row. It does
+  not show that the strict rule was unreachable, and it does not make the palette safe for
+  every colour-vision deficiency. Any other exception needs the maintainer's written word.
 - **A full city is re-solved, not excused.** When a city holds so many chains that no
   colour clears 14.4 against the ones already there, optimise that city's whole palette
-  jointly instead of lowering the floor, widening the L* band or writing an exception into
+  jointly instead of lowering the floor, widening the window or writing an exception into
   `tests/test_accent_check.py`. Helsinki reached ten chains on 2026-09-21: held at its
   eight existing accents the best candidate reached 12.12, and moving four of them lifted
   the city to 14.409 with every other city view still clearing 14.4 and no region minimum

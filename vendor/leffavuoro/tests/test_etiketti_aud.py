@@ -44,8 +44,9 @@ def optedin_sites():
 def site_of(provider):
     return next(s for s in load().SITES if s["provider"] == provider)
 
-# The 11 distinct values in the committed data, with the venue each belongs to and what
-# the page should say. Written out rather than derived, so the intent is reviewable.
+# 11 of the 13 distinct rooms in the data committed on 2026-10-13, with the venue each
+# belongs to and what the page should say. Kuvalipas's LOISTE and LOISTE* are the other two.
+# Written out rather than derived, so the intent is reviewable.
 EXPECTED = [
     ("TAPIO | TAPIO 1", "Tapio", "Sali Tapio 1"),
     ("TAPIO | TAPIO 2", "Tapio", "Sali Tapio 2"),

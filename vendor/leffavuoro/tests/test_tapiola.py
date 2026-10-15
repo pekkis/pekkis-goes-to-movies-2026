@@ -414,8 +414,8 @@ class RegistryAndPagesTest(unittest.TestCase):
         self.assertIn("Kino Tapiola", city)
         self.assertIn("chain-tapiola", city)
         # Four from 2026-09-19, when Cinema Sheryl joined Otaniemi beside the two
-        # Finnkinos and this one.
-        self.assertIn("4 teatteria", city)
+        # Finnkinos and this one, and five from 2026-10-13 with Kannusali.
+        self.assertIn("5 teatteria", city)
 
 
 if __name__ == "__main__":

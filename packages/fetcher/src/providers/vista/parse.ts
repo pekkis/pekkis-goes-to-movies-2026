@@ -231,7 +231,8 @@ export const parseVista = (raw: VistaRawSnapshot, site: VistaSite): ProviderBatc
       }
 
       const venueId = makeId(P, "venue", venue.slug);
-      const hall = s.TheatreAuditorium?.trim();
+      // Bio-Kaari's one hall is named "-": no name, no auditorium.
+      const hall = s.TheatreAuditorium?.trim().replace(/^[-–]+$/, "");
       const auditoriumId = hall ? makeId(P, "screen", `${venue.slug}-${slugify(hall)}`) : undefined;
       if (auditoriumId && hall && !auditoriums.has(auditoriumId)) {
         auditoriums.set(auditoriumId, { id: auditoriumId, venueId, name: hall, features: [] });

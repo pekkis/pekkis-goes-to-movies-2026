@@ -168,5 +168,7 @@
  "_comment51": "Kino Virta, 2026-10-12. Kino Virta lists the new Laban film as plain \"Pikku Kummitus Lapanen\", and the search matched 69381, Lilla Spöket Laban (2006, 44 minutes). Kino Virta's own film page gives the original title Pikku Kummitus Lapanen keppostelee and 63 minutes, the runtime Kino Olympia gives for the same film, and the screenings fall on the dates every other cinema shows 1781923. The downside is that a screening of the 2006 film listed by the bare title will also get 1781923.",
  "pikku kummitus lapanen": "1781923",
  "_comment52": "Kino Myyri, 2026-10-12. \"Drishyam: The Conclusion\" was matched to 244049, the 2013 Malayalam Drishyam, so the row showed that film's poster, plot and trailer. Myyri's own film page gives India 2026, director Abhishek Pathak, Ajay Devgn in the cast, Hindi audio and 170 minutes. TMDB 1269325 is Drishyam: The Conclusion, Hindi, released 2026-10-02, directed by Abhishek Pathak with Ajay Devgn, listed at 148 minutes. Director and cast settle it; the runtime differs, and Myyri's figure probably includes an interval.",
- "drishyam the conclusion": "1269325"
+ "drishyam the conclusion": "1269325",
+ "_comment53": "Kannusali, Espoo, 2026-10-13. \"Lumiukko - Elokuvakonsertti\" is a 30-minute concert where a ten-piece orchestra plays Howard Blake's score under the original animated film of Raymond Briggs' picture book, as the event page states. The search found only the bare \"Lumiukko\" and took 372343, Tomas Alfredson's 2017 thriller. 13396 is The Snowman (1982), directed by Dianne Jackson, 25 minutes, with Raymond Briggs in the credits.",
+ "lumiukko elokuvakonsertti": "13396"
 }

@@ -95,4 +95,25 @@ export const VISTA_SITES: VistaSite[] = defineSites(VistaSite, [
       },
     ],
   },
+  {
+    provider: "biokaari",
+    name: "Bio-Kaari",
+    homepage: "https://www.bio-kaari.fi",
+    base: "https://bio-kaari.azurewebsites.net",
+    format: "xml",
+    verifiedAt: "2026-10-15",
+    notes:
+      "The ticket host's open schedule (XML). Leffavuoro reads its MyCloudCinema web shop pages instead. The cinema's own site did not answer on 2026-10-15; OSM gives the street without a number.",
+    venues: [
+      {
+        slug: "forssa",
+        name: "Bio-Kaari",
+        city: "Forssa",
+        postalCode: "30300",
+        geo: { lat: 60.816086, lon: 23.6279503 },
+        geoSource: "osm:node/1142403445",
+        theatreId: 1048,
+      },
+    ],
+  },
 ]);

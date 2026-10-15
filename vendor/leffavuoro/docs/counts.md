@@ -1,7 +1,7 @@
 # Counts
 
 Generated. Run `python3 scripts/build_counts.py` to rewrite the block below and sync the
-four figures README states in prose; `--check` reports without writing, and `--posters`
+figures README states in prose; `--check` reports without writing, and `--posters`
 prints the two figures this file does not carry.
 
 Do not edit the block by hand. These numbers were kept by hand in `IDEAS.md` and
@@ -34,14 +34,14 @@ Earlier hand-measured passes, and what each of them measured, are in
 <!-- counts:start -->
 | | |
 |---|---:|
-| providers | 83 |
-| venues | 138 |
+| providers | 86 |
+| venues | 141 |
 | cities | 100 |
 | cities with more than one venue | 17 |
 | local providers (venues) | 14 (36) |
-| venues per adapter, largest 5 | `etiketti` 31, `Finnkino` 17, `nexxo` 17, `biorex` 12, `johku` 6 |
-| generated pages per language | 155 |
-| sitemap URLs | 466 |
+| venues per adapter, largest 5 | `etiketti` 31, `Finnkino` 17, `nexxo` 17, `biorex` 12, `johku` 7 |
+| generated pages per language | 158 |
+| sitemap URLs | 475 |
 | off-origin poster references | 0 |
-| `sw.js` CACHE | `leffavuoro-v283` |
+| `sw.js` CACHE | `leffavuoro-v288` |
 <!-- counts:end -->

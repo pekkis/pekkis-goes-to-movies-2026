@@ -94,6 +94,8 @@ const FORMATS: Record<string, Feature> = {
 const TAGS: Record<string, ScreeningTag> = {
   Ennakko: "preview",
   EventCine: "event-cinema",
+  // "Classic": a re-run of an older film (seen 2026-10-15).
+  Klassikko: "classic",
 };
 
 /**

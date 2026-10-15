@@ -587,7 +587,7 @@ h1{font-size:1.5rem;font-weight:800;line-height:1.2;letter-spacing:-.01em;margin
 :root[data-theme=dark] .cta:hover{background:var(--accent);color:var(--bg)}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]) .cta:hover{background:var(--accent);color:var(--bg)}}
 .legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin:14px 0 0;font-size:.72rem;color:var(--muted)}
-.legend .lg{padding-left:8px;border-left:3px solid var(--chain,var(--line))}
+.legend .lg{padding-left:8px;border-left:4px solid var(--chain,var(--line))}
 h2.day{position:sticky;top:0;z-index:1;background:var(--bg);font-size:.95rem;font-weight:800;padding:16px 0 8px;margin-top:10px;border-bottom:1px solid var(--line)}
 .film{display:flex;gap:18px;padding:20px 0;border-bottom:1px solid var(--line)}
 .poster{flex:0 0 92px;width:92px;height:132px;border-radius:8px;object-fit:cover;background:var(--surface);box-shadow:var(--shadow)}
@@ -612,7 +612,7 @@ h3{font-size:1.15rem;font-weight:800;line-height:1.25;letter-spacing:-.01em}
 .grid .stub .aud .a{white-space:normal}
 .grid .stub .price{grid-area:price;flex:none;width:auto;display:flex;align-items:center;padding:0 10px 0 8px;font-size:.72rem;color:var(--muted);white-space:nowrap}
 .stub{display:flex;align-items:stretch;min-height:40px;background:var(--chip-bg);border:1px solid var(--line);border-radius:7px;box-shadow:var(--shadow);text-decoration:none;color:inherit;font-variant-numeric:tabular-nums;position:relative;overflow:hidden}
-.stub[class*="chain-"]{border-left:3px solid var(--chain,var(--line))}
+.stub[class*="chain-"]{border-left:4px solid var(--chain,var(--line))}
 .stub .time{display:flex;align-items:center;padding:0 10px 0 12px;font-weight:800;font-size:.92rem;line-height:1.2;white-space:nowrap}
 .stub .aud{display:flex;align-items:center;flex:1 1 auto;min-width:0;padding:6px 12px 6px 10px;font-size:.72rem;line-height:1.3;color:var(--muted);position:relative}
 .stub .aud{flex-wrap:wrap;gap:0 4px}
@@ -628,12 +628,13 @@ h3{font-size:1.15rem;font-weight:800;line-height:1.25;letter-spacing:-.01em}
 .stub .price:empty{flex:0 0 16px;width:16px;padding:0}
 .grid .stub .price:empty{width:16px;min-width:16px;padding:0}
 .stub:hover,.stub:active,.stub:focus-visible{--sq:var(--accent);border-top-color:var(--accent);border-right-color:var(--accent);border-bottom-color:var(--accent)}
+.stub:not([class*="chain-"]):hover,.stub:not([class*="chain-"]):active,.stub:not([class*="chain-"]):focus-visible{border-left-color:var(--accent)}
 .also{margin-top:24px}
 .also h2{font-size:.95rem;font-weight:800;margin-bottom:10px}
 .also ul{list-style:none;display:flex;flex-wrap:wrap;gap:0 20px}
 .vchip{position:relative;display:inline-flex;align-items:center;min-height:44px;padding:0 2px;color:inherit;font-size:.85rem;font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:var(--line)}
-.vchip[class*="chain-"]{padding-left:13px}
-.vchip[class*="chain-"]::before{content:"";position:absolute;left:0;top:50%;width:3px;height:1em;margin-top:-.5em;border-radius:2px;background:var(--chain,var(--line))}
+.vchip[class*="chain-"]{padding-left:14px}
+.vchip[class*="chain-"]::before{content:"";position:absolute;left:0;top:50%;width:4px;height:1em;margin-top:-.5em;border-radius:2px;background:var(--chain,var(--line))}
 .vchip:hover{text-decoration-color:var(--ink)}
 .vchip:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
 footer{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:.78rem;display:flex;flex-direction:column;gap:6px}
@@ -1739,11 +1740,21 @@ def main(today=None) -> int:
                              for sh in days[iso].values() for s in sh
                              if (s.get("img") or "").startswith("data/posters/")), None)
         og = f"/{first_poster}" if first_poster else "/icon-512.png"
-        # One 3 px rule per chain on the stubs and on the venue links, and a legend that
-        # names each colour. Never colour alone: every stub also names its cinema.
+        # One marker colour per chain and theme on the stubs and on the venue links, and a
+        # legend that names each colour. Never colour alone: every stub also names its cinema.
         chain_ids = sorted({v["provider"] for v in vs}, key=lambda k: chains.get(k, k))
-        chain_css = "".join(f".chain-{esc(k)}{{--chain:{esc(providers[k]['accent'])}}}"
-                            for k in chain_ids if providers.get(k, {}).get("accent"))
+        light = [(k, providers[k]["accent"]) for k in chain_ids
+                 if providers.get(k, {}).get("accent")]
+        dark = [(k, providers[k]["accentDark"]) for k in chain_ids
+                if providers.get(k, {}).get("accentDark")]
+        chain_css = "".join(f".chain-{esc(k)}{{--chain:{esc(h)}}}" for k, h in light)
+        if dark:
+            # The stored choice first and the OS otherwise, as the page's tokens are set.
+            chain_css += "".join(f":root[data-theme=dark] .chain-{esc(k)}{{--chain:{esc(h)}}}"
+                                 for k, h in dark)
+            chain_css += ("@media(prefers-color-scheme:dark){" + "".join(
+                f":root:not([data-theme=light]) .chain-{esc(k)}{{--chain:{esc(h)}}}"
+                for k, h in dark) + "}")
         legend = ('<p class="legend">' + "".join(
             f'<span class="lg chain-{esc(k)}">{esc(chains.get(k, k))}</span>' for k in chain_ids)
             + "</p>")

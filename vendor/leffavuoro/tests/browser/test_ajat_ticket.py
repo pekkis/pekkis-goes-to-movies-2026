@@ -1,7 +1,7 @@
 """The Ajat ticket's width, in a real engine (2026-10-04).
 
 DESIGN.md: every ticket in the Ajat list is 120 px, the time's 62 and the price's 56 plus
-the borders, so the titles share one x; a chain tint adds 2. WebKit sized the ticket from
+the borders, so the titles share one x; a chain tint adds 3. WebKit sized the ticket from
 the time's text instead of its 62 px basis, drew it 111.84 px wide and clipped the price's
 sign: "14,95 €" lost its "€" on every iPhone (measured 2026-10-04). Chromium drew 120,
 so only a run in WebKit shows it, which is why CI runs this file in both engines.
@@ -12,11 +12,11 @@ none, so the city view tints its tickets and Orion alone does not.
 import http.server
 import json
 import os
-import threading
 import unittest
 
-from playwright.sync_api import expect, sync_playwright
+from playwright.sync_api import expect
 
+import _harness
 import test_client_browser as base
 
 DAY = "2026-09-14"
@@ -73,16 +73,16 @@ class AjatTicketWidth(unittest.TestCase):
     def setUpClass(cls):
         cls.srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
         cls.srv.served, cls.srv.requested = [], []
-        threading.Thread(target=cls.srv.serve_forever, daemon=True).start()
+        _harness.start(cls.srv)
         cls.origin = f"http://127.0.0.1:{cls.srv.server_port}"
-        cls.pw = sync_playwright().start()
+        cls.pw = _harness.playwright()
         engine = os.environ.get("KINO_BROWSER_ENGINE", "chromium")
         channel = os.environ.get("KINO_BROWSER_CHANNEL") if engine == "chromium" else None
         cls.browser = getattr(cls.pw, engine).launch(channel=channel or None, headless=True)
 
     @classmethod
     def tearDownClass(cls):
-        cls.browser.close(); cls.pw.stop(); cls.srv.shutdown()
+        cls.browser.close(); _harness.stop(cls.srv)
 
     def rows(self, width, area, lang):
         ctx = self.browser.new_context(viewport={"width": width, "height": 900},
@@ -101,7 +101,7 @@ class AjatTicketWidth(unittest.TestCase):
         self.assertTrue(any(r["price"] for r in rows) and any(not r["price"] for r in rows))
         for r in rows:
             self.assertEqual(r["tinted"], tinted, r)
-            self.assertAlmostEqual(r["w"], 122 if tinted else 120, delta=0.01, msg=r)
+            self.assertAlmostEqual(r["w"], 123 if tinted else 120, delta=0.01, msg=r)
             self.assertLessEqual(r["over"], 0, r)
             self.assertLessEqual(r["priceOver"], 0, r)
         self.assertLess(max(r["x"] for r in rows) - min(r["x"] for r in rows), 0.01, rows)

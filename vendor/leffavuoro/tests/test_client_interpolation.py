@@ -101,16 +101,28 @@ class AttributeInterpolationTest(unittest.TestCase):
 
 
 class ChainPaletteTest(unittest.TestCase):
-    """`applyProviders` writes `.chain-{id}{--chain:{accent}}` into a <style>."""
+    """`applyProviders` writes `.chain-{id}{--chain:{accent}}` into a <style>, and a
+    `[data-theme="dark"]` rule with `accentDark` after it."""
+
+    MAP = ".map(p => `.chain-${p.id}{--chain:${p.accent}}`"
 
     def body(self):
-        return HTML[HTML.index("el.textContent = PROVIDERS.filter"):
-                    HTML.index(".map(p => `.chain-${p.id}{--chain:${p.accent}}`).join('');")]
+        return HTML[HTML.index("el.textContent = PROVIDERS.filter"):HTML.index(self.MAP)]
+
+    def rule(self):
+        start = HTML.index(self.MAP)
+        return HTML[start:HTML.index(".join('');", start)]
 
     def test_both_halves_of_the_rule_are_shape_checked_before_they_are_written(self):
         body = self.body()
         self.assertIn("/^[a-z0-9-]+$/.test(p.id)", body)
         self.assertIn("/^#[0-9a-f]{6}$/i.test(p.accent)", body)
+
+    def test_the_dark_shade_is_shape_checked_before_it_is_written(self):
+        rule = self.rule()
+        self.assertIn("/^#[0-9a-f]{6}$/i.test(p.accentDark || '')", rule)
+        self.assertIn('`[data-theme="dark"] .chain-${p.id}{--chain:${p.accentDark}}`', rule)
+        self.assertLess(rule.index("test(p.accentDark"), rule.index("${p.accentDark}"))
 
     def test_a_provider_that_fails_the_shape_is_left_out_and_said_out_loud(self):
         body = self.body()
@@ -125,6 +137,7 @@ class ChainPaletteTest(unittest.TestCase):
             with self.subTest(provider=p["id"]):
                 self.assertRegex(p["id"], ident)
                 self.assertRegex(p["accent"], accent)
+                self.assertRegex(p["accentDark"], accent)
 
     def test_the_committed_fallback_passes_them_too(self):
         """`PROV_FALLBACK` is the list in force when data/providers.json cannot be read,
@@ -132,12 +145,15 @@ class ChainPaletteTest(unittest.TestCase):
         block = HTML.split("/* providers:start */")[1].split("/* providers:end */")[0]
         ids = re.findall(r"id:'([^']*)'", block)
         accents = re.findall(r"accent:'([^']*)'", block)
+        darks = re.findall(r"accentDark:'([^']*)'", block)
         self.assertEqual(len(ids), len(registry.PROVIDERS))
         self.assertEqual(len(accents), len(registry.PROVIDERS))
-        for i, a in zip(ids, accents):
+        self.assertEqual(len(darks), len(registry.PROVIDERS))
+        for i, a, d in zip(ids, accents, darks):
             with self.subTest(provider=i):
                 self.assertRegex(i, r"^[a-z0-9-]+$")
                 self.assertRegex(a, r"^#[0-9a-fA-F]{6}$")
+                self.assertRegex(d, r"^#[0-9a-fA-F]{6}$")
 
 
 if __name__ == "__main__":

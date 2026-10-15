@@ -239,6 +239,38 @@ class FestivalBracketTest(unittest.TestCase):
                 self.assertEqual(enrich_tmdb.clean(title), title)
 
 
+class FilmPrefixAndRatingTest(unittest.TestCase):
+    """Kannusali's "Elokuva: Flow. (K7)", read 2026-10-13: a "film" prefix and the age
+    rating in brackets. Both come off the search string only, and the run keeps the
+    published title."""
+
+    def test_both_come_off_the_search_string(self):
+        for published, film in (("Elokuva: Kevlarsjäl (K12)", "Kevlarsjäl"),
+                                ("Elokuva: Isänpäivä (K7)", "Isänpäivä"),
+                                ("Elokuva: Michael (K12)", "Michael"),
+                                ("elokuva:Michael ( k-12 )", "Michael"),
+                                ("Elokuva: Flow. (K7)", "Flow."),
+                                ("Elokuva: Nämä pienet asiat. (S)", "Nämä pienet asiat.")):
+            with self.subTest(published=published):
+                self.assertEqual(enrich_tmdb.clean(published), film)
+
+    def test_the_trailing_full_stop_still_matches_exactly(self):
+        """norm() drops it, and the exact comparison is made on norm()."""
+        hits = [{"id": 1, "title": "Flow", "original_title": "Straume"}]
+        self.assertEqual(enrich_tmdb.exact_hits(hits, enrich_tmdb.clean("Elokuva: Flow. (K7)")),
+                         hits)
+
+    def test_the_published_title_keeps_both(self):
+        self.assertEqual(enrich_tmdb.norm("Elokuva: Flow. (K7)"), "elokuva flow k7")
+        self.assertEqual(strands.split("Elokuva: Flow. (K7)"), ("Elokuva: Flow. (K7)", ""))
+
+    def test_anything_else_is_left_alone(self):
+        for title in ("(K7)", "Elokuva", "Elokuvakonsertti: Lumiukko", "Kauhua (K7) osa 2",
+                      "Lumiukko - Elokuvakonsertti", "Agentti (K9)", "Kirjain (T)"):
+            with self.subTest(title=title):
+                self.assertEqual(enrich_tmdb.clean(title), title)
+
+
 class AudioMarkerTest(unittest.TestCase):
     """A marker names the audio, never the film, so it comes off the search string.
 

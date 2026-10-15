@@ -78,6 +78,7 @@ export const listScreenings = async (
       "a.name as auditorium",
       "l.kind as listingKind",
       "l.titleFi as listingTitleFi",
+      "l.titleSv as listingTitleSv",
       "l.titleEn as listingTitleEn",
       "l.originalTitle as listingOriginalTitle",
       "l.year as listingYear",
