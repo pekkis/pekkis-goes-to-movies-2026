@@ -813,6 +813,15 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Le
 
 ---
 
+## Kurikan Kino (Kurikka)
+
+- **Found** through elokuviin.com's list of cinemas (2026-10-15); not in Leffavuoro.
+- **The front page** [V] has one `li.elokuva-thumb` card per film: the film page link, `.elokuva-nimi` with the age class (`ikaraja-7`, `ikaraja-s`), the runtime as "1 h 49 min", one price ("13 €"), and each showtime as `span.elokuva-aika`. Cards without times are coming soon and skipped.
+- **The stamp** `esitysaika` is the Helsinki wall-clock time written as if it were UTC (1791572400 is 19:00Z, printed "pe 9.10. 19:00") [V]. It gives the year; the printed day and time must agree with it, or the row is `invalid-row`.
+- **Times are printed twice** (the desktop card and a mobile copy); only the card's own copy is read.
+- **The page lists the past week too**, so the window filter drops the old ones.
+- **Tickets:** the site states no way of buying, so booking is `info` and each screening links to the film's page.
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
