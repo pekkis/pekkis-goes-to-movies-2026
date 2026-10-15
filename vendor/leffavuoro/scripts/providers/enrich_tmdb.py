@@ -196,6 +196,11 @@ TRAIL_FESTIVAL = re.compile(r"\s*\(\s*taidekaupungin\s+elokuvajuhlat\s*\)\s*$", 
 # mark is matched with it: Kino Tapiola's "Matka Piemonteen (ennakkonäytös!)" (2026-09-28).
 PAREN_STRAND = re.compile(r"\(\s*([^()]{1,40}?)\s*!?\s*\)\s*$")
 
+# Kannusali's "Elokuva: Flow. (K7)" (2026-10-13). Kept out of strands.EVENT_PREFIXES,
+# which run.py also splits off the published title.
+SEARCH_PREFIXES = ("elokuva",)
+TRAIL_RATING = re.compile(r"(?<=\S)\s*\(\s*(?:k\s*-?\s*(?:7|12|16|18)|s)\s*\)\s*$", re.I)
+
 
 def clean(title):
     """Strip event prefixes and format noise before searching TMDB.
@@ -204,9 +209,9 @@ def clean(title):
     the title as the cinema published it, and normTitle() in index.html has to agree
     with that key, so the key itself must never be touched here.
     """
-    t = (title or "").strip()
+    t = TRAIL_RATING.sub("", (title or "").strip())
     low = t.lower()
-    for pre in EVENT_PREFIXES:
+    for pre in EVENT_PREFIXES + SEARCH_PREFIXES:
         if low.startswith(pre + ":"):
             t = t[len(pre) + 1:].strip()
             break

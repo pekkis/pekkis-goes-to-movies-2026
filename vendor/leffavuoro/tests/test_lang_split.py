@@ -21,10 +21,11 @@ HTML = (_ctx.ROOT / "index.html").read_text(encoding="utf-8")
 class LanguageLineTest(unittest.TestCase):
     def test_every_ticket_draws_its_own_screening_s_language(self):
         """The card's stub and the sheet's stub each draw it whenever the screening has one."""
-        self.assertIn("<span class=\"aud${t.lang ? ' twoline' : ''}\">", HTML)
-        self.assertIn("<span class=\"aud${s.lang ? ' twoline' : ''}\">", HTML)
-        self.assertIn("${t.lang ? slangHtml(t.lang, facts.length > 0) : ''}", HTML)  # the card's stub
-        self.assertIn("${s.lang ? slangHtml(s.lang, facts.length > 0) : ''}", HTML)  # the sheet's stub
+        # One builder, audHtml, since 2026-10-14; both stubs hand it their screening's lang.
+        self.assertIn("<span class=\"aud${lang ? ' twoline' : ''}\">", HTML)
+        self.assertIn("${lang ? slangHtml(lang, facts.length > 0) : ''}", HTML)
+        self.assertIn("${audHtml(facts, glyphs, t.lang, !multiTheatre)}", HTML)  # the card's stub
+        self.assertRegex(HTML, r"\$\{audHtml\(facts, [^\n]*, s\.lang, !multi\)\}")  # the sheet's
         self.assertEqual(len(re.findall(r'class="slang"', HTML)), 1, "one builder for both")
 
     def test_the_details_rows_never_carry_it(self):
@@ -43,15 +44,14 @@ class LanguageLineTest(unittest.TestCase):
     def test_the_language_line_is_the_last_item_in_its_compartment(self):
         """`.slang` takes a full row, so anything after it lands on a third line."""
         seen = 0
-        for m in re.finditer(r'<span class="aud\$\{[^"]*?"[^>]*>(.*?)</span><span class="price"',
-                             HTML, re.S):
+        for m in re.finditer(r'<span class="aud\$\{[^"]*?"[^>]*>(.*?)</span>`', HTML, re.S):
             body = m.group(1)
             if "slangHtml(" not in body:
                 continue
             seen += 1
             self.assertGreater(body.index("slangHtml("), body.index("glyphRow"),
                                "the language line must follow the glyph row")
-        self.assertEqual(seen, 2, "both stubs checked")
+        self.assertEqual(seen, 1, "the one builder both stubs use")
 
     def test_the_glyph_centres_on_the_whole_compartment_not_its_first_row(self):
         """Reported 2026-09-20: the Anniskelu A looked high on a ticket whose language

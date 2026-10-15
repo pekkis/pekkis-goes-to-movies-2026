@@ -42,6 +42,8 @@ def _tmdb_complete(c):
 EVENT_ATTRS = {"anniskelu": ("Anniskelu", ""),
                "annisk_k18": ("Anniskelu", "K-18"),
                "eventcine": ("Event cinema", "")}
+# OCAPI attribute 0000000060, "ei tekstitystä", read 2026-10-13.
+NO_SUBS_ATTR = "eitext"
 # The same hand-written escape hatch enrich_tmdb.py uses, keyed by the normalised
 # published title. Until now only the cloud pass could read it, so a Finnkino film TMDB
 # cannot be searched by title had no fix at all: "Maailman rikkain nainen" already had
@@ -638,6 +640,7 @@ def main() -> int:
                 continue
             fmt_list, lang_list = [], []
             show_age = ""      # a limit this screening adds on top of the film's rating
+            no_subs = False
             for aid in (s.get("attributeIds") or []):
                 a = att.get(str(aid), {})
                 lbl = t(a, "shortName", "text") or t(a, "name", "text")
@@ -653,11 +656,16 @@ def main() -> int:
                         fmt_list.append(tag)
                     if lim:
                         show_age = lim
+                elif lbl.lower() == NO_SUBS_ATTR:
+                    no_subs = True
                 else:
                     # Anything else is dropped: marketing and region codes. Logged once
                     # per run so a new attribute cannot go missing silently the way
                     # Anniskelu did.
                     unknown_attrs.add(lbl)
+            # After the loop so it follows the audio tag; a named subtitle language wins.
+            if no_subs and not any(x.endswith("-S") for x in lang_list):
+                lang_list.append("XX-S")
             attr_names = " · ".join(fmt_list)
             lang_attr = ", ".join(lang_list)
             rating_raw = t(rat.get(str(film.get("censorRatingId", "")), {}), "classification", "text")

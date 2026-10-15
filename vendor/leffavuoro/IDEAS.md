@@ -25,15 +25,27 @@ contract change is explained here, never in `docs/research/`.
 
 ## Active work
 
+### Non-browser GitHub Actions bottlenecks
+
+Measured 2026-10-14. One main run repeated a commit its branch had already verified; the
+verifier now names what a refused step looked like. Since the same day `run-cloud.log` lists
+each site's host group and its queued, started and ended seconds. Over 113 runs to
+2026-10-13 the 8 workers were busy a median 81% of the wall, so a better submission order
+could save at most a median 37 s a run. More workers stay declined
+([docs/archive/2026-09-pipeline.md](docs/archive/2026-09-pipeline.md)). Poster mirroring
+and the TMDB retry are unchanged.
+**Next action:** after five cloud runs with the site lines, replay registry order against
+longest first offline. No order or worker change until the maintainer decides.
+
 ### Provider coverage, and what is next
 
-83 providers, 134 venues, 96 cities, declared and committed alike, measured 2026-09-21.
+86 providers, 141 venues, 100 cities, declared and committed alike, measured 2026-10-13.
 Check for an existing platform first. Every candidate assessed, with its evidence, is in
 [docs/research/ticketing-platforms.md](docs/research/ticketing-platforms.md).
 
 - **Sun Kino:** `allproducts.json` closed (403, session required); another source untested.
   **Eventio:** closed 2026-09-19. Its one known tenant is Kino Regina, already built.
-- **Complete:** eTiketti (twenty-one), Nexxo (eight), Kinola (four), Johku (six),
+- **Complete:** eTiketti (twenty-one), Nexxo (eight), Kinola (five), Johku (seven),
   Cinemahouse (three), TMB (four), MyCloudCinema's two, Vista's one, the parser-shaped.
 - **Next action:** none from these.
 
@@ -103,25 +115,17 @@ films would tie that way against shorts, each settled by its runtime
 
 ### The cloud cron fires about half its slots
 
-23 of 42 slots ran 09-15 to 09-25; since 09-20 only 06:30 and 14:30 UTC, a median 80 min
-late (audit, 2026-09-25). External, cause unknown. **Unblocks when:** GitHub runs them.
+Since 09-20 a scheduled run arrives after the 06:30 and the 14:30 UTC slot each day and none
+after 02:30 or 10:30; the median lag rose from 61 to 134 min (Actions API, read 2026-10-14
+for 09-15 to 10-13). Which slot a run belongs to is not recorded, so a late event cannot be
+told from a dropped one. Jobs start seconds after a run is created. External, cause unknown.
+**Unblocks when:** GitHub runs them.
 
 ### Julia 1&2 Hyvinkää prints two prices on one screening
 
 All 21 Julia showtimes carry `14€ / 12€` (2026-09-24); the app and pages label it
 "alkaen 14 €" and JSON-LD says 14. The maintainer holds taking the minimum: 12 € may be a
 conditional discount. **Unblocks when:** Julia's own page says what each amount is for.
-
-### Kino Konepaja has no programme to read
-
-A real Kinola tenant publishing no screening, so it gets a `SITES` entry the day it lists
-one. Re-read 2026-09-20: `/naytokset/` now redirects to the front page, whose event list
-still says "Ei tulevia tapahtumia." above a coming-soon grid, and the site states the
-cinema is shut and reopening soon. Evidence in
-[docs/research/kinola.md](docs/research/kinola.md); the classifier and the
-three tenants that do publish are in
-[docs/archive/2026-09-providers.md](docs/archive/2026-09-providers.md).
-**Next action:** re-read the listing, at the front page now.
 
 ### Staleness monitor: the ping
 
@@ -275,6 +279,13 @@ Each of these was looked at and set down, with the reason. None is scheduled.
   up there either way, which makes this no evidence rather than a proof. Two sites name
   no `base` at all, Kino Engel and Kino Akseli; both are local-half, where the cloud
   pool's base-less group does not apply.
+- Reading BioRex from its webshop's GET API. Measured 2026-10-13: it matched all 1,471 rows,
+  has no field for three tags on 264 of them, and caches its window by the first caller.
+  Evidence: [docs/research/ticketing-platforms.md](docs/research/ticketing-platforms.md).
+- Reading Johku's schedule endpoint directly. Measured 2026-10-13: identical to the
+  embedded schedule on 24 of 24 comparisons, and the embedded read has not failed for
+  completeness since 2026-10-09. Evidence in the same file.
+- Kannusali's non-film events, kept out on 2026-10-15. Reasons in the providers archive.
 
 **Ops and pages**
 

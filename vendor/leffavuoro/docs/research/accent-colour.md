@@ -5,18 +5,67 @@ only source for a number here: the figures that used to sit in `IDEAS.md` were C
 mislabelled as ΔE and are corrected below. Run `--selftest` to check the implementation
 against Sharma, Wu & Dalal's reference data.
 
-**Status.** The rule is in [CLAUDE.md](../../CLAUDE.md) under "Adding a provider": score on
-the weakest of normal vision and both deuteranope models, clear 14.4 ΔE00 in every view a
-new accent enters where that is reachable, and never lower an existing regional minimum
-without recording why. `FLOOR = 14.4` is that policy threshold, not a measurement.
+**Status.** The rule is in [CLAUDE.md](../../CLAUDE.md) under "Adding a provider": measure
+each theme on its own, score on the weakest of normal vision and both deuteranope models,
+clear 14.4 ΔE00 in every view a new shade enters where that is reachable, never lower an
+existing regional minimum without recording why, and reach 3:1 against the surfaces the
+marker touches. `FLOOR = 14.4` is that policy threshold, not a measurement. One scoped
+exception exists, listed in the first entry below.
 
-**Open.** Fourteen established region pairs sit below 14.4 and none is recoloured, of 170
-shared-view pairs measured 2026-09-19; the twelve the entry below lists are the twelve that
-were below on 2026-09-07, and `tests/test_accent_check.py` holds the current totals. Next
-step: nothing, unless a new provider lands in one of those regions, which is when the pair
-has to be re-measured.
+**Open.** Besides the twelve exceptions, 16 established region pairs sit below 14.4 in the
+light theme and 14 in the dark, of 225 region pairs measured 2026-10-13, and none is
+recoloured. `tests/test_accent_check.py` holds the current totals. Next step: nothing,
+unless a new provider lands in one of those regions, which is when the pair has to be
+re-measured.
 
 ---
+
+### Per-theme shades and the scoped exception (2026-10-13)
+
+**Findings**, measured with `accent_check.py` on 2026-10-13 over 86 providers:
+
+| | light | dark |
+|---|---|---|
+| shared-view pairs | 315 | 315 |
+| worst combined-city pair | 14.403, Kino Kulttuurimylly / Riviera, Helsinki | 14.402, Bio Grand / Kino Myyri, Vantaa |
+| worst Helsinki pair, of 66 | 14.403 | 14.405 |
+| established region pairs below 14.4 | 16 | 14 |
+| lowest established region pair | 6.924, Bio Grani / Kino Regina | 6.353, Bio Grand / Kino K13 |
+| lowest contrast on the theme's surfaces | 3.00:1, Haapamäen Elokuvat | 3.00:1, Bio Forum |
+
+The lowest Pääkaupunkiseutu pair of two established chains was 6.347 before the change.
+Every other region minimum is at or above its value before the change in both themes.
+
+The maintainer's exception of 2026-10-13 covers these twelve pairs, all in the
+Pääkaupunkiseutu row, ΔE00 as normal / Viénot / Machado:
+
+| theme | pair | normal | Viénot | Machado |
+|---|---|---|---|---|
+| light | Bio Grand / Kino Kulttuurimylly | 23.958 | 6.510 | 6.410 |
+| light | Bio Grani / Kino Konepaja | 37.786 | 11.642 | 11.487 |
+| light | Kino Engel / Kannusali | 54.220 | 6.657 | 6.430 |
+| light | Heureka / Kino Konepaja | 26.021 | 10.942 | 10.463 |
+| light | Kannusali / Korjaamo Kino | 36.752 | 9.221 | 8.555 |
+| light | Kino Kulttuurimylly / Cinema Sheryl | 25.388 | 12.153 | 11.989 |
+| dark | Bio Grand / Kino Kulttuurimylly | 38.518 | 8.137 | 8.467 |
+| dark | Kino Helios / Kannusali | 56.847 | 7.310 | 6.360 |
+| dark | Heureka / Kino Konepaja | 31.696 | 6.781 | 6.400 |
+| dark | Kannusali / Kino Regina | 43.851 | 8.666 | 8.186 |
+| dark | Kino Myyri / Kino Kulttuurimylly | 18.356 | 6.353 | 6.493 |
+| dark | Kino Kulttuurimylly / Cinema Sheryl | 32.104 | 9.699 | 9.101 |
+
+Every pair with one of the three new chains clears 14.4 in normal vision in every view,
+the lowest being 14.434 in the dark theme.
+
+**Limits.** The deuteranope columns are simulations. A 4 px marker is thinner than the
+patches CIEDE2000 describes, so a pair above 14.4 can still look close at marker size. The
+search that chose the palette ranked candidates with a small-mark model (Szafir 2018),
+clamped at 0.25 degrees, which is not in this repository and is not an acceptance rule.
+Nothing was tested with people.
+
+**Status.** Implemented: `accent` and `accentDark` in the registry, `--theme` and
+`EXCEPTION` in `accent_check.py`, `ThemeTest` and `ExceptionTest`. Next step: none.
+
 
 ### The accent rule covers regions as well as cities (2026-09-07)
 `scripts/accent_check.py` compared chains that share a city. Region rows shipped in v125

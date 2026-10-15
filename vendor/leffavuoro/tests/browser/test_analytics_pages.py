@@ -22,7 +22,7 @@ import re
 import unittest
 from urllib.parse import urlsplit
 
-from playwright.sync_api import sync_playwright
+import _harness
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 ORIGIN = "https://leffavuoro.fi"
@@ -72,7 +72,7 @@ def pages():
 class GeneratedPageAnalytics(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.pw = sync_playwright().start()
+        cls.pw = _harness.playwright()
         engine = os.environ.get("KINO_BROWSER_ENGINE", "chromium")
         channel = os.environ.get("KINO_BROWSER_CHANNEL") if engine == "chromium" else None
         cls.browser = getattr(cls.pw, engine).launch(channel=channel or None, headless=True)
@@ -83,7 +83,7 @@ class GeneratedPageAnalytics(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.browser.close(); cls.pw.stop()
+        cls.browser.close()
 
     def context(self, *, init=(), posthog="stand-in", origin=ORIGIN):
         """-> (context, posthog request log). `posthog` is "stand-in", "abort" or "hang"."""

@@ -153,37 +153,39 @@ class RenderTest(unittest.TestCase):
 
 
 class ReadmeRulesTest(unittest.TestCase):
-    """Four numbers in flowing prose, each anchored on the words around it."""
+    """Numbers in flowing prose, each anchored on the words around it."""
 
-    PROSE = ("Showtimes for 1 venues in 2 cities across 3 providers: Finnkino.\n"
+    PROSE = ("It has showtimes for 1 venues in 2 cities across 3 providers.\n"
              "The picker switches between its 2 cities and those regions.\n"
-             "4 per language, 5 sitemap URLs: 1 venues plus the seventeen cities with "
-             "more than one venue.\n"
-             "Schedule data belongs to the respective cinemas, the 3 providers listed at "
-             "the top of this page.\n")
+             "Each language has 4 pages, one for each of the 1 venues and the seventeen "
+             "cities with more than one venue.\n"
+             "Together with the front page the sitemap has 5 URLs.\n"
+             "Schedule data belongs to the cinemas, the 3 providers listed under "
+             "Cinemas.\n")
 
     C = {"venues": 134, "cities": 96, "providers": 83, "pages_per_language": 151,
          "sitemap_urls": 454, "multi_venue_cities": 17}
 
     def test_every_site_is_rewritten(self):
         out = build_counts.readme_text(self.PROSE, self.C)
-        self.assertIn("Showtimes for 134 venues in 96 cities across 83 providers", out)
+        self.assertIn("showtimes for 134 venues in 96 cities across 83 providers", out)
         self.assertIn("its 96 cities and those regions", out)
-        self.assertIn("151 per language, 454 sitemap URLs: 134 venues plus the "
+        self.assertIn("Each language has 151 pages, one for each of the 134 venues and the "
                       "seventeen cities", out)
-        self.assertIn("the 83 providers listed at the", out)
+        self.assertIn("the sitemap has 454 URLs", out)
+        self.assertIn("the 83 providers listed under", out)
         self.assertEqual(out.count("\n"), self.PROSE.count("\n"))
 
     def test_the_multi_venue_city_count_is_written_as_a_word(self):
         out = build_counts.readme_text(self.PROSE, {**self.C, "multi_venue_cities": 20})
-        self.assertIn("134 venues plus the twenty cities", out)
+        self.assertIn("134 venues and the twenty cities", out)
         out = build_counts.readme_text(self.PROSE, {**self.C, "multi_venue_cities": 31})
-        self.assertIn("134 venues plus the 31 cities", out, "no word for it, so the digit")
+        self.assertIn("134 venues and the 31 cities", out, "no word for it, so the digit")
 
     def test_a_reworded_anchor_is_reported_rather_than_skipped(self):
         """The failure this generator exists to prevent is a number nobody noticed going
         stale. An anchor that stops matching has to be loud."""
-        broken = self.PROSE.replace("Showtimes for", "Showtimes covering")
+        broken = self.PROSE.replace("showtimes for", "showtimes covering")
         with self.assertRaises(RuntimeError) as e:
             build_counts.readme_text(broken, self.C)
         self.assertIn("matched 0 times", str(e.exception))

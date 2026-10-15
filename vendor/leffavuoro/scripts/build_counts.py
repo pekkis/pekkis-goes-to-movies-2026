@@ -157,7 +157,7 @@ def render(text, body):
     return text[:a + len(START)] + body + text[b:]
 
 
-# README states four of these figures in prose. Each pattern is anchored on words either
+# README states some of these figures in prose. Each pattern is anchored on words either
 # side so it cannot match a number somewhere else, and each must match exactly once: a
 # rewording that breaks an anchor is reported rather than silently skipped, which is the
 # failure this generator exists to prevent.
@@ -165,18 +165,19 @@ def readme_rules(c):
     ones = {1: "one", 2: "two", 14: "fourteen", 17: "seventeen", 20: "twenty"}
     words = ones.get(c["multi_venue_cities"], str(c["multi_venue_cities"]))
     return [
-        (r"(Showtimes for )\d+( venues in )\d+( cities across )\d+( providers)",
+        (r"(showtimes for )\d+( venues in )\d+( cities across )\d+( providers)",
          rf"\g<1>{c['venues']}\g<2>{c['cities']}\g<3>{c['providers']}\g<4>"),
         (r"(its )\d+( cities and those regions)", rf"\g<1>{c['cities']}\g<2>"),
-        (r"\d+( per language, )\d+( sitemap URLs: )\d+( venues plus the )\w+( cities)",
-         rf"{c['pages_per_language']}\g<1>{c['sitemap_urls']}\g<2>{c['venues']}"
-         rf"\g<3>{words}\g<4>"),
-        (r"(the )\d+( providers listed at the)", rf"\g<1>{c['providers']}\g<2>"),
+        (r"(Each language has )\d+( pages, one for each of the )\d+( venues and the )\w+"
+         r"( cities with more than one venue)",
+         rf"\g<1>{c['pages_per_language']}\g<2>{c['venues']}\g<3>{words}\g<4>"),
+        (r"(the sitemap has )\d+( URLs)", rf"\g<1>{c['sitemap_urls']}\g<2>"),
+        (r"(the )\d+( providers listed under )", rf"\g<1>{c['providers']}\g<2>"),
     ]
 
 
 def readme_text(text, c):
-    """README with its four count sites rewritten. Raises when an anchor stopped matching."""
+    """README with its count sites rewritten. Raises when an anchor stopped matching."""
     for pattern, repl in readme_rules(c):
         text, n = re.subn(pattern, repl, text)
         if n != 1:

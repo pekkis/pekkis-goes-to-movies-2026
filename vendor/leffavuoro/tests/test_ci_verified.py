@@ -85,6 +85,33 @@ class DecideTest(unittest.TestCase):
                 self.assertFalse(V.decide([run(1, "claude/x"), run(9, "main")],
                                           jobs(table), MAIN_RUN)[0])
 
+    def test_a_refused_step_is_described(self):
+        """The reason names what the job held, so a refusal of a green job explains itself."""
+        def webkit(steps):
+            j = job("browser (webkit)")
+            if steps is None:
+                del j["steps"]
+            else:
+                j["steps"] = steps
+            return {1: [job("check"), job("browser (chromium)"), j]}
+        cases = {
+            "step list was empty": webkit([]),
+            "step list was missing": webkit(None),
+            "'Browser suite' status=in_progress conclusion=None": webkit(
+                [{"name": "Browser suite", "status": "in_progress", "conclusion": None}]),
+            "'Browser suite' status=completed conclusion=skipped": webkit(
+                [{"name": "Browser suite", "status": "completed", "conclusion": "skipped"}]),
+            "none of its 1 steps is named 'Browser suite...'": webkit(
+                [{"name": "Set up job", "status": "completed", "conclusion": "success"}]),
+        }
+        for expected, table in cases.items():
+            with self.subTest(expected=expected):
+                skip, reason = V.decide([run(1, "claude/x"), run(9, "main")], jobs(table),
+                                        MAIN_RUN)
+                self.assertFalse(skip)
+                self.assertIn("'browser (webkit)' succeeded but did not run", reason)
+                self.assertIn(expected, reason)
+
     def test_another_workflow_or_event_is_ignored(self):
         runs = [run(1, "claude/x", path=".github/workflows/logs.yml"),
                 run(2, "claude/x", event="workflow_dispatch")]

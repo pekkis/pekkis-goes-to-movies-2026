@@ -63,6 +63,39 @@ not, and never was in the committed adapter. `biorex.py` parses with stdlib `re`
 (`ITEM_RE`, `DL_RE`, `HREF_RE`), and `bs4` appears nowhere in the repository. See
 `tooling-evaluation.md` for the measurement behind keeping it that way. No next step.
 
+### The webshop's GET API, compared (2026-10-13)
+
+**Findings** (read 2026-10-13 from 12:50 to 12:59 UTC: anonymous GETs to
+`webshop.biorex.fi/webservices/`, and the adapter's own read of biorex.fi alongside)
+
+- `cinemas/getCinemasList` has 16 entries. The adapter's 12 venue ids equal `cinema_id` and
+  the names match. Ids 6, 15 and 16 are closed (`offline: 1`, an `xxx ` prefix) and id 11
+  is the company. Tripla and Redi have no city or address. The answer also carries staff
+  addresses and a payment key, so it is never saved here.
+- `show_times/getShowTimesDays?cinema_id={id}&date={d}&number_of_days={n}` returns at most
+  seven days and has no pagination. The first request for a cinema and a date sets the
+  window: Pietarsaari asked for 2 days and then 7 got 2 both times, and the reverse order
+  got 7 both times. From today the windows ran 3 days at Verkatehdas and 7 or 8 elsewhere.
+- With windows covering every date, 1,471 of 1,471 adapter rows matched an API row on
+  `show_time_id`, title, start, room, rating and poster. The start is UTC `show_time` in
+  Europe/Helsinki, checked across 25 October and on 30 rows in April 2027. `business_date`
+  keeps the previous day for a start after midnight.
+- The API also returned 47 screenings that had started and two private bookings
+  ("Yritystapahtuma", "Tilavaraus - 2h") that the site does not list.
+- Three tags the site prints have no API field: Anniskelu on 244 rows (one room has it on
+  some screenings and not others), Retro on 12 and Kuukauden timantti on 11. 264 rows carry
+  at least one. `premiere` is 1 on 47% of rows and marks a film's release week.
+- `short_desc` repeats the title, so the synopsis is only on the film page.
+- The site's ticket href is `biorex.fi/secure-redirect/?url=https://webshop.biorex.fi/fi/%23/book/{id}`.
+  The API gives only the id.
+
+**Status and next step**
+
+`biorex.py` is unchanged. The API would lose the three tags on 264 rows, would need the
+ticket link built from the id, a filter for started and private rows, and a loop that
+re-requests from the first date a cached window left out, at about 105 requests a run
+against 36. No next step.
+
 ---
 
 ## Nexxo Scope
@@ -142,6 +175,13 @@ prints `KE 2.9. klo 20.00`, `TRIO 123 | SALI 2`, `Lippu 15,00€`, `Vapaat paika
 Labels carry no colon and genres sit under a label reading `genre`. `/?shows=all` renders
 every screening twice, in a desktop and a mobile wrapper, which is why a screening is
 keyed on its `/salikartta?id=` href.
+
+**Niagara lists its screenings on its front page** (cinemaniagara.fi, read 2026-10-13). It
+links no `/elokuvat/naytosajat`. The front page renders every screening as a dated item, 59
+ticket ids over 36 films, and `/erikoisnaytokset` the special screenings, 5 ids over 3 of
+those films. `/elokuvat/ohjelmistossa` linked 30 of the 36. The front page's two poster
+carousels link 25 more films with no screening, and their cards carry the date as text
+outside any item. `/erikoissarjat`, linked from the menu, answered 404 after a redirect.
 
 **Only six of the twenty hosts render a theatre navigation** (measured 2026-09-14, one
 listing per host), and the `match` text has to be looked for *inside* an anchor rather
@@ -261,7 +301,8 @@ returns the day list as server-rendered HTML.
   and that `widget-module.js` rendered the table. Find the code that builds the URL before
   trying URLs.
 - Kulttuurimylly is worth re-reading when its programme resumes: if the `showschedule-*`
-  array fills, the storefront HTML is the read.
+  array fills, the storefront HTML is the read. It filled, and `johku.py` reads it from
+  2026-10-13, category 2 only, because category 5 is theatre in the same building.
 - A headless render of one Engel film page was measured on 2026-09-13: 6 s to a settled
   DOM, and the widget's own table carried date, time, hall and price per screening, the
   times matching the committed rows exactly. It would need Chrome on the local machine and
@@ -276,7 +317,7 @@ Johku looked like a platform win and is not one. Three integrations, three HTML 
 Kino Tapiola got its own parser on 2026-09-05 (`scripts/providers/tapiola.py`). Kino Engel
 is read from its front page and keeps `price` and `aud` empty; the headless-render option
 was deferred by the maintainer the same day, with no more polling on the local half for
-now. KuvaTähti and Kulttuurimylly stay unread. Next step: none open.
+now. KuvaTähti stays unread, and Kulttuurimylly is read from 2026-10-13. Next step: none open.
 
 ---
 
@@ -991,6 +1032,33 @@ agent, kinokulma.fi in the built-in browser, and the storefront's JavaScript bun
 [docs/archive/2026-09-providers.md](../archive/2026-09-providers.md). A live parse that
 day matched each cinema's rendered page. No next step for the six. Kuva-Tähti's
 `/fi_FI/naytosajat` was not read for a `showtimes` block.
+
+---
+
+## Johku storefront: the schedule endpoint read directly (2026-10-13)
+
+**Findings** (read 2026-10-13 from 12:51 to 12:58 UTC: three rounds about 35 s apart over
+the six tenants and Kino Kulttuurimylly)
+
+- `/api/{shop}/fi_FI/showschedule.json?details=true&storefront=true&version=fi_FI&from={date}&category={n}`
+  answers 200 anonymously on every tenant, with the shop and category taken from the
+  page's own payload keys.
+- On 24 of 24 category comparisons the direct answer and the embedded schedule held the
+  same objects field for field, and `johku.rows()` gave the same rows on 21 of 21 reads.
+- The embedded schedule was complete on 21 of 21 front-page reads. The markup was a
+  skeleton on 17 of them.
+- `from` is a lower bound only. The storefront's own request sends no end date, day count
+  or page, and no answer was paginated, up to 79 entries.
+- The 25 cloud runs since the payload reader landed needed no second read. The one failure
+  was a Vihdin Kino timeout on 2026-10-12, and its previous data stood.
+- Entries carry `resource_capacity` and `resource_reservations`. Neither is published.
+
+**Status and next step**
+
+`johku.py` keeps reading the payload. The direct answer was identical and the embedded
+read has not failed for completeness, so a switch would fix nothing. If the logs show
+`loading` or `error` states again, a fallback that requests only the incomplete block's own
+key is the design to try.
 
 ---
 
@@ -1767,3 +1835,49 @@ theme draws for a sale not yet open was not observed, and nothing on the page st
 
 **Implementation.** `riviera.parse` takes the seat count where one is printed and the
 button only where none is; see the 2026-09-25 entry in `docs/archive/2026-09-providers.md`.
+
+---
+
+## Kannusali, Espoo (2026-10-13)
+
+**Findings** (espoo.fi, read as a visitor on 2026-10-13 from an ordinary connection)
+
+- Kannusali is Espoo's culture house at Kannusillankatu 4, place `tprek:21430`. It runs a
+  free film strand titled "Elokuva: ..." on top of concerts and stage shows.
+  `kannusali.fi` redirects to `www.espoo.fi/kannusali` over http and fails TLS over https.
+- The venue's listing `www.espoo.fi/fi/kannusalin-tapahtumat` renders client-side and
+  sends `POST https://www.espoo.fi/api/events` with `fixedFilters.tprId "21430"`,
+  `topics ["Elokuvat"]` and `pagination {offset, perPage 12}`. The answer is shaped like
+  Elasticsearch: `total`, `hits[]._source`, `aggs`.
+- The same rows are in Espoo's LinkedEvents (`api.espoo.fi/events/v1/`) with the same ids.
+  The page does not request it.
+- At 13:38Z the place held 40 upcoming events. `topics` contained "Elokuvat" on 11 of them
+  and on none of the 29 concerts and stage shows. Titles do not classify: a concert named
+  "Ykspihlajan Kino-Orkesteri" has no film topic.
+- Each hit's `path` is `/fi/tapahtumat/espooevents:{id}`, a public event page. Four of them
+  answered 200. The free rows carry no ticket link and no price; `isFreeEvent` is set.
+- Two film-topic rows are not one screening each. The two Flow rows on 22.11. share start,
+  end and hall, and their descriptions say the Children's Weekend row is the same
+  screening. The "Espoo Ciné Film Festival Kannusalissa 2026" row spans 49 hours with no
+  screening time.
+
+**Decisions in the adapter** (`scripts/providers/kannusali.py`)
+
+- The source is the page's own POST, paged until `total` is covered.
+- One row per start minute, since the house has one hall; the smallest id is kept and the
+  other is logged as collapsed.
+- A row spanning over 24 hours is left out and logged.
+- The film concert "Lumiukko - Elokuvakonsertti" is published, with an empty price.
+- `price` is "Vapaa pääsy" only where `isFreeEvent` is true.
+- No image is published: the `eventImages` are not licensed to this site.
+- `where="cloud"` is provisional. Whether espoo.fi answers a runner is unknown until a
+  committed cloud log shows it.
+- `enrich_tmdb.clean` takes "Elokuva:" and a trailing rating such as "(K12)" off the search
+  string. Since 2026-10-15 the adapter takes both off the published title as well and reads
+  the mark into `rating`.
+
+**Status and next step**
+
+The adapter and its tests are committed. Kannusali has no registry entry yet, so nothing is
+published: the entry and its accent wait on the per-theme accent decision for the capital
+region.

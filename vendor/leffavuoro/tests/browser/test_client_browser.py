@@ -29,7 +29,9 @@ import threading
 import time
 import unittest
 
-from playwright.sync_api import expect, sync_playwright
+from playwright.sync_api import expect
+
+import _harness
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -116,15 +118,16 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 class Browser(unittest.TestCase):
     viewport = {"width": 1200, "height": 900}; touch = False
     tz = "Europe/Helsinki"
+    init_script = None              # run in the page before its own scripts
 
     @classmethod
     def setUpClass(cls):
         cls.srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
         cls.srv.served = []
         cls.srv.requested = []
-        threading.Thread(target=cls.srv.serve_forever, daemon=True).start()
+        _harness.start(cls.srv)
         cls.origin = f"http://127.0.0.1:{cls.srv.server_port}"
-        cls.pw = sync_playwright().start()
+        cls.pw = _harness.playwright()
         # KINO_BROWSER_ENGINE picks the engine, default chromium, the same way
         # test_pages_layout.py does. Playwright's own pinned build for that engine, the one
         # `playwright install <engine>` fetched for this Playwright version, so what is
@@ -140,13 +143,15 @@ class Browser(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.browser.close(); cls.pw.stop(); cls.srv.shutdown()
+        cls.browser.close(); _harness.stop(cls.srv)
 
     def setUp(self):
         self.ctx = self.browser.new_context(viewport=self.viewport, has_touch=self.touch,
                                             timezone_id=self.tz, locale="fi-FI",
                                             service_workers="block")
         self.ctx.tracing.start(screenshots=True, snapshots=True)
+        if self.init_script:
+            self.ctx.add_init_script(self.init_script)
         OUT.mkdir(exist_ok=True)
         self.page = self.ctx.new_page()
         self.page.clock.install(time=FIXED)
@@ -154,8 +159,10 @@ class Browser(unittest.TestCase):
 
     def tearDown(self):
         res = getattr(self._outcome, "result", None)
-        failed = any(t is self for t, _ in (res.failures + res.errors)) if res else False
-        name = OUT / self.id().split(".")[-1]
+        # A failure inside subTest is recorded against a _SubTest whose test_case is this test.
+        failed = any(t is self or getattr(t, "test_case", None) is self
+                     for t, _ in (res.failures + res.errors)) if res else False
+        name = OUT / self.id()
         if failed:
             self.page.screenshot(path=f"{name}.png", full_page=True)
             self.ctx.tracing.stop(path=f"{name}.zip")
@@ -536,6 +543,48 @@ class FreeAdmissionTicket(Browser):
 
 
 class FreeAdmissionTicketOnAPhone(FreeAdmissionTicket):
+    viewport = {"width": 375, "height": 812}; touch = True
+
+
+class TicketWithNoDetails(Browser):
+    """A ticket with no room, format or language has no details compartment, so the price
+    sits right after the time. An empty one drew a 22 px gap (Kannusali, 2026-10-14)."""
+
+    SHAPE = """a => { const t = a.querySelector('.time'), p = a.querySelector('.price');
+        return {aud: !!a.querySelector('.aud'),
+                gap: p.getBoundingClientRect().left - t.getBoundingClientRect().right}; }"""
+
+    def setUp(self):
+        doc = json.loads((FIXTURE / "data/area-or-helsinki.json").read_text(encoding="utf-8"))
+        doc["shows"][1]["aud"] = "Sali 1"
+        self.bare, self.room = doc["shows"][0]["url"], doc["shows"][1]["url"]
+        Handler.body = {"area-or-helsinki.json": json.dumps(doc).encode("utf-8")}
+        self.addCleanup(lambda: setattr(Handler, "body", {}))
+        super().setUp()
+
+    def shape(self, scope, url):
+        stub = self.page.locator(f'{scope} a.stub[href="{url}"]').first
+        expect(stub).to_be_visible()
+        return stub.evaluate(self.SHAPE)
+
+    def test_the_list_draws_details_only_when_there_are_some(self):
+        self.pick_orion()
+        bare, room = self.shape("#main", self.bare), self.shape("#main", self.room)
+        self.assertEqual((bare["aud"], room["aud"]), (False, True))
+        if not self.touch:      # a phone card's ticket spans the card, its price at the end
+            self.assertAlmostEqual(bare["gap"], 0, delta=0.5)
+            self.assertGreater(room["gap"], 10)
+
+    def test_the_sheet_draws_no_empty_details(self):
+        self.pick_orion()
+        self.page.evaluate("() => { location.hash = 'm=autofiktio'; }")
+        expect(self.page.locator("#sheet")).to_have_js_property("inert", False)
+        bare = self.shape("#sheet", self.bare)
+        self.assertFalse(bare["aud"])
+        self.assertAlmostEqual(bare["gap"], 0, delta=0.5)
+
+
+class TicketWithNoDetailsOnAPhone(TicketWithNoDetails):
     viewport = {"width": 375, "height": 812}; touch = True
 
 
@@ -928,9 +977,10 @@ class HistoryAcrossVenues(Browser):
         expect(self.page.locator("#areaSelect")).to_contain_text("Cinema Orion")
         self.page.evaluate("history.go(2)")
         expect(self.page.locator("#areaSelect")).to_contain_text("Promenadi")
-        after = self.state()
-        self.assertFalse(after["hidden"], "the entry names a film; the sheet belongs open")
-        self.assertIn("Porin", after["title"])
+        # The label changes before the venue loads and the sheet opens after it.
+        expect(self.page.locator("#sheet"), "the entry names a film; the sheet belongs open"
+               ).to_have_js_property("inert", False)
+        expect(self.page.locator("#sheetTitle")).to_contain_text("Porin")
 
     def test_closing_the_sheet_puts_focus_back_on_the_card(self):
         """The counterweight to all of the above: an ordinary close still returns the
@@ -1013,81 +1063,94 @@ class AsyncRaces(Browser):
     film A over film B. `loadSchedule` already numbered its loads; what it did not do was
     read the day it was loading for before the await.
 
-    The server's per-path `delay` is the deferred promise here: `films.json` is fetched
-    only by `showSheet`, so delaying it holds both calls open at a point the test controls,
-    without a sleep in the page or a stub over the app's own code.
+    The server's `hold` is the deferred promise here: the reply waits until the newer
+    action is on screen, and `land` then waits until the page has read it, with no fetch
+    left out. No sleep, and no stub over the app's own code.
     """
 
-    def slow(self, suffix, secs=1.5):
-        self.srv.requested.clear()
-        Handler.delay = {suffix: secs}
-        self.addCleanup(lambda: setattr(Handler, "delay", {}))
+    # Marks a fetch landed once the page has read its reply and run its own code up to the
+    # next await: the marker is a task, so it runs after the caller's microtasks.
+    init_script = """(() => {
+      const real = window.fetch;
+      window.__landed = []; window.__out = 0;
+      const land = url => setTimeout(() => { window.__landed.push(url); window.__out--; }, 0);
+      window.fetch = function(input, init){
+        const url = String((input && input.url) || input).split('?')[0];
+        window.__out++;
+        return real.call(this, input, init).then(r => {
+          if(!r.ok){ land(url); return r; }
+          const json = r.json.bind(r);
+          r.json = () => json().finally(() => land(url));
+          return r;
+        }, e => { land(url); throw e; });
+      };
+    })();"""
 
-    def wait_in_flight(self, suffix, timeout=10):
-        """Block until the delayed request has reached the server. `requested` is logged
-        before the sleep, so this is the moment the page is inside the await and the race
-        window is open -- a condition, not a guess at how long the page needs."""
-        deadline = time.monotonic() + timeout
-        while time.monotonic() < deadline:
-            if any(p.endswith(suffix) for p in self.srv.requested):
-                return
-            time.sleep(0.02)
-        raise AssertionError(f"{suffix} was never requested; the race never opened")
+    def hold(self, suffix):
+        """Answer `suffix` only once the test releases it. -> (arrived, release) events."""
+        arrived, release = threading.Event(), threading.Event()
+        Handler.hold = {suffix: (arrived, release)}
+        self.addCleanup(lambda: (release.set(), setattr(Handler, "hold", {})))
+        return arrived, release
+
+    def land(self, suffix, release):
+        """Release the held reply and wait until the page has handled it, nothing left out."""
+        self.page.evaluate("() => { window.__landed = []; }")
+        release.set()
+        self.page.wait_for_function(
+            "s => window.__landed.some(u => u.endsWith(s)) && window.__out === 0", arg=suffix)
 
     def sheet_open(self):
         return self.page.evaluate("() => document.body.classList.contains('sheet-open')")
 
+    def back_to_orion_while_pori_is_held(self, arrived):
+        """Pick Promenadi Pori, whose file is held, then Orion, which is in `jsonCache`."""
+        vq = self.open_picker()
+        vq.fill("promenadi")
+        expect(self.page.locator("#vlist .vrow")).to_have_count(1)
+        vq.press("Enter")
+        self.assertTrue(arrived.wait(10), "Pori's file was never requested")
+        vq2 = self.open_picker()
+        vq2.fill("orion")
+        expect(self.page.locator("#vlist .vrow")).to_have_count(1)
+        vq2.press("Enter")
+        expect(self.page.locator("#areaSelect")).to_contain_text("Cinema Orion")
+        expect(self.page.locator("a.stub").first).to_be_visible()
+
     def test_closing_the_sheet_while_its_metadata_loads_leaves_it_closed(self):
         self.pick_orion()
-        self.slow("films.json")
+        arrived, release = self.hold("films.json")
         # Two separate evaluates on purpose. `syncSheet` reads `location.hash` when the
         # event fires, not the value that caused it, so two assignments in one task are
         # both answered with the final hash and the first sheet never opens at all -- the
         # first version of this test raced nothing and passed against the unguarded code.
         self.page.evaluate("() => { location.hash = 'm=autofiktio'; }")
-        self.wait_in_flight("films.json")
+        self.assertTrue(arrived.wait(10), "films.json was never requested; the race never opened")
         self.page.evaluate("() => { location.hash = ''; }")
-        self.page.wait_for_timeout(2500)          # past the delay, so the reply has landed
+        self.land("films.json", release)
         self.assertFalse(self.sheet_open(), "a dismissed sheet was reopened by a stale load")
 
     def test_a_slow_venue_load_does_not_render_over_a_newer_pick(self):
-        """Promenadi Pori is held open while the reader goes back to Orion, whose payload
-        is already in `jsonCache` and renders at once."""
         self.pick_orion()
         first = self.page.locator("a.stub").first.get_attribute("href")
-        self.slow("area-1004.json")
-        vq = self.open_picker()
-        vq.fill("promenadi")
-        rows = self.page.locator("#vlist .vrow")
-        expect(rows).to_have_count(1)
-        vq.press("Enter")
-        # Straight back to Orion while Pori is still in flight.
-        vq2 = self.open_picker()
-        vq2.fill("orion")
-        expect(self.page.locator("#vlist .vrow")).to_have_count(1)
-        vq2.press("Enter")
-        expect(self.page.locator("#areaSelect")).to_contain_text("Cinema Orion")
-        self.page.wait_for_timeout(2500)          # Pori's reply lands here
-        expect(self.page.locator("#areaSelect")).to_contain_text("Cinema Orion")
+        arrived, release = self.hold("area-1004.json")
+        self.back_to_orion_while_pori_is_held(arrived)
+        self.land("area-1004.json", release)
+        self.assertIn("Cinema Orion", self.page.locator("#areaSelect").inner_text())
         self.assertEqual(self.page.locator("a.stub").first.get_attribute("href"), first,
                          "a stale venue load rendered over the newer pick")
 
     def test_a_slow_failing_load_does_not_cover_a_newer_selection(self):
         """The failure path needs the same guard: an error screen drawn for an abandoned
-        selection replaces a schedule the reader is looking at."""
+        selection replaces a schedule the reader is looking at. Pori's held reply is a 500."""
         self.pick_orion()
-        self.slow("area-1004.json")
-        vq = self.open_picker()
-        vq.fill("promenadi")
-        expect(self.page.locator("#vlist .vrow")).to_have_count(1)
-        vq.press("Enter")
-        vq2 = self.open_picker()
-        vq2.fill("orion")
-        expect(self.page.locator("#vlist .vrow")).to_have_count(1)
-        vq2.press("Enter")
-        expect(self.page.locator("a.stub").first).to_be_visible()
-        self.page.wait_for_timeout(2500)
-        expect(self.page.locator("a.stub").first).to_be_visible()
+        arrived, release = self.hold("area-1004.json")
+        Handler.fail = {"area-1004.json"}
+        self.addCleanup(lambda: setattr(Handler, "fail", set()))
+        self.back_to_orion_while_pori_is_held(arrived)
+        self.land("area-1004.json", release)
+        self.assertTrue(self.page.locator("a.stub").first.is_visible(),
+                        "a stale failure covered the newer selection")
 
 
 class LoadLeavesNoOldVenue(Browser):
@@ -1444,6 +1507,36 @@ class TimesViewChainLegend(Browser):
 
 class TimesViewChainLegendOnAPhone(TimesViewChainLegend):
     viewport = {"width": 375, "height": 812}; touch = True
+
+
+class ChainShadeFollowsTheTheme(Browser):
+    """A chain's marker and legend chip take `accent` in the light theme and `accentDark`
+    in the dark one, switched by the theme button. Itis is served as in TimesViewChainLegend."""
+
+    def setUp(self):
+        doc = json.loads((FIXTURE / "data/area-1004.json").read_text(encoding="utf-8"))
+        for sh in doc["shows"]:
+            sh["venue"] = "1162"
+        Handler.body = {"area-1162.json": json.dumps(doc).encode("utf-8")}
+        self.addCleanup(lambda: setattr(Handler, "body", {}))
+        super().setUp()
+
+    def test_the_marker_and_the_legend_follow_the_theme(self):
+        orion = next(p for p in json.loads((FIXTURE / "data/providers.json").read_text(
+            encoding="utf-8"))["providers"] if p["id"] == "orion")
+        rgb = {k: "rgb({}, {}, {})".format(*(int(orion[k][i:i + 2], 16) for i in (1, 3, 5)))
+               for k in ("accent", "accentDark")}
+        self.assertNotEqual(rgb["accent"], rgb["accentDark"])
+        self.page.goto(self.origin + "/index.html?area=city:Helsinki")
+        stub = self.page.locator("#main a.stub.chain-orion").first
+        chip = self.page.locator("#main .legend.top .lg-btn.chain-orion")
+        expect(stub).to_be_visible()
+        for theme in ("light", "dark", "light"):
+            if self.page.evaluate("document.documentElement.getAttribute('data-theme')") != theme:
+                self.page.locator("#themeToggle").click()
+            key = "accentDark" if theme == "dark" else "accent"
+            expect(stub).to_have_css("border-left-color", rgb[key])
+            expect(chip).to_have_css("border-left-color", rgb[key])
 
 
 class ChainFilterEmptiesTheList(Browser):

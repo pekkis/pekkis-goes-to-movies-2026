@@ -3921,3 +3921,86 @@ The cloud data of 2026-10-13 09:42 UTC published `JP-A` for Two Seasons, Two Str
 Tripla and Redi, which no language table names, and the language-name test went red on the
 committed data. Gilda had sent the same code the day before. BioRex now maps `JP` to `JA`
 for audio and subtitles. One mutation red.
+
+### Kino Konepaja has no programme to read
+
+A real Kinola tenant publishing no screening, so it gets a `SITES` entry the day it lists
+one. Re-read 2026-09-20: `/naytokset/` now redirects to the front page, whose event list
+still says "Ei tulevia tapahtumia." above a coming-soon grid, and the site states the
+cinema is shut and reopening soon. Evidence in
+[docs/research/kinola.md](../research/kinola.md); the classifier and the
+three tenants that do publish are in this file.
+**Next action:** re-read the listing, at the front page now.
+
+**Closed 2026-10-13.** The front page lists screenings again, 43 that day, and `kinola.py`
+reads it with the `konepaja` template. The read is in
+[docs/research/kinola.md](../research/kinola.md).
+
+### Chain accents: per-theme shades and 4 px markers
+
+Decided 2026-10-13 by the maintainer: 4 px solid chain markers that keep the ticket's
+rounded corners, a light and a dark shade per chain keyed by its id, a 3:1 contrast target
+against the surfaces a marker touches, and readable cinema names and chain filters as
+before. The palette is not approved. The first candidate failed a visual review at 4 px,
+where three dark shades read alike in the capital-region row. The dashed-marker growth
+fallback is not adopted and stays an alternative. Kino Konepaja, Kino Kulttuurimylly and
+Kannusali wait on the palette for their registry entries.
+**Next action:** one palette pass under a frozen constraint specification, two candidates.
+
+**Closed 2026-10-13.** The palette came from a search under a frozen rule set: the rules
+in CLAUDE.md plus checks that BioRex stays violet in the dark theme, that dark Helsinki
+keeps red and pink to the four chains already there, and that Kino Konepaja and Riviera
+differ in lightness. In the light theme 65 of 83 shades are unchanged, 10 moved by 2 ΔE00
+or less, and eight moved further: Heureka 17.9, Kino K13 13.0, Bio Grand 9.7, Bio Grani
+7.8, Korjaamo Kino and Gilda 3.7, Kino Engel 2.7 and Riviera 2.3. In the dark theme 43
+shades equal the old accent, and most others moved to reach 3:1. The maintainer allowed
+one scoped exception for the three new chains in the Pääkaupunkiseutu row. Verified with
+`accent_check.py` in both themes, `ThemeTest` and `ExceptionTest`, browser tests of the
+app and the city pages in Chromium and WebKit, and screenshots in both themes. Costs: Kino
+Tapiola's dark shade is a muted lavender-blue, Bio Grani and Kino Regina are two salmon
+tones in the dark capital-region row, and nothing was tested with people. Figures in
+[docs/research/accent-colour.md](../research/accent-colour.md).
+
+### Navettakino reads a title and its date on one line (2026-10-14)
+The cloud runs of 2026-10-13 at 17:19 and 17:45 UTC failed on "the screening paragraph
+'Pirjo i Sverige la 17.10 klo 15:00' carries no date line", and the empty file from the run
+before stood. The page now prints a title and its date on one line, and Pirjo's film block
+puts its date paragraph between its title and its poster. That block has no synopsis, so
+the next film's title would have been read as one. A listed line may now carry its title
+and date together, a block's title may be followed by date paragraphs before its figure,
+and a block's prose ends at the next block's title. Run against the live page on
+2026-10-14, the adapter read the weekend's one screening, Pirjo i Sverige on Saturday 17.10.
+at 15:00, with S, 88 min, 10 € and its poster. Four mutations red.
+
+### Kannusali reads the age rating that closes a title (2026-10-15)
+Espoo's calendar states a film's classification only as a mark at the end of its title, as in
+"Elokuva: Flow. (K7)". Four of Kannusali's six films had an empty rating and their cards drew
+no badge. The adapter now reads a closing "(S)", "(K7)", "(K12)", "(K16)" or "(K18)" into
+`rating`, and the published title is unchanged. Each hit's `audience.ageMin` agreed with the
+mark on all nine film hits that carry one, but the same field gives 18 for concerts and
+stand-up shows. It describes the audience and is not read. Read live on 2026-10-15, the eight
+film rows carried K-12 or K-7 and the film concert carried none. Six mutations red.
+
+### Kannusali publishes the film title without "Elokuva:" and the mark (2026-10-15)
+On the maintainer's decision the adapter drops a leading "Elokuva:" and the closing
+classification mark from the published title. The mark stays in `rating`, and a title that
+would be left empty is published as it stands. This departs from verbatim publishing in the
+same way as `helios.split_title`. `enrich_tmdb.clean` already took both parts off the search
+string, and TMDB is searched with the same strings as before. Run in a copy of the tree on
+2026-10-15, all ten rows kept their TMDB ids and the five "elokuva ..." keys left
+films-extra.json. Isänpäivä joined Korjaamo's entry and Michael took the poster the other
+cinemas show. The live app already grouped Isänpäivä with Korjaamo by its TMDB id. Eight
+mutations red.
+
+### Kannusali's non-film events stay out (2026-10-15)
+The maintainer asked for Kannusali's other events if they were easy to read, and decided on
+2026-10-15 to keep them out. The listing's own POST returns them when the topic filter is
+left off, 29 of 40 events that day, in four pages of 12 and with no request per event.
+Publishing them is the hard part. The TMDB pass would search every concert title, and the
+only way to stop it is a "-" alias per title. The calendar's images are not licensed to this
+site, and a house title card per event would need Pillow and fontTools in the cloud
+pipeline. `build_pages.py` marks every row as a Movie `ScreeningEvent` at a `MovieTheater`,
+which would present a concert to search engines as a film screening. A paid event's price is
+free text on its own page, such as "25 € + tilausmaksu ... / 30 € ovelta mikäli jäljellä".
+The check that every hit carries the "Elokuvat" topic guards the server-side filter, and it
+would need a replacement.

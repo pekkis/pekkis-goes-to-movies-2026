@@ -36,6 +36,19 @@ REQUIRED = {
 }
 
 
+def seen(job, step_prefix):
+    """What a refused job's steps looked like, for the reason line. On 2026-10-13 a refusal
+    named no cause, and the response it came from was not kept."""
+    steps = job.get("steps")
+    if not steps:
+        return f"its step list was {'missing' if steps is None else 'empty'}"
+    hits = [s for s in steps if (s.get("name") or "").startswith(step_prefix)]
+    if not hits:
+        return f"none of its {len(steps)} steps is named '{step_prefix}...'"
+    return "; ".join(f"'{s.get('name')}' status={s.get('status')} "
+                     f"conclusion={s.get('conclusion')}" for s in hits)
+
+
 def decide(runs, jobs_of, current_run_id):
     """-> (skip, reason). `runs` are the API's workflow runs for one SHA; `jobs_of(run)`
     returns that run's jobs. Pure apart from `jobs_of`, which may raise."""
@@ -61,7 +74,8 @@ def decide(runs, jobs_of, current_run_id):
         steps = [s for s in job.get("steps") or []
                  if (s.get("name") or "").startswith(step_prefix)]
         if not steps or any(s.get("conclusion") != "success" for s in steps):
-            return False, f"run {newest['id']}: '{name}' did not run '{step_prefix}'"
+            return False, (f"run {newest['id']}: '{name}' succeeded but did not run "
+                           f"'{step_prefix}' ({seen(job, step_prefix)})")
     return True, (f"run {newest['id']} on {newest['head_branch']} passed the suite, the "
                   f"drift check and both browser engines on this exact commit")
 

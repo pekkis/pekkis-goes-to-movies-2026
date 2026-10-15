@@ -643,8 +643,8 @@ class RegistryTest(unittest.TestCase):
     def test_the_three_registry_entries(self):
         for pid, label, host, accent, venue, city in (
                 ("kinopiispanristi", "Kino Piispanristi", "kinopiispanristi.fi",
-                 "#0096EA", "piispanristi-kaarina", "Kaarina"),
-                ("kinolumo", "Kino Lumo", "kinolumo.fi", "#F64EAE", "lumo-salo", "Salo"),
+                 "#0196E8", "piispanristi-kaarina", "Kaarina"),
+                ("kinolumo", "Kino Lumo", "kinolumo.fi", "#F54CAD", "lumo-salo", "Salo"),
                 ("laitilankino", "Laitilan Kino", "laitilankino.fi", "#3C7872",
                  "laitilankino-laitila", "Laitila")):
             with self.subTest(provider=pid):

@@ -59,6 +59,30 @@
       "reason": "The dubbed print of a film the same listing publishes undubbed. Its page fills no labelled director or genre, so the classifier leaves it unresolved.",
       "evidence": "kinomyyri.fi/film/kojootti-vs-acme-dub/ carries the distributor's Finnish synopsis in full, Ikaraja K-7, Kesto 1 h 44 min and a language label, and the same listing carries /film/kojootti-vs-acme/ as \"Kojootti vs. ACME (orig)\", which classifies as a film on its own. Only the labelled fields are missing.",
       "verified": "2026-09-18"
+    },
+    {
+      "provider": "kinokonepaja",
+      "slug": "edward-scissorhands",
+      "action": "include",
+      "reason": "A feature film whose page fills no labelled director or genre, so the classifier leaves it unresolved.",
+      "evidence": "kinokonepaja.fi/film/edward-scissorhands/ labels Julkaisuvuosi 1990, Julkaisija Korttelikinot ry, Kesto 1 t 45 min, Kieli englanti, Tekstitys suomi and Ikäraja K-12.",
+      "verified": "2026-10-13"
+    },
+    {
+      "provider": "kinokonepaja",
+      "slug": "gremlins",
+      "action": "include",
+      "reason": "A feature film whose page fills no labelled director or genre, so the classifier leaves it unresolved.",
+      "evidence": "kinokonepaja.fi/film/gremlins/ labels Julkaisuvuosi 1984, Julkaisija Warner Bros. Finland Oy, Kesto 1 t 46 min, Kieli englanti, Tekstitys suomi and Ikäraja K-12, and its text calls it \"Joe Danten ohjaama\".",
+      "verified": "2026-10-13"
+    },
+    {
+      "provider": "kinokonepaja",
+      "slug": "nightmare-on-elm-street",
+      "action": "include",
+      "reason": "A feature film whose page fills no labelled director or genre, so the classifier leaves it unresolved.",
+      "evidence": "kinokonepaja.fi/film/nightmare-on-elm-street/ labels Julkaisuvuosi 1984, Julkaisija Warner Bros. Finland Oy, Kesto 1 t 31 min, Kieli englanti, Tekstitys suomi and Ikäraja K-16.",
+      "verified": "2026-10-13"
     }
   ]
 }

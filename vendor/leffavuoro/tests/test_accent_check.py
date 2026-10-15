@@ -43,7 +43,7 @@ class Ciede2000Test(unittest.TestCase):
 
 
 class SharedViewTest(unittest.TestCase):
-    """Two views list chains side by side: a combined city, and a region row. The 3 px
+    """Two views list chains side by side: a combined city, and a region row. The
     accent rule has to hold in both, so both are generated here from registry.REGIONS and
     the provider cities rather than from a list kept in the tool."""
 
@@ -223,7 +223,7 @@ class SearchRankingTest(unittest.TestCase):
         return min(normal, deutan), normal, deutan
 
     def in_band(self, hexcolour):
-        return A.L_MIN <= A.labs_for(hexcolour)[0][0] <= A.L_MAX
+        return A.legible(hexcolour, "light") and A.in_window(hexcolour, "light")
 
     def test_the_ranking_is_non_increasing_in_the_three_model_minimum(self):
         self.assertTrue(self.best, "search returned nothing to rank")
@@ -268,11 +268,10 @@ class ReportRankingTest(unittest.TestCase):
     """The ordinary report and --all ranked and counted on the deuteranope minimum, so a
     pair whose normal-vision separation is the binding one sorted as though it were fine.
 
-    Kino Engel and Cinema Sheryl are the real case since the Helsinki palette was solved
-    for ten chains on 2026-09-21: 19.196 apart to a deuteranope, 16.598 to everyone else.
-    Ranked on deutan it sorts behind Finnkino and Kinoset, whose own binding model is
-    deutan at 16.616; ranked on the weakest model it leads them. The pair before this one
-    was Bio Grani and Gilda, and Gilda's accent moved in that solve.
+    Bio Grani and BioRex are the real case in the 2026-10-13 light palette: 48.318 apart
+    to a deuteranope and 32.018 to everyone else. Ranked on deutan it sorts behind Cinema
+    Orion and Cinema Sheryl, whose binding model is deutan at 48.066; ranked on the weakest
+    model it leads them.
     """
 
     ACCENTS = {p["id"]: p["accent"] for p in A.registry.PROVIDERS}
@@ -284,23 +283,23 @@ class ReportRankingTest(unittest.TestCase):
         return buf.getvalue()
 
     def test_the_two_pairs_measure_what_the_ranking_turns_on(self):
-        engel_sheryl = A.dE(self.ACCENTS["engel"], self.ACCENTS["sheryl"])
-        finnkino_kinoset = A.dE(self.ACCENTS["finnkino"], self.ACCENTS["kinoset"])
-        self.assertAlmostEqual(min(engel_sheryl), 16.598, places=3)
-        self.assertAlmostEqual(min(engel_sheryl[1:]), 19.196, places=3)
-        self.assertEqual(min(engel_sheryl), engel_sheryl[0], "normal vision has to bind")
-        self.assertAlmostEqual(min(finnkino_kinoset), 16.616, places=3)
-        self.assertAlmostEqual(min(finnkino_kinoset[1:]), 16.616, places=3)
-        self.assertLess(min(engel_sheryl), min(finnkino_kinoset))
-        self.assertGreater(min(engel_sheryl[1:]), min(finnkino_kinoset[1:]),
+        normal_bound = A.dE(self.ACCENTS["biograni"], self.ACCENTS["biorex"])
+        deutan_bound = A.dE(self.ACCENTS["orion"], self.ACCENTS["sheryl"])
+        self.assertAlmostEqual(min(normal_bound), 32.018, places=3)
+        self.assertAlmostEqual(min(normal_bound[1:]), 48.318, places=3)
+        self.assertEqual(min(normal_bound), normal_bound[0], "normal vision has to bind")
+        self.assertAlmostEqual(min(deutan_bound), 48.066, places=3)
+        self.assertAlmostEqual(min(deutan_bound[1:]), 48.066, places=3)
+        self.assertLess(min(normal_bound), min(deutan_bound))
+        self.assertGreater(min(normal_bound[1:]), min(deutan_bound[1:]),
                            "the deutan figure has to disagree, or nothing is proved")
 
     def test_the_report_ranks_the_normal_bound_pair_first(self):
         out = self.report()
-        engel = out.index("Kino Engel     Cinema Sheryl")
-        finnkino = out.index("Finnkino       Kinoset")
-        self.assertLess(engel, finnkino,
-                        "ranked on the deutan minimum, Kino Engel/Cinema Sheryl sorts below")
+        normal_bound = out.index("Bio Grani      BioRex")
+        deutan_bound = out.index("Cinema Orion   Cinema Sheryl")
+        self.assertLess(normal_bound, deutan_bound,
+                        "ranked on the deutan minimum, Bio Grani/BioRex sorts below")
 
     def test_the_report_counts_every_pair_below_the_floor(self):
         rows = [A.separation(self.ACCENTS[a], self.ACCENTS[b])
@@ -344,9 +343,14 @@ class ReportRankingTest(unittest.TestCase):
         # clear of the floor, the weakest Kino Kilta against Kinotour at 16.8.
         # 240 the same day: Oulun seutu put Tähti Kino beside Finnkino and Star (+3), the
         # weakest Finnkino against Tähti Kino at 18.4.
-        self.assertEqual(len(rows), 240)
-        self.assertEqual(sum(1 for r in rows if r < A.FLOOR), 20)
-        self.assertIn(f"20 of 240 pairs are below {A.FLOOR}", self.report())
+        # 16 from 2026-10-13 in the light theme, when every chain got a light and a dark
+        # shade (14 in the dark theme); all are region pairs, none in a combined city.
+        # 315 and 22 the same day: Kino Konepaja and Kino Kulttuurimylly joined Helsinki
+        # and Kannusali joined Espoo (+75). The six new pairs below the floor are the
+        # light half of ExceptionTest.RECORDED.
+        self.assertEqual(len(rows), 315)
+        self.assertEqual(sum(1 for r in rows if r < A.FLOOR), 22)
+        self.assertIn(f"22 of 315 pairs are below {A.FLOOR}", self.report())
 
     def test_the_floor_is_the_fixed_policy_value(self):
         """14.4 is the threshold CLAUDE.md and the registry state, not a reading of the
@@ -367,31 +371,37 @@ class ReportRankingTest(unittest.TestCase):
     def test_helsinki_is_the_densest_city_and_still_clears_the_floor(self):
         """The city that forced the joint solve of 2026-09-21.
 
-        Ten chains, 45 pairs, and the rule holds without an exception being written for
-        it. Held with the eight accents it had, the best colour in the L* 38-60 band
-        reached 12.12 against them and a ninth chain was impossible; moving four of the
-        eight -- BioRex, Kino Engel, Gilda and Korjaamo Kino -- lifted the whole city to
-        14.409. The figure is pinned because it is thin: the next Helsinki cinema has to
-        be solved the same way and cannot be waved through.
+        Twelve chains and 66 pairs since 2026-10-13, and the rule holds without an
+        exception being written for it. Held with the eight accents it had, the best
+        colour in the L* 38-60 band reached 12.12 against them and a ninth chain was
+        impossible; moving four of the eight -- BioRex, Kino Engel, Gilda and Korjaamo
+        Kino -- lifted the whole city to 14.409. The per-theme palette that added Kino
+        Konepaja and Kino Kulttuurimylly holds it at 14.403 in the light theme and 14.405
+        in the dark one. The figures are pinned because they are thin: the next Helsinki
+        cinema has to be solved the same way and cannot be waved through.
         """
         by_city = collections.Counter(
             label for kind, label, _, _ in A.view_pairs() if kind == "city")
-        self.assertEqual(by_city.most_common(1)[0], ("Helsinki", 45))
+        self.assertEqual(by_city.most_common(1)[0], ("Helsinki", 66))
         pairs = [min(A.dE(self.ACCENTS[a], self.ACCENTS[b]))
                  for kind, label, a, b in A.view_pairs()
                  if kind == "city" and label == "Helsinki"]
-        self.assertEqual(len(pairs), 45)
-        self.assertAlmostEqual(min(pairs), 14.409, places=3)
+        self.assertEqual(len(pairs), 66)
+        self.assertAlmostEqual(min(pairs), 14.403, places=3)
         self.assertGreaterEqual(min(pairs), 14.4)
+        dark = A.accents("dark")
+        self.assertAlmostEqual(min(min(A.dE(dark[a], dark[b]))
+                                   for kind, label, a, b in A.view_pairs()
+                                   if kind == "city" and label == "Helsinki"), 14.405, places=3)
 
     def test_two_accents_that_look_alike_never_share_a_view(self):
         """What makes a dense palette safe: it reuses colour only where nobody sees both.
 
-        Fifty pairs in this registry sit under 4 dE00, which is indistinguishable -- Kino
-        Aurora and Kinokulma are 0.16 apart, Kino K13 and Lieksan Kino 0.63. None of them
-        appears in one city or one region, so no reader is ever asked to tell them apart.
-        This is the guard on the reuse the floor leaves room for; without it a later
-        provider could put two of them in one town and nothing would say so.
+        Over forty pairs of light shades sit under 4 dE00, which is indistinguishable --
+        Kino Aurora and Kinokulma are 0.16 apart. None of them appears in one city or one
+        region, so no reader is ever asked to tell them apart. This is the guard on the
+        reuse the floor leaves room for; without it a later provider could put two of them
+        in one town and nothing would say so.
         """
         shared = {frozenset((a, b)) for _, a, b in A.shared_view_pairs()}
         ids = sorted(self.ACCENTS)
@@ -405,7 +415,7 @@ class ReportRankingTest(unittest.TestCase):
     def test_the_worst_pair_summary_uses_the_same_score(self):
         worst = min(A.separation(self.ACCENTS[a], self.ACCENTS[b])
                     for _, a, b in A.shared_view_pairs())
-        self.assertAlmostEqual(worst, 6.348, places=3)
+        self.assertAlmostEqual(worst, 6.410, places=3)
         self.assertIn(f"worst shared-view pair: {worst:.1f} dE00 across the three models",
                       self.report())
 
@@ -460,6 +470,140 @@ class ReportRankingTest(unittest.TestCase):
         overall, _, _ = A.worst_labs(A.labs_for("#BA7E8A"), fixed)
         self.assertEqual(overall, min(A.separation("#BA7E8A", self.ACCENTS[r])
                                       for r in rivals))
+
+
+class ThemeTest(unittest.TestCase):
+    """Each theme has its own shade per chain, measured on its own (decided 2026-10-13)."""
+
+    # Each region's minimum on the weakest model in the single-shade palette of
+    # 2026-10-13, truncated to three places. Neither theme may go below it.
+    REGION_FLOOR = {"Itä-Uusimaa": 21.376, "Jyväskylän seutu": 11.787, "Keski-Uusimaa": 14.835,
+                    "Kokkolan seutu": 30.457, "Kymenlaakso": 18.851, "Lahden seutu": 14.652,
+                    "Lappeenrannan seutu": 46.398, "Meri-Lappi": 9.987, "Oulun seutu": 18.407,
+                    "Porin seutu": 16.615, "Pääkaupunkiseutu": 6.347, "Tampereen seutu": 20.077,
+                    "Turun seutu": 16.844}
+
+    def test_every_combined_city_pair_clears_the_floor_in_both_themes(self):
+        for theme in ("light", "dark"):
+            S = A.accents(theme)
+            for kind, label, a, b in A.view_pairs():
+                if kind == "city":
+                    with self.subTest(theme=theme, city=label, pair=(a, b)):
+                        self.assertGreaterEqual(min(A.dE(S[a], S[b])), 14.4)
+
+    def test_no_region_minimum_drops_in_either_theme(self):
+        for theme in ("light", "dark"):
+            S = A.accents(theme)
+            for kind, label, a, b in A.view_pairs():
+                if kind == "region":
+                    with self.subTest(theme=theme, region=label, pair=(a, b)):
+                        self.assertGreaterEqual(A.separation(S[a], S[b]), self.REGION_FLOOR[label])
+
+    def test_every_shade_reaches_three_to_one_on_its_surfaces(self):
+        for theme in ("light", "dark"):
+            for pid, h in A.accents(theme).items():
+                for s in A.SURFACES[theme]:
+                    with self.subTest(theme=theme, chain=pid, surface=s):
+                        self.assertGreaterEqual(A.contrast(h, s), 3.0)
+
+    def test_the_two_shades_of_a_chain_are_one_colour(self):
+        """OKLCh hue within 45 degrees unless both shades are near grey."""
+        light, dark = A.accents("light"), A.accents("dark")
+        for pid in light:
+            (_, c1, h1), (_, c2, h2) = A.oklch(light[pid]), A.oklch(dark[pid])
+            if max(c1, c2) < 0.04:
+                continue
+            with self.subTest(chain=pid):
+                self.assertLessEqual(abs((h1 - h2 + 180) % 360 - 180), 45)
+
+    def test_oklch_matches_the_css_color_4_reference_values(self):
+        """sRGB red and blue as CSS Color 4 gives them in OKLCh."""
+        for hexcolour, want in (("#FF0000", (0.62796, 0.25768, 29.234)),
+                                ("#0000FF", (0.45201, 0.31321, 264.052))):
+            for got, w in zip(A.oklch(hexcolour), want):
+                with self.subTest(colour=hexcolour, want=w):
+                    self.assertAlmostEqual(got, w, places=3)
+
+    def test_contrast_is_the_wcag_ratio(self):
+        self.assertAlmostEqual(A.contrast("#000000", "#FFFFFF"), 21.0, places=6)
+        self.assertAlmostEqual(A.contrast("#777777", "#777777"), 1.0, places=6)
+
+    def test_the_window_bounds_lightness_and_chroma(self):
+        """Contrast alone admits every colour refused here, and the search led with near
+        black before the window existed."""
+        self.assertFalse(A.in_window("#000040", "light"))      # L* 3
+        self.assertFalse(A.in_window("#6E6E6E", "light"))      # grey
+        self.assertTrue(A.in_window("#003888", "light"))
+        self.assertFalse(A.in_window("#FFE000", "dark"))       # L* 89
+        self.assertTrue(A.in_window("#9CBDFF", "dark"))
+        for h, theme in (("#000040", "light"), ("#6E6E6E", "light"), ("#FFE000", "dark")):
+            self.assertTrue(A.legible(h, theme), h)
+
+    def test_the_dark_shade_is_what_the_dark_report_measures(self):
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            A.main(["--theme", "dark"])
+        rows = [A.separation(A.accents("dark")[a], A.accents("dark")[b]) for _, a, b in A.shared_view_pairs()]
+        self.assertIn(f"{sum(r < A.FLOOR for r in rows)} of {len(rows)} pairs are below {A.FLOOR}", buf.getvalue())
+
+
+class ExceptionTest(unittest.TestCase):
+    """The maintainer's scoped exception of 2026-10-13, held to the pairs it was granted for.
+
+    In the Pääkaupunkiseutu row a pair with Kino Konepaja, Kino Kulttuurimylly or Kannusali
+    may fall below the floor on a deuteranope model. It must still clear the floor in
+    normal vision there, and every other view keeps the full rule.
+    """
+
+    # (theme, a, b) -> (normal, Viénot, Machado), as docs/research/accent-colour.md lists them.
+    RECORDED = {
+        ("light", "biogrand", "kulttuurimylly"): (23.958, 6.510, 6.410),
+        ("light", "biograni", "kinokonepaja"): (37.786, 11.642, 11.487),
+        ("light", "engel", "kannusali"): (54.220, 6.657, 6.430),
+        ("light", "heureka", "kinokonepaja"): (26.021, 10.942, 10.463),
+        ("light", "kannusali", "korjaamo"): (36.752, 9.221, 8.555),
+        ("light", "kulttuurimylly", "sheryl"): (25.388, 12.153, 11.989),
+        ("dark", "biogrand", "kulttuurimylly"): (38.518, 8.137, 8.467),
+        ("dark", "helios", "kannusali"): (56.847, 7.310, 6.360),
+        ("dark", "heureka", "kinokonepaja"): (31.696, 6.781, 6.400),
+        ("dark", "kannusali", "regina"): (43.851, 8.666, 8.186),
+        ("dark", "kinomyyri", "kulttuurimylly"): (18.356, 6.353, 6.493),
+        ("dark", "kulttuurimylly", "sheryl"): (32.104, 9.699, 9.101),
+    }
+    NEW = {"kinokonepaja", "kulttuurimylly", "kannusali"}
+
+    def new_pairs(self):
+        for theme in ("light", "dark"):
+            S = A.accents(theme)
+            for kind, label, a, b in A.view_pairs():
+                if {a, b} & self.NEW:
+                    yield theme, kind, label, a, b, A.dE(S[a], S[b])
+
+    def test_the_scope_is_one_region_and_three_chains(self):
+        self.assertEqual(A.EXCEPTION, {"region": "Pääkaupunkiseutu", "chains": (
+            "kinokonepaja", "kulttuurimylly", "kannusali")})
+        self.assertTrue(A.excepted("region", "Pääkaupunkiseutu", "biogrand", "kulttuurimylly"))
+        self.assertFalse(A.excepted("city", "Helsinki", "kulttuurimylly", "riviera"))
+        self.assertFalse(A.excepted("region", "Pääkaupunkiseutu", "biogrand", "k13"))
+        self.assertFalse(A.excepted("region", "Keski-Uusimaa", "julia", "kinokonepaja"))
+
+    def test_the_pairs_below_the_floor_are_exactly_the_recorded_ones(self):
+        below = {}
+        for theme, kind, label, a, b, scores in self.new_pairs():
+            if min(scores) < A.FLOOR:
+                with self.subTest(theme=theme, view=label, pair=(a, b)):
+                    self.assertTrue(A.excepted(kind, label, a, b))
+                below[(theme, a, b)] = scores
+        self.assertEqual(set(below), set(self.RECORDED))
+        for key, scores in below.items():
+            for got, want in zip(scores, self.RECORDED[key]):
+                with self.subTest(pair=key, want=want):
+                    self.assertAlmostEqual(got, want, places=3)
+
+    def test_every_new_cinema_pair_clears_the_floor_in_normal_vision_in_every_view(self):
+        for theme, kind, label, a, b, scores in self.new_pairs():
+            with self.subTest(theme=theme, view=label, pair=(a, b)):
+                self.assertGreaterEqual(scores[0], A.FLOOR)
 
 
 if __name__ == "__main__":

@@ -22,12 +22,15 @@ What shapes the parser:
 - **A film title is the paragraph a figure follows.** Nothing else marks one: the heading
   is a `<strong>` the editor sometimes closes early, "Presidentin kyydity</strong>s" on the
   day read, so the paragraph's whole text is the title and the `<strong>` is not read.
+  Read 2026-10-13, one block put its own date paragraph between the title and the figure,
+  so date paragraphs there are passed over.
 - **The screening list ends at the first blank paragraph or the first film block.** Every
   paragraph between the heading and that point is a screening: a title line and one date
   line per showing. A line inside that block the parser cannot read raises, because the
   block is where the cinema states its whole weekend. Read 2026-10-10, the page put the
   first screening in the heading's own paragraph and left no blank before the film blocks,
-  so lines after the heading count as the first screening.
+  so lines after the heading count as the first screening. Read 2026-10-13, a title and its
+  date shared one line, `Pirjo i Sverige la 17.10 klo 15:00`.
 - **The date prints no year** and no dot after the month, `su 20.9 klo 15:00`, so the
   weekday selects the year through `common.resolve_year`.
 - **The metadata line is read by pattern, not by position.** The three films read gave
@@ -91,6 +94,8 @@ TIMES_RE = re.compile(r"\b(?:ma|ti|ke|to|pe|la|su)\s+\d{1,2}\.\d{1,2}\b"
                       r"|\bklo\s*\d{1,2}[:.]\d{2}", re.I)
 SHOW_RE = re.compile(r"^(ma|ti|ke|to|pe|la|su)\s+(\d{1,2})\.(\d{1,2})\.?\s*klo\s*"
                      r"(\d{1,2})[:.](\d{2})$", re.I)
+TITLED_RE = re.compile(r"^(.+?)\s+((?:ma|ti|ke|to|pe|la|su)\s+\d{1,2}\.\d{1,2}\.?\s*klo\s*"
+                       r"\d{1,2}[:.]\d{2})$", re.I)
 IMG_RE = re.compile(r'<img[^>]*?width="(\d+)"[^>]*?height="(\d+)"[^>]*?src="([^"]+)"', re.I)
 RATING_RE = re.compile(r"\bK[-\s]?(\d{1,2})\b")
 S_RATING_RE = re.compile(r"(?:^|[\s,(])S(?=[\s,)]|$)")
@@ -178,25 +183,44 @@ def _is_meta(text):
     return bool(PRICE_RE.search(text) or MIN_RE.search(text) or RATING_RE.search(text))
 
 
+def _dates_only(text):
+    """True for a paragraph whose every line is a date and a time."""
+    lines = [line.strip() for line in (text or "").split("\n") if line.strip()]
+    return bool(lines) and all(SHOW_RE.match(line) for line in lines)
+
+
+def film_figure(bl, i):
+    """The index of the block's figure when paragraph i is a film title, else None."""
+    kind, text = bl[i]
+    if kind != "p" or not text or _dates_only(text):
+        return None
+    j = i + 1
+    while j < len(bl) and bl[j][0] == "p" and _dates_only(bl[j][1]):
+        j += 1
+    return j if j < len(bl) and bl[j][0] == "figure" else None
+
+
 def films(page):
     """{norm(title): facts} for every block on the page. -> dict.
 
-    A film block is a paragraph a figure follows. What comes after the figure and before
-    the next such paragraph is that film's own prose: the longest of those paragraphs is
-    the synopsis and the metadata line is whichever one states a rating, a runtime or a
+    A film block is a title paragraph and its figure. What comes after the figure and
+    before the next block's title is that film's own prose: the longest of those paragraphs
+    is the synopsis and the metadata line is whichever one states a rating, a runtime or a
     price.
     """
     bl = blocks(page)
     out = {}
     for i, (kind, value) in enumerate(bl):
-        if kind != "p" or not value or i + 1 >= len(bl) or bl[i + 1][0] != "figure":
+        f = film_figure(bl, i)
+        if f is None:
             continue
-        facts = {"img": _poster(bl[i + 1][1]), "syn": "", "len": "", "rating": "",
+        facts = {"img": _poster(bl[f][1]), "syn": "", "len": "", "rating": "",
                  "price": ""}
-        for kind2, text in bl[i + 2:]:
-            if kind2 == "figure":
+        for k in range(f + 1, len(bl)):
+            kind2, text = bl[k]
+            if kind2 == "figure" or film_figure(bl, k) is not None:
                 break
-            if not text:
+            if not text or _dates_only(text):
                 continue
             if _is_meta(text):
                 facts["len"] = facts["len"] or _minutes(text)
@@ -211,9 +235,8 @@ def films(page):
 def listing(page):
     """The screening paragraphs under the heading. -> list or None.
 
-    The list ends at the first blank paragraph or the first film block, a paragraph a
-    figure follows. Lines after the heading inside its own paragraph are the first
-    screening. None means the page did not render the heading at all, which is a template
+    The list ends at the first blank paragraph or the first film block's title. Lines
+    after the heading inside its own paragraph are the first screening. None means the page did not render the heading at all, which is a template
     change rather than a quiet weekend.
     """
     bl = blocks(page)
@@ -224,9 +247,7 @@ def listing(page):
             out = [rest] if rest else []
             for j in range(i + 1, len(bl)):
                 kind2, text2 = bl[j]
-                if kind2 != "p" or not text2:
-                    break
-                if j + 1 < len(bl) and bl[j + 1][0] == "figure":
+                if kind2 != "p" or not text2 or film_figure(bl, j) is not None:
                     break
                 out.append(text2)
             return out
@@ -246,6 +267,9 @@ def rows(site, page, today=None):
     out, report = [], {"no_facts": set(), "no_price": set()}
     for para in listed:
         lines = [l for l in para.split("\n") if l.strip()]
+        joined = TITLED_RE.match(lines[0].strip()) if lines else None
+        if joined:
+            lines = [joined.group(1), joined.group(2)] + lines[1:]
         if len(lines) < 2:
             raise ListingError(f"{site['provider']}: the screening paragraph {para!r} "
                                f"carries no date line")

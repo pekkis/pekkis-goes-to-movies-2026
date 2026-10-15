@@ -44,16 +44,17 @@ class FallbackIsGeneratedTest(unittest.TestCase):
         self.assertEqual(ids(block()), [p["id"] for p in registry.PROVIDERS])
 
     def test_the_fallback_carries_what_the_client_reads_off_a_provider(self):
-        """applyProviders() reads label, host, accent and book. A missing accent leaves a
-        chain with no rule in the palette, which is the one signal a combined city view
-        has besides the venue name."""
+        """applyProviders() reads label, host, accent, accentDark and book. A missing
+        accent leaves a chain with no rule in the palette, which is the one signal a
+        combined city view has besides the venue name."""
         entries = [ln for ln in block().split("\n") if "id:" in ln]
         self.assertEqual(len(entries), len(registry.PROVIDERS))
         for line in entries:
             with self.subTest(entry=line.strip()[:40]):
-                for key in ("id:", "label:", "host:", "accent:", "book:"):
+                for key in ("id:", "label:", "host:", "accent:", "accentDark:", "book:"):
                     self.assertIn(key, line)
                 self.assertRegex(line, r"accent:'#[0-9A-Fa-f]{6}'")
+                self.assertRegex(line, r"accentDark:'#[0-9A-Fa-f]{6}'")
 
     def test_the_generator_is_idempotent(self):
         """Rebuilding a file it just wrote must change nothing. Comparing the extracted
@@ -67,7 +68,8 @@ class FallbackEscapingTest(unittest.TestCase):
     honest rather than about hostile input."""
 
     def entry(self, **over):
-        p = {"id": "x", "label": "L", "host": "h.fi", "accent": "#001122", "book": "buy"}
+        p = {"id": "x", "label": "L", "host": "h.fi", "accent": "#001122",
+             "accentDark": "#AABBCC", "book": "buy"}
         p.update(over)
         return bp.fallback_body([p])
 

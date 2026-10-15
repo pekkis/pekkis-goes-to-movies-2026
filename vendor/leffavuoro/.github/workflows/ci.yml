@@ -240,8 +240,9 @@ jobs:
   # with its own failures to read; this is that change, and both engines were run against
   # it first: 20 tests, green in each.
   #
-  # `discover` takes no `-p`, so each leg runs every file in tests/browser, the landing
-  # page layout (test_pages_layout.py) included: a new file there is never missed. The
+  # `run_tests.py --dir tests/browser` runs every test_*.py there, the landing page layout
+  # (test_pages_layout.py) included, so a new file is never missed. Two files at a time,
+  # each in its own process with its own Playwright driver and fixture-handler state. The
   # layout had its own `pages-layout` job until 2026-09-24, which ran the same file a
   # second time on its own runner; its summary section, its skip rule and its separate
   # verdict per engine are kept here instead, from the one run.
@@ -279,7 +280,8 @@ jobs:
           KINO_BROWSER_ENGINE: ${{ matrix.engine }}
         run: |
           set +e
-          python3 -m unittest discover -s tests/browser -v > "$RUNNER_TEMP/browser.log" 2>&1
+          python3 scripts/run_tests.py --dir tests/browser --jobs 2 --fail-on-skip \
+            > "$RUNNER_TEMP/browser.log" 2>&1
           rc=$?
           set -e
           tail -40 "$RUNNER_TEMP/browser.log"
@@ -294,17 +296,18 @@ jobs:
               echo '```'
               grep -E '^(FAIL|ERROR): .*test_pages_layout\.' "$RUNNER_TEMP/browser.log" || echo "no failure"
               echo '```'
-              grep -E '^(OK|FAILED)|^Ran ' "$RUNNER_TEMP/browser.log" || true
+              grep -A3 -E '^Ran .* \([0-9]+ files, ' "$RUNNER_TEMP/browser.log" || true
             } >> "$GITHUB_STEP_SUMMARY"
           fi
           awk '/^(FAIL|ERROR): / { print "::error::${{ matrix.engine }}: " $0 }' "$RUNNER_TEMP/browser.log"
-          if [ "$rc" != 0 ]; then
-            echo "::error::the browser suite failed in ${{ matrix.engine }} (exit $rc)"
-            exit 1
-          fi
-          # A skip means a dependency went missing on a runner that has them all.
+          # A skip means a dependency went missing on a runner that has them all. Checked
+          # before the exit code, which --fail-on-skip also sets, so a skip is named as one.
           if grep -qE 'skipped=' "$RUNNER_TEMP/browser.log"; then
             echo "::error::a browser test skipped in ${{ matrix.engine }}"
+            exit 1
+          fi
+          if [ "$rc" != 0 ]; then
+            echo "::error::the browser suite failed in ${{ matrix.engine }} (exit $rc)"
             exit 1
           fi
 
