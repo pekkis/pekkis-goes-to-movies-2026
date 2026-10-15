@@ -697,6 +697,23 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/matintupa/`
 
 ---
 
+## My Calendar (WordPress): Pyhäsalmen VPK
+
+Probed 2026-10-15, two GETs. Adapter: `packages/fetcher/src/providers/mycalendar/`, sites in `sites.ts`. Origin: Leffavuoro's `scripts/providers/vpk.py`, re-verified.
+
+- **API** **[V]**: `GET {base}/wp-json/my-calendar/v1/events?from=…&to=…&category=1` returns `{date: [occurrence…]}`, or `[]` for none. Each occurrence has:
+  - `occur_id` (the screening's id), `event_title`, `category_id`;
+  - `occur_begin` (local) and `ts_occur_begin` (Unix), which must agree.
+
+  An occurrence outside the configured category is skipped with `unclaimed-event`. Events carry no location, runtime or rating.
+
+- **Price:** the cinema's page says "Elokuvalipun hinta: 12 euroa", one price for every screening, read by a configured pattern. If that page fails, the programme still publishes, without a price.
+- **Pyhäsalmen VPK** (a volunteer fire brigade's cinema since 1944): category 1 "Elokuvat"; tickets at the door; screenings link the cinema's page.
+- **Coordinates:** Palotie 4, 86800 Pyhäsalmi (from its page), geocoded with Nominatim; OSM has the building unnamed. The city is the municipality, Pyhäjärvi.
+- **First run:** 2 films, 7 screenings, no warnings. Late Lammas is aliased (no runtime to match on).
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

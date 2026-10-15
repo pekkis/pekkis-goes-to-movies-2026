@@ -72,6 +72,9 @@ import { KINOHUOVI_SITES, type KinoHuoviSite } from "./kinohuovi/sites.ts";
 import { fetchMatinTupa } from "./matintupa/fetch.ts";
 import { parseMatinTupa } from "./matintupa/parse.ts";
 import { MATINTUPA_SITES, type MatinTupaSite } from "./matintupa/sites.ts";
+import { fetchMyCalendar } from "./mycalendar/fetch.ts";
+import { parseMyCalendar } from "./mycalendar/parse.ts";
+import { MYCALENDAR_SITES, type MyCalendarSite } from "./mycalendar/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -439,6 +442,18 @@ const matinTupaAdapter = (site: MatinTupaSite): Adapter => ({
   },
 });
 
+/** The My Calendar WordPress plugin: the film category's occurrences over REST. */
+const myCalendarAdapter = (site: MyCalendarSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchMyCalendar(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseMyCalendar(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
@@ -463,6 +478,7 @@ export const ADAPTERS: Adapter[] = [
   ...MARITA_SITES.map(maritaAdapter),
   ...KINOHUOVI_SITES.map(kinoHuoviAdapter),
   ...MATINTUPA_SITES.map(matinTupaAdapter),
+  ...MYCALENDAR_SITES.map(myCalendarAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",

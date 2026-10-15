@@ -288,5 +288,10 @@
     "tmdb": 1743488,
     "title": "Unesta tehty mies",
     "note": "A documentary; only the exact title and 94 min to go on. Accepted by the maintainer 2026-10-15."
+  },
+  "pyhasalmenvpk:film:late-lammas-elokuva-hamarapuuhissa": {
+    "tmdb": 1477104,
+    "title": "Late Lammas- elokuva: Hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), the film the maintainer confirmed for other cinemas; VPK states no runtime."
   }
 }
