@@ -67,6 +67,9 @@ import { fetchMarita } from "./marita/fetch.ts";
 import { parseMarita } from "./marita/parse.ts";
 import { MARITA_SITES, type MaritaSite } from "./marita/sites.ts";
 import { fetchKisaKino } from "./kisakino/fetch.ts";
+import { fetchPajakkakino } from "./pajakkakino/fetch.ts";
+import { parsePajakkakino } from "./pajakkakino/parse.ts";
+import { PAJAKKAKINO_SITES, type PajakkakinoSite } from "./pajakkakino/sites.ts";
 import { parseKisaKino } from "./kisakino/parse.ts";
 import { KISAKINO_SITES, type KisaKinoSite } from "./kisakino/sites.ts";
 import { fetchKurikanKino } from "./kurikankino/fetch.ts";
@@ -439,6 +442,18 @@ const maritaAdapter = (site: MaritaSite): Adapter => ({
   },
 });
 
+/** Pajakkakino's WordPress posts. */
+const pajakkakinoAdapter = (site: PajakkakinoSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchPajakkakino(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parsePajakkakino(raw, site), venues) };
+  },
+});
+
 /** KisaKino's front page and film pages. */
 const kisaKinoAdapter = (site: KisaKinoSite): Adapter => ({
   id: site.provider,
@@ -583,6 +598,7 @@ export const ADAPTERS: Adapter[] = [
   ...MARITA_SITES.map(maritaAdapter),
   ...KURIKANKINO_SITES.map(kurikanKinoAdapter),
   ...KISAKINO_SITES.map(kisaKinoAdapter),
+  ...PAJAKKAKINO_SITES.map(pajakkakinoAdapter),
   ...KINOHUOVI_SITES.map(kinoHuoviAdapter),
   ...MATINTUPA_SITES.map(matinTupaAdapter),
   ...MYCALENDAR_SITES.map(myCalendarAdapter),
