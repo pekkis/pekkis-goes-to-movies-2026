@@ -650,6 +650,23 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/lieksa/`, s
 
 ---
 
+## Elokuvateatteri Marita (Outokumpu)
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/marita/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/marita.py`, re-verified.
+
+- **The front page's `#show-times` module** has one `.movie-info` block per screening **[V]**:
+  - `h3` title linking the film's page;
+  - "Hinta: 10 €" (a single amount is published; "10/8 €" is not);
+  - "Kieli: Suomi", the print's spoken language (no subtitles are stated anywhere);
+  - `img.age-img` named after the limit (`12.png`, `s.png`); the `label-img` images beside it are content warnings, not ratings;
+  - the date with its year ("17.10.2026") and "klo 16.00".
+- **The film pages** carry runtime and genre **[A]** (Leffavuoro); not read yet.
+- **Tickets at the door**; screenings link the film's page.
+- **Coordinates:** OSM node 7202242999 "Elokuvateatteri Marita" (Koulukatu 1, 83500 Outokumpu).
+- **First run:** 4 films (all matched), 5 screenings, no warnings.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
