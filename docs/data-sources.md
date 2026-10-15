@@ -847,6 +847,15 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Le
 - **Tickets** at the door: booking `door`, links to the front page. The programme is published on Mondays, 1.5 weeks ahead.
 - **First run:** 17 screenings of 5 films, no warnings; a local documentary (not on TMDB) stays unmatched.
 
+## Kino-Kuva (Teuva)
+
+- **Found** by the maintainer (kinokuva.fi), 2026-10-15; not in Leffavuoro.
+- **Encoding:** the page is ISO-8859-1 and says so in Content-Type [V]. `getText` decodes by the stated charset (`decodeBody` in `lib/http.ts`), since `Response.text()` always assumes UTF-8.
+- **The front page** [V]: one table row per film, `td.elokuva` with the `h1` title and "Kesto: 1 h 52 min -K12-" (runtime, rating), then `td.elokuva_tiedot pre` with lines: rows ("KE 14.10. KLO 19.00", "TO 15.10. KLO 14.00 JA KLO 17.00"; no year, the weekday must fit), notes, the price ("Liput 14,-" or "Ilmainen sisäänpääsy!" for free).
+- **Notes read** [V]: "ENNAKKONÄYTÖKSET!" tags the film's rows `preview`; a heading ending in a colon ("Puolan elokuvaviikot:") is the series; "englanninkielinen tekstitys" (also misspelt "teksitys") gives the subtitle language. Other notes ("ENSI-ILTA 30.10.", "SYYSLOMAN KUNNIAKSI") are ignored.
+- **Tickets** at the door: booking `door`, links to the front page.
+- **First run:** 9 screenings of 5 films, no warnings; 4 matched.
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
