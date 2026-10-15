@@ -318,5 +318,15 @@
     "tmdb": 1423191,
     "title": "Resident Evil (2026)",
     "note": "Resident Evil (2026), the film other cinemas match automatically by runtime (94 min, K-16); two 2026 titles on TMDB and no runtime here."
+  },
+  "levisummit:film:ryhma-hau-dinoelokuva": {
+    "tmdb": 1185806,
+    "title": "Ryhmä Hau: Dinoelokuva",
+    "note": "PAW Patrol: The Dino Movie (2026), as biorex:film:1518. Levi Summit states no runtime, so the sibling pass cannot link it."
+  },
+  "levisummit:film:the-odyssey": {
+    "tmdb": 1368337,
+    "title": "The Odyssey",
+    "note": "Christopher Nolan's The Odyssey (2026), which ten other cinemas match automatically; Levi Summit states no runtime, so three TMDB titles tie."
   }
 }

@@ -856,6 +856,14 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Le
 - **Tickets** at the door: booking `door`, links to the front page.
 - **First run:** 9 screenings of 5 films, no warnings; 4 matched.
 
+## Cinema Levi Summit (Kittilä)
+
+- **Found** by the maintainer (via levi.fi, which links levisummit.fi/cinema/), 2026-10-15; not in Leffavuoro.
+- **The cinema page** [V] has a show calendar for the current week: one `section.levi-summit-cinema-show-day-container` per day with its date in `h3` ("Torstai 15.10.2026"), then one card per screening with the `h4` title, `.movie-showtime` ("To klo 14:00"; the weekday must be the day's) and `.movie-tickets` (the adult price; the child price beside it is not read).
+- **Film pages** are on the operator's WordPress (`kassiopeia.fi/levi-summit/…`) and are copied as the screening link; booking `info`.
+- **No runtime** is stated, so titles that share a name with other films need aliases (The Odyssey, Ryhmä Hau).
+- **Address:** the site states none; OSM's Levi Summit node (Levin portaat, 99130 Sirkka, Kittilä).
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
