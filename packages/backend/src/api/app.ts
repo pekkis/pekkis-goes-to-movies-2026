@@ -24,7 +24,8 @@ export type AppOptions = {
 const ATTRIBUTION =
   "Showtimes come from each cinema; every ticket link goes to the cinema's own page. " +
   "Film data and images from TMDB (this product uses the TMDB API but is not endorsed or " +
-  "certified by TMDB). Venue coordinates partly © OpenStreetMap contributors (ODbL).";
+  "certified by TMDB). Venue coordinates partly © OpenStreetMap contributors (ODbL). " +
+  "Some showtimes from the City of Helsinki's Linked Events API (CC BY 4.0).";
 
 /** The whole API. Pure wiring: no listening, so tests call `app.request()` directly. */
 export const createApp = ({ db, corsOrigins = "*", log = false, mcpToken }: AppOptions) => {

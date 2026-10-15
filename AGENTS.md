@@ -13,9 +13,10 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 ## Current state
 
-- **Data:** 109 venues in 75 cities from 62 providers on fourteen source types:
+- **Data:** 110 venues in 75 cities from 63 providers on fifteen source types:
   - one chain: Finnkino (Vista OCAPI), and Vista's open public web services (Korjaamo Kino, Riviera Kallio and Punavuori, Bio-Kaari);
   - six multi-site platforms: MyCloudCinema (BioRex, Cine Mäntsälä, and Gilda through its own WordPress facade), Nexxo, eTiketti, Kinola, Johku, and The Events Calendar for WordPress (Ritz Vaasa, Tähti Kino Muhos);
+  - the City of Helsinki's open Linked Events API (Kino Helios in Malmitalo);
   - six HTML sources: TMB Cinema (four cinemas), the WordPress `cinema-reservations` plugin (Kino Piispanristi, Kino Lumo, Laitilan Kino), Kino Tapiola's own theme, Kuvakukko's shared programme page (Kino Kuvakukko, Kino Manttu), Iso-Hannu's own site, and Kino Engel's front page (home connection only).
 
   Fetched into JSON (`pnpm pull`), matched to TMDB, stored with history in PostgreSQL (`pnpm ingest`).
@@ -85,10 +86,10 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 - **Certain or nothing:** a film is linked to TMDB only when the match is certain; otherwise it stays unmatched and gets an alias (verified on TMDB, reasoning in its `note`). Never loosen matching without a regression test in `test/matching/score.test.ts`.
 - **Unknown stays unknown:** an absent field (NULL in the database), never a guess. Labels the parser does not understand go to `unmappedLabels`; rows the config does not explain become **warnings**, which are to-dos for `sites.ts`.
 - Venue slugs are part of ids (`{provider}:venue:{slug}`): never rename one, or its history is orphaned.
-- **The website stays out of search engines** (`noindex` meta and `X-Robots-Tag`) until every cinema has been notified; only that production deployment sets `INDEXING=on`. Every page credits TMDB (logo and notice) and OpenStreetMap, and OMDb wherever scores show.
+- **The website stays out of search engines** (`noindex` meta and `X-Robots-Tag`) until every cinema has been notified; only that production deployment sets `INDEXING=on`. Every page credits TMDB (logo and notice), OpenStreetMap and the City of Helsinki's Linked Events (CC BY 4.0, Kino Helios's showtimes), and OMDb wherever scores show.
 - **Ratings are opt-in** in every UI (the CLI shows them only with `--ratings` or a score filter): some people do not want critics' verdicts beforehand.
 - **MCP:** the endpoint stays unlisted (behind `MCP_TOKEN`) until every cinema has been notified, like the website's `noindex`. Its tools are read-only, return the cinemas' own ticket links, and give critics' scores only with `include_ratings`.
-- **API:** responses are the public shapes in `packages/backend/src/api/schemas.ts`, never database rows; change them deliberately (Flutter and React clients depend on them). Read-only, no auth. Keep the TMDB, OMDb and OpenStreetMap attributions in the OpenAPI description.
+- **API:** responses are the public shapes in `packages/backend/src/api/schemas.ts`, never database rows; change them deliberately (Flutter and React clients depend on them). Read-only, no auth. Keep the TMDB, OMDb, OpenStreetMap and Linked Events attributions in the OpenAPI description.
 - **Database:** migrations are append-only and listed in `migrations/index.ts` (a test checks). After one, run `pnpm migrate && pnpm db:types` and commit the regenerated `types.ts` (never edit it by hand). The fetcher stays database-agnostic.
 
 ## How the code is built
@@ -175,7 +176,7 @@ packages/fetcher/               @pgtm/fetcher: fetch, normalize, match → data/
   src/providers/language-codes.ts   FI / OV / FI-SE / XX codes (Nexxo, Johku)
   src/providers/overrides.ts    config/venue-overrides.json for chain venues; venue-without-geo warnings
   src/providers/<source>/       raw.ts, fetch.ts, parse.ts; sites.ts on platforms; finnkino/token.ts
-                                (mycloudcinema [BioRex, Cine Mäntsälä], gilda [MyCloudCinema via WordPress], tmb [HTML], cinemahouse [HTML], vista [public JSON/XML], tapiola [HTML], kuvakukko [HTML], isohannu [HTML], tribe [Events Calendar REST], engel [HTML], finnkino, nexxo, etiketti [HTML, cheerio], kinola, johku)
+                                (mycloudcinema [BioRex, Cine Mäntsälä], gilda [MyCloudCinema via WordPress], tmb [HTML], cinemahouse [HTML], vista [public JSON/XML], tapiola [HTML], kuvakukko [HTML], isohannu [HTML], tribe [Events Calendar REST], engel [HTML], linkedevents [City of Helsinki], finnkino, nexxo, etiketti [HTML, cheerio], kinola, johku)
   src/matching/                 TMDB matching: score.ts (pure), match.ts, titles.ts, aliases.ts, catalog.ts, run.ts
   src/tmdb/, src/ratings/       TMDB client and toFilm; OMDb ratings
   src/geo/                      Finland bounds and sources, Overpass, Nominatim, OSM matching (venues:locate)

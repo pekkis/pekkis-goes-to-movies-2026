@@ -473,6 +473,32 @@ Probed 2026-10-14 from a home connection: the front page, then the film pages. A
 
 ---
 
+## Linked Events (City of Helsinki): Kino Helios
+
+Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/linkedevents/`, sites in `sites.ts`.
+
+- **Why not Malmitalo's own calendar:** Leffavuoro (`helios.py`) POSTs to Malmitalo's `EventCalendarService.svc/GetEvents`; we are GET only. The same events are in the city's open **Linked Events** API **[V]**: `GET https://api.hel.fi/linkedevents/v1/event/?location=tprek:8740&start=…&end=…&page_size=100&sort=start_time`, with `meta.next` followed to the end (budget 10 pages).
+- **License:** the city publishes Linked Events data under CC BY 4.0 **[A]**. It is credited on every page of the website, in the OpenAPI description and in the MCP server's text.
+- **A culture house's calendar is not a programme:** Malmitalo's place also holds concerts, courses (Nuorten elokuvakerho) and library groups. An event is a screening only when its title carries a configured label **[V]**:
+  - "Tony (16) – Kino Helios" (the cinema's name);
+  - "HopeaCine: …" (series, seniors);
+  - "… – Yleisön suosikit" (series).
+
+  Doc Helios is another strand of the house and is not read.
+
+- **Fields** **[V]**:
+  - `start_time` is UTC.
+  - The age limit is in parentheses after the title: "(16)", "(S)".
+  - `offers[0].price.fi` is "9 €" (a plain amount is published) and `is_free` means free.
+  - `offers[0].info_url.fi` is the lippu.fi ticket page, copied; otherwise the house's own `info_url`.
+  - `event_status` "EventCancelled" and "EventPostponed" are skipped; "EventRescheduled" (on almost every event, meaning edited) is kept.
+  - Ids ("kulke:68847") are source ids; our ids use a dash instead of the colon.
+- **Coordinates:** OSM way 29553571 "Malmitalo" (Ala-Malmin tori 1, 00700 Helsinki).
+- **Other houses:** Stoa, Kanneltalo, Vuotalo and Caisa are in Linked Events too; a house showing films is a site entry with its place id and labels.
+- **First run:** 7 films (all matched), 15 screenings, no warnings.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

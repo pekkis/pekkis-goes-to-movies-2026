@@ -41,6 +41,7 @@ export const Platform = z.enum([
   "vista-ocapi",
   "vista-public",
   "events-calendar",
+  "linked-events",
   "mycloudcinema",
   "etiketti",
   "kinola",

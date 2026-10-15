@@ -1,0 +1,206 @@
+{
+  "meta": {
+    "count": 7,
+    "next": null,
+    "previous": null
+  },
+  "data": [
+    {
+      "id": "kulke:68847",
+      "name": {
+        "fi": "Tony (16) – Kino Helios"
+      },
+      "start_time": "2026-10-17T15:00:00Z",
+      "end_time": "2026-10-17T17:00:00Z",
+      "event_status": "EventRescheduled",
+      "deleted": false,
+      "location": {
+        "@id": "https://api.hel.fi/linkedevents/v1/place/tprek:8740/"
+      },
+      "offers": [
+        {
+          "is_free": false,
+          "price": {
+            "fi": "9 €",
+            "sv": "9 €",
+            "en": "9 €"
+          },
+          "info_url": {
+            "fi": "https://www.lippu.fi/event/kino-helios-esittaa-kino-helios-tony-malmitalo-22211013/",
+            "sv": "https://www.lippu.fi/event/kino-helios-esittaa-kino-helios-tony-malmitalo-22211013/",
+            "en": "https://www.lippu.fi/event/kino-helios-esittaa-kino-helios-tony-malmitalo-22211013/"
+          }
+        }
+      ],
+      "info_url": {
+        "fi": "http://www.malmitalo.fi/fi/tapahtumat/event/AB024CC3AEE772790E4E7999B37BBB1A/Tony_16_",
+        "sv": "http://www.malmitalo.fi/sv/evenemang/event/AB024CC3AEE772790E4E7999B37BBB1A/Tony_16_",
+        "en": "http://www.malmitalo.fi/en/events/event/AB024CC3AEE772790E4E7999B37BBB1A/Tony_16_"
+      }
+    },
+    {
+      "id": "kulke:68843",
+      "name": {
+        "fi": "Presidentin kyyditys (12) – Kino Helios"
+      },
+      "start_time": "2026-10-15T15:00:00Z",
+      "end_time": "2026-10-15T17:00:00Z",
+      "event_status": "EventRescheduled",
+      "deleted": false,
+      "location": {
+        "@id": "https://api.hel.fi/linkedevents/v1/place/tprek:8740/"
+      },
+      "offers": [
+        {
+          "is_free": false,
+          "price": {
+            "fi": "9 €"
+          },
+          "info_url": {
+            "fi": "https://www.lippu.fi/event/kino-helios-presidentin-kyyditys-malmitalo-22208146/"
+          }
+        }
+      ],
+      "info_url": {
+        "fi": "http://www.malmitalo.fi/fi/tapahtumat/event/1C05751BAD4BD0FEAE5D70CF00455ABD/Presidentin_kyyditys_12_"
+      }
+    },
+    {
+      "id": "kulke:69509",
+      "name": {
+        "fi": "HopeaCine: Presidentin kyyditys"
+      },
+      "start_time": "2026-10-22T10:00:00Z",
+      "end_time": "2026-10-22T12:00:00Z",
+      "event_status": "EventRescheduled",
+      "deleted": false,
+      "location": {
+        "@id": "https://api.hel.fi/linkedevents/v1/place/tprek:8740/"
+      },
+      "offers": [
+        {
+          "is_free": false,
+          "price": {
+            "fi": "9 €",
+            "sv": "9 €",
+            "en": "9 €"
+          },
+          "info_url": null
+        }
+      ],
+      "info_url": {
+        "fi": "http://www.malmitalo.fi/fi/tapahtumat/event/97DE7189CE449B2693C42F85B6D5A8E9/HopeaCine_Presidentin_kyyditys",
+        "sv": "http://www.malmitalo.fi/sv/evenemang/event/97DE7189CE449B2693C42F85B6D5A8E9/HopeaCine_Presidentin_kyyditys",
+        "en": "http://www.malmitalo.fi/en/events/event/97DE7189CE449B2693C42F85B6D5A8E9/HopeaCin_The_Kidnapping_of_a_President_"
+      }
+    },
+    {
+      "id": "kulke:69500",
+      "name": {
+        "fi": "Teräsleidit – kuin viimeistä päivää – Yleisön suosikit"
+      },
+      "start_time": "2026-10-29T16:00:00Z",
+      "end_time": "2026-10-29T17:48:00Z",
+      "event_status": "EventRescheduled",
+      "deleted": false,
+      "location": {
+        "@id": "https://api.hel.fi/linkedevents/v1/place/tprek:8740/"
+      },
+      "offers": [
+        {
+          "is_free": true,
+          "price": null,
+          "info_url": null
+        }
+      ],
+      "info_url": {
+        "fi": "http://www.malmitalo.fi/fi/tapahtumat/event/C5B9F73D925A671BD208ED67AF16DEE8/Terasleidit_kuin_viimeista_paivaa",
+        "sv": "http://www.malmitalo.fi/sv/evenemang/event/C5B9F73D925A671BD208ED67AF16DEE8/Terasleidit_kuin_viimeista_paivaa",
+        "en": "http://www.malmitalo.fi/en/events/event/C5B9F73D925A671BD208ED67AF16DEE8/Terasleidit_kuin_viimeista_paivaa"
+      }
+    },
+    {
+      "id": "kulke:69922",
+      "name": {
+        "fi": "Nuorten elokuvakerho"
+      },
+      "start_time": "2026-10-24T12:00:00Z",
+      "end_time": "2026-10-24T15:00:00Z",
+      "event_status": "EventRescheduled",
+      "deleted": false,
+      "location": {
+        "@id": "https://api.hel.fi/linkedevents/v1/place/tprek:8740/"
+      },
+      "offers": [
+        {
+          "is_free": true,
+          "price": null,
+          "info_url": null
+        }
+      ],
+      "info_url": {
+        "fi": "http://www.malmitalo.fi/fi/tapahtumat/event/9FDF5AD5E7D5D3B182D6CCC4657C397E/Nuorten_elokuvakerho",
+        "sv": "http://www.malmitalo.fi/sv/evenemang/event/9FDF5AD5E7D5D3B182D6CCC4657C397E/Filmklubb_for_unga_",
+        "en": "http://www.malmitalo.fi/en/events/event/9FDF5AD5E7D5D3B182D6CCC4657C397E/Youth_Film_Club_"
+      }
+    },
+    {
+      "id": "kulke:68857",
+      "name": {
+        "fi": "Tony (16) – Kino Helios"
+      },
+      "start_time": "2026-10-28T16:00:00Z",
+      "end_time": "2026-10-28T18:00:00Z",
+      "event_status": "EventRescheduled",
+      "deleted": false,
+      "location": {
+        "@id": "https://api.hel.fi/linkedevents/v1/place/tprek:8740/"
+      },
+      "offers": [
+        {
+          "is_free": false,
+          "price": {
+            "fi": "9 €",
+            "sv": "9 €",
+            "en": "9 €"
+          },
+          "info_url": {
+            "fi": "https://www.lippu.fi/search/?affiliate=ADV&searchterm=malmitalo",
+            "sv": "https://www.lippu.fi/search/?affiliate=ADV&searchterm=malmitalo",
+            "en": "https://www.lippu.fi/search/?affiliate=ADV&searchterm=malmitalo"
+          }
+        }
+      ],
+      "info_url": {
+        "fi": "http://www.malmitalo.fi/fi/tapahtumat/event/E5118731F204CC1C95D440453DD69F5D/Tony_16_",
+        "sv": "http://www.malmitalo.fi/sv/evenemang/event/E5118731F204CC1C95D440453DD69F5D/Tony_16_",
+        "en": "http://www.malmitalo.fi/en/events/event/E5118731F204CC1C95D440453DD69F5D/Tony_16_"
+      }
+    },
+    {
+      "id": "helsinki:agqeqn3vgy",
+      "name": {
+        "fi": "Malmin kirjaston sanataideryhmä"
+      },
+      "start_time": "2026-09-02T12:00:00Z",
+      "end_time": "2026-11-25T14:30:00Z",
+      "event_status": "EventScheduled",
+      "deleted": false,
+      "location": {
+        "@id": "https://api.hel.fi/linkedevents/v1/place/tprek:8740/"
+      },
+      "offers": [
+        {
+          "is_free": true,
+          "price": null,
+          "info_url": {
+            "fi": ""
+          }
+        }
+      ],
+      "info_url": {
+        "fi": ""
+      }
+    }
+  ]
+}
