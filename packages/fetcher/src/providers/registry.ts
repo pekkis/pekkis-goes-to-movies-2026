@@ -66,6 +66,9 @@ import { LIEKSA_SITES, type LieksaSite } from "./lieksa/sites.ts";
 import { fetchMarita } from "./marita/fetch.ts";
 import { parseMarita } from "./marita/parse.ts";
 import { MARITA_SITES, type MaritaSite } from "./marita/sites.ts";
+import { fetchBioMarlon } from "./biomarlon/fetch.ts";
+import { parseBioMarlon } from "./biomarlon/parse.ts";
+import { BIOMARLON_SITES, type BioMarlonSite } from "./biomarlon/sites.ts";
 import { fetchKisaKino } from "./kisakino/fetch.ts";
 import { fetchPajakkakino } from "./pajakkakino/fetch.ts";
 import { parsePajakkakino } from "./pajakkakino/parse.ts";
@@ -454,6 +457,18 @@ const pajakkakinoAdapter = (site: PajakkakinoSite): Adapter => ({
   },
 });
 
+/** Bio Marlon's Elementor front page. */
+const bioMarlonAdapter = (site: BioMarlonSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchBioMarlon(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseBioMarlon(raw, site), venues) };
+  },
+});
+
 /** KisaKino's front page and film pages. */
 const kisaKinoAdapter = (site: KisaKinoSite): Adapter => ({
   id: site.provider,
@@ -599,6 +614,7 @@ export const ADAPTERS: Adapter[] = [
   ...KURIKANKINO_SITES.map(kurikanKinoAdapter),
   ...KISAKINO_SITES.map(kisaKinoAdapter),
   ...PAJAKKAKINO_SITES.map(pajakkakinoAdapter),
+  ...BIOMARLON_SITES.map(bioMarlonAdapter),
   ...KINOHUOVI_SITES.map(kinoHuoviAdapter),
   ...MATINTUPA_SITES.map(matinTupaAdapter),
   ...MYCALENDAR_SITES.map(myCalendarAdapter),

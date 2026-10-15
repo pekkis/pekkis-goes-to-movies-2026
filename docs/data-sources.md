@@ -839,6 +839,14 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Le
 - **Tickets** at the box office or reserved by phone, WhatsApp or the site's form (never requested): booking `reserve`. Prices depend on age and length, so none is published.
 - **Coordinates and address** from OSM (way 238296413, Rajakatu 56).
 
+## Bio Marlon (Kauhajoki)
+
+- **Found** by the maintainer (biomarlon.fi), 2026-10-15; not in Leffavuoro.
+- **The front page** [V] is Elementor: one text block per film with the title in `h1` (linking to nytleffaan.fi, not used), one `h4` per screening ("pe 16.10. 19:00"; no year, the nearest date whose weekday fits) and a facts paragraph ("K-7/4 1 t 40 min 13 €": rating, runtime, price; "0 €" is free).
+- **Row variants** [V]: "Ensi-ilta pe 16.10. 15:30" is a premiere (`premiere` tag); a row without a time ("Ensi-ilta pe 23.10.", "Tulossa") is announced, not on; "(ke 21.10. 10:00 yksityisnäytös)" is private and skipped. "Suomea puhutaan!" below the facts marks a Finnish-dubbed print.
+- **Tickets** at the door: booking `door`, links to the front page. The programme is published on Mondays, 1.5 weeks ahead.
+- **First run:** 17 screenings of 5 films, no warnings; a local documentary (not on TMDB) stays unmatched.
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
