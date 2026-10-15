@@ -822,6 +822,14 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Le
 - **The page lists the past week too**, so the window filter drops the old ones.
 - **Tickets:** the site states no way of buying, so booking is `info` and each screening links to the film's page.
 
+## KisaKino (Saarijärvi)
+
+- **Found** through elokuviin.com's list of cinemas (2026-10-15); not in Leffavuoro. Run by the sports club Pullistus in the town hall's Saarijärvi hall.
+- **The front page** [V] links each film (`h2.etusivu-otsikko a`) but shows only its next three screenings, so each film's page is read too (at most 30).
+- **The film page's sidebar** [V]: "Kesto 02 h 38 min", "Lipun hinta: 12€", then "Elokuvan näytökset" and one line per screening ("La 24.10.2026 16:00"), whose weekday must fit the date; the age image (`k16.png`) closes it.
+- **A failed film page** is `invalid-film-page` (its screenings are missing), so removals are not inferred that run.
+- **Tickets** at the box office before the show: booking `door`, each screening links to the film's page.
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
