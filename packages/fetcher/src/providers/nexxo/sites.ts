@@ -227,7 +227,8 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
       "KSEK's touring cinema: one location whose rooms are towns. Data from kinoaurora.fi " +
       "(same deployment as ksek.fi); each town has its own page. Riihivuori (room 21) is " +
       "folded into Muurame, which KSEK's site does too. Laukaa (24) and Viitasaari (10) " +
-      "were found by the unclaimed-room warning, not in Leffavuoro's list. Each town " +
+      "were found by the unclaimed-room warning, not in Leffavuoro's list; Toivakka (23) and " +
+      "Hankasalmi (19) only once the fetch sent movieid=0 (2026-10-15). Each town " +
       "plays in a hall (address from its town page, geocoded with Nominatim); Viitasaari " +
       "plays at Nuorisotalon Teatteri (OSM: Viitasaaren teatteri), confirmed by the maintainer.",
     showTypes: { "Kino Metso": {}, "Kino Metso, kiinteähintainen": {} },
@@ -304,6 +305,75 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
         postalCode: "44500",
         geo: { lat: 63.085083, lon: 25.84843 },
         geoSource: "osm:node/5940777731",
+      },
+      {
+        slug: "toivakka",
+        locationId: "2",
+        roomIds: ["23"],
+        page: "/kino-metso/toivakka/",
+        name: "Kino Metso Toivakka",
+        city: "Toivakka",
+        address: "Iltaruskontie 4A",
+        postalCode: "41660",
+        geo: { lat: 62.0982807, lon: 26.0854837 },
+        geoSource: "osm:node/559658460",
+      },
+      {
+        slug: "hankasalmi",
+        locationId: "2",
+        roomIds: ["19"],
+        page: "/kino-metso/hankasalmi/",
+        name: "Kino Metso Hankasalmi",
+        city: "Hankasalmi",
+        address: "Kirkkotie 11",
+        postalCode: "41520",
+        geo: { lat: 62.38667, lon: 26.430363 },
+        geoSource: "osm:way/186942567",
+      },
+    ],
+  },
+  {
+    provider: "biosalo",
+    name: "Bio-Salo",
+    homepage: "https://biosalo.fi",
+    programmePath: "/",
+    verifiedAt: "2026-10-15",
+    notes:
+      "Plugin 25.051, which answers exportdailyshows only with `movieid` (the fetch sends 0). Location 1; location 2 is Bio Stara. Address from the cinema's info page (Helsingintie 11, Salo); OSM has the cinema node.",
+    venues: [
+      {
+        slug: "salo",
+        locationId: "1",
+        page: "/",
+        name: "Bio-Salo",
+        city: "Salo",
+        address: "Helsingintie 11",
+        postalCode: "24260",
+        geo: { lat: 60.3863219, lon: 23.134973 },
+        geoSource: "osm:node/364359305",
+      },
+    ],
+  },
+  {
+    provider: "biostara",
+    name: "Bio Stara",
+    homepage: "https://biostara.fi",
+    apiBase: "https://biosalo.fi",
+    programmePath: "/",
+    verifiedAt: "2026-10-15",
+    notes:
+      "Bio-Salo's sister cinema: biostara.fi's widgets read biosalo.fi's API, location 2. Address from the cinema's page (Pussitie 4, Paimio); OSM has the cinema node.",
+    venues: [
+      {
+        slug: "paimio",
+        locationId: "2",
+        page: "/",
+        name: "Bio Stara",
+        city: "Paimio",
+        address: "Pussitie 4",
+        postalCode: "21530",
+        geo: { lat: 60.4571056, lon: 22.6895365 },
+        geoSource: "osm:node/11168933714",
       },
     ],
   },

@@ -54,6 +54,9 @@ describe("Nexxo field parsers", () => {
   it("reads ratings, and event age limits as screening limits", () => {
     expect(parseAge("12")).toEqual({ rating: "K-12" });
     expect(parseAge("s")).toEqual({ rating: "S" });
+    // Plugin 25.051 (Bio-Salo): the accompanied-child age after a slash.
+    expect(parseAge("7/4")).toEqual({ rating: "K-7" });
+    expect(parseAge("12/9")).toEqual({ rating: "K-12" });
     expect(parseAge("K16")).toEqual({ rating: "K-16" });
     expect(parseAge("Tapahtuma K18")).toEqual({ ageLimit: "K-18" });
     expect(parseAge("")).toEqual({});
@@ -178,6 +181,8 @@ describe("parseNexxo", () => {
       "kinometso:venue:vaajakoski",
       "kinometso:venue:laukaa",
       "kinometso:venue:viitasaari",
+      "kinometso:venue:toivakka",
+      "kinometso:venue:hankasalmi",
     ]);
     expect(screening(batch, "5187")).toMatchObject({
       venueId: "kinometso:venue:petajavesi",
