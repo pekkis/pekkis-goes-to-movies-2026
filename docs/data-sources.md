@@ -765,6 +765,28 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/biopallas/`
 
 ---
 
+## Freehand programmes: Movie Company Alatalo and Huvimylly
+
+Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/alatalo/`, sites in `sites.ts`. Origin: Leffavuoro's `alatalo.py` and `huvimylly.py`, re-verified. One author types both programmes by hand, in the same grammar **[V]**:
+
+- **Sources:**
+  - Alatalo, a touring operator in northern Finland: `http://www.moviecompanyalatalo.fi/` (HTTP only; 443 refused).
+  - Huvimylly in Raahe: its WordPress front page's content through `/wp-json/wp/v2/pages?slug=etusivu`.
+- **Lines** (split on block tags and `<br>`):
+  - **Town heading** (Alatalo): "Haapajärvi Teatterisali", matched by its first word in the config. A line followed by a date heading that names no configured town clears the venue, and its rows warn `unclaimed-venue` instead of landing under the town above.
+  - **Date heading:** "Lauantaina 17.10", the weekday by its first two letters (misspellings are common). No year: inferred, and checked against the weekday. Consecutive headings share the rows below them.
+  - **Row:** "Klo 14.00 Title -k16/13-", also "16.30 Title", "Kl 18.00". The rating marker ("-k12/9-", "k16/13", "-s-") closes the title; the second number (the age allowed with an adult) is not read. "k6/13" is a typo and is flagged.
+  - **Continuation:** a row without a marker takes the next line as the rest of its title when that line has a marker or the row has no title yet ("Klo 13.00" then "Pikkuli ja Tähtipeura -s-"). A bare marker line ("-k16/13-") rates the unmarked rows of one film above it.
+- **Price:** the page's one line ("Liput elokuviin vain10-€"; Huvimylly "Liput vain 10-€"), by a configured pattern. Tickets at the door, cash; screenings link the page.
+- **Titles are typed freely** ("Kero se kaikille", "Pirjo", "Saapasajalkakissa tekiöiltä Unohdettu saari"); they're kept as published and aliased by hand.
+- **Coordinates:**
+  - Kemijärvi's culture centre: OSM way 221824429.
+  - Huvimylly: Raahesali, OSM node 8827057758.
+  - Pudasjärvi (Pohjantähti), Haapajärvi (Teatterisali) and Kiuruvesi (Kiurusali): not in OSM under these names, so no coordinates yet (`venue-without-geo`).
+- **First run:** Alatalo 7 films, 13 screenings in four towns; Huvimylly 2 films, 3 screenings.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

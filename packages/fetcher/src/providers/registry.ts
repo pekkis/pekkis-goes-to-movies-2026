@@ -84,6 +84,9 @@ import { LOCALHUB_SITES, type LocalhubSite } from "./localhub/sites.ts";
 import { fetchBioPallas } from "./biopallas/fetch.ts";
 import { parseBioPallas } from "./biopallas/parse.ts";
 import { BIOPALLAS_SITES, type BioPallasSite } from "./biopallas/sites.ts";
+import { fetchAlatalo } from "./alatalo/fetch.ts";
+import { parseAlatalo } from "./alatalo/parse.ts";
+import { ALATALO_SITES, type AlataloSite } from "./alatalo/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -499,6 +502,18 @@ const bioPallasAdapter = (site: BioPallasSite): Adapter => ({
   },
 });
 
+/** Freehand programmes by one author: Alatalo's touring cinema and Huvimylly. */
+const alataloAdapter = (site: AlataloSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchAlatalo(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseAlatalo(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
@@ -527,6 +542,7 @@ export const ADAPTERS: Adapter[] = [
   ...NAVETTA_SITES.map(navettaAdapter),
   ...LOCALHUB_SITES.map(localhubAdapter),
   ...BIOPALLAS_SITES.map(bioPallasAdapter),
+  ...ALATALO_SITES.map(alataloAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",
