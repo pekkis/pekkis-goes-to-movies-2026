@@ -566,6 +566,28 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/biosavoy/`,
 
 ---
 
+## Kino Akseli (Nummela)
+
+Probed 2026-10-15 from a home connection, one GET. Adapter: `packages/fetcher/src/providers/kinoakseli/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/kinoakseli.py`, re-verified.
+
+- **Access:** kinoakseli.fi challenges datacenter addresses (SiteGround captcha) **[A]** (Leffavuoro); from home it answered 200 **[V]**. A challenge fails the pull; it is never worked around. Home pulls only, like Kino Engel.
+- **The front page** (Elementor) **[V]**:
+  - Each film's facts come **before** its heading: "Ikäraja : 12", "Liput : 14€", and on the month's-offer card "Kesto : 112min".
+  - The film heading (`h2` with a link to `/elokuva-…`) follows.
+  - The screenings come **after** it: "Näytösajat To 15.10. klo 17:45 La 17.10. klo 13:15 (dub)".
+
+  The parser marks each heading in the page text and gives a film the last facts before its heading.
+
+- **Elements run together in the text** ("Ikäraja : 12Liput"), so patterns cannot rely on word boundaries.
+- **The month's-offer card** repeats a film with no screenings; it adds nothing.
+- **No year:** inferred and checked against the weekday. "(dub.)" after a time marks that screening dubbed.
+- **Tickets at the door**; screenings link the film's page.
+- **City:** Nummela (a village of Vihti), as the cinema names itself.
+- **Coordinates:** OSM node 8193549402 (Vihdintie 4-6, 03100 Nummela).
+- **First run:** 7 films, 17 screenings, no warnings; Pikku Kummitus Lapanen keppostelee (no runtime here) aliased.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.

@@ -268,5 +268,10 @@
     "tmdb": 1545391,
     "title": "Matka Piemonteen",
     "note": "Resan till Piemonte (2026), the film the maintainer confirmed for biorex:film:1572; Kirkkonummi states no runtime."
+  },
+  "kinoakseli:film:pikku-kummitus-lapanen-keppostelee": {
+    "tmdb": 1781923,
+    "title": "Pikku Kummitus Lapanen keppostelee",
+    "note": "The film about 15 cinemas link as tmdb 1781923 (confirmed by the maintainer for Laitila and Kino Virta); Akseli states no runtime."
   }
 }
