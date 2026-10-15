@@ -14,8 +14,8 @@ import { providerOf, toVenue } from "../sites.ts";
 import { LinkedEvent, LinkedEventsPage, type LinkedEventsRawSnapshot } from "./raw.ts";
 import type { LinkedEventsSite } from "./sites.ts";
 
-/** The age limit in parentheses after the title: "Tony (16)", "Pirjo i Sverige (S)". */
-const AGE = /^(.+?)\s*\((S|7|12|16|18)\)$/;
+/** The age limit in parentheses after the title: "Tony (16)", "Kevlarsjäl (K12)", "(S)". */
+const AGE = /^(.+?)\s*\((S|(?:K-?)?(?:7|12|16|18))\)$/i;
 const RATINGS: Record<string, FinnishRating> = {
   S: "S",
   "7": "K-7",
@@ -87,7 +87,7 @@ export const parseLinkedEvents = (
       }
 
       const age = labelled.match(AGE);
-      const rating = age ? own(RATINGS, age[2]!) : undefined;
+      const rating = age ? own(RATINGS, age[2]!.toUpperCase().replace(/^K-?/, "")) : undefined;
       const { title, version } = splitVersion(age ? age[1]! : labelled);
       const filmKey = slugify(title);
       const listingId = makeId(P, "film", filmKey);

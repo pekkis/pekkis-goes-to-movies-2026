@@ -14,6 +14,8 @@ export const LinkedEventsVenue = SiteVenue.extend({
 });
 
 export const LinkedEventsSite = SiteBase.extend({
+  /** The Linked Events instance: Helsinki's by default, Espoo runs its own. */
+  api: z.url(),
   venues: z.array(LinkedEventsVenue).min(1),
   /**
    * "Label" as "Label: Title" or "Title – Label": only events carrying one of these are
@@ -28,6 +30,7 @@ export const LINKED_EVENTS_SITES: LinkedEventsSite[] = defineSites(LinkedEventsS
     provider: "kinohelios",
     name: "Kino Helios",
     homepage: "https://www.malmitalo.fi",
+    api: "https://api.hel.fi/linkedevents/v1/event/",
     verifiedAt: "2026-10-15",
     labels: {
       "Kino Helios": {},
@@ -46,6 +49,32 @@ export const LINKED_EVENTS_SITES: LinkedEventsSite[] = defineSites(LinkedEventsS
         geo: { lat: 60.2505382, lon: 25.014476 },
         geoSource: "osm:way/29553571",
         place: "tprek:8740",
+      },
+    ],
+  },
+  {
+    provider: "kannusali",
+    name: "Kannusali",
+    homepage: "https://www.espoo.fi/fi/kulttuuri/kannusali",
+    api: "https://api.espoo.fi/events/v1/event/",
+    verifiedAt: "2026-10-15",
+    labels: {
+      Elokuva: {},
+      "Lasten viikonloppu, Elokuva": { tags: ["kids"] },
+      Elokuvakonsertti: { tags: ["event-cinema"], event: true },
+    },
+    notes:
+      "Espoo's culture house in Espoon keskus, read from Espoo's own Linked Events instance (GET). Leffavuoro POSTs to espoo.fi/api/events instead.",
+    venues: [
+      {
+        slug: "espoon-keskus",
+        name: "Kannusali",
+        city: "Espoo",
+        address: "Kannusillankatu 4",
+        postalCode: "02770",
+        geo: { lat: 60.2060578, lon: 24.6531872 },
+        geoSource: "osm:node/13744741583",
+        place: "tprek:21430",
       },
     ],
   },
