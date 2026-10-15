@@ -57,6 +57,9 @@ import { HAMINA_SITES, type HaminaSite } from "./hamina/sites.ts";
 import { fetchElavienkuvien } from "./elavienkuvien/fetch.ts";
 import { parseElavienkuvien } from "./elavienkuvien/parse.ts";
 import { ELAVIENKUVIEN_SITES, type ElavienkuvienSite } from "./elavienkuvien/sites.ts";
+import { fetchKuusamotalo } from "./kuusamotalo/fetch.ts";
+import { parseKuusamotalo } from "./kuusamotalo/parse.ts";
+import { KUUSAMOTALO_SITES, type KuusamotaloSite } from "./kuusamotalo/sites.ts";
 import { fetchFinnkino } from "./finnkino/fetch.ts";
 import { parseFinnkino } from "./finnkino/parse.ts";
 import { getToken } from "./finnkino/token.ts";
@@ -364,6 +367,18 @@ const elavienkuvienAdapter = (site: ElavienkuvienSite): Adapter => ({
   },
 });
 
+/** Kino Kuusamotalo: WordPress posts, one per film. */
+const kuusamotaloAdapter = (site: KuusamotaloSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchKuusamotalo(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseKuusamotalo(raw, site), venues) };
+  },
+});
+
 export const ADAPTERS: Adapter[] = [
   ...MYCLOUDCINEMA_SITES.map(myCloudCinemaAdapter),
   ...GILDA_SITES.map(gildaAdapter),
@@ -383,6 +398,7 @@ export const ADAPTERS: Adapter[] = [
   ...KINOAKSELI_SITES.map(kinoAkseliAdapter),
   ...HAMINA_SITES.map(haminaAdapter),
   ...ELAVIENKUVIEN_SITES.map(elavienkuvienAdapter),
+  ...KUUSAMOTALO_SITES.map(kuusamotaloAdapter),
   {
     id: "finnkino",
     platform: "vista-ocapi",

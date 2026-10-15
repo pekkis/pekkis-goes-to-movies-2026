@@ -619,6 +619,23 @@ Probed 2026-10-15: the listing and the film pages. Adapter: `packages/fetcher/sr
 
 ---
 
+## Kino Kuusamotalo (Kuusamo)
+
+Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/kuusamotalo/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/kuusamotalo.py`, re-verified.
+
+- **WordPress's public REST route:** `GET https://kinokuusamotalo.fi/wp-json/wp/v2/posts?per_page=40&_fields=id,link,title,content`. One post per film, plus old notices (gift cards, closing times) **[V]**.
+- **A film post** carries:
+  - a list of facts: "-S-", "Kesto 1h 28min", "Liput 12€";
+  - an "Esitysajat:" heading with lines like "Ke 14.10. klo 15 ja 19" (several times a day; no year, inferred and checked against the weekday).
+
+  Posts without "Esitysajat:" are notices and are skipped.
+
+- **The film's id** is the post id; screenings link the post. Tickets at the door.
+- **Coordinates:** OSM way 167231017 "Kuusamotalo"; the address is from the cinema's page (Kaarlo Hännisen tie 2, 93600 Kuusamo).
+- **First run:** 1 film (matched), 7 screenings, no warnings. The programme is small; Lapin sota has a post but no times yet.
+
+---
+
 ## Film ratings: OMDb
 
 Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm pull` / `pnpm match` after TMDB matching when `OMDB_APIKEY` is set.
