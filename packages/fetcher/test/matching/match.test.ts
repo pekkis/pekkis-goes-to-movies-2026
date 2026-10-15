@@ -229,6 +229,18 @@ describe("matchListings", () => {
     expect(result.unmatched.map((u) => u.listingId)).toEqual(["finnkino:film:HO1"]);
   });
 
+  it("does not auto-match an event that states no runtime", async () => {
+    // Julia's "Don Giovanni (Vicenza festivaali / Mozart)" matched a 2023 Don Giovanni.
+    const { client, calls } = fakeTmdb([details({ id: 30, title: "Don Giovanni" })], {
+      "Don Giovanni": [30],
+    });
+    const { runtimeMinutes: _none, ...noRuntime } = listing("10", "Don Giovanni");
+    const result = await matchListings([{ ...noRuntime, kind: "event" }], client, {}, NOW);
+    expect(result.links.size).toBe(0);
+    expect(result.unmatched).toEqual([]);
+    expect(calls).toEqual([]);
+  });
+
   it("does not report an unmatched event", async () => {
     const { client } = fakeTmdb([], {});
     const result = await matchListings(
