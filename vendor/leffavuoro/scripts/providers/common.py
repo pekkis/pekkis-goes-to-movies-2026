@@ -455,6 +455,13 @@ def check_shows(per_venue, label, venue_ids=()):
     for vid, shows in per_venue.items():
         if venue_ids and vid not in venue_ids:
             raise RuntimeError(f"{label}: shows for venue {vid!r}, which the site does not list")
+        # The client folds a venue's rows into cards by `eventId`, so a `nonFilm` row
+        # sharing a film's would draw a concert and a film as one card.
+        films = {s.get("eventId") for s in shows if not s.get("nonFilm")}
+        for s in shows:
+            if s.get("nonFilm") and s.get("eventId") in films:
+                raise RuntimeError(f"{label}: venue {vid}: the non-film row {s.get('title')!r} "
+                                   f"shares the eventId {s.get('eventId')!r} with a film")
         for s in shows:
             for k, t in Show.__annotations__.items():
                 if k not in s:

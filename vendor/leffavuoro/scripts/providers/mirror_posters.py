@@ -43,6 +43,10 @@ CANNOT_RUN = 3
 
 POSTER_DIR = pathlib.Path("data/posters")
 POSTER_W = 342          # what TMDB already serves and what the client renders from
+# A non-film event's own picture is drawn uncropped across the sheet, 638 CSS px at its
+# widest, so 1276 device pixels on a 2x screen. Measured 2026-10-16 on Kannusali's 29: at
+# 720 px a desktop sheet kept a median 73% of the detail the source could give, at 1280 97%.
+EVENT_W = 1280
 JPEG_Q = 82
 MIN_BYTES = 500         # anything smaller is an error page, not an image
 PAUSE = 0.3             # these are other people's CDNs
@@ -88,7 +92,7 @@ def area_docs():
         yield p, doc
 
 
-def download(url: str, dest: pathlib.Path) -> bool:
+def download(url: str, dest: pathlib.Path, width: int = POSTER_W) -> bool:
     from PIL import Image
     raw = common.fetch(request_url(url), headers=HEADERS, tries=2, backoff=3, timeout=20)
     if len(raw) < MIN_BYTES:
@@ -97,12 +101,26 @@ def download(url: str, dest: pathlib.Path) -> bool:
     im.load()
     if im.mode not in ("RGB", "L"):
         im = im.convert("RGB")
-    if im.width > POSTER_W:
-        h = round(im.height * POSTER_W / im.width)
-        im = im.resize((POSTER_W, h), Image.LANCZOS)
+    if im.width > width:
+        h = round(im.height * width / im.width)
+        im = im.resize((width, h), Image.LANCZOS)
     tmp = dest.with_name(dest.name + ".tmp")
     im.save(tmp, "JPEG", quality=JPEG_Q, optimize=True)
     tmp.replace(dest)
+    return True
+
+
+def measure(show) -> bool:
+    """Put a mirrored picture's size on its row, so the page reserves its shape. -> changed."""
+    from PIL import Image
+    path = pathlib.Path(show["img"])
+    if not path.exists():
+        return False
+    with Image.open(path) as im:
+        size = {"imgW": im.width, "imgH": im.height}
+    if all(show.get(k) == v for k, v in size.items()):
+        return False
+    show.update(size)
     return True
 
 
@@ -164,6 +182,9 @@ def main() -> int:
                 if u.startswith("http"):
                     urls.add(u)
 
+    # The pictures of `nonFilm` rows, mirrored wider and measured for the client's layout.
+    wide = {(s.get("img") or "").strip() for _, doc in docs for s in doc.get("shows") or []
+            if s.get("nonFilm")}
     mapping = {}       # url -> repo-relative path
     had = fetched = 0
     failed = {}        # host -> [reason, ...]
@@ -178,7 +199,7 @@ def main() -> int:
             continue
         host = url.split("/")[2] if "//" in url else url
         try:
-            download(url, dest)
+            download(url, dest, EVENT_W if url in wide else POSTER_W)
         except Exception as e:
             failed.setdefault(host, []).append(f"{type(e).__name__}: {e}")
             continue
@@ -201,6 +222,8 @@ def main() -> int:
                 s["img"] = mapping[u]
                 changed = True
                 rewritten += 1
+            if s.get("nonFilm") and s.get("img", "").startswith("data/posters/"):
+                changed |= measure(s)
         if changed:
             common.write_json(pathlib.Path(p), doc)
             files += 1

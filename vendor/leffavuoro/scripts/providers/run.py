@@ -136,7 +136,8 @@ def enrichment_of(path):
     out = {}
     for s in doc.get("shows") or []:
         title = synmerge.norm(s.get("title"))
-        if not title or title in out:
+        # A concert's row holds nothing a film should get back, and the reverse.
+        if not title or title in out or s.get("nonFilm"):
             continue
         keep = {k: s[k] for k in ENRICHED if s.get(k) is not None and s.get(k) != ""}
         if str(s.get("img") or "").startswith(MIRRORED):
@@ -278,7 +279,7 @@ def publish_site(mod, site, per_venue, now, order=0, confirmed=False):
             # rather than losing them for however long it takes the next enrichment pass to
             # run. Never overrides what the adapter itself produced.
             carried = enrichment_of(path)
-            for sh in shows:
+            for sh in (s for s in shows if not s.get("nonFilm")):
                 for field, val in (carried.get(synmerge.norm(sh.get("title"))) or {}).items():
                     if field == "img":
                         if not sh.get("img"):

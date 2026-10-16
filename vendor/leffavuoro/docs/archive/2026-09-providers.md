@@ -4004,3 +4004,129 @@ which would present a concert to search engines as a film screening. A paid even
 free text on its own page, such as "25 € + tilausmaksu ... / 30 € ovelta mikäli jäljellä".
 The check that every hit carries the "Elokuvat" topic guards the server-side filter, and it
 would need a replacement.
+
+### Kannusali reads each film's languages from its event page (2026-10-15)
+The maintainer saw Kannusali's tickets with no language where other cinemas print one. The
+listing's `eventInLanguages` puts spoken and subtitle languages in one list, as "suomi,
+ruotsi" for a Swedish film with Finnish subtitles. Each film's event page states them apart
+in one sentence of its description, which the page carries in its `__NEXT_DATA__`. The
+adapter reads one page per film and accepts the three wordings found on all ten film pages
+that day. Any other wording gives no language. Flow's "Elokuvassa ei ole kielellistä
+dialogia eikä tekstityksiä." stays unread under the no-dialogue rule in
+docs/research/languages.md. A page that fails costs its film the language and nothing else.
+Read live, four of six films gave a language and the Kannusali read took 8.4 s. Eight
+mutations red.
+
+### Kannusali publishes its other events as well (2026-10-15)
+The maintainer asked the same day for Kannusali's concerts, stage shows and other events
+after all, which reverses the record above that kept them out. The listing's POST is sent
+without a topic filter and reads every event at the place, 40 on 2026-10-15 in four pages.
+A hit under "Elokuvat" is a film as before. Every other hit is published with `nonFilm` set
+and its topics other than "Kulttuuritapahtumat" as the label, such as "Musiikki" or
+"Teatteritaide". `enrich_tmdb` never searches such a row, writes nothing onto it and lends
+nothing from it, and `build_pages` marks it as a schema.org Event with no Movie. Its price
+is "Vapaa pääsy" where the listing says the event is free and is empty otherwise, because a
+paid event states its price as free text on its own page. The link is the event's own
+page, and no event page is read for these rows. A closing "LOPPUUNMYYTY" comes off any
+title and sets `soldOut`, or a sold-out state would reach the generated pages. The check
+that every hit is under "Elokuvat" became a check that every hit is at Kannusali. The
+calendar's images are not licensed to this site, and these rows draw the initials tile.
+A `nonFilm` row keeps its own key wherever a film is joined by title or TMDB id: the
+adapter's `eventId`, the app's combined view and its sheet, the generated pages' cards and
+synopses, `run.py`'s carry-over and `synmerge`. `check_shows` refuses a non-film row that
+shares a film's `eventId`. The tests put a film and a concert under one title beside a
+films-extra entry for it, and the film still folds with the same film at another cinema.
+Thirty-one mutations red, the app's three in Chromium and WebKit.
+
+### Kannusali's events show their own pictures (2026-10-16)
+The maintainer asked for real event artwork before any generated card. HRI's page for Espoo's
+event data makes its licence CC BY 4.0 by default and "event only" for a picture that must
+not be taken out of its event's context, which reverses the earlier reading that the
+calendar's pictures were not licensed here. One Linked Events query by place gives each
+non-film event its picture, licence, photographer and alt text, and a picture under any other
+licence is not published. The app draws it whole at its own shape, 184 px wide on a desktop
+card, across a phone card and across the sheet, and the sheet and the generated pages put the
+credit for that picture under it. An "event only" picture is never called CC BY, never becomes
+a page's share image, and a film keeps its poster. `mirror_posters` keeps these pictures up to
+1280 px and records their size. Measured on the 29, a desktop sheet on a 2x screen kept a
+median 73% of the available detail at 720 px, 86% at 960 and 97% at 1280, which cost 2.96 MB
+for the set. Twenty unit mutations and eight browser mutations red, the browser ones in
+Chromium and WebKit. If a picture does not load, its card shows the initials tile in a film
+card's layout and the sheet hides the figure with its credit. Five more browser mutations
+went red in both engines.
+
+### Johku prices where the storefront sells one ticket (2026-10-16)
+The maintainer asked for Johku prices where the amount is established for the screening and
+blanks elsewhere. A schedule entry names its price scheme and amount, and the film page's
+own `shows.json` request lists the scheme's tickets. `johku.py` reads that answer once per
+scheme the single-price screenings use and publishes the amount only when the scheme sells
+exactly one ticket at it. A concession, an Elämyspassi or a gift card beside the full ticket
+leaves the price empty. `multipleprices` alone is not trusted, because Kino Virta's
+"Elokuva 11.50" says 0 and sells two tickets. A failed read costs those screenings their
+price and nothing else. Read 2026-10-16, 78 of 147 screenings were priced, and the 13
+compared on the film pages agreed. Eleven mutations red. The findings are in
+[docs/research/ticketing-platforms.md](../research/ticketing-platforms.md).
+
+### Johku's ordinary admission (2026-10-16)
+The same day the maintainer set the policy for the screenings that sell more than one
+ticket. The ordinary admission is what is left once concessions, passes and memberships,
+gift cards and free tickets are set aside by name, and it must agree on one price, the amount
+the film page draws. Nothing is chosen by the lowest or highest price or by list position,
+every scheme is read whatever `multipleprices` says, and an ambiguous scheme or a failed read
+stays unpriced. The one-ticket rule above never reached a cloud run. Read live, 140 of 146
+screenings were priced and all 131 amounts the film pages drew agreed. Kino Kulttuurimylly's
+five family screenings sell only a discount-group ticket and stay unpriced. Thirteen
+mutations red. The findings are in
+[docs/research/ticketing-platforms.md](../research/ticketing-platforms.md).
+
+### Johku's ordinary ticket needs a name that says so (2026-10-16)
+The maintainer tightened the rule the same day. A ticket counts as ordinary only on positive
+evidence, which here is one of the measured full-ticket names, Elokuvalippu, Lippu,
+Peruslippu or Oopperalippu, with nothing after it but its amount, and that amount equal to
+its price. A ticket flagged as the scheme's `default` that is not an ordinary one blocks the
+price, and a scheme that flags no default is read by its names alone. A scheme of unknown
+tickets stays unpriced even at the drawn amount, and that now includes Kino Kulttuurimylly's
+"Vauvakino: 12,50 €". The figures above were also miscounted. The 24 `shows.json` rows
+included 15 of the 131 already compared, and the two "absent" ones were a lookup that did not
+pad "1.11.2026". Read again, 139 of 146 screenings were priced, 130 agreed with the film
+pages and 9 not drawn there agreed with `shows.json`, with no disagreement. Sixteen
+mutations red. The findings are in
+[docs/research/ticketing-platforms.md](../research/ticketing-platforms.md).
+
+### Johku: the product's own statement (2026-10-16)
+The maintainer asked whether Kino Kulttuurimylly's Vauvakino ticket is established as the
+ordinary admission, from the source and not from the cinema's usual price. Its product
+description says "Liput 12,50€ / hlö", and the four Perhekino products say "Perhekinon liput
+10,00€ / hlö", each beside the one ticket the screening sells. A product's own statement of
+one price per person now settles a scheme whose paid tickets all cost that amount, when it is
+the drawn amount. A statement of two prices settles nothing. All 15 of the cinema's
+screenings were priced, 143 of 144 across the seven, and every priced one agreed with the
+storefront. Eleven mutations red, and the sixteen of the record above still red. The
+findings are in [docs/research/ticketing-platforms.md](../research/ticketing-platforms.md).
+
+### Johku reads the fewest products that cover every scheme (2026-10-16)
+The reads were planned one per scheme, and one product's answer carries every scheme its
+screenings use, as the front page already shows. Reading only the products that cover every
+scheme took 21 `shows.json` requests where one per scheme took 25, and no URL had been read
+twice. Before prices were read, a run made 74 to 76 Johku requests in all, and f5db5800b made
+99. A scheme an answer lacks is read from another product that uses it. Three mutations red.
+The findings are in [docs/research/ticketing-platforms.md](../research/ticketing-platforms.md).
+
+### Johku: no price where a ticket sentence names a group of people (2026-10-16)
+The maintainer pointed out that a price per person does not mean that anyone may buy.
+"Liput opiskelijoille 8,00€ / hlö" beside one 8 € ticket would have published 8 €, and so
+would "Jäsenille liput 9,00€ / hlö", where the group stands before "liput". Each ticket
+sentence is now read from its start for a group of people, and a product whose ticket
+sentence names one is left unpriced whatever its tickets are named. A stated price also
+settles nothing where a paid ticket is named for a group. Other sentences are not read,
+because Kino Kulttuurimylly's "Tervetuloa Seniorikinoon!" greets the audience. The measured
+Vauvakino, Perhekino and Seniorikino prices are unchanged. Fifteen mutations red, and the
+thirty of the records above still red. The findings are in
+[docs/research/ticketing-platforms.md](../research/ticketing-platforms.md).
+
+### Johku: a group's statement leaves a price set by the ticket names (2026-10-16)
+The maintainer narrowed the rule above the same day. It also blanked prices the ticket names
+establish, and "Liput 13,00€ / hlö, opiskelijat ja eläkeläiset 10,00€" beside "Elokuvalippu
+13 €" and a 10 € student ticket went unpriced. A ticket sentence that names a group now
+states no price and blocks nothing. A statement to students or members beside tickets of no
+ordinary name still leaves the screening unpriced. Fourteen mutations red.

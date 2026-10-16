@@ -43,6 +43,10 @@ class MergeIdsTest(unittest.TestCase):
         self.assertEqual(self.r["dropped"], {"2": ACME, "3": ACME, "4": MUTINY,
                                              "5": MUTINY, "6": "autofiktio"})
 
+    def test_a_non_film_row_is_never_joined_to_a_film_by_its_tmdb_id(self):
+        self.assertEqual((self.r["nonFilm"]["7"], self.r["nonFilm"]["4"]),
+                         ("tapahtuma:mutiny", MUTINY))
+
     def test_each_show_keeps_its_own_key(self):
         for order, got in self.r["orders"].items():
             with self.subTest(order=order):

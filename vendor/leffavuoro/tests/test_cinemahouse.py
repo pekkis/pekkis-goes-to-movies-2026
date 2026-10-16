@@ -534,6 +534,11 @@ class RunnerTest(unittest.TestCase):
         self.addCleanup(lambda: setattr(ch, "fetch", self._fetch))
         self.addCleanup(lambda: setattr(ch.time, "sleep", self._sleep))
         ch.time.sleep = lambda s: None
+        # The run reads the clock. Dated by it, the fixtures' September rows fell outside the
+        # year window on 2026-10-16 and the venues lost screenings, so it reads TODAY.
+        iso = ch._iso
+        ch._iso = lambda day, month, hh, mm, today=None: iso(day, month, hh, mm, today or TODAY)
+        self.addCleanup(lambda: setattr(ch, "_iso", iso))
         self.calls = []
 
     def serve(self, pages):

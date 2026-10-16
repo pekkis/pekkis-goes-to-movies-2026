@@ -17,7 +17,7 @@ TODAY = datetime.date(2026, 8, 31)
 
 
 def days_with(title, theatre="Kino Testi"):
-    return {TODAY.isoformat(): {title: [
+    return {TODAY.isoformat(): {(title, False): [
         {"theatre": theatre, "start": f"{TODAY.isoformat()}T18:00:00",
          "url": "https://example.fi/tickets?a=1&b=2"},
     ]}}
@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
 
 def days_priced(*prices):
-    return {TODAY.isoformat(): {"Film": [
+    return {TODAY.isoformat(): {("Film", False): [
         {"theatre": "Kino Testi", "start": f"{TODAY.isoformat()}T{18 + i}:00:00",
          "url": f"https://example.fi/tickets?id={i}", "price": p}
         for i, p in enumerate(prices)]}}
@@ -105,3 +105,24 @@ class LdJsonOfferTest(unittest.TestCase):
         free, member, bare = self.events("Vapaa pääsy", "Vapaa pääsy jäsenille", "Free")
         self.assertEqual((free["offers"]["price"], bare["offers"]["price"]), ("0", "0"))
         self.assertNotIn("offers", member)
+
+
+class LdJsonNonFilmTest(unittest.TestCase):
+    """A concert or a stage show an adapter marks `nonFilm` is an Event with no Movie in it,
+    whatever poster it has. Kannusali publishes them beside its films since 2026-10-15."""
+
+    def test_a_non_film_row_is_an_event_and_the_film_beside_it_a_screening(self):
+        poster = "data/posters/0123456789abcdef.jpg"
+        day = {TODAY.isoformat(): {
+            ("Asla Jo", True): [{"theatre": "Kannusali", "start": f"{TODAY.isoformat()}T19:00:00",
+                         "url": "https://example.fi/e/1", "price": "Vapaa pääsy",
+                         "img": poster, "nonFilm": True}],
+            ("Michael", False): [{"theatre": "Kannusali", "start": f"{TODAY.isoformat()}T14:00:00",
+                         "url": "https://example.fi/e/2", "img": poster}]}}
+        graph = json.loads(bp.ld_json(day, TODAY, "Espoo", {}))["@graph"]
+        events = {n["name"]: n for n in graph if n["@type"] != "MovieTheater"}
+        self.assertEqual(events["Asla Jo"]["@type"], "Event")
+        self.assertNotIn("workPresented", events["Asla Jo"])
+        self.assertEqual(events["Asla Jo"]["offers"]["price"], "0")
+        self.assertEqual(events["Michael"]["@type"], "ScreeningEvent")
+        self.assertEqual(events["Michael"]["workPresented"]["@type"], "Movie")

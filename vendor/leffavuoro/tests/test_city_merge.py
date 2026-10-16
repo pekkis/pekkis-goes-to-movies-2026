@@ -42,7 +42,11 @@ def show(title, start="2026-09-22T18:00:00+03:00", **kw):
 
 
 def days_of(shows, merge):
-    return bp.group_by_day(shows, TODAY, 2, merge=merge)
+    """The days as {iso: {heading: shows}}. Every row here is a film, which is the False
+    half of group_by_day's key."""
+    days = bp.group_by_day(shows, TODAY, 2, merge=merge)
+    return {iso: {title: rows for (title, _), rows in groups.items()}
+            for iso, groups in days.items()}
 
 
 class MergeKeyMatchesTheClient(unittest.TestCase):

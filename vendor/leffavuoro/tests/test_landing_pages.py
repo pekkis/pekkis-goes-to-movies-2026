@@ -111,8 +111,8 @@ class HostilePosterPathTest(unittest.TestCase):
     unescapes a raw relative `src`, and mirror_posters and run.py pass a non-http value
     through. It went into the attribute unescaped, so a path holding a quote and a
     `</script>` put a script element into the head of the fi, sv and en venue and city
-    pages (audit G1, 2026-09-25). Built from the committed data with one city's posters
-    replaced."""
+    pages (audit G1, 2026-09-25). Built from the committed data with one city's film
+    posters replaced."""
 
     HOSTILE = 'data/posters/x"><script>alert(9)</script><meta x="'
 
@@ -137,7 +137,9 @@ class HostilePosterPathTest(unittest.TestCase):
                 p = root / "data" / f"area-{vid}.json"
                 doc = json.loads(p.read_text())
                 for sh in doc["shows"]:
-                    sh["img"] = cls.HOSTILE
+                    # og:image is only ever a film's poster, so the path goes on film rows.
+                    if not sh.get("nonFilm"):
+                        sh["img"] = cls.HOSTILE
                 p.write_text(json.dumps(doc, ensure_ascii=False))
             bp._SHOWS.clear()
             with contextlib.redirect_stdout(io.StringIO()):
@@ -1299,7 +1301,7 @@ class StubShapeTest(unittest.TestCase):
             return "".join(bp.film_block(t_, sh, {}, {}, "fi", self.T, False, seen,
                                           current_year=YEAR_NOW)
                            for iso in sorted(days)
-                           for t_, sh in sorted(days[iso].items(),
+                           for (t_, _), sh in sorted(days[iso].items(),
                                                 key=lambda kv: (kv[1][0]["start"], kv[0])))
         ref = render(list(shows))
         rnd = random.Random(7)
@@ -1904,3 +1906,176 @@ class ReadmeCountsTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class NonFilmBoundaryTest(unittest.TestCase):
+    """A concert and a film under one title stay two cards on the generated pages, and the
+    concert takes nothing the films-extra entry under that title holds. Kannusali publishes
+    both kinds since 2026-10-15. The film still folds with the same film at another cinema.
+    """
+
+    T = bp.L["fi"]
+    TODAY = date(2026, 12, 10)
+    SYN = "Elokuva kertoo Michael Jacksonin tarinan nuoresta keulahahmosta tähdeksi asti."
+    EXTRA = {"michael": {"s": {"fi": SYN, "en": ""}, "r": 8.6,
+                         "img": "https://image.tmdb.org/t/p/w342/michael.jpg",
+                         "tr": "https://www.youtube.com/watch?v=k-YAcjaLuSI"}}
+
+    def row(self, **over):
+        s = {"title": "Michael", "eventId": "michael", "theatre": "Kannusali",
+             "venue": "kannusali-espoo", "provider": "kannusali", "price": "",
+             "url": "https://www.espoo.fi/fi/tapahtumat/espooevents:a",
+             "start": "2026-12-10T14:00:00+02:00"}
+        s.update(over)
+        return s
+
+    def shows(self):
+        film = self.row(tmdbId=936075, img="data/posters/27a95f8ceb0939ad.jpg",
+                        price="Vapaa pääsy")
+        elsewhere = self.row(theatre="Sello", venue="1157", provider="finnkino",
+                             tmdbId=936075, start="2026-12-10T16:00:00+02:00",
+                             url="https://www.finnkino.fi/event/1/")
+        # A stale id an earlier run left on the row: nothing may join on it either.
+        concert = self.row(eventId="tapahtuma-michael", nonFilm=True, tmdbId=936075,
+                           start="2026-12-10T19:00:00+02:00",
+                           url="https://www.espoo.fi/fi/tapahtumat/espooevents:b")
+        return [film, elsewhere, concert]
+
+    def cards(self, shows, merge, extra=None, native=None):
+        days = bp.group_by_day(shows, self.TODAY, 1, merge=merge)
+        seen = set()
+        extra = self.EXTRA if extra is None else extra
+        return days, {key: (rows, bp.film_block(key[0], rows, extra, {}, "fi", self.T,
+                                                 merge, seen, current_year=YEAR_NOW,
+                                                 native=native))
+                      for key, rows in sorted(days[self.TODAY.isoformat()].items(),
+                                              key=lambda kv: (kv[1][0]["start"], kv[0]))}
+
+    def test_a_theatre_page_draws_the_film_and_the_concert_as_two_cards(self):
+        film, _, concert = self.shows()
+        _, cards = self.cards([film, concert], merge=False)
+        self.assertEqual(sorted(cards), [("Michael", False), ("Michael", True)])
+        film_html, concert_html = cards[("Michael", False)][1], cards[("Michael", True)][1]
+        self.assertIn(self.SYN[:40], film_html)
+        self.assertNotIn(self.SYN[:40], concert_html)
+        self.assertIn('class="poster blank"', concert_html)
+        self.assertNotIn("data/posters/", concert_html)
+
+    def test_a_concert_drawn_first_leaves_the_film_its_synopsis(self):
+        film, _, concert = self.shows()
+        _, cards = self.cards([film, dict(concert, start="2026-12-10T10:00:00+02:00")],
+                              merge=False)
+        self.assertIn(self.SYN[:40], cards[("Michael", False)][1])
+
+    def test_finnkinos_own_text_does_not_reach_the_concert_through_a_stale_id(self):
+        _, _, concert = self.shows()
+        native = ({"3001": {"s": {"fi": "Finnkinon oma kuvaus Michaelista, joka on pitkä."}}},
+                  {936075: ["3001"]})
+        _, cards = self.cards([concert], merge=False, extra={}, native=native)
+        self.assertNotIn("Finnkinon oma kuvaus", cards[("Michael", True)][1])
+
+    def test_a_city_page_folds_the_film_across_cinemas_and_keeps_the_concert_apart(self):
+        _, cards = self.cards(self.shows(), merge=True)
+        self.assertEqual(sorted(cards), [("Michael", False), ("Michael", True)])
+        self.assertEqual(sorted(s["theatre"] for s in cards[("Michael", False)][0]),
+                         ["Kannusali", "Sello"])
+        self.assertEqual([s["theatre"] for s in cards[("Michael", True)][0]], ["Kannusali"])
+        self.assertNotIn(self.SYN[:40], cards[("Michael", True)][1])
+
+    def test_a_concert_never_gives_the_film_card_its_spelling(self):
+        """The heading is chosen over a merged group. A concert joined to the film by its
+        title key or by a stale id would rename the film's card after itself."""
+        film, elsewhere, concert = self.shows()
+        for spelling in ("MICHAEL", "Michael Jackson -tribuutti"):
+            with self.subTest(spelling=spelling):
+                concerts = [dict(concert, title=spelling, start=f"2026-12-10T{h}:00:00+02:00")
+                            for h in (17, 19, 21)]
+                _, cards = self.cards([film, elsewhere, *concerts], merge=True)
+                self.assertEqual(sorted(cards), sorted([("Michael", False), (spelling, True)]))
+
+    def test_the_json_ld_names_the_concert_an_event_with_no_film_in_it(self):
+        days, _ = self.cards(self.shows(), merge=True)
+        graph = json.loads(bp.ld_json(days, self.TODAY, "Espoo", self.EXTRA))["@graph"]
+        events = sorted((n for n in graph if n["@type"] != "MovieTheater"),
+                        key=lambda n: n["startDate"])
+        self.assertEqual([(n["@type"], n["location"]["@id"]) for n in events], [
+            ("ScreeningEvent", "#venue-kannusali"), ("ScreeningEvent", "#venue-sello"),
+            ("Event", "#venue-kannusali")])
+        self.assertEqual([n.get("workPresented", {}).get("@type") for n in events],
+                         ["Movie", "Movie", None])
+
+
+class EventPictureTest(unittest.TestCase):
+    """A non-film event's own picture on the generated pages.
+
+    It is drawn whole at its own shape with its credit on it, it is never a page's share
+    image, and an event with no picture or no licence to credit keeps the tile. A film's card
+    keeps its poster. Kannusali's concerts carry pictures since 2026-10-16.
+    """
+
+    TODAY = date(2026, 11, 4)
+    CREDIT = ("Kuva: Mikko Mäntyniemi · Espoon tapahtumarajapinta · "
+              "käyttö vain tapahtuman yhteydessä (event only)")
+
+    def row(self, **over):
+        s = {"title": "Suistamon Sähkö", "nonFilm": True, "eventId": "tapahtuma-suistamon-sähkö",
+             "start": "2026-11-04T19:00:00+02:00", "theatre": "Kannusali", "price": "",
+             "url": "https://www.espoo.fi/fi/tapahtumat/espooevents:a",
+             "img": "data/posters/ev0000000000000a.jpg", "imgW": 1200, "imgH": 628,
+             "imgAlt": "Kuvassa yhtye.", "imgBy": "Mikko Mäntyniemi",
+             "imgSrc": "Espoon tapahtumarajapinta", "imgLic": "event_only"}
+        s.update(over)
+        return s
+
+    def film(self, **over):
+        s = {"title": "Michael", "eventId": "michael", "start": "2026-11-04T14:00:00+02:00",
+             "theatre": "Kannusali", "price": "", "url": "https://www.espoo.fi/x",
+             "img": "data/posters/64cae55437ce098a.jpg", "tmdbId": 936075}
+        s.update(over)
+        return s
+
+    def card(self, row, lang="fi"):
+        return bp.film_block(row["title"], [row], {}, {}, lang, bp.L[lang], False, set(),
+                             current_year=YEAR_NOW)
+
+    def caption(self, html_):
+        m = re.search(r"<figcaption>(.*?)</figcaption>", html_, re.S)
+        return html.unescape(re.sub(r"<[^>]+>", "", m.group(1))) if m else None
+
+    def test_the_picture_is_drawn_whole_at_its_own_shape(self):
+        out = self.card(self.row())
+        self.assertIn('<figure class="evimg"><img src="/data/posters/ev0000000000000a.jpg" '
+                      'alt="Kuvassa yhtye." width="1200" height="628" loading="lazy">', out)
+        self.assertNotIn('class="poster', out)
+
+    def test_the_credit_on_it_names_its_own_licence(self):
+        self.assertEqual(self.caption(self.card(self.row())), self.CREDIT)
+        self.assertNotIn("CC BY", self.card(self.row()))
+        cc = self.card(self.row(imgLic="cc_by", imgBy=""))
+        self.assertIn('<a href="https://creativecommons.org/licenses/by/4.0/" '
+                      'rel="license noopener">CC BY 4.0</a>', cc)
+        self.assertEqual(self.caption(cc), "Kuva: Espoon tapahtumarajapinta · CC BY 4.0")
+        self.assertEqual(self.caption(self.card(self.row(), lang="sv")),
+                         "Bild: Mikko Mäntyniemi · Espoon tapahtumarajapinta · "
+                         "endast i samband med evenemanget (event only)")
+
+    def test_no_picture_or_no_licence_to_credit_keeps_the_tile(self):
+        for over in ({"img": ""}, {"imgLic": "cc_by_sa"}, {"imgLic": None},
+                     {"img": "https://tapahtumasyotto.espoo.fi/media/images/a.jpg"}):
+            with self.subTest(over=over):
+                out = self.card(self.row(**over))
+                self.assertIn('<div class="poster blank" aria-hidden="true"></div>', out)
+                self.assertNotIn("<figure", out)
+
+    def test_a_film_card_keeps_its_poster(self):
+        out = self.card(self.film())
+        self.assertIn('<img class="poster" src="/data/posters/64cae55437ce098a.jpg" alt="" '
+                      'width="92" height="132" loading="lazy">', out)
+        self.assertNotIn("<figure", out)
+
+    def test_the_share_image_is_never_an_event_picture(self):
+        days = bp.group_by_day([self.row(start="2026-11-04T10:00:00+02:00"), self.film()],
+                               self.TODAY, 1)
+        self.assertEqual(bp.share_image(days), "/data/posters/64cae55437ce098a.jpg")
+        self.assertEqual(bp.share_image(bp.group_by_day([self.row()], self.TODAY, 1)),
+                         "/icon-512.png")

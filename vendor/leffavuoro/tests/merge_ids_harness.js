@@ -61,6 +61,9 @@ for (const [k, list] of Object.entries(orders)) {
 }
 // The first day gone: the English copy's only row leaves, and the name must not move.
 out.dropped = fold(SHOWS.filter(s => s.n !== 1)).ids;
+// A concert under the film's title, keyed apart by cityPayload, with a stale TMDB id an
+// earlier run left on it: the id must not join it to the film.
+out.nonFilm = fold([...SHOWS, { n: 7, eventId: 'tapahtuma:mutiny', tmdbId: 7, nonFilm: true }]).ids;
 
 const shows = fold(SHOWS.slice().reverse()).shows;
 for (const fid of ['kojootti vs acme englanniksi', 'kojootti vs acme', 'mutiny',

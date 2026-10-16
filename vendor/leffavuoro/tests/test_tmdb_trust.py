@@ -494,3 +494,41 @@ class FinnkinoFilesTest(TrustHarness):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class NonFilmTest(TrustHarness):
+    """A concert or a stage show an adapter marks `nonFilm` takes nothing from TMDB.
+
+    Kannusali publishes its concerts beside its films since 2026-10-15, and a title such as
+    "Asla Jo" can match a film exactly. A row so marked is never searched, borrows nothing
+    from a film published under the same title, and loses what an earlier run left on it.
+    """
+
+    def test_a_non_film_row_is_never_searched(self):
+        self.shows({"title": "Asla Jo", "nonFilm": True})
+        self.run_main({("Asla Jo", ""): [hit(4780, "Asla Jo", 2020)]}, detail={4780: RIGHT})
+        self.assertEqual(self.searches, [])
+        self.assert_no_tmdb_fields(self.area()["shows"][0])
+        self.assertNotIn("asla jo", self.cache())
+
+    def test_a_film_under_the_same_title_lends_it_nothing_and_borrows_nothing(self):
+        self.shows({"title": "Michael", "year": "2026"},
+                   {"title": "Michael", "nonFilm": True, "rating": "K-18"})
+        self.run_main({("Michael", "2026"): [hit(936075, "Michael", 2026)]},
+                      detail={936075: RIGHT}, videos={936075: RIGHT["v"]})
+        film, concert = self.area()["shows"]
+        self.assertEqual(film["tmdbId"], 936075)
+        for field in ("tmdb", "votes", "tr", "gids", "tmdbId"):
+            self.assertNotIn(field, concert, field)
+        self.assertFalse(concert.get("img"), "the film's poster reached the concert")
+        self.assertEqual((film.get("rating", ""), film.get("rsrc")), ("", None),
+                         "the concert's age limit was lent to the film")
+
+    def test_what_an_earlier_run_left_on_it_comes_off(self):
+        self.shows({"title": "Asla Jo", "nonFilm": True, "tmdbId": 4780, "tmdb": 7.3,
+                    "votes": 1200, "tr": "https://www.youtube.com/watch?v=wrongkey",
+                    "gids": [53], "img": mirrored("/4780.jpg"), "isrc": "tmdb"})
+        self.run_main({})
+        show = self.area()["shows"][0]
+        self.assert_no_tmdb_fields(show)
+        self.assertNotIn("isrc", show)

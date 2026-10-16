@@ -524,3 +524,124 @@ class PagesLayoutTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+EVENT_SLUG = "testikino-tapahtumatalo-testila"
+CREDIT = ("Kuva: Mikko Mäntyniemi · Espoon tapahtumarajapinta · "
+          "käyttö vain tapahtuman yhteydessä (event only)")
+
+
+class EventPicturePagesTest(unittest.TestCase):
+    """A non-film event's own picture on a generated page, in a real engine.
+
+    Drawn whole at its own shape with its credit under it, 184 px wide beside the text on
+    desktop and the card's width above it on a phone, while a film on the same page keeps its
+    poster box. Its own build: one venue with one film and one 1200x628 picture.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        cls.root = pathlib.Path(cls.tmp.name)
+        data = cls.root / "data"
+        (data / "posters").mkdir(parents=True)
+        (data / "posters" / "ev-wide.png").write_bytes(_harness.png(1200, 628))
+        (data / "posters" / "film.png").write_bytes(_harness.png(342, 513, rgb=(90, 90, 90)))
+        film = show("tv-1", "elokuva", "Elokuva", "18:00", img="data/posters/film.png",
+                    rating="K-7", genres="Draama", length="90")
+        event = dict(show("tv-1", "tapahtuma-konsertti", "Konsertti", "20:30"),
+                     nonFilm=True, method="Musiikki", img="data/posters/ev-wide.png",
+                     imgW=1200, imgH=628, imgAlt="Kuvassa yhtye.", imgBy="Mikko Mäntyniemi",
+                     imgSrc="Espoon tapahtumarajapinta", imgLic="event_only", venue="tv-e")
+        film["venue"] = "tv-e"
+        (data / "area-tv-e.json").write_text(json.dumps(
+            {"generated": "2026-09-14T09:00:00+00:00", "dates": ["2026-09-14"],
+             "horizon": "2026-09-14", "shows": [film, event]}), encoding="utf-8")
+        (data / "venues-testi.json").write_text(json.dumps(
+            {"generated": "2026-09-14T09:00:00+00:00", "oldest": "2026-09-14T09:00:00+00:00",
+             "status": "ok", "stale": [], "unverified": [], "provider": "testi",
+             "venues": [{"id": "tv-e", "name": "Tapahtumatalo", "short": "Tapahtumatalo",
+                         "city": "Testila"}]}), encoding="utf-8")
+        (data / "areas.json").write_text(json.dumps(
+            {"generated": "2026-09-14T09:00:00+00:00", "areas": []}), encoding="utf-8")
+        (data / "providers.json").write_text(json.dumps({"providers": [
+            {"id": "testi", "label": "Testikino", "host": "example.invalid",
+             "accent": "#1F7A5C", "accentDark": "#5CC9A0", "book": "buy"}]}), encoding="utf-8")
+        (data / "tmdb-genres.json").write_text(json.dumps({"fi": {}, "sv": {}, "en": {}}),
+                                               encoding="utf-8")
+        (data / "films-extra.json").write_text(json.dumps({"films": {}}), encoding="utf-8")
+        shutil.copytree(ROOT / "fonts", cls.root / "fonts")
+        saved = (bp.ROOT, bp.DATA)
+        bp.ROOT, bp.DATA = cls.root, data
+        bp._SHOWS.clear(); bp._unmirrored_hosts.clear()
+        try:
+            bp.main(today=DAY)
+        finally:
+            bp.ROOT, bp.DATA = saved
+            bp._SHOWS.clear()
+        cls.srv = http.server.ThreadingHTTPServer(
+            ("127.0.0.1", 0), functools.partial(Handler, directory=str(cls.root)))
+        _harness.start(cls.srv)
+        cls.origin = f"http://127.0.0.1:{cls.srv.server_port}"
+        cls.pw = _harness.playwright()
+        engine = os.environ.get("KINO_BROWSER_ENGINE", "chromium")
+        channel = os.environ.get("KINO_BROWSER_CHANNEL") if engine == "chromium" else None
+        cls.browser = getattr(cls.pw, engine).launch(channel=channel or None, headless=True)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.browser.close(); _harness.stop(cls.srv); cls.tmp.cleanup()
+
+    def measure(self, width, theme="light"):
+        ctx = self.browser.new_context(viewport={"width": width, "height": 900},
+                                       timezone_id="Europe/Helsinki", locale="fi-FI",
+                                       service_workers="block")
+        self.addCleanup(ctx.close)
+        ctx.add_init_script(f"try{{localStorage.setItem('kino-theme','{theme}')}}catch(e){{}}")
+        page = ctx.new_page()
+        page.goto(self.origin + f"/teatteri/{EVENT_SLUG}/")
+        page.wait_for_function("document.fonts.ready.then(() => true)")
+        fig = page.locator("figure.evimg img")
+        fig.scroll_into_view_if_needed(timeout=10_000)
+        page.wait_for_function("i => i.complete && i.naturalWidth > 0",
+                               arg=fig.element_handle(timeout=10_000), timeout=10_000)
+        return page.evaluate("""() => {
+            const r = e => { const b = e.getBoundingClientRect(); return [b.x, b.y, b.width, b.height]; };
+            const img = document.querySelector('figure.evimg img');
+            const cap = document.querySelector('figure.evimg figcaption');
+            const rgb = s => s.match(/[\\d.]+/g).slice(0, 3).map(Number);
+            const lum = ([a, b, c]) => [a, b, c].map(v => { v /= 255;
+                return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; })
+                .reduce((s, v, i) => s + v * [0.2126, 0.7152, 0.0722][i], 0);
+            let e = cap, bg = 'rgba(0, 0, 0, 0)';
+            while (e && /rgba\\(0, 0, 0, 0\\)|transparent/.test(bg)) {
+                bg = getComputedStyle(e).backgroundColor; e = e.parentElement; }
+            const l1 = lum(rgb(getComputedStyle(cap).color)), l2 = lum(rgb(bg));
+            return {img: r(img), natural: [img.naturalWidth, img.naturalHeight], cap: r(cap),
+                    capText: cap.textContent, card: r(img.closest('article')),
+                    poster: r(document.querySelector('article.film .poster')),
+                    contrast: (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05),
+                    theme: document.documentElement.dataset.theme,
+                    overflow: document.documentElement.scrollWidth > innerWidth}; }""")
+
+    def test_the_picture_is_whole_with_its_credit_under_it_at_every_width(self):
+        for w in WIDTHS:
+            with self.subTest(width=w):
+                m = self.measure(w)
+                (x, y, iw, ih), (nw, nh) = m["img"], m["natural"]
+                self.assertAlmostEqual(iw / ih, nw / nh, delta=0.02, msg="cropped or stretched")
+                phone = w <= 560
+                self.assertAlmostEqual(iw, m["card"][2] if phone else 184, delta=1.5)
+                self.assertGreaterEqual(m["cap"][1], y + ih - 0.5, "the credit is not under it")
+                self.assertEqual(m["capText"], CREDIT)
+                self.assertEqual([round(v) for v in m["poster"][2:]],
+                                 [72, 104] if phone else [92, 132], "the film poster moved")
+                self.assertFalse(m["overflow"])
+
+    def test_the_credit_reads_in_both_themes(self):
+        for theme in ("light", "dark"):
+            for w in (PHONE, DESKTOP):
+                with self.subTest(theme=theme, width=w):
+                    m = self.measure(w, theme)
+                    self.assertEqual(m["theme"], theme)
+                    self.assertGreaterEqual(m["contrast"], 4.5)

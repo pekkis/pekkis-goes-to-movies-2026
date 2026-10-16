@@ -642,5 +642,34 @@ class CheckShowsAtTheBoundaryTest(unittest.TestCase):
         self.assertEqual(total, 2)
 
 
+    def test_a_non_film_row_sharing_a_films_event_id_fails_the_site(self):
+        """The client folds a venue's rows into cards by eventId: a concert under the
+        film's id would be drawn as that film's screening."""
+        with self.assertRaisesRegex(RuntimeError, r"non-film row 'Michael' shares"):
+            self.run_with([self.show(title="Michael", eventId="michael"),
+                           self.show(title="Michael", eventId="michael", nonFilm=True,
+                                     start="2026-09-06T18:00:00+03:00")])
+        self.assertEqual(list(run.OUT.iterdir()), [])
+
+    def test_carried_enrichment_stays_on_the_film_side_of_a_shared_title(self):
+        """run.py carries the previous file's TMDB fields by title. A concert called
+        "Michael" takes none of the film's, and gives none of its own to the film."""
+        before = [self.show(title="Michael", eventId="michael", tmdbId=936075, tmdb=8.6,
+                            img="data/posters/27a95f8ceb0939ad.jpg"),
+                  self.show(title="Michael", eventId="tapahtuma-michael", nonFilm=True,
+                            tmdbId=1, start="2026-09-06T18:00:00+03:00")]
+        (run.OUT / "area-v1.json").write_text(json.dumps({"shows": before}), encoding="utf-8")
+        self.run_with([self.show(title="Michael", eventId="michael"),
+                       self.show(title="Michael", eventId="tapahtuma-michael", nonFilm=True,
+                                 start="2026-09-06T18:00:00+03:00")])
+        film, concert = json.loads((run.OUT / "area-v1.json").read_text(encoding="utf-8"))["shows"]
+        self.assertEqual((film["tmdbId"], film["img"]), (936075, "data/posters/27a95f8ceb0939ad.jpg"))
+        self.assertEqual({k: concert.get(k) for k in ("tmdbId", "tmdb", "img", "isrc")},
+                         {"tmdbId": None, "tmdb": None, "img": "", "isrc": None})
+        (run.OUT / "area-v1.json").write_text(json.dumps({"shows": before[1:]}), encoding="utf-8")
+        self.run_with([self.show(title="Michael", eventId="michael")])
+        (film,) = json.loads((run.OUT / "area-v1.json").read_text(encoding="utf-8"))["shows"]
+        self.assertNotIn("tmdbId", film, "the concert's stale id reached the film")
+
 if __name__ == "__main__":
     unittest.main()

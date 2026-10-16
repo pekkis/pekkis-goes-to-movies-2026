@@ -92,7 +92,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         for suffix, data in list(self.body.items()):
             if self.path.split("?")[0].endswith(suffix):
                 self.send_response(200)
-                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Type",
+                                 "image/png" if suffix.endswith(".png") else "application/json")
                 self.send_header("Content-Length", str(len(data)))
                 self.send_header("Cache-Control", "no-store")
                 super().end_headers()
@@ -2005,6 +2006,36 @@ class MetadataAfterAFailedReadOnAPhone(MetadataAfterAFailedRead):
     viewport = {"width": 375, "height": 812}; touch = True
 
 
+class GenreNamesAfterTheList(Browser):
+    """Genre names that land after the list is drawn reach its cards.
+
+    The boot started `ensureGenres()` and left it, and nothing drew the list again when the
+    map landed. A film with TMDB genre ids and no genre string of its own drew no genre line
+    on any load where the schedule won the race, which the maintainer saw at Kannusali on
+    2026-10-15. Orion's Autofiktio publishes ids alone. The map is held until the list is on
+    screen.
+    """
+
+    init_script = AsyncRaces.init_script
+    hold = AsyncRaces.hold
+    land = AsyncRaces.land
+
+    def setUp(self):
+        Handler.body = {"tmdb-genres.json": (ROOT / "data/tmdb-genres.json").read_bytes()}
+        self.addCleanup(lambda: setattr(Handler, "body", {}))
+        self.arrived, self.release = self.hold("tmdb-genres.json")
+        super().setUp()
+
+    def test_a_genre_map_that_lands_after_the_list_reaches_its_cards(self):
+        self.assertTrue(self.arrived.wait(10), "tmdb-genres.json was never requested")
+        self.pick_orion()
+        film = self.page.locator("#main article.movie", has_text="Autofiktio")
+        expect(film).to_have_count(1)
+        self.assertNotIn("Draama", film.text_content(), "the map landed first and nothing raced")
+        self.land("tmdb-genres.json", self.release)
+        expect(film).to_contain_text("Draama, Komedia")
+
+
 class CombinedVenueLists(Browser):
     """The venue lists come from the two combined files, one per half.
 
@@ -2371,3 +2402,321 @@ class FooterStampInHelsinki(Browser):
         text = credit.text_content()
         self.assertIn("20.16", text, text)
         self.assertNotIn("18.16", text, text)
+
+
+class NonFilmBesideAFilm(Browser):
+    """A concert under a film's title is its own card and its own sheet.
+
+    Kannusali publishes concerts beside its films since 2026-10-15, marked `nonFilm`. The
+    combined view keyed every row by its title and joined rows by TMDB id, and the sheet read
+    films-extra.json by title, so a concert called "Autofiktio" would have been drawn as the
+    film's screening with the film's synopsis and trailer. Itis Helsinki serves a second
+    screening of Orion's film and a concert of the same name, which carries the film's TMDB
+    id as a stale leftover. films-extra.json holds the film's own text.
+    """
+    SYN = "Elokuvan oma kuvaus, joka kuuluu vain elokuvalle eikä samannimiselle konsertille."
+    TRAILER = "https://www.youtube.com/watch?v=extraTrailer"
+
+    def setUp(self):
+        orion = next(s for s in SHOWS if s["title"] == "Autofiktio")
+        film = dict(orion, venue="1162", provider="finnkino", theatre="Itis",
+                    start="2026-09-14T19:00:00+03:00", url="https://www.finnkino.fi/event/1/")
+        concert = dict(film, eventId="tapahtuma-autofiktio", nonFilm=True, method="Musiikki",
+                       start="2026-09-14T20:30:00+03:00", img="", tr="", gids=[],
+                       url="https://www.espoo.fi/fi/tapahtumat/espooevents:x")
+        itis = {"generated": "2026-09-14T08:00:00+00:00", "dates": ["2026-09-14"],
+                "horizon": "2026-09-14", "shows": [film, concert]}
+        extra = {"generated": "2026-09-14", "films": {"autofiktio": {
+            "s": {"fi": self.SYN, "en": ""}, "r": 7.0, "tr": self.TRAILER}}}
+        Handler.body = {"area-1162.json": json.dumps(itis).encode("utf-8"),
+                        "films-extra.json": json.dumps(extra).encode("utf-8")}
+        self.addCleanup(lambda: setattr(Handler, "body", {}))
+        super().setUp()
+
+    def cards(self):
+        cards = self.page.locator("#main article.movie", has_text="Autofiktio")
+        expect(cards).to_have_count(2)
+        return (cards.filter(has_not_text="Musiikki"), cards.filter(has_text="Musiikki"))
+
+    def open_sheet(self, card):
+        card.locator("h2.title a").click()
+        expect(self.page.locator("#sheetTitle")).to_have_text("Autofiktio")
+        return self.page.locator("#sheet")
+
+    def test_the_combined_view_folds_the_film_across_cinemas_and_keeps_the_concert_apart(self):
+        self.page.goto(self.origin + "/index.html?area=city:Helsinki")
+        expect(self.page.locator("#main a.stub").first).to_be_visible()
+        film, concert = self.cards()
+        expect(film.locator("a.stub")).to_have_count(2)
+        expect(concert.locator("a.stub")).to_have_count(1)
+        expect(concert.locator(".poster.blank")).to_have_count(1)
+        expect(concert.locator("img.poster")).to_have_count(0)
+
+    def test_the_concert_sheet_takes_none_of_the_films_text_and_the_film_keeps_it(self):
+        self.page.goto(self.origin + "/index.html?area=city:Helsinki")
+        expect(self.page.locator("#main a.stub").first).to_be_visible()
+        film, concert = self.cards()
+        sheet = self.open_sheet(concert)
+        expect(sheet).to_contain_text("Musiikki")
+        expect(sheet.locator(".sheet-body a.stub")).to_have_count(1)
+        expect(sheet.locator("p.syn")).to_have_count(0)
+        expect(sheet.locator("a.trailer")).to_have_count(0)
+        self.page.keyboard.press("Escape")
+        expect(self.page.locator("body")).not_to_have_class(re.compile(r"\bsheet-open\b"))
+        sheet = self.open_sheet(film)
+        expect(sheet.locator("p.syn")).to_have_text(self.SYN)
+        orion = sum(1 for s in SHOWS if s["title"] == "Autofiktio")
+        expect(sheet.locator(".sheet-body a.stub")).to_have_count(orion + 1)
+
+    def test_one_venue_draws_both_and_the_concert_sheet_stays_bare(self):
+        self.page.goto(self.origin + "/index.html?area=1162")
+        expect(self.page.locator("#main a.stub").first).to_be_visible()
+        film, concert = self.cards()
+        sheet = self.open_sheet(concert)
+        expect(sheet.locator("p.syn")).to_have_count(0)
+        expect(sheet.locator("a.trailer")).to_have_count(0)
+
+
+class EventPictures(Browser):
+    """A non-film event's own picture: whole at its own shape on its card and across its
+    sheet, with the credit for that picture under it in the sheet.
+
+    Kannusali's concerts carry Espoo's pictures since 2026-10-16, landscape banners from
+    1.77:1 to 2.95:1 that a 2:3 poster slot would crop. Itis Helsinki serves a film, an
+    `event_only` picture with a photographer, a wide `cc_by` banner with none, and an event
+    with no picture. The film keeps its poster box and the last event keeps the tile.
+    """
+    theme = "light"
+    WIDE, BANNER = (1200, 628), (1920, 650)
+    CREDIT = ("Kuva: Mikko Mäntyniemi · Espoon tapahtumarajapinta · "
+              "käyttö vain tapahtuman yhteydessä (event only)")
+
+    @property
+    def init_script(self):
+        return f"try{{localStorage.setItem('kino-theme','{self.theme}')}}catch(e){{}}"
+
+    def setUp(self):
+        orion = next(s for s in SHOWS if s["title"] == "Autofiktio")
+        film = dict(orion, venue="1162", provider="finnkino", theme="Itis",
+                    start="2026-09-14T18:00:00+03:00")
+        base = {k: "" for k in ("original", "len", "rating", "genres", "aud", "lang", "price")}
+
+        def event(eid, title, clock, **pic):
+            return {**base, "eventId": eid, "title": title, "nonFilm": True, "method": "Musiikki",
+                    "start": f"2026-09-14T{clock}:00+03:00", "theatre": "Itis", "soldOut": False,
+                    "url": f"https://www.espoo.fi/fi/tapahtumat/espooevents:{eid}",
+                    "provider": "finnkino", "venue": "1162", "img": "", **pic}
+        shows = [film,
+                 event("tapahtuma-suistamon-sahko", "Suistamon Sähkö", "19:00",
+                       img="data/posters/ev-wide.png", imgW=self.WIDE[0], imgH=self.WIDE[1],
+                       imgAlt="Kuvassa yhtye.", imgBy="Mikko Mäntyniemi",
+                       imgSrc="Espoon tapahtumarajapinta", imgLic="event_only"),
+                 event("tapahtuma-monttu-auki", "Monttu auki", "20:30",
+                       img="data/posters/ev-banner.png", imgW=self.BANNER[0],
+                       imgH=self.BANNER[1], imgAlt="", imgBy="",
+                       imgSrc="Espoon tapahtumarajapinta", imgLic="cc_by"),
+                 event("tapahtuma-megamuskari", "Megamuskari", "21:00")]
+        itis = {"generated": "2026-09-14T08:00:00+00:00", "dates": ["2026-09-14"],
+                "horizon": "2026-09-14", "shows": shows}
+        Handler.body = {"area-1162.json": json.dumps(itis).encode("utf-8"),
+                        "ev-wide.png": _harness.png(*self.WIDE),
+                        "ev-banner.png": _harness.png(*self.BANNER, rgb=(200, 60, 60))}
+        self.addCleanup(lambda: setattr(Handler, "body", {}))
+        super().setUp()
+        self.page.goto(self.origin + "/index.html?area=1162")
+        expect(self.page.locator("#main article.movie")).to_have_count(4)
+
+    def card(self, title):
+        return self.page.locator("#main article.movie", has_text=title)
+
+    def box(self, locator):
+        """-> (width, height, natural width, natural height) of a loaded picture. The window is
+        scrolled to it first, as a reader would: WebKit loads no lazy picture below the fold,
+        and its scrollIntoView does not reach a card `content-visibility` has not laid out."""
+        for _ in range(3):
+            top = locator.evaluate("i => i.getBoundingClientRect().top")
+            if 0 <= top < self.viewport["height"] - 120:
+                break
+            self.page.evaluate("dy => window.scrollBy(0, dy)", top - 100)
+        self.page.wait_for_function("i => i.complete && i.naturalWidth > 0",
+                                    arg=locator.element_handle(), timeout=10_000)
+        return locator.evaluate("i => { const b = i.getBoundingClientRect();"
+                                " return [b.width, b.height, i.naturalWidth, i.naturalHeight]; }")
+
+    def assert_whole(self, box, label):
+        w, h, nw, nh = box
+        self.assertGreater(nw, 0, f"{label}: the picture did not load")
+        self.assertAlmostEqual(w / h, nw / nh, delta=0.02,
+                               msg=f"{label}: drawn {w:.0f}x{h:.0f}, file {nw}x{nh}, cropped or stretched")
+
+    def open_sheet(self, title):
+        self.card(title).locator("h2.title a").click()
+        expect(self.page.locator("#sheetTitle")).to_have_text(title)
+        return self.page.locator("#sheet")
+
+    def test_the_cards_draw_each_picture_whole_and_keep_the_film_poster_and_the_tile(self):
+        phone = self.viewport["width"] < 560
+        for title in ("Suistamon Sähkö", "Monttu auki"):
+            pic = self.card(title).locator("img.evimg")
+            box = self.box(pic)
+            self.assert_whole(box, title)
+            card_w = self.card(title).evaluate("a => a.getBoundingClientRect().width")
+            self.assertAlmostEqual(box[0], card_w if phone else 184, delta=1.5, msg=title)
+        poster = self.card("Autofiktio").locator(".poster").evaluate(
+            "p => { const b = p.getBoundingClientRect(); return [b.width, b.height]; }")
+        self.assertEqual(poster, [72, 104] if phone else [92, 132])
+        expect(self.card("Megamuskari").locator(".poster.blank")).to_have_count(1)
+        expect(self.card("Megamuskari").locator("img")).to_have_count(0)
+        self.assertEqual(self.page.evaluate("document.documentElement.scrollWidth"),
+                         self.viewport["width"])
+
+    def test_the_sheet_shows_the_picture_whole_with_its_own_credit(self):
+        sheet = self.open_sheet("Suistamon Sähkö")
+        self.assert_whole(self.box(sheet.locator(".sheet-fig img")), "sheet")
+        expect(sheet.locator(".sheet-fig figcaption")).to_have_text(self.CREDIT)
+        expect(sheet.locator(".sheet-fig a")).to_have_count(0)
+        self.page.keyboard.press("Escape")
+        sheet = self.open_sheet("Monttu auki")
+        self.assert_whole(self.box(sheet.locator(".sheet-fig img")), "banner sheet")
+        expect(sheet.locator(".sheet-fig figcaption")).to_have_text(
+            "Kuva: Espoon tapahtumarajapinta · CC BY 4.0")
+        expect(sheet.locator(".sheet-fig figcaption a")).to_have_attribute(
+            "href", "https://creativecommons.org/licenses/by/4.0/")
+        self.page.keyboard.press("Escape")
+        sheet = self.open_sheet("Megamuskari")
+        expect(sheet.locator(".sheet-fig")).to_have_count(0)
+
+    def test_the_credit_reads_against_the_sheet_in_this_theme(self):
+        """4.5:1, the WCAG floor for small text, in the theme the page is drawn in."""
+        sheet = self.open_sheet("Suistamon Sähkö")
+        ratio = sheet.locator(".sheet-fig figcaption").evaluate("""c => {
+            const rgb = s => s.match(/[\\d.]+/g).slice(0, 3).map(Number);
+            const lum = ([r, g, b]) => [r, g, b].map(v => { v /= 255;
+                return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; })
+                .reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+            let e = c, bg = 'rgba(0, 0, 0, 0)';
+            while (e && /rgba\\(0, 0, 0, 0\\)|transparent/.test(bg)) {
+                bg = getComputedStyle(e).backgroundColor; e = e.parentElement; }
+            const a = lum(rgb(getComputedStyle(c).color)), b = lum(rgb(bg));
+            return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); }""")
+        self.assertEqual(self.page.evaluate("document.documentElement.dataset.theme"), self.theme)
+        self.assertGreaterEqual(ratio, 4.5)
+
+
+class EventPicturesOnAPhone(EventPictures):
+    viewport = {"width": 375, "height": 812}; touch = True
+
+
+class EventPicturesDark(EventPictures):
+    theme = "dark"
+
+
+class EventPicturesDarkOnAPhone(EventPictures):
+    theme = "dark"
+    viewport = {"width": 375, "height": 812}; touch = True
+
+
+class EventPictureFails(Browser):
+    """A non-film event's picture that does not load. Its card shows the initials tile in a
+    film card's layout, and its sheet hides the figure together with the credit.
+
+    The URLs are published and requested. One answers 404 and the other request is aborted.
+    A third picture loads, which shows that this fixture draws pictures at all. An offline
+    reader is the likely case, because `sw.js` keeps a picture only after it has been shown.
+    """
+    PIC = (1200, 628)
+
+    def setUp(self):
+        orion = next(s for s in SHOWS if s["title"] == "Autofiktio")
+        film = dict(orion, venue="1162", provider="finnkino", theme="Itis",
+                    start="2026-09-14T18:00:00+03:00")
+        base = {k: "" for k in ("original", "len", "rating", "genres", "aud", "lang", "price")}
+
+        def event(eid, title, clock, img):
+            return {**base, "eventId": eid, "title": title, "nonFilm": True, "method": "Musiikki",
+                    "start": f"2026-09-14T{clock}:00+03:00", "theatre": "Itis", "soldOut": False,
+                    "url": f"https://www.espoo.fi/fi/tapahtumat/espooevents:{eid}",
+                    "provider": "finnkino", "venue": "1162", "img": img, "imgW": self.PIC[0],
+                    "imgH": self.PIC[1], "imgAlt": "Kuvassa yhtye.", "imgBy": "Mikko Mäntyniemi",
+                    "imgSrc": "Espoon tapahtumarajapinta", "imgLic": "event_only"}
+        shows = [film,
+                 event("tapahtuma-suistamon-sahko", "Suistamon Sähkö", "19:00",
+                       "data/posters/ev-shown.png"),
+                 event("tapahtuma-kadonnut-kuva", "Kadonnut kuva", "20:00",
+                       "data/posters/ev-missing.png"),
+                 event("tapahtuma-katkennut-yhteys", "Katkennut yhteys", "21:00",
+                       "data/posters/ev-cut.png")]
+        itis = {"generated": "2026-09-14T08:00:00+00:00", "dates": ["2026-09-14"],
+                "horizon": "2026-09-14", "shows": shows}
+        # The fixture has no ev-missing.png, and the server answers that request 404.
+        Handler.body = {"area-1162.json": json.dumps(itis).encode("utf-8"),
+                        "ev-shown.png": _harness.png(*self.PIC)}
+        self.addCleanup(lambda: setattr(Handler, "body", {}))
+        super().setUp()
+        self.failed = []
+        self.page.on("response", self.note_error_status)
+        self.page.on("requestfailed", lambda r: self.failed.append((r.url, "failed")))
+        self.page.route("**/ev-cut.png", lambda route: route.abort())
+        self.page.goto(self.origin + "/index.html?area=1162")
+        expect(self.page.locator("#main article.movie")).to_have_count(4)
+
+    def note_error_status(self, response):
+        if response.status >= 400:
+            self.failed.append((response.url, response.status))
+
+    def card(self, title):
+        return self.page.locator("#main article.movie", has_text=title)
+
+    def reach(self, card):
+        """Scroll the window to a card, as a reader would. WebKit requests no lazy picture
+        below the fold, and its scrollIntoView does not reach a card `content-visibility`
+        has not laid out."""
+        for _ in range(3):
+            top = card.evaluate("a => a.getBoundingClientRect().top")
+            if 0 <= top < self.viewport["height"] - 120:
+                return
+            self.page.evaluate("dy => window.scrollBy(0, dy)", top - 100)
+
+    def open_sheet(self, title):
+        self.reach(self.card(title))
+        self.card(title).locator("h2.title a").click()
+        expect(self.page.locator("#sheetTitle")).to_have_text(title)
+        return self.page.locator("#sheet")
+
+    def test_a_card_whose_picture_fails_draws_the_tile_beside_its_title(self):
+        phone = self.viewport["width"] < 560
+        for title, initials in (("Kadonnut kuva", "KK"), ("Katkennut yhteys", "KY")):
+            with self.subTest(title=title):
+                card = self.card(title)
+                self.reach(card)
+                tile = card.locator(".poster.blank")
+                expect(tile).to_have_text(initials)
+                expect(card.locator("img")).to_have_count(0)
+                expect(card).not_to_have_class(re.compile(r"\bev\b"))
+                t, h = tile.bounding_box(), card.locator("h2.title").bounding_box()
+                self.assertEqual([t["width"], t["height"]], [72, 104] if phone else [92, 132])
+                self.assertGreaterEqual(h["x"], t["x"] + t["width"], "the title is not beside the tile")
+                self.assertLess(h["y"], t["y"] + t["height"], "the title is below the tile")
+        self.assertIn(404, [s for u, s in self.failed if u.endswith("/ev-missing.png")], self.failed)
+        self.assertIn("failed", [s for u, s in self.failed if u.endswith("/ev-cut.png")], self.failed)
+        shown = self.card("Suistamon Sähkö")
+        self.reach(shown)
+        self.page.wait_for_function("i => i.complete && i.naturalWidth > 0",
+                                    arg=shown.locator("img.evimg").element_handle())
+        expect(shown).to_have_class(re.compile(r"\bev\b"))
+        self.assertEqual(self.page.evaluate("document.documentElement.scrollWidth"),
+                         self.viewport["width"])
+
+    def test_the_sheet_hides_a_picture_that_fails_with_its_credit(self):
+        for title in ("Kadonnut kuva", "Katkennut yhteys"):
+            sheet = self.open_sheet(title)
+            fig = sheet.locator(".sheet-fig")
+            expect(fig).to_have_count(1)
+            expect(fig).to_be_hidden()
+            self.page.keyboard.press("Escape")
+        sheet = self.open_sheet("Suistamon Sähkö")
+        expect(sheet.locator(".sheet-fig figcaption")).to_be_visible()
+
+
+class EventPictureFailsOnAPhone(EventPictureFails):
+    viewport = {"width": 375, "height": 812}; touch = True
