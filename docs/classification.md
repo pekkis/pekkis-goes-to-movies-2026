@@ -56,6 +56,7 @@ A series is something a screening belongs to beyond the film: a strand, festival
 - **Provider strands:** a source field that is a strand by definition (Nexxo show types, Kinola programs, Vista `EventSeries`, Regina's themes, Kino-Kuva's headings) keeps any name the registry does not know as that provider's own strand, id `{provider}/{slug}` (`kinoregina/ken-russell`), kind `strand`. The registry can adopt one later with an alias.
 - **Free text never becomes a series.** A label of mixed meaning (an eTiketti tag) becomes a series only if the registry knows it; otherwise it is reported in `unmappedLabels`. Before this, `series` held availability ("Kiirehdi"), audio ("Puhuttu suomeksi"), projection ("35mm") and more [V].
 - **Series in titles:** a registered name works as a title label on every site, with no site config: "Kuukauden pohjoismainen: Knyckertz …" (Kino Iiris), "Geel + Cézanne on Art (Taidekaupungin elokuvajuhlat)" (Bio Säde), "… – Minikino". The name is stripped from the title, so the film can match TMDB, and becomes the series [V, 2026-10-16]. Site title rules and `LABELS` are consulted first.
+- **A word that means a series at one cinema only** goes into that site's config, not `LABELS` or the registry: Cinema Niagara's tag "Puola" is its special series "PUOLALAISIA ELOKUVIA" (`tags` in `etiketti/sites.ts`; a provider strand), while elsewhere "Puola" could as well be a language [V, 2026-10-16].
 - **Resolution** happens in `pull` (`resolveSeries`, after the parser): screening `series` become ids and the batch lists the catalogue entries it uses (`ProviderBatch.series`). Ingest upserts them into the `series` table; the API returns display names, so its shape did not change.
 - Retrospectives at Regina ("KEN RUSSELL", "SUSAN SARANDON") are still provider strands of kind `strand`; promoting them is a registry edit.
 
@@ -85,4 +86,3 @@ Computed, never scraped:
 
 - Marathons and double features: an occasion tag, or a series?
 - Food screenings (Leffabrunssi, Kahvikino, "3 Kaveria jäätelönäytös"): strands now; an `extras` tag as well?
-- "Puola" (Polish) as an eTiketti tag at Cinema Niagara: a language label, but it does not say audio or subtitles, so it stays unmapped [V].
