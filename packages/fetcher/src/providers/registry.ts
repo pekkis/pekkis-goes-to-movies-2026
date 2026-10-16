@@ -69,6 +69,9 @@ import { MARITA_SITES, type MaritaSite } from "./marita/sites.ts";
 import { fetchBioMarlon } from "./biomarlon/fetch.ts";
 import { parseBioMarlon } from "./biomarlon/parse.ts";
 import { BIOMARLON_SITES, type BioMarlonSite } from "./biomarlon/sites.ts";
+import { fetchBioDux } from "./biodux/fetch.ts";
+import { parseBioDux } from "./biodux/parse.ts";
+import { BIODUX_SITES, type BioDuxSite } from "./biodux/sites.ts";
 import { fetchKisaKino } from "./kisakino/fetch.ts";
 import { fetchSuoja } from "./suoja/fetch.ts";
 import { parseSuoja } from "./suoja/parse.ts";
@@ -574,6 +577,18 @@ const suojaAdapter = (site: SuojaSite): Adapter => ({
   },
 });
 
+/** Bio Dux's bilingual front page. */
+const bioDuxAdapter = (site: BioDuxSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchBioDux(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseBioDux(raw, site), venues) };
+  },
+});
+
 /** KisaKino's front page and film pages. */
 const kisaKinoAdapter = (site: KisaKinoSite): Adapter => ({
   id: site.provider,
@@ -721,6 +736,7 @@ export const ADAPTERS: Adapter[] = [
   ...KINOMAATTI_SITES.map(kinomaattiAdapter),
   ...KINORIO_SITES.map(kinoRioAdapter),
   ...SUOJA_SITES.map(suojaAdapter),
+  ...BIODUX_SITES.map(bioDuxAdapter),
   ...PAJAKKAKINO_SITES.map(pajakkakinoAdapter),
   ...BIOMARLON_SITES.map(bioMarlonAdapter),
   ...KINOKUVA_SITES.map(kinoKuvaAdapter),

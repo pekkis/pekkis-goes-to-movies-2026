@@ -900,18 +900,18 @@ Cinemas we know of and do not read, for the next batch. Found by comparing our v
 | WHS Teatteri Union (Helsinki)                         | 5     | Leffavuoro judged it a stage, not a cinema (2026-09-15); elokuviin.com lists screenings. Worth a second look.                                                                       |
 | Annantalo "Lomakino" (Helsinki)                       | –     | Holiday children's screenings in Helsinki's Linked Events ("Lomakino: Ella ja kaverit – Operaatio Saukko (S) – Annantalon syysloma"); one more label and a suffix to strip. Small.  |
 
-**Facebook only** (no site of their own found; unreachable unless they sell on a ticket platform): Bio Dux, Kristiinankaupunki (8), Vimpelin Nuorisokuvat (3). Kino Mantsi's page on ilomantsi.fi answers 404.
+**Facebook only** (no site of their own found; unreachable unless they sell on a ticket platform): Vimpelin Nuorisokuvat (3). Kino Mantsi's page on ilomantsi.fi answers 404.
 
 **Out by our rules:** the Sun Kino group (Alareksi, Kino Kyntäjä, Y-Kino, Sun Kino), Kauttuan Kuva and Kuvala load their showtimes only through the Johku widget's `X-ApiKey`.
 
 **No programme now** (re-check later): Kino Hetta, KinoPattery, Lapinsuu, Kino Visio, Tuiskula, Kino Sihis, Virta-sali, Kinokellari, Tuulensuun Palatsi, KannuKino, Kinopoli, Louhisali, Kino Caisa (festivals only), Rekolan Kino, Juvan Kino. **Skipped earlier:** Heureka (complex schedule), Kino K13 (prose), Kinotour (touring rows), Iobio (duplicate calendars).
 
-**Since added:** Bio-Salo and Bio Stara (2026-10-15), Bio Jukola (2026-10-16, through the Nexxo `movieid` fix; see the Nexxo section), Kino Jalasjärvi, Kino Rio and Suojan elokuvat (2026-10-16).
+**Since added:** Bio-Salo and Bio Stara (2026-10-15), Bio Jukola (2026-10-16, through the Nexxo `movieid` fix; see the Nexxo section), Kino Jalasjärvi, Kino Rio, Suojan elokuvat and Bio Dux (2026-10-16).
 
 **From nytleffaan.fi's directory** (225 entries, a copy the maintainer saved from a browser, 2026-10-16; used only as a list of cinemas and their own sites). Not read by us yet, with the homepage it gives; most are municipal halls with occasional screenings, unchecked:
 
 - Altin Sali, Ikaalinen (ikaalinen.fi); Bio Fix, Kemiö (kemionsaari.fi); Bio Sydväst, Parainen, and the Parainen tour halls (pargas.fi); Toholampisali (toholampi.fi); Reijowaara-sali, Haapavesi (haapavesi.fi); Raahesali, Raahe (kulttuuriraahe.fi); Kuhmoisten elokuvat (kuhmoinen.fi); Kangastus, Kangasniemi (kangasniemi.fi); Kino Mäntyharju (mantyharju.fi); Kino Lusto, Punkaharju (savonlinna.fi); Elokuvateatteri Kaarre, Ivalo (inari.fi); Kino Yläri, Kittilä (kittila.fi); Kino-Väylä, Ylitornio (ylitornio.fi); Pellon kunnankino (pello.fi); Paljakkakino / Puolanka Kino (puolanka.fi); Kino Hetta, Enontekiö (enontekio.fi).
-- Own sites: Bio Dux (biodux.fi), Kino Hakalinna, Pomarkku (kinohakalinna.fi), Kino Hannikainen, Nurmes (kinohannikainen.net), Sirius, Parkano (elokuvateatterisirius.fi), Teatteri Retikka, Suomussalmi (teatteriretikka.net), Kinoma, Hyvinkää (hyvleffat.fi), Jurvan teatteri (jurvanteatteri.fi), Filmipyörä, Kangasala (elokuvat.org), Cinema Keuda-talo, Kerava (keudatalo.fi), Cinema Nikkilä, Sipoo (storyhill.fi).
+- Own sites: Kino Hakalinna, Pomarkku (kinohakalinna.fi), Kino Hannikainen, Nurmes (kinohannikainen.net), Sirius, Parkano (elokuvateatterisirius.fi), Teatteri Retikka, Suomussalmi (teatteriretikka.net), Kinoma, Hyvinkää (hyvleffat.fi), Jurvan teatteri (jurvanteatteri.fi), Filmipyörä, Kangasala (elokuvat.org), Cinema Keuda-talo, Kerava (keudatalo.fi), Cinema Nikkilä, Sipoo (storyhill.fi).
 - Event venues: Logomo's Kino-sali, Turku; Kulttuuritila Nuijamies, Lappeenranta; Schaumansali, Pietarsaari; Magnum at PowerPark, Härmä; Olos Polar Center, Muonio; Vimpelin Nuorisokuvat (vimpelinveto.fi).
 
 The directory's entries also name data endpoints. Some are partner feeds built for that site (eTiketti's `/api/elokuvat/nytleffaan`, Nexxo's `exportkinghill`, one with a credential in its URL); we do not use them and keep reading what the cinemas show visitors.
@@ -940,6 +940,15 @@ The directory's entries also name data endpoints. Some are partner feeds built f
 - **The show id** is the screening's source id; its `/naytos/` page is copied as the ticket link and never requested (booking `buy`).
 - **No runtime or rating** on the front page; titles shared with other films may need aliases.
 - **First run:** 3 screenings this week (2 films, both matched).
+
+## Bio Dux (Kristiinankaupunki)
+
+- **Found** through nytleffaan.fi's directory (2026-10-16); not in Leffavuoro. A bilingual BaseKit page, read as lines [V].
+- **A film** is a title line followed by screening rows: "Forgotten Island 109 min" (runtime at the end), then "fre/pe 16.10. 18.00" (Swedish/Finnish weekday, either alone; no year, the weekday must fit), then language and genre lines ("in English - svenskt text - suom. tekstit": English audio, Swedish and Finnish subtitles; "dubbad - dubattu"), then "åldersgräns 7 ikäraja" (0 is S), which closes the film and rates every title since the last one.
+- **One film under two titles:** "Bortglömda ön" with "lör 17.10. 12.30 på svenska" and "Unohdettu saari" with "su 18.10. 12.30 suomeksi" share one age line; the row's ending gives each its audio. "Matka Piemonteen - Resan till Piemonte" is one title in Finnish and Swedish.
+- **A title with a date and no time** ("Lapin sota", "24.10.") is not on yet.
+- **Tickets** at the door: booking `door`, links to the front page.
+- **First run:** 12 screenings of 8 films, no warnings, all matched.
 
 ## Film ratings: OMDb
 
