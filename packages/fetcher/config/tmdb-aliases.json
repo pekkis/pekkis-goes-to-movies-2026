@@ -378,5 +378,15 @@
     "tmdb": 1729175,
     "title": "Pirjo",
     "note": "Pirjo i Sverige (2026), shortened in the programme. verified by the maintainer 2026-10-16."
+  },
+  "kinojalasjarvi:film:pikku-kummitus-lapanen-keppostelee": {
+    "tmdb": 1781923,
+    "title": "Pikku Kummitus Lapanen keppostelee",
+    "note": "The same film as ihmekompleksi:film:3346 (linked elsewhere by runtime); Kino Jalasjärvi states no runtime, so the sibling pass cannot link it."
+  },
+  "kinoylari:film:ryhma-hau-dinoelokuva": {
+    "tmdb": 1185806,
+    "title": "Ryhmä Hau: Dinoelokuva",
+    "note": "PAW Patrol: The Dino Movie (2026), as biorex:film:1518. Kino Yläri states no runtime, so the sibling pass cannot link it."
   }
 }

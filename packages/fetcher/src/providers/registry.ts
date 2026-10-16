@@ -69,7 +69,25 @@ import { MARITA_SITES, type MaritaSite } from "./marita/sites.ts";
 import { fetchBioMarlon } from "./biomarlon/fetch.ts";
 import { parseBioMarlon } from "./biomarlon/parse.ts";
 import { BIOMARLON_SITES, type BioMarlonSite } from "./biomarlon/sites.ts";
+import { fetchBioDux } from "./biodux/fetch.ts";
+import { parseBioDux } from "./biodux/parse.ts";
+import { BIODUX_SITES, type BioDuxSite } from "./biodux/sites.ts";
+import { fetchKaarre } from "./kaarre/fetch.ts";
+import { parseKaarre } from "./kaarre/parse.ts";
+import { KAARRE_SITES, type KaarreSite } from "./kaarre/sites.ts";
 import { fetchKisaKino } from "./kisakino/fetch.ts";
+import { fetchKinoYlari } from "./kinoylari/fetch.ts";
+import { parseKinoYlari } from "./kinoylari/parse.ts";
+import { KINOYLARI_SITES, type KinoYlariSite } from "./kinoylari/sites.ts";
+import { fetchSuoja } from "./suoja/fetch.ts";
+import { parseSuoja } from "./suoja/parse.ts";
+import { SUOJA_SITES, type SuojaSite } from "./suoja/sites.ts";
+import { fetchKinoRio } from "./kinorio/fetch.ts";
+import { parseKinoRio } from "./kinorio/parse.ts";
+import { KINORIO_SITES, type KinoRioSite } from "./kinorio/sites.ts";
+import { fetchKinomaatti } from "./kinomaatti/fetch.ts";
+import { parseKinomaatti } from "./kinomaatti/parse.ts";
+import { KINOMAATTI_SITES, type KinomaattiSite } from "./kinomaatti/sites.ts";
 import { fetchVirtainPirtti } from "./virtainpirtti/fetch.ts";
 import { parseVirtainPirtti } from "./virtainpirtti/parse.ts";
 import { VIRTAINPIRTTI_SITES, type VirtainPirttiSite } from "./virtainpirtti/sites.ts";
@@ -529,6 +547,78 @@ const virtainPirttiAdapter = (site: VirtainPirttiSite): Adapter => ({
   },
 });
 
+/** The kinomaatti plugin's timetable (Kino Jalasjärvi). */
+const kinomaattiAdapter = (site: KinomaattiSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchKinomaatti(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseKinomaatti(raw, site), venues) };
+  },
+});
+
+/** Kino Rio's front page. */
+const kinoRioAdapter = (site: KinoRioSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchKinoRio(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseKinoRio(raw, site), venues) };
+  },
+});
+
+/** Suojan elokuvat's front page. */
+const suojaAdapter = (site: SuojaSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchSuoja(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseSuoja(raw, site), venues) };
+  },
+});
+
+/** Bio Dux's bilingual front page. */
+const bioDuxAdapter = (site: BioDuxSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchBioDux(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseBioDux(raw, site), venues) };
+  },
+});
+
+/** Kino Yläri's page on Kittilä's site. */
+const kinoYlariAdapter = (site: KinoYlariSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchKinoYlari(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseKinoYlari(raw, site), venues) };
+  },
+});
+
+/** Elokuvateatteri Kaarre's page on Inari's site. */
+const kaarreAdapter = (site: KaarreSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchKaarre(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseKaarre(raw, site), venues) };
+  },
+});
+
 /** KisaKino's front page and film pages. */
 const kisaKinoAdapter = (site: KisaKinoSite): Adapter => ({
   id: site.provider,
@@ -673,6 +763,12 @@ export const ADAPTERS: Adapter[] = [
   ...MARITA_SITES.map(maritaAdapter),
   ...KURIKANKINO_SITES.map(kurikanKinoAdapter),
   ...KISAKINO_SITES.map(kisaKinoAdapter),
+  ...KINOMAATTI_SITES.map(kinomaattiAdapter),
+  ...KINORIO_SITES.map(kinoRioAdapter),
+  ...SUOJA_SITES.map(suojaAdapter),
+  ...BIODUX_SITES.map(bioDuxAdapter),
+  ...KINOYLARI_SITES.map(kinoYlariAdapter),
+  ...KAARRE_SITES.map(kaarreAdapter),
   ...PAJAKKAKINO_SITES.map(pajakkakinoAdapter),
   ...BIOMARLON_SITES.map(bioMarlonAdapter),
   ...KINOKUVA_SITES.map(kinoKuvaAdapter),

@@ -377,4 +377,28 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
       },
     ],
   },
+  {
+    provider: "biojukola",
+    name: "Bio Jukola",
+    homepage: "https://biojukola.fi",
+    apiBase: "https://biosalo.fi",
+    programmePath: "/",
+    titlePrefixes: { Ennakkonäytökset: { tags: ["preview"] } },
+    verifiedAt: "2026-10-16",
+    notes:
+      "Bio-Salo's third cinema: biojukola.fi's widgets read biosalo.fi's API, location 4 (Kinoset's location 4 is empty). Address from nytleffaan.fi's directory (Jukolantie 4, Somero); OSM has the cinema node.",
+    venues: [
+      {
+        slug: "somero",
+        locationId: "4",
+        page: "/",
+        name: "Bio Jukola",
+        city: "Somero",
+        address: "Jukolantie 4",
+        postalCode: "31400",
+        geo: { lat: 60.6311472, lon: 23.5147802 },
+        geoSource: "osm:node/13697462655",
+      },
+    ],
+  },
 ]);
