@@ -240,7 +240,7 @@ Profiled on 2026-10-10 over 214 shows on 10 locations. Adapter: `packages/fetche
 
 - **Bio Säde** (Mänttä): biosade.fi's own API is empty; its page reads kinohirvi.fi's API, location 4 (`apiBase`).
 - **Kino Metso** (KSEK's touring cinema): location 2 on kinoaurora.fi, where each **room is a town** (`roomIds` per venue; Riihivuori, room 21, is folded into Muurame as KSEK's site does). Laukaa (24) and Viitasaari (10) were not in Leffavuoro's list; the `unclaimed-room` warning found them. Toivakka (23, the library hall) and Hankasalmi (19, Monitoimitalo) appeared only once `movieid=0` was sent.
-- **Bio-Salo** (Salo) and **Bio Stara** (Paimio): one tenant on biosalo.fi, location 1 (rooms Bio-Salo 1–3) and location 2 (Bio Stara 1–2); location 3 is empty. biostara.fi's widgets read biosalo.fi's API (`apiBase`). Each links to its own front page. Both were thought to publish nothing until `movieid=0`.
+- **Bio-Salo** (Salo), **Bio Stara** (Paimio) and **Bio Jukola** (Somero): one tenant on biosalo.fi, location 1 (rooms Bio-Salo 1–3), location 2 (Bio Stara 1–2) and location 4 (Bio Jukola, found 2026-10-16 from biojukola.fi's widgets); location 3 is empty, and so is Kinoset's location 4, which directories give for Bio Jukola. biostara.fi's widgets read biosalo.fi's API (`apiBase`). Each links to its own front page. Both were thought to publish nothing until `movieid=0`.
 - **Kino Marilyn** (Loviisa): location 1 also books Loviisa's Kulttuurikeskus (room 2), which shows films too (a Lions Club screening) besides concerts; concerts are events by their show type, so the room is read.
 - No seat counts (`availability: "unknown"`) and no per-show booking links in the API. **Ticket links point to the venue's programme page** (`programmePath?location=N`, or the venue's own `page`), which differs per site. Each was opened by hand on 2026-10-10 and shows the plugin's showlist.
 
@@ -900,15 +900,23 @@ Cinemas we know of and do not read, for the next batch. Found by comparing our v
 | WHS Teatteri Union (Helsinki)                         | 5     | Leffavuoro judged it a stage, not a cinema (2026-09-15); elokuviin.com lists screenings. Worth a second look.                                                                       |
 | Annantalo "Lomakino" (Helsinki)                       | –     | Holiday children's screenings in Helsinki's Linked Events ("Lomakino: Ella ja kaverit – Operaatio Saukko (S) – Annantalon syysloma"); one more label and a suffix to strip. Small.  |
 
-**Facebook only** (no site of their own found; unreachable unless they sell on a ticket platform): Kino Jalasjärvi (14), Bio Jukola, Somero (9), Bio Dux, Kristiinankaupunki (8), Vimpelin Nuorisokuvat (3). Kino Mantsi's page on ilomantsi.fi answers 404.
+**Facebook only** (no site of their own found; unreachable unless they sell on a ticket platform): Kino Jalasjärvi (14), Bio Dux, Kristiinankaupunki (8), Vimpelin Nuorisokuvat (3). Kino Mantsi's page on ilomantsi.fi answers 404.
 
 **Out by our rules:** the Sun Kino group (Alareksi, Kino Kyntäjä, Y-Kino, Sun Kino), Kauttuan Kuva and Kuvala load their showtimes only through the Johku widget's `X-ApiKey`.
 
 **No programme now** (re-check later): Kino Hetta, KinoPattery, Lapinsuu, Kino Visio, Tuiskula, Kino Sihis, Virta-sali, Kinokellari, Tuulensuun Palatsi, KannuKino, Kinopoli, Louhisali, Kino Caisa (festivals only), Rekolan Kino, Juvan Kino. **Skipped earlier:** Heureka (complex schedule), Kino K13 (prose), Kinotour (touring rows), Iobio (duplicate calendars).
 
-**Since added:** Bio-Salo and Bio Stara (2026-10-15, through the Nexxo `movieid` fix; see the Nexxo section).
+**Since added:** Bio-Salo and Bio Stara (2026-10-15) and Bio Jukola (2026-10-16, through the Nexxo `movieid` fix; see the Nexxo section).
 
-**Elsewhere:** nytleffaan.fi's directory answers 403 to a plain client (2026-10-15); not pursued. kinossa.fi renders client-side; its own list of cinemas is not checked.
+**From nytleffaan.fi's directory** (225 entries, a copy the maintainer saved from a browser, 2026-10-16; used only as a list of cinemas and their own sites). Not read by us yet, with the homepage it gives; most are municipal halls with occasional screenings, unchecked:
+
+- Altin Sali, Ikaalinen (ikaalinen.fi); Bio Fix, Kemiö (kemionsaari.fi); Bio Sydväst, Parainen, and the Parainen tour halls (pargas.fi); Toholampisali (toholampi.fi); Reijowaara-sali, Haapavesi (haapavesi.fi); Raahesali, Raahe (kulttuuriraahe.fi); Kuhmoisten elokuvat (kuhmoinen.fi); Kangastus, Kangasniemi (kangasniemi.fi); Kino Mäntyharju (mantyharju.fi); Kino Lusto, Punkaharju (savonlinna.fi); Elokuvateatteri Kaarre, Ivalo (inari.fi); Kino Yläri, Kittilä (kittila.fi); Kino-Väylä, Ylitornio (ylitornio.fi); Pellon kunnankino (pello.fi); Paljakkakino / Puolanka Kino (puolanka.fi); Kino Hetta, Enontekiö (enontekio.fi).
+- Own sites: Kino Jalasjärvi (kinojalasjarvi.fi), Bio Dux (biodux.fi), Kino Hakalinna, Pomarkku (kinohakalinna.fi), Kino Hannikainen, Nurmes (kinohannikainen.net), Kino Rio, Suonenjoki (kinorio.fi), Sirius, Parkano (elokuvateatterisirius.fi), Suojan elokuvat, Karstula (suojanelokuvat.fi), Teatteri Retikka, Suomussalmi (teatteriretikka.net), Kinoma, Hyvinkää (hyvleffat.fi), Jurvan teatteri (jurvanteatteri.fi), Filmipyörä, Kangasala (elokuvat.org), Cinema Keuda-talo, Kerava (keudatalo.fi), Cinema Nikkilä, Sipoo (storyhill.fi).
+- Event venues: Logomo's Kino-sali, Turku; Kulttuuritila Nuijamies, Lappeenranta; Schaumansali, Pietarsaari; Magnum at PowerPark, Härmä; Olos Polar Center, Muonio; Vimpelin Nuorisokuvat (vimpelinveto.fi).
+
+The directory's entries also name data endpoints. Some are partner feeds built for that site (eTiketti's `/api/elokuvat/nytleffaan`, Nexxo's `exportkinghill`, one with a credential in its URL); we do not use them and keep reading what the cinemas show visitors.
+
+**Elsewhere:** nytleffaan.fi's directory answers 403 to a plain client (2026-10-15); the maintainer's browser copy above is how we have it. kinossa.fi renders client-side; its own list of cinemas is not checked.
 
 ## Film ratings: OMDb
 
