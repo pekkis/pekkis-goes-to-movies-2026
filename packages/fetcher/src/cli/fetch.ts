@@ -9,8 +9,14 @@ import { ProviderBatch } from "@pgtm/model";
 import { finishVenues, loadVenueOverrides } from "../providers/overrides.ts";
 import { deriveTags } from "../providers/labels.ts";
 import { resolveSeries } from "../series/registry.ts";
+import { paintFor } from "../lib/paint.ts";
+import { batchReport, failureReport, summaryReport } from "./report.ts";
 import PQueue from "p-queue";
 import { ADAPTERS, selectAdapters, type Adapter } from "../providers/registry.ts";
+
+// Each stream is coloured only when it is a terminal.
+const paintOut = paintFor(process.stdout);
+const paintErr = paintFor(process.stderr);
 
 /** Providers pulled at the same time (each on its own host, paced per host). */
 const CONCURRENCY = 6;
@@ -73,7 +79,6 @@ const overrides = await loadVenueOverrides();
  * each adapter still paces its own host), so output is collected and printed as a block.
  */
 const pullOne = async (adapter: Adapter): Promise<{ ok: boolean; lines: string[] }> => {
-  const lines: string[] = [];
   try {
     const pulled = await adapter.pull(
       { env, out: values.out },
@@ -87,19 +92,9 @@ const pullOne = async (adapter: Adapter): Promise<{ ok: boolean; lines: string[]
     ProviderBatch.parse(batch);
     await writeJson(join(values.out, "normalized", `${adapter.id}.json`), batch);
 
-    const unmapped = new Set(batch.screenings.flatMap((s) => s.unmappedLabels));
-    lines.push(
-      `${adapter.id}: ${batch.venues.length} venues, ${batch.listings.length} films, ` +
-        `${batch.screenings.length} screenings, ${batch.warnings.length} warnings` +
-        (unmapped.size ? `, unmapped labels: ${[...unmapped].join(", ")}` : ""),
-    );
-    for (const warning of batch.warnings) {
-      lines.push(`  [${warning.code}] ${warning.message}`);
-    }
-    return { ok: true, lines };
+    return { ok: true, lines: batchReport(adapter.id, batch, paintOut) };
   } catch (error) {
-    lines.push(`${adapter.id}: FAILED: ${error instanceof Error ? error.message : String(error)}`);
-    return { ok: false, lines };
+    return { ok: false, lines: [failureReport(adapter.id, error, paintErr)] };
   }
 };
 
@@ -114,18 +109,14 @@ const results = await Promise.all(
   ),
 );
 const failures = results.filter((r) => !r.ok).length;
-console.log(
-  `pulled ${results.length - failures} of ${results.length} providers into ${values.out}`,
-);
+console.log(summaryReport(results.length - failures, results.length, values.out, paintOut));
 
 // Matching needs at least one fresh batch, and a TMDB outage must not hide what was pulled.
 if (failures < results.length) {
   try {
     await runMatching(values.out, env);
   } catch (error) {
-    console.error(
-      `tmdb: matching FAILED: ${error instanceof Error ? error.message : String(error)}`,
-    );
+    console.error(failureReport("tmdb: matching", error, paintErr));
     process.exitCode = 1;
   }
 }
