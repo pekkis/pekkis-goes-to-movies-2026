@@ -8,6 +8,7 @@ import {
   filmRow,
   providerRow,
   screeningRow,
+  seriesRow,
   venueRow,
 } from "./rows.ts";
 
@@ -19,7 +20,7 @@ const chunks = <T>(items: T[]): T[][] =>
     items.slice(i * CHUNK, (i + 1) * CHUNK),
   );
 
-type Table = "providers" | "venues" | "auditoriums" | "films" | "filmListings";
+type Table = "providers" | "venues" | "auditoriums" | "films" | "filmListings" | "series";
 
 /**
  * `insert … on conflict (id) do update set <every column> = excluded.<column>`.
@@ -91,6 +92,8 @@ export const ingestBatch = (db: Kysely<DB>, batch: ProviderBatch): Promise<Batch
     await upsert(trx, "venues", batch.venues.map(venueRow));
     await upsert(trx, "auditoriums", batch.auditoriums.map(auditoriumRow));
     await upsert(trx, "filmListings", batch.listings.map(filmListingRow));
+    // The series the screenings point to; a name or kind the registry changed is updated.
+    await upsert(trx, "series", (batch.series ?? []).map(seriesRow));
 
     let inserted = 0;
     let updated = 0;

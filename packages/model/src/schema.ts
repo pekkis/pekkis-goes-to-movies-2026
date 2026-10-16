@@ -225,10 +225,58 @@ export const ScreeningTag = z.enum([
   "kids",
   "baby",
   "discount",
+  "free",
+  "guest",
   "no-dialogue",
   "accessible",
+  "captions",
+  "audio-description",
 ]);
 export type ScreeningTag = z.infer<typeof ScreeningTag>;
+
+/**
+ * The facet each tag belongs to (docs/classification.md). The tags stay one flat array in
+ * the API and the database; this map is how a client groups them.
+ */
+export const TAG_GROUPS = {
+  occasion: ["premiere", "preview", "last-screening", "classic", "event-cinema"],
+  audience: ["senior", "kids", "baby"],
+  extras: ["guest", "no-dialogue"],
+  accessibility: ["accessible", "captions", "audio-description"],
+  price: ["discount", "free"],
+} as const satisfies Record<string, readonly ScreeningTag[]>;
+
+export const Projection = z.enum(["digital", "35mm", "70mm", "16mm"]);
+export type Projection = z.infer<typeof Projection>;
+
+/**
+ * A label exactly as the source printed it, kept so history can be reclassified later
+ * without refetching. `source` names where it came from: "etiketti.tag", "title.prefix".
+ */
+export const RawLabel = z.object({ source: z.string().min(1), text: z.string().min(1) });
+export type RawLabel = z.infer<typeof RawLabel>;
+
+/** What kind of programme a series is (docs/classification.md#series). */
+export const SeriesKind = z.enum([
+  "strand",
+  "festival",
+  "retrospective",
+  "club",
+  "distributor-series",
+  "theme-week",
+]);
+export type SeriesKind = z.infer<typeof SeriesKind>;
+
+/**
+ * A series a screening belongs to. Ids are the registry's (config/series.json), or
+ * "{provider}/{slug}" for one a source names that the registry does not know yet.
+ */
+export const SeriesRef = z.object({
+  id: z.string().regex(/^[a-z0-9-]+(\/[a-z0-9-]+)?$/),
+  name: z.string().min(1),
+  kind: SeriesKind,
+});
+export type SeriesRef = z.infer<typeof SeriesRef>;
 
 export const Availability = z.enum([
   "available",
@@ -254,7 +302,7 @@ export const Screening = z.object({
   businessDate: IsoDate,
 
   presentation: z.object({
-    projection: z.enum(["digital", "35mm", "70mm", "16mm"]),
+    projection: Projection,
     dimension: z.enum(["2d", "3d"]),
     formats: z.array(Feature),
   }),
@@ -269,6 +317,7 @@ export const Screening = z.object({
   /** Alcohol served. Absent = unknown. */
   licensed: z.boolean().optional(),
   tags: z.array(ScreeningTag),
+  /** Series ids (SeriesRef); adapters write names, the pull resolves them. */
   series: z.array(z.string()),
 
   availability: Availability,
@@ -283,6 +332,8 @@ export const Screening = z.object({
 
   /** Upstream labels the parser does not understand yet. */
   unmappedLabels: z.array(z.string()),
+  /** Every label the source printed for this screening, verbatim. */
+  labels: z.array(RawLabel).optional(),
   fetchedAt: z.iso.datetime(),
 });
 export type Screening = z.infer<typeof Screening>;
@@ -308,6 +359,8 @@ export const ProviderBatch = z.object({
   listings: z.array(FilmListing),
   screenings: z.array(Screening),
   warnings: z.array(Warning),
+  /** The series its screenings refer to; set when the pull resolves series names. */
+  series: z.array(SeriesRef).optional(),
 });
 export type ProviderBatch = z.infer<typeof ProviderBatch>;
 

@@ -56,6 +56,26 @@ describe("parseKinoRio", () => {
     });
   });
 
+  it('marks every row under "viimeiset näytökset" as a last screening', () => {
+    expect(shows("Heart of the Beast").map((s) => s.tags)).toEqual([
+      ["last-screening"],
+      ["last-screening"],
+    ]);
+    expect(shows("Heart of the Beast")[0]?.labels).toEqual([
+      { source: "block.note", text: "viimeiset näytökset" },
+    ]);
+    expect(shows("DIGGER")[0]?.tags).toEqual([]);
+    // The film's premiere is not every row's.
+    const premiere = parseKinoRio(
+      snapshot({ html: HTML.replace("viimeiset näytökset", "Suomen ensi-ilta") }),
+      SITE,
+    ).screenings.filter((s) => s.listingId === listing("Heart of the Beast").id);
+    expect(premiere.map((s) => s.tags)).toEqual([[], []]);
+    expect(shows("Pikku Kummitus Lapanen keppostelee")[0]?.labels).toEqual([
+      { source: "block.note", text: "puhuttu suomeksi" },
+    ]);
+  });
+
   it("warns about a row whose weekday fits no date", () => {
     const broken = HTML.replace("Pe 16.10. klo 18.30", "La 16.10. klo 18.30");
     const result = parseKinoRio(snapshot({ html: broken }), SITE);

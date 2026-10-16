@@ -1,6 +1,6 @@
 # AGENTS.md – Pekkis goes to movies
 
-Instructions for AI agents (and humans) working in this repository. Rules first, then how the code is built, then reference. Details live in `docs/`: [development.md](docs/development.md) (principles, testing, warnings, recipes), [data-sources.md](docs/data-sources.md), [data-model.md](docs/data-model.md), [database.md](docs/database.md), [api.md](docs/api.md), [cli.md](docs/cli.md), [web.md](docs/web.md), [deploy.md](docs/deploy.md).
+Instructions for AI agents (and humans) working in this repository. Rules first, then how the code is built, then reference. Details live in `docs/`: [development.md](docs/development.md) (principles, testing, warnings, recipes), [data-sources.md](docs/data-sources.md), [data-model.md](docs/data-model.md), [classification.md](docs/classification.md), [database.md](docs/database.md), [api.md](docs/api.md), [cli.md](docs/cli.md), [web.md](docs/web.md), [deploy.md](docs/deploy.md).
 
 ## What this is
 
@@ -86,7 +86,8 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 **Data correctness**
 
 - **Certain or nothing:** a film is linked to TMDB only when the match is certain; otherwise it stays unmatched and gets an alias (verified on TMDB, reasoning in its `note`). Never loosen matching without a regression test in `test/matching/score.test.ts`.
-- **Unknown stays unknown:** an absent field (NULL in the database), never a guess. Labels the parser does not understand go to `unmappedLabels`; rows the config does not explain become **warnings**, which are to-dos for `sites.ts`.
+- **Unknown stays unknown:** an absent field (NULL in the database), never a guess. Labels the parser does not understand go to `unmappedLabels`, **never into `series`**; rows the config does not explain become **warnings**, which are to-dos for `sites.ts`.
+- **One label table:** a label phrase gets its meaning in `LABELS` (`providers/labels.ts`), the same on every platform; sites add only their own phrases. Every label a source prints is kept verbatim in `labels`. Series come from the registry (`config/series.json`) or are a source's own strands (`{provider}/{slug}`). See [docs/classification.md](docs/classification.md).
 - Venue slugs are part of ids (`{provider}:venue:{slug}`): never rename one, or its history is orphaned.
 - **The website stays out of search engines** (`noindex` meta and `X-Robots-Tag`) until every cinema has been notified; only that production deployment sets `INDEXING=on`. Every page credits TMDB (logo and notice), OpenStreetMap and the Linked Events of the Cities of Helsinki and Espoo (CC BY 4.0: Kino Helios, Kannusali), and OMDb wherever scores show.
 - **Ratings are opt-in** in every UI (the CLI shows them only with `--ratings` or a score filter): some people do not want critics' verdicts beforehand.
@@ -174,7 +175,8 @@ packages/fetcher/               @pgtm/fetcher: fetch, normalize, match → data/
   src/providers/registry.ts     every adapter (one per site on platforms), pacing, selectAdapters
   src/providers/sites.ts        SiteBase, SiteVenue, defineSites, toVenue: the multi-site base
   src/providers/parsing.ts      toCents, availabilityFromSeats, slugify, byStartThenId, tally
-  src/providers/labels.ts       LabelRule, title prefixes, version markers
+  src/providers/labels.ts       LabelRule, LABELS (the one label table), findLabel, labelEffects, title prefixes, version markers, deriveTags
+  src/series/                   registry.ts: the series registry (config/series.json), findSeries, resolveSeries (run by pull)
   src/providers/language-codes.ts   FI / OV / FI-SE / XX codes (Nexxo, Johku)
   src/providers/overrides.ts    config/venue-overrides.json for chain venues; venue-without-geo warnings
   src/providers/<source>/       raw.ts, fetch.ts, parse.ts; sites.ts on platforms; finnkino/token.ts
@@ -183,7 +185,7 @@ packages/fetcher/               @pgtm/fetcher: fetch, normalize, match → data/
   src/tmdb/, src/ratings/       TMDB client and toFilm; OMDb ratings
   src/geo/                      Finland bounds and sources, Overpass, Nominatim, OSM matching (venues:locate)
   src/cli/                      fetch (pull), match, locate (venues:locate)
-  config/                       tmdb-aliases.json, venue-overrides.json (hand-maintained, committed)
+  config/                       tmdb-aliases.json, venue-overrides.json, series.json (hand-maintained, committed)
   test/                         mirrors src; fixtures/<source>/ trimmed real responses; fixtures.ts (loadFixture)
 packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, search CLI, HTTP API
   migrations/                   append-only; index.ts lists them all

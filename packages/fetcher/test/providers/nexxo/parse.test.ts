@@ -74,6 +74,7 @@ describe("Nexxo field parsers", () => {
     expect(splitTitlePrefix(aurora, "Ennakkoensi-ilta: Pikkuli ja Tähtipeura")).toEqual({
       title: "Pikkuli ja Tähtipeura",
       rule: { tags: ["preview"] },
+      label: "Ennakkoensi-ilta",
     });
     expect(splitTitlePrefix(aurora, "Rauhanviikko: Naza").title).toBe("Naza");
     expect(splitTitlePrefix(aurora, "Ryhmä Hau: Dinoelokuva")).toEqual({

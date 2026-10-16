@@ -20,11 +20,12 @@ export const KuvakukkoSite = SiteBase.extend({
   /** Site-specific "Prefix: Title" rules, merged over COMMON_TITLE_PREFIXES. */
   titlePrefixes: z.record(z.string(), LabelRule).optional(),
   /**
-   * A trailing parenthesis opening with one of these is a note, not part of the title:
-   * "Sopeutumaton (tekijävierailunäytös, paikalla ohjaaja …)". Matched in any case; the
-   * parenthesis may be left unclosed.
+   * A trailing parenthesis opening with one of these words is a note, not part of the
+   * title: "Sopeutumaton (tekijävierailunäytös, paikalla ohjaaja …)", or after the link,
+   * "Näytös B (vapaa pääsy)". Matched in any case; the parenthesis may be left unclosed.
+   * The rule says what the note means.
    */
-  titleNotes: z.array(z.string().min(1)),
+  titleNotes: z.record(z.string().min(1), LabelRule),
 });
 export type KuvakukkoSite = z.infer<typeof KuvakukkoSite>;
 
@@ -41,7 +42,7 @@ export const KUVAKUKKO_SITES: KuvakukkoSite[] = defineSites(KuvakukkoSite, [
       "Hyvät Kuvat-kerho": { series: "Hyvät Kuvat -kerho" },
       "Hopeatähti-sarja": { series: "Hopeatähti" },
     },
-    titleNotes: ["tekijävierailu", "vapaa pääsy"],
+    titleNotes: { tekijävierailu: { tags: ["guest"] }, "vapaa pääsy": { tags: ["free"] } },
     notes:
       "Addresses from the cinema's own page (2026-10-14). OSM puts Manttu's building on Mantunsuora; the cinema says Vesitornintie 1.",
     venues: [

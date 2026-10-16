@@ -4,6 +4,7 @@ import {
   type FinnishRating,
   type Lang,
   type ProviderBatch,
+  type RawLabel,
   type Screening,
   type Subtitles,
   type Warning,
@@ -13,7 +14,14 @@ import { load } from "cheerio";
 import { z } from "zod";
 import { normalizeLang } from "../../lib/lang.ts";
 import { own } from "../../lib/records.ts";
-import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
+import {
+  COMMON_TITLE_PREFIXES,
+  findLabel,
+  LABELS,
+  labelEffects,
+  splitTitlePrefix,
+  splitVersion,
+} from "../labels.ts";
 import { byStartThenId } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { PajakkakinoRawSnapshot } from "./fetch.ts";
@@ -165,6 +173,29 @@ export const parsePajakkakino = (
     const { title, version } = splitVersion(unprefixed);
     const listingId = makeId(P, "film", String(post.id));
 
+    // "VIIMEINEN NÄYTÖS" stands between rows, so its place says little; its meaning is
+    // certain: the post's latest screening, in or out of the window, is the last one.
+    const notes = lines
+      .slice(at + 1)
+      .filter((l) => !l.startsWith(STRUCK) && !ROWISH.test(l) && findLabel(l, LABELS));
+    const noteEffects = labelEffects(notes.map((l) => findLabel(l, LABELS)));
+    const marksLast = noteEffects.tags.includes("last-screening");
+    const latest = lines
+      .slice(at + 1)
+      .filter((l) => !l.startsWith(STRUCK) && ROWISH.test(l))
+      .flatMap((l) => {
+        const starts = rowStarts(l, raw.from);
+        return typeof starts === "string" ? [] : starts.map((st) => st.startsAt);
+      })
+      .toSorted()
+      .at(-1);
+    const labels: RawLabel[] = [
+      ...[outer.label, inner.label].flatMap((label) =>
+        label ? [{ source: "title.prefix", text: label }] : [],
+      ),
+      ...notes.map((note) => ({ source: "post.note", text: note })),
+    ];
+
     for (const line of lines.slice(at + 1)) {
       if (line.startsWith(STRUCK)) {
         continue; // cancelled
@@ -216,12 +247,16 @@ export const parsePajakkakino = (
           audio: spokenAudio ? [spokenAudio] : [],
           ...(version.dubbed !== undefined && { dubbed: version.dubbed }),
           subtitles,
-          tags: [...(rule?.tags ?? [])],
+          tags: [
+            ...(rule?.tags ?? []),
+            ...(marksLast && start.startsAt === latest ? (["last-screening"] as const) : []),
+          ],
           series: rule?.series ? [rule.series] : [],
           availability: "unknown",
           // The film's post on the cinema's site, copied.
           ticketUrl: post.link.startsWith(`${site.base}/`) ? post.link : site.homepage,
           unmappedLabels: unmapped,
+          ...(labels.length > 0 && { labels }),
           fetchedAt: raw.fetchedAt,
         });
       }

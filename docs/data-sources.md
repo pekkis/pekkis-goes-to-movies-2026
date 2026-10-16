@@ -385,7 +385,7 @@ Probed 2026-10-14: the programme page, then the linked film pages. Adapter: `pac
 - **Titles:**
   - The first link with text is the title (one row opens with an empty link); an unlinked row is the rest of the line.
   - Configured series prefixes: "Kuvin aluesarja:", "Hyvät Kuvat-kerho:", "Hopeatähti-sarja:", and "Kino Manttu:" (no meaning).
-  - A trailing parenthesis opening with a configured word ("tekijävierailu…", "vapaa pääsy…") is a note, closed or not, and is dropped.
+  - A trailing parenthesis opening with a configured word is a note, closed or not: dropped from the title, kept as a label and read by its rule ("tekijävierailu…" → `guest`, "vapaa pääsy…" → `free`). After a linked title the note is outside the link ("Näytös B</a> (vapaa pääsy)") and read from the rest of the line [V, 2026-10-16].
   - Festival rows keep their full title ("Kuopion mediataidefestarit: Näytös B"), as the part after the colon means nothing alone.
 - **Links are not used:** the rows link to reused pages of other films (`/kino-manttu-digger/` holds "Two Seasons, Two Strangers"), or even to an image. Tickets are sold at the door only ("lipunmyynti vain Kuvakukossa", "Ei ennakkovarauksia … vain käteinen"), so `booking` is `door` and every screening links to the programme page.
 - **No ids:** a screening is venue, title and start minute.
@@ -840,6 +840,7 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Le
 - **Found** through elokuviin.com's list of cinemas (2026-10-15); not in Leffavuoro. The front page is an Instagram feed; the programme is one WordPress post per film, read through `/wp-json/wp/v2/posts` (one GET) [V].
 - **A film post** [V]: a facts line ("Draama, jännitys I 1h 57min I 2.10.2026 I AUDIO englanti TEKSTIT suomi": genres, runtime, release date, audio and subtitles), the age image (`ikaraja_12.png`, from the distributors' press service), then "ESITYKSET:" and one row per screening ("PE 16.10. KLO 15:30", also "SU 18.10 KLO 18:00" and "PE 9.10 KLO.16:30"). No year: the nearest date whose weekday fits.
 - **Cancelled screenings** are struck through (`<del>`) with "PERUTTU!" below; they are skipped, so ingest marks them removed [V].
+- **"VIIMEINEN NÄYTÖS"** stands between rows (2026-10-16 [V]), so its place says little; the post's latest screening, in or out of the window, is tagged `last-screening`.
 - **Römppäviikot** (Kuhmo's film week, 2026-10-16) [V]: posts titled "RÖMPPÄVIIKOT: …" (series "Römppäviikot"; a closing "(ELOKUVA + LUKUPIIRI)" is dropped too) write rows more freely: "TO 29.10. KLO 16:30 & 18:30" (two screenings), "MA 26.10. KLO 18:00 elokuva alkaa" (a screening), "MA 26.10. KLO 16:30 alkaen lukupiiri, …" (a reading circle: skipped), "TI 27.10." and "SU 1.11 KLO ? ilmoitetaan myöhemmin" (no time yet: skipped). Any other note after a time is still `invalid-row`.
 - **Tickets** at the box office or reserved by phone, WhatsApp or the site's form (never requested): booking `reserve`. Prices depend on age and length, so none is published.
 - **Coordinates and address** from OSM (way 238296413, Rajakatu 56).
@@ -929,7 +930,7 @@ The directory's entries also name data endpoints. Some are partner feeds built f
 ## Kino Rio (Suonenjoki)
 
 - **Found** through nytleffaan.fi's directory (2026-10-16); not in Leffavuoro.
-- **The front page** [V] (WordPress): one block per film between `<hr>`s. The title is the first `p strong` (its link carries a stale `aria-label` naming another film, so only the text is read), then a list of rows "Pe 16.10. klo 18.30" with the film's facts written beside them on the same lines ("Kesto: 2 h 8 min", "Ikäraja: K-12", "Liput: 15 €"; a fact line may have no date), and notes below ("puhuttu suomeksi" marks a dub; "Suomen ensi-ilta", "viimeiset näytökset" are ignored). No year; the weekday must fit.
+- **The front page** [V] (WordPress): one block per film between `<hr>`s. The title is the first `p strong` (its link carries a stale `aria-label` naming another film, so only the text is read), then a list of rows "Pe 16.10. klo 18.30" with the film's facts written beside them on the same lines ("Kesto: 2 h 8 min", "Ikäraja: K-12", "Liput: 15 €"; a fact line may have no date), and notes below ("puhuttu suomeksi" marks a dub; "viimeiset näytökset" tags every row `last-screening`; "Suomen ensi-ilta" is the film's, not each row's, and only kept as a label). No year; the weekday must fit.
 - **Tickets** at the door: booking `door`, links to the front page. The next week (Fri–Thu) is published by Tuesday.
 - **First run:** 22 screenings of 12 films, no warnings, all matched.
 
@@ -960,7 +961,7 @@ The directory's entries also name data endpoints. Some are partner feeds built f
 ## Elokuvateatteri Kaarre (Ivalo, Inari)
 
 - **Found** through nytleffaan.fi's directory (2026-10-16); not in Leffavuoro. Run by Inari's cultural services in the Kaarre school and cultural centre.
-- **The municipality's page** [V] publishes the week's programme every Tuesday under the heading "…viikon elokuvaesitysten esitysajat…": one paragraph per film up to the next heading (the film descriptions below are not read). The title is in `strong` (a teaser line may precede it, a note such as "(dub. suomeksi, animaatioelokuva)" follow it), then rows "Pe 9.10. klo 18" or "Su 11.10. klo 18.00" (the minutes may be missing; no year, the weekday must fit; "viimeinen näytös!" tags `last-screening`), then "Ikäraja K7, liput 10 €, kesto 1 h 27 min" ("-S-" is S).
+- **The municipality's page** [V] publishes the week's programme every Tuesday under the heading "…viikon elokuvaesitysten esitysajat…": one paragraph per film up to the next heading (the film descriptions below are not read). The title is in `strong` (a teaser line may precede it, a note such as "(dub. suomeksi, animaatioelokuva)" follow it), then rows "Pe 9.10. klo 18" or "Su 11.10. klo 18.00" (the minutes may be missing; no year, the weekday must fit; the text after the time is a note read through the shared label table: "viimeinen näytös!" tags `last-screening`, "kiirehdi!" means `few-left`; an unknown note is an unmapped label), then "Ikäraja K7, liput 10 €, kesto 1 h 27 min" ("-S-" is S).
 - **Tickets** at the door: booking `door`, links to the page.
 - **First run:** 5 screenings of 2 films this week, both matched.
 
@@ -1019,7 +1020,8 @@ Profiled on 2026-10-10 against all 21 sites (listing + 2 film pages each). Adapt
   - "Edullinen päivänäytös" → `discount`
   - "Anniskelunäytös" → licensed; an `anniskelu.svg` icon also means licensed
   - "Erikoisnäytös" → ignored
-  - anything else becomes a series (e.g. "Saatana saapuu valkokankaalle")
+  - read through the shared label table, so "Kiirehdi" is `few-left`, "Puhuttu suomeksi" Finnish audio, "35mm" the projection, "Anniskelunäytös K18" licensed with K-18 [V, 2026-10-16]
+  - a tag the series registry knows ("Matinea", "Kuvi", "Tampere Film Festival") is a series; anything else is an unmapped label (`tag:…`), no longer a series (e.g. "Saatana saapuu valkokankaalle" until the registry takes it in)
 - **Title variants:**
   - **Version markers**, at the end, in brackets or after a comma: "(DUB)", "(Dub.)", "DUB", "DUP." (typo), "SUB", "(ORIG)", "(suomeksi)", ", englanniksi", "(på svenska)", "2D", "– ohjaajan versio". They become audio, dubbed or dimension data and are stripped, so all versions match one TMDB film.
   - **Labels**, as a prefix or after a dash: "Ennakkonäytös:", "Vauvakino", "Ooppera:".
@@ -1050,7 +1052,7 @@ Found on 2026-10-10. Adapter: `packages/fetcher/src/providers/kinola/`, cinemas 
   - `local_time` (with offset), `venue.name`, `room.name`, `freeSeats` (no capacity), `price_range` {min, max, EUR}.
   - `checkout_url`: the cinema's own booking page, copied as `ticketUrl`. Orion's goes to `orion.kinola.ee/web/screening/…`. Kilta gives none (it sells elsewhere), so its shows link the programme page.
   - `visibility`: `public` or `coming_soon` (listed, not on sale yet, giving `not-bookable`).
-  - `program.name`: a series or a category (mapped per site); `note` (free text, read only when it starts with "Ensi-ilta"/"Premiere"/"Ennakko…"); `event_type` (`paid`/`free_public`, not film vs. live act).
+  - `program.name`: a series or a category, looked up in the site's `programs` and then the shared label table ("Anniskelunäytös K18" is licensed with K-18); any other name is the cinema's strand; `note` (free text, read when it starts with "Ensi-ilta"/"Premiere"/"Ennakko…" or is a whole label in the shared table); both are kept as raw labels; `event_type` (`paid`/`free_public`, not film vs. live act).
 - **Production fields:**
   - `name`, `originalName`, `year`, `duration`, `distributor`.
   - `rating`: K-*, S, `L` (Estonian all-ages, giving S), "Not rated".

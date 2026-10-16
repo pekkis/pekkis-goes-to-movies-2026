@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
+import type { ProviderBatch, Screening } from "@pgtm/model";
 import {
   COMMON_TITLE_PREFIXES,
+  deriveTags,
+  findLabel,
+  labelEffects,
+  labelKey,
+  LABELS,
   splitTitlePrefix,
   splitVersion,
 } from "../../src/providers/labels.ts";
@@ -52,12 +58,14 @@ describe("splitTitlePrefix", () => {
       {
         title: "Pikkuli ja Tähtipeura",
         rule: { tags: ["preview"] },
+        label: "Ennakkonäytös",
       },
     );
     expect(splitTitlePrefix("Ooppera: Don Giovanni", COMMON_TITLE_PREFIXES).rule?.event).toBe(true);
     expect(splitTitlePrefix("Pirjo i Sverige – Vauvakino", COMMON_TITLE_PREFIXES)).toEqual({
       title: "Pirjo i Sverige",
       rule: { tags: ["baby"] },
+      label: "Vauvakino",
     });
     expect(
       splitTitlePrefix("Mission: Impossible - Dead Reckoning", COMMON_TITLE_PREFIXES).title,
@@ -71,6 +79,7 @@ describe("splitTitlePrefix", () => {
     expect(splitTitlePrefix("ENNAKKONÄYTÖS: Dyyni: Osa kolme", COMMON_TITLE_PREFIXES)).toEqual({
       title: "Dyyni: Osa kolme",
       rule: { tags: ["preview"] },
+      label: "ENNAKKONÄYTÖS",
     });
     expect(splitTitlePrefix("ENNAKKO: Pikkuli", COMMON_TITLE_PREFIXES).rule).toEqual({
       tags: ["preview"],
@@ -87,7 +96,11 @@ describe("splitTitlePrefix", () => {
         "Late Lammas -elokuva: Hämäräpuuhissa (Ennakkonäytös)",
         COMMON_TITLE_PREFIXES,
       ),
-    ).toEqual({ title: "Late Lammas -elokuva: Hämäräpuuhissa", rule: { tags: ["preview"] } });
+    ).toEqual({
+      title: "Late Lammas -elokuva: Hämäräpuuhissa",
+      rule: { tags: ["preview"] },
+      label: "Ennakkonäytös",
+    });
     expect(
       splitTitlePrefix("Pikkuli ja Tähtipeura (Ennakkonäytös!)", COMMON_TITLE_PREFIXES).title,
     ).toBe("Pikkuli ja Tähtipeura");
@@ -99,5 +112,71 @@ describe("splitTitlePrefix", () => {
       splitTitlePrefix("Madama Butterfly (Bregenz festival / Puccini)", COMMON_TITLE_PREFIXES)
         .title,
     ).toBe("Madama Butterfly (Bregenz festival / Puccini)");
+  });
+});
+
+describe("the shared label table", () => {
+  it.each([
+    ["Ennakkonäytös!", "ennakkonäytös"],
+    ["  ANNISKELUNÄYTÖS   K18 ", "anniskelunäytös k18"],
+    ["(Vapaa pääsy)", "vapaa pääsy"],
+  ])("labelKey(%s) = %s", (label, key) => {
+    expect(labelKey(label)).toBe(key);
+  });
+
+  it.each([
+    ["KIIREHDI", { availability: "few-left" }],
+    ["Loppuunmyyty", { availability: "sold-out" }],
+    ["Puhuttu suomeksi", { audio: "fi", dubbed: true }],
+    ["Ei tekstitystä", { subtitles: "none" }],
+    ["Ei puhetta", { audio: "zxx", tags: ["no-dialogue"] }],
+    ["Tekijävierailu", { tags: ["guest"] }],
+    ["vapaa pääsy", { tags: ["free"] }],
+    ["Kuvailutulkkaus", { tags: ["audio-description"] }],
+    ["35 mm", { projection: "35mm" }],
+    ["Anniskelunäytös K-18", { licensed: true, ageLimit: "K-18" }],
+    ["Oopperat ja muut eventit", { tags: ["event-cinema"], event: true }],
+  ])("%s", (label, rule) => {
+    expect(findLabel(label, LABELS)).toMatchObject(rule);
+  });
+
+  it("knows nothing it was not told: strands and free text have no rule", () => {
+    expect(findLabel("Matinea", LABELS)).toBeUndefined();
+    expect(findLabel("Elia Suleiman", LABELS)).toBeUndefined();
+  });
+
+  it("consults site rules before the shared table", () => {
+    expect(findLabel("Erikoisnäytös", { Erikoisnäytös: { tags: ["classic"] } }, LABELS)).toEqual({
+      tags: ["classic"],
+    });
+    expect(findLabel("Erikoisnäytös", LABELS)).toEqual({});
+  });
+
+  it("merges rules: lists deduplicated, single facts from the last rule that states one", () => {
+    expect(
+      labelEffects([
+        { tags: ["preview"], series: "Matinea" },
+        undefined,
+        { tags: ["preview", "kids"], availability: "few-left" },
+        { availability: "sold-out", licensed: true },
+      ]),
+    ).toEqual({
+      tags: ["preview", "kids"],
+      series: ["Matinea"],
+      availability: "sold-out",
+      licensed: true,
+    });
+  });
+});
+
+describe("deriveTags", () => {
+  const batchOf = (...shows: Partial<Screening>[]) =>
+    ({ screenings: shows.map((s) => ({ tags: [], ...s })) }) as unknown as ProviderBatch;
+
+  it('tags a screening with no spoken language (a silent film, "Ei puhetta") no-dialogue', () => {
+    const result = deriveTags(
+      batchOf({ audio: ["zxx"] }, { audio: ["zxx"], tags: ["no-dialogue"] }, { audio: ["fi"] }),
+    );
+    expect(result.screenings.map((s) => s.tags)).toEqual([["no-dialogue"], ["no-dialogue"], []]);
   });
 });

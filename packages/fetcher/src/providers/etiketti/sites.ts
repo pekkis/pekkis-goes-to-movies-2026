@@ -17,18 +17,6 @@ import { defineSites, SiteBase, SiteVenue } from "../sites.ts";
  */
 
 /** Platform defaults for screening tags (`<span class="tag">`); sites may override. */
-export const DEFAULT_TAGS: Record<string, LabelRule> = {
-  "Ensi-ilta": { tags: ["premiere"] },
-  "Viimeinen näytös": { tags: ["last-screening"] },
-  Seniorinäytös: { tags: ["senior"] },
-  Seniorikino: { tags: ["senior"] },
-  Vauvakino: { tags: ["baby"] },
-  Lastenkino: { tags: ["kids"] },
-  "Edullinen päivänäytös": { tags: ["discount"] },
-  Anniskelunäytös: { licensed: true },
-  Erikoisnäytös: {},
-};
-
 export const EtikettiVenue = SiteVenue.extend({
   /**
    * The venue's part of the place line, e.g. "TRIO 123" in "TRIO 123 | VIP-SALI" or
@@ -45,7 +33,7 @@ export const EtikettiSite = SiteBase.extend({
   venues: z.array(EtikettiVenue).min(1),
   /** "Ei tekstitystä" is printed even when there are subtitles: treat as unknown. */
   noSubtitlesUnreliable: z.boolean().optional(),
-  /** Site-specific tag rules, merged over DEFAULT_TAGS. */
+  /** Site-specific tag rules, looked up before the shared LABELS table. */
   tags: z.record(z.string(), LabelRule).optional(),
   /** Site-specific "Prefix: Title" rules, merged over COMMON_TITLE_PREFIXES. */
   titlePrefixes: z.record(z.string(), LabelRule).optional(),

@@ -4,6 +4,7 @@ import {
   type FinnishRating,
   type Lang,
   type ProviderBatch,
+  type RawLabel,
   type Screening,
   type Subtitles,
   type Warning,
@@ -12,7 +13,13 @@ import { dateWindow, helsinkiShowTime, nearestDate, type ShowTime } from "@pgtm/
 import { load } from "cheerio";
 import { normalizeLang } from "../../lib/lang.ts";
 import { own } from "../../lib/records.ts";
-import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
+import {
+  COMMON_TITLE_PREFIXES,
+  labelEffects,
+  type LabelRule,
+  splitTitlePrefix,
+  splitVersion,
+} from "../labels.ts";
 import { byStartThenId, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KuvakukkoRawSnapshot } from "./fetch.ts";
@@ -46,20 +53,33 @@ const IMAGE = /\.(?:jpe?g|png|gif|webp)$/i;
 const text = (value: string | undefined) =>
   (value ?? "").replace(/ /g, " ").replace(/\s+/g, " ").trim();
 
-/** Drops a trailing note in parentheses (closed or not) that opens with a configured word. */
-const withoutNotes = (title: string, notes: string[]) => {
+type Note = { text: string; rule: LabelRule };
+
+/** Splits off a trailing note in parentheses (closed or not) that opens with a configured word. */
+const splitNote = (
+  title: string,
+  notes: Record<string, LabelRule>,
+): { title: string; note?: Note } => {
   const open = title.lastIndexOf("(");
-  if (open <= 0) {
-    return title;
+  if (open < 0) {
+    return { title };
   }
-  const note = title.slice(open + 1).toLowerCase();
-  return notes.some((n) => note.startsWith(n.toLowerCase())) ? title.slice(0, open).trim() : title;
+  const inner = title
+    .slice(open + 1)
+    .replace(/\)\s*$/, "")
+    .trim();
+  const word = Object.keys(notes).find((n) => inner.toLowerCase().startsWith(n.toLowerCase()));
+  return word
+    ? { title: title.slice(0, open).trim(), note: { text: inner, rule: notes[word]! } }
+    : { title };
 };
 
 type Row = {
   venue: KuvakukkoSite["venues"][number];
   /** As printed, notes dropped. */
   rawTitle: string;
+  /** A note in parentheses, in the title or after the linked title. */
+  note?: Note;
   start: ShowTime;
   /** The row's link to a film page on this site, when it has one. */
   href?: string;
@@ -119,10 +139,11 @@ const readRows = (html: string, site: KuvakukkoSite, from: string) => {
       const link = fragment("a")
         .toArray()
         .find((a) => text(fragment(a).text()));
-      const rawTitle = withoutNotes(
+      const { title: rawTitle, note: titleNote } = splitNote(
         link ? text(fragment(link).text()) : text(row[3]),
         site.titleNotes,
       );
+      const note = titleNote ?? (link ? splitNote(text(row[3]), site.titleNotes).note : undefined);
       const href = link ? fragment(link).attr("href") : undefined;
       const start =
         date &&
@@ -144,6 +165,7 @@ const readRows = (html: string, site: KuvakukkoSite, from: string) => {
       rows.push({
         venue,
         rawTitle,
+        ...(note && { note }),
         start,
         ...(href?.startsWith(`${site.homepage}/`) && !IMAGE.test(href) && { href }),
       });
@@ -281,9 +303,14 @@ export const parseKuvakukko = (raw: KuvakukkoRawSnapshot, site: KuvakukkoSite): 
   }
 
   for (const row of inWindow(rows, raw.from, raw.days)) {
-    const { venue, rawTitle, start } = row;
+    const { venue, rawTitle, start, note } = row;
     const venueId = makeId(P, "venue", venue.slug);
-    const { title: unprefixed, rule } = splitTitlePrefix(rawTitle, prefixRules);
+    const { title: unprefixed, rule, label } = splitTitlePrefix(rawTitle, prefixRules);
+    const effects = labelEffects([rule, note?.rule]);
+    const labels: RawLabel[] = [
+      ...(label ? [{ source: "title.prefix", text: label }] : []),
+      ...(note ? [{ source: "title.note", text: note.text }] : []),
+    ];
     const { title, version } = splitVersion(unprefixed);
     // Pages are reused for other films (`/the-invite/` holds La Grazia): a page counts
     // only when its heading names this row's film.
@@ -303,7 +330,7 @@ export const parseKuvakukko = (raw: KuvakukkoRawSnapshot, site: KuvakukkoSite): 
         ...(film?.rating && { rating: film.rating }),
         genres: [],
         countries: [],
-        kind: rule?.event ? "event" : "film",
+        kind: effects.event ? "event" : "film",
       });
     }
     // No ids on the page: venue, film and start minute.
@@ -321,13 +348,14 @@ export const parseKuvakukko = (raw: KuvakukkoRawSnapshot, site: KuvakukkoSite): 
       audio: version.audio ? [version.audio] : (film?.audio ?? []),
       ...(version.dubbed !== undefined && { dubbed: version.dubbed }),
       subtitles: film?.subtitles ?? { kind: "unknown" },
-      tags: [...(rule?.tags ?? [])],
-      series: rule?.series ? [rule.series] : [],
+      tags: effects.tags,
+      series: effects.series,
       availability: "unknown",
       // Tickets are sold at the door; the programme is the page to send people to. The
       // rows' own links are not used for this: they often point at another film's page.
       ticketUrl: site.programme,
       unmappedLabels: [...(film?.unmapped ?? [])],
+      ...(labels.length > 0 && { labels }),
       fetchedAt: raw.fetchedAt,
     });
   }

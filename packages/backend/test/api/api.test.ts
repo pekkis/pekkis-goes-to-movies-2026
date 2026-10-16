@@ -27,13 +27,17 @@ const HELSINKI = {
 };
 
 beforeAll(async () => {
-  await sql`truncate screenings, film_listings, auditoriums, venues, providers, films cascade`.execute(
+  await sql`truncate screenings, film_listings, auditoriums, venues, providers, films, series cascade`.execute(
     db,
   );
   await ingestFilms(db, catalog([film()]));
   const b = batch([
     screening("1"), // 18:00 Jyväskylä, tmdb:100
-    screening("2", { startsAt: "2026-10-10T20:30:00+03:00" }),
+    // A registry series, and a name from before the series table.
+    screening("2", {
+      startsAt: "2026-10-10T20:30:00+03:00",
+      series: ["kuvi-aluesarja", "Vanha sarja"],
+    }),
     // After midnight, still on the 10th's programme.
     screening("3", { startsAt: "2026-10-11T00:30:00+03:00" }),
     screening("4", {
@@ -51,6 +55,7 @@ beforeAll(async () => {
     screening("gone", { startsAt: "2026-10-10T21:00:00+03:00" }),
   ]);
   b.venues.push(HELSINKI);
+  b.series = [{ id: "kuvi-aluesarja", name: "KUVIn aluesarja", kind: "distributor-series" }];
   b.listings.push({
     id: "testchain:film:opera",
     provider: "testchain",
@@ -166,6 +171,13 @@ describe("screenings", () => {
       price: null,
       ticketUrl: "https://tickets.example/1",
     });
+  });
+
+  it("names series by the series table, in order, keeping names it does not know", async () => {
+    const { body } = await get("/v1/screenings?date=2026-10-10&venue=testchain:venue:1");
+    const two = body.items.find((s: { id: string }) => s.id === "testchain:show:2");
+    expect(two.series).toEqual(["KUVIn aluesarja", "Vanha sarja"]);
+    expect(body.items[0].series).toEqual([]);
   });
 
   it("shows unmatched listings as such", async () => {

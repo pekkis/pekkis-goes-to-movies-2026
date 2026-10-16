@@ -5,8 +5,8 @@ import {
   type FinnishRating,
   type Lang,
   type ProviderBatch,
+  type RawLabel,
   type Screening,
-  type ScreeningTag,
   type Subtitles,
   type Venue,
   type Warning,
@@ -16,14 +16,17 @@ import { normalizeLang } from "../../lib/lang.ts";
 import { dateWindow, helsinkiShowTime } from "@pgtm/model/time";
 import {
   COMMON_TITLE_PREFIXES,
+  findLabel,
+  LABELS,
+  labelEffects,
   splitTitlePrefix,
   splitVersion,
-  type LabelRule,
 } from "../labels.ts";
 import { availabilityFromSeats, byStartThenId, slugify, tally, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
+import { findSeries } from "../../series/registry.ts";
 import { ExtractedFilm, ExtractedShow, type EtikettiRawSnapshot } from "./raw.ts";
-import { baseOf, DEFAULT_TAGS, type EtikettiSite, type EtikettiVenue } from "./sites.ts";
+import { baseOf, type EtikettiSite, type EtikettiVenue } from "./sites.ts";
 import { own } from "../../lib/records.ts";
 
 // --- Listing ------------------------------------------------------------------------
@@ -266,7 +269,7 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
   const base = baseOf(site);
   const window = dateWindow(raw.from, raw.days);
   const warnings: Warning[] = [];
-  const tagRules = { ...DEFAULT_TAGS, ...site.tags };
+  const tagRules = site.tags ?? {};
   const prefixRules = { ...COMMON_TITLE_PREFIXES, ...site.titlePrefixes };
 
   const venues: Venue[] = site.venues.map((v) => toVenue(P, v, v.slug));
@@ -286,7 +289,11 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
     const unmapped: string[] = [];
 
     // Title: "Ennakkonäytös: Pikkuli (DUB)" -> "Pikkuli", preview tag, Finnish dub.
-    const { title: unprefixed, rule: prefix } = splitTitlePrefix(f.title, prefixRules);
+    const {
+      title: unprefixed,
+      rule: prefix,
+      label: prefixLabel,
+    } = splitTitlePrefix(f.title, prefixRules);
     const { title, version } = splitVersion(unprefixed);
     const facts = f.facts;
     const languageFact = parseAudio(facts["Kieli"]);
@@ -335,26 +342,32 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
         continue;
       }
 
-      const tags: ScreeningTag[] = [...(prefix?.tags ?? [])];
-      const series: string[] = prefix?.series ? [prefix.series] : [];
-      let licensed = s.licensedIcon;
-      for (const tag of s.tags) {
-        const rule: LabelRule | undefined = own(tagRules, tag);
-        if (!rule) {
-          series.push(tag);
-          continue;
-        }
-        tags.push(...(rule.tags ?? []));
-        if (rule.series) {
-          series.push(rule.series);
-        }
-        if (rule.licensed) {
-          licensed = true;
-        }
-        if (rule.event) {
-          isEvent = true;
-        }
+      // Every tag is looked up in the shared label table, then in the series registry; an
+      // unknown one is reported, not guessed at (tags used to become series, mixing
+      // "Kiirehdi" with real strands).
+      const rowUnmapped: string[] = [];
+      const effects = labelEffects([
+        prefix,
+        ...s.tags.map((tag) => {
+          const rule = findLabel(tag, tagRules, LABELS);
+          if (rule) {
+            return rule;
+          }
+          if (findSeries(tag)) {
+            return { series: tag };
+          }
+          rowUnmapped.push(`tag:${tag}`);
+          return undefined;
+        }),
+      ]);
+      if (effects.event) {
+        isEvent = true;
       }
+      const licensed = s.licensedIcon || effects.licensed === true;
+      const rowLabels: RawLabel[] = [
+        ...(prefixLabel ? [{ source: "title.prefix", text: prefixLabel }] : []),
+        ...s.tags.map((tag) => ({ source: "etiketti.tag", text: tag })),
+      ];
 
       const venueId = makeId(P, "venue", where.venue.slug);
       const auditoriumId = where.room
@@ -387,18 +400,33 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
         listingId,
         startsAt,
         businessDate,
-        presentation: { projection: "digital", dimension: version.dimension ?? "2d", formats: [] },
-        audio,
-        ...(version.dubbed !== undefined && { dubbed: version.dubbed }),
-        subtitles: subs.subtitles,
-        tags: [...new Set(tags)],
-        series: [...new Set(series)],
+        presentation: {
+          projection: effects.projection ?? "digital",
+          dimension: version.dimension ?? "2d",
+          formats: [],
+        },
+        audio: effects.audio ? [effects.audio] : audio,
+        ...((effects.dubbed ?? version.dubbed) !== undefined && {
+          dubbed: effects.dubbed ?? version.dubbed,
+        }),
+        subtitles:
+          effects.subtitles === "none"
+            ? { kind: "none" as const }
+            : effects.subtitles
+              ? { kind: "languages" as const, languages: [effects.subtitles] }
+              : subs.subtitles,
+        tags: effects.tags,
+        series: effects.series,
         ...(licensed && { licensed: true }),
-        availability: availabilityFromSeats({ free: s.seatsFree, capacity: s.seatsTotal }),
+        ...(effects.ageLimit && { ageLimit: effects.ageLimit }),
+        availability:
+          effects.availability ??
+          availabilityFromSeats({ free: s.seatsFree, capacity: s.seatsTotal }),
         ...(price && { price: { amountCents: price, currency: "EUR" as const } }),
         // Copied from the page, never constructed or requested.
         ticketUrl: s.ticketPath ? `${base}${s.ticketPath}` : `${base}${path}`,
-        unmappedLabels: unmapped,
+        unmappedLabels: [...unmapped, ...rowUnmapped],
+        ...(rowLabels.length > 0 && { labels: rowLabels }),
         fetchedAt: raw.fetchedAt,
       });
       shown++;
