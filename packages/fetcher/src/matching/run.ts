@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { createDiskCache } from "../lib/cache.ts";
 import { createHttpClient } from "../lib/http.ts";
+import { paintFor } from "../lib/paint.ts";
 import { addOmdbRatings, fetchOmdb } from "../ratings/omdb.ts";
 import { createTmdbClient, createTmdbHttp } from "../tmdb/client.ts";
 import { requireTmdbKey, type Env } from "../lib/env.ts";
@@ -19,6 +20,7 @@ export const runMatching = async (out: string, env: Env) => {
     ...(env.CONTACT && { contact: env.CONTACT }),
   });
   const omdbCache = createDiskCache(join(out, "cache", "omdb"));
+  const paint = paintFor(process.stdout);
   let ratingsNote = "ratings: TMDB only (set OMDB_APIKEY for Rotten Tomatoes, Metacritic, IMDb)";
   const enrich = async (films: Parameters<typeof addOmdbRatings>[0]) => {
     if (!omdbKey) {
@@ -29,7 +31,7 @@ export const runMatching = async (out: string, env: Env) => {
     );
     ratingsNote = `omdb: ratings for ${result.rated} of ${films.length} films`;
     if (result.error) {
-      ratingsNote += ` (stopped: ${result.error})`;
+      ratingsNote += ` ${paint("red", `(stopped: ${result.error})`)}`;
     }
     return result.films;
   };
@@ -41,15 +43,18 @@ export const runMatching = async (out: string, env: Env) => {
     new Date(),
     enrich,
   );
-  console.log(`tmdb: ${catalog.films.length} films, ${catalog.unmatched.length} unmatched`);
+  const unmatched = `${catalog.unmatched.length} unmatched`;
+  console.log(
+    `${paint("bold", "tmdb")}: ${catalog.films.length} films, ${catalog.unmatched.length ? paint("yellow", unmatched) : unmatched}`,
+  );
   console.log(ratingsNote);
   for (const u of catalog.unmatched) {
-    console.log(`  ${u.listingId} "${u.title}": ${u.reason}`);
+    console.log(`  ${u.listingId} ${paint("bold", `"${u.title}"`)}: ${paint("yellow", u.reason)}`);
     for (const c of u.candidates.slice(0, 3)) {
       console.log(`      ? ${c.tmdbId} "${c.title}" ${c.year ?? ""}`);
     }
   }
   if (catalog.unmatched.length) {
-    console.log("  -> add aliases to config/tmdb-aliases.json");
+    console.log(paint("cyan", "  -> add aliases to config/tmdb-aliases.json"));
   }
 };

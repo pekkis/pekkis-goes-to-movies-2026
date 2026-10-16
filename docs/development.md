@@ -88,7 +88,12 @@ Printed by `pnpm pull` and stored in each batch. Codes marked **data missing** m
 
 ## After the daily run
 
-`pnpm pull && pnpm ingest`, then check:
+`pnpm pull && pnpm ingest`, then check. In a terminal the `pull` output is coloured (basic ANSI colours, readable on dark and light themes; plain when piped or under `NO_COLOR`):
+
+- **red:** a provider that `FAILED`, a data-missing warning (`invalid-*`, `unknown-*`, `result-code`: screenings may be lost), the summary when anything failed;
+- **yellow:** other warnings (deliberate skips, `venue-without-geo`), a provider with 0 screenings, unmatched films;
+- **cyan:** unmapped labels and the alias hint, to-dos rather than faults;
+- **green:** the summary when every provider pulled.
 
 1. **Warnings and unmapped labels** in the `pull` output. Each is a to-do (see above). A new label needs a line in `LABELS` (`labels.ts`) when its meaning is general, in the site's config (`tags`, `showTypes`, `programs`, `titlePrefixes`) when only that cinema means it; a strand or festival goes to `config/series.json` (see the recipe).
 2. **Unmatched films** (the end of `pull` or `pnpm match`). Add aliases to `config/tmdb-aliases.json` after verifying on TMDB (runtime, year, countries), with the reasoning in `note`. Event cinema is never listed.
