@@ -8,6 +8,8 @@ import {
 } from "@pgtm/model";
 import { z } from "zod";
 import { own } from "../lib/records.ts";
+import { findSeries } from "../series/registry.ts";
+import { labelKey } from "./label-key.ts";
 
 /**
  * What a cinema's free-text label (a show type, a tag, a note, a title prefix) means.
@@ -93,13 +95,7 @@ export const LABELS: Record<string, LabelRule> = {
 /** "Prefix: Title" labels: the shared table (kept under its old name for the adapters). */
 export const COMMON_TITLE_PREFIXES: Record<string, LabelRule> = LABELS;
 
-/** A label's lookup key: case, surrounding punctuation and spacing folded. */
-export const labelKey = (label: string): string =>
-  label
-    .normalize("NFC")
-    .toLowerCase()
-    .replace(/[\s\u00a0]+/g, " ")
-    .replace(/^[\s(*"'«»–-]+|[\s)!.:,*"'«»–-]+$/g, "");
+export { labelKey };
 
 /** The rule for a label, looked up in each table in turn (site rules first). */
 export const findLabel = (
@@ -165,8 +161,10 @@ export const labelEffects = (rules: (LabelRule | undefined)[]): LabelEffects => 
 };
 
 /** A label's rule, matched without regard to case or punctuation. */
+// A series the registry knows is a label too: "Kuukauden pohjoismainen: Knyckertz",
+// "Geel (Taidekaupungin elokuvajuhlat)". The pull resolves the name to its id.
 const ruleFor = (rules: Record<string, LabelRule>, label: string): LabelRule | undefined =>
-  findLabel(label, rules);
+  findLabel(label, rules) ?? (findSeries(label) ? { series: label } : undefined);
 
 /**
  * "Ennakkonäytös: Pikkuli" -> { title: "Pikkuli", rule } when the prefix has a rule.

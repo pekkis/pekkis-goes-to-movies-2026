@@ -106,7 +106,6 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
     programmePath: "/naytokset/",
     verifiedAt: "2026-10-10",
     titlePrefixes: {
-      Rauhanviikko: { series: "Rauhanviikko" },
       Filminäytös: { series: "Filminäytös" },
       Minikino: { series: "Minikino", tags: ["kids"] },
     },

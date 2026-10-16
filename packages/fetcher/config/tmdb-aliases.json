@@ -388,5 +388,10 @@
     "tmdb": 1185806,
     "title": "Ryhmä Hau: Dinoelokuva",
     "note": "PAW Patrol: The Dino Movie (2026), as biorex:film:1518. Kino Yläri states no runtime, so the sibling pass cannot link it."
+  },
+  "cinemaorion:film:5a1c1977-eed5-4172-aa78-1923a79879be": {
+    "tmdb": 511819,
+    "title": "Memoria",
+    "note": "Apichatpong Weerasethakul's Memoria (2021; Finnish release 2022, the year Orion gives). 136 min on both; the other TMDB Memorias are shorts or 2025 films."
   }
 }

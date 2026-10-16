@@ -115,6 +115,32 @@ describe("splitTitlePrefix", () => {
   });
 });
 
+describe("series in titles", () => {
+  it.each([
+    [
+      "Kuukauden pohjoismainen: KNYCKERTZ & SNUTJAKTEN",
+      "KNYCKERTZ & SNUTJAKTEN",
+      "Kuukauden pohjoismainen",
+    ],
+    [
+      "Geel + Cézanne on Art (Taidekaupungin elokuvajuhlat)",
+      "Geel + Cézanne on Art",
+      "Taidekaupungin elokuvajuhlat",
+    ],
+    ["Muumipappa – Minikino", "Muumipappa", "Minikino"],
+  ])("%s", (raw, title, series) => {
+    expect(splitTitlePrefix(raw, COMMON_TITLE_PREFIXES)).toEqual({
+      title,
+      rule: { series },
+      label: series,
+    });
+  });
+
+  it("leaves a prefix alone that is neither a label nor a registered series", () => {
+    expect(splitTitlePrefix("Ryhmä Hau: Dinoelokuva", {}).title).toBe("Ryhmä Hau: Dinoelokuva");
+  });
+});
+
 describe("the shared label table", () => {
   it.each([
     ["Ennakkonäytös!", "ennakkonäytös"],

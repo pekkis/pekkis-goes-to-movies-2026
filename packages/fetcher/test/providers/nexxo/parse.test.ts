@@ -80,10 +80,10 @@ describe("Nexxo field parsers", () => {
     expect(splitTitlePrefix(aurora, "Ryhmä Hau: Dinoelokuva")).toEqual({
       title: "Ryhmä Hau: Dinoelokuva",
     });
-    // Site rules do not leak to other sites; defaults apply everywhere.
-    expect(splitTitlePrefix(site("kinoset"), "Rauhanviikko: Naza").title).toBe(
-      "Rauhanviikko: Naza",
-    );
+    // Site rules do not leak to other sites; shared labels and registered series apply
+    // everywhere.
+    expect(splitTitlePrefix(site("kinoset"), "Filminäytös: Naza").title).toBe("Filminäytös: Naza");
+    expect(splitTitlePrefix(site("kinoset"), "Rauhanviikko: Naza").title).toBe("Naza");
     expect(splitTitlePrefix(site("kinoset"), "Ennakkoensi-ilta: X").title).toBe("X");
   });
 });
