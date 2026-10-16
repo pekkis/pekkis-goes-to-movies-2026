@@ -1,6 +1,11 @@
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { toCountryCodes } from "../../src/matching/countries.ts";
-import { normalizeTitle, stripQualifiers, titlePrefix } from "../../src/matching/titles.ts";
+import {
+  normalizeTitle,
+  stripQualifiers,
+  titlePrefix,
+  yearInTitle,
+} from "../../src/matching/titles.ts";
 
 it.each([
   ["Kätyrit & Monsterit", "kätyrit and monsterit"],
@@ -36,4 +41,15 @@ it.each([
   ["(dub)", "(dub)"],
 ])("stripQualifiers(%s)", (input, expected) => {
   expect(stripQualifiers(input)).toBe(expected);
+});
+
+describe("yearInTitle", () => {
+  it.each([
+    ["NOSFERATU (1922)", 1922],
+    ["Scream (1996) (dub)", 1996],
+    ["Nalle Puhin elokuva (dub)", undefined],
+    ["Blade Runner 2049", undefined],
+  ])("%s -> %s", (title, year) => {
+    expect(yearInTitle(title)).toBe(year);
+  });
 });

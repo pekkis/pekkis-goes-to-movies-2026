@@ -53,6 +53,21 @@ const listing = (id: string, title: string, runtimeMinutes = 100): FilmListing =
 });
 
 describe("matchListings", () => {
+  it("reads a year written into the title, so a same-named film of another year is not chosen", async () => {
+    // Pajakkakino, 2026-10-16: "NOSFERATU (1922)", 95 min, matched a 2023 "Nosferatu" (92 min).
+    const { client } = fakeTmdb(
+      [
+        details({ id: 653, title: "Nosferatu", release_date: "1922-02-16", runtime: 94 }),
+        details({ id: 394151, title: "Nosferatu", release_date: "2023-11-17", runtime: 92 }),
+      ],
+      { NOSFERATU: [394151, 653] },
+    );
+    // No countries, as Pajakkakino states none: the title's year is the only thing to go on.
+    const nosferatu = { ...listing("1", "NOSFERATU (1922)", 95), countries: [] };
+    const result = await matchListings([nosferatu], client, {}, NOW);
+    expect(result.links.get("biorex:film:1")?.filmId).not.toBe("tmdb:394151");
+  });
+
   it("links a confident match and returns the film", async () => {
     const { client } = fakeTmdb([details({ id: 10, title: "Digger" })], { Digger: [10] });
     const result = await matchListings([listing("1", "Digger")], client, {}, NOW);

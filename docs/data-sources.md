@@ -840,6 +840,7 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Le
 - **Found** through elokuviin.com's list of cinemas (2026-10-15); not in Leffavuoro. The front page is an Instagram feed; the programme is one WordPress post per film, read through `/wp-json/wp/v2/posts` (one GET) [V].
 - **A film post** [V]: a facts line ("Draama, jännitys I 1h 57min I 2.10.2026 I AUDIO englanti TEKSTIT suomi": genres, runtime, release date, audio and subtitles), the age image (`ikaraja_12.png`, from the distributors' press service), then "ESITYKSET:" and one row per screening ("PE 16.10. KLO 15:30", also "SU 18.10 KLO 18:00" and "PE 9.10 KLO.16:30"). No year: the nearest date whose weekday fits.
 - **Cancelled screenings** are struck through (`<del>`) with "PERUTTU!" below; they are skipped, so ingest marks them removed [V].
+- **Römppäviikot** (Kuhmo's film week, 2026-10-16) [V]: posts titled "RÖMPPÄVIIKOT: …" (series "Römppäviikot"; a closing "(ELOKUVA + LUKUPIIRI)" is dropped too) write rows more freely: "TO 29.10. KLO 16:30 & 18:30" (two screenings), "MA 26.10. KLO 18:00 elokuva alkaa" (a screening), "MA 26.10. KLO 16:30 alkaen lukupiiri, …" (a reading circle: skipped), "TI 27.10." and "SU 1.11 KLO ? ilmoitetaan myöhemmin" (no time yet: skipped). Any other note after a time is still `invalid-row`.
 - **Tickets** at the box office or reserved by phone, WhatsApp or the site's form (never requested): booking `reserve`. Prices depend on age and length, so none is published.
 - **Coordinates and address** from OSM (way 238296413, Rajakatu 56).
 
