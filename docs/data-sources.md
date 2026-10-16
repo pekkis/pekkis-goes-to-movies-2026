@@ -906,12 +906,12 @@ Cinemas we know of and do not read, for the next batch. Found by comparing our v
 
 **No programme now** (re-check later): Kino Hetta, KinoPattery, Lapinsuu, Kino Visio, Tuiskula, Kino Sihis, Virta-sali, Kinokellari, Tuulensuun Palatsi, KannuKino, Kinopoli, Louhisali, Kino Caisa (festivals only), Rekolan Kino, Juvan Kino. **Skipped earlier:** Heureka (complex schedule), Kino K13 (prose), Kinotour (touring rows), Iobio (duplicate calendars).
 
-**Since added:** Bio-Salo and Bio Stara (2026-10-15), Bio Jukola (2026-10-16, through the Nexxo `movieid` fix; see the Nexxo section).
+**Since added:** Bio-Salo and Bio Stara (2026-10-15), Bio Jukola (2026-10-16, through the Nexxo `movieid` fix; see the Nexxo section), Kino Jalasjärvi and Kino Rio (2026-10-16).
 
 **From nytleffaan.fi's directory** (225 entries, a copy the maintainer saved from a browser, 2026-10-16; used only as a list of cinemas and their own sites). Not read by us yet, with the homepage it gives; most are municipal halls with occasional screenings, unchecked:
 
 - Altin Sali, Ikaalinen (ikaalinen.fi); Bio Fix, Kemiö (kemionsaari.fi); Bio Sydväst, Parainen, and the Parainen tour halls (pargas.fi); Toholampisali (toholampi.fi); Reijowaara-sali, Haapavesi (haapavesi.fi); Raahesali, Raahe (kulttuuriraahe.fi); Kuhmoisten elokuvat (kuhmoinen.fi); Kangastus, Kangasniemi (kangasniemi.fi); Kino Mäntyharju (mantyharju.fi); Kino Lusto, Punkaharju (savonlinna.fi); Elokuvateatteri Kaarre, Ivalo (inari.fi); Kino Yläri, Kittilä (kittila.fi); Kino-Väylä, Ylitornio (ylitornio.fi); Pellon kunnankino (pello.fi); Paljakkakino / Puolanka Kino (puolanka.fi); Kino Hetta, Enontekiö (enontekio.fi).
-- Own sites: Bio Dux (biodux.fi), Kino Hakalinna, Pomarkku (kinohakalinna.fi), Kino Hannikainen, Nurmes (kinohannikainen.net), Kino Rio, Suonenjoki (kinorio.fi), Sirius, Parkano (elokuvateatterisirius.fi), Suojan elokuvat, Karstula (suojanelokuvat.fi), Teatteri Retikka, Suomussalmi (teatteriretikka.net), Kinoma, Hyvinkää (hyvleffat.fi), Jurvan teatteri (jurvanteatteri.fi), Filmipyörä, Kangasala (elokuvat.org), Cinema Keuda-talo, Kerava (keudatalo.fi), Cinema Nikkilä, Sipoo (storyhill.fi).
+- Own sites: Bio Dux (biodux.fi), Kino Hakalinna, Pomarkku (kinohakalinna.fi), Kino Hannikainen, Nurmes (kinohannikainen.net), Sirius, Parkano (elokuvateatterisirius.fi), Suojan elokuvat, Karstula (suojanelokuvat.fi), Teatteri Retikka, Suomussalmi (teatteriretikka.net), Kinoma, Hyvinkää (hyvleffat.fi), Jurvan teatteri (jurvanteatteri.fi), Filmipyörä, Kangasala (elokuvat.org), Cinema Keuda-talo, Kerava (keudatalo.fi), Cinema Nikkilä, Sipoo (storyhill.fi).
 - Event venues: Logomo's Kino-sali, Turku; Kulttuuritila Nuijamies, Lappeenranta; Schaumansali, Pietarsaari; Magnum at PowerPark, Härmä; Olos Polar Center, Muonio; Vimpelin Nuorisokuvat (vimpelinveto.fi).
 
 The directory's entries also name data endpoints. Some are partner feeds built for that site (eTiketti's `/api/elokuvat/nytleffaan`, Nexxo's `exportkinghill`, one with a credential in its URL); we do not use them and keep reading what the cinemas show visitors.
@@ -925,6 +925,13 @@ The directory's entries also name data endpoints. Some are partner feeds built f
 - **No runtimes**, so some titles need aliases. **Tickets:** none online; booking `info`, links to the film's page.
 - **Address** from nytleffaan.fi's directory (Keskustie 43), geocoded with Nominatim.
 - **First run:** 14 screenings of 6 films, no warnings.
+
+## Kino Rio (Suonenjoki)
+
+- **Found** through nytleffaan.fi's directory (2026-10-16); not in Leffavuoro.
+- **The front page** [V] (WordPress): one block per film between `<hr>`s. The title is the first `p strong` (its link carries a stale `aria-label` naming another film, so only the text is read), then a list of rows "Pe 16.10. klo 18.30" with the film's facts written beside them on the same lines ("Kesto: 2 h 8 min", "Ikäraja: K-12", "Liput: 15 €"; a fact line may have no date), and notes below ("puhuttu suomeksi" marks a dub; "Suomen ensi-ilta", "viimeiset näytökset" are ignored). No year; the weekday must fit.
+- **Tickets** at the door: booking `door`, links to the front page. The next week (Fri–Thu) is published by Tuesday.
+- **First run:** 22 screenings of 12 films, no warnings, all matched.
 
 ## Film ratings: OMDb
 
