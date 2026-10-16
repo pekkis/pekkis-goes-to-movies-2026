@@ -1,7 +1,9 @@
 """Start and stop for what every browser test class shares. Not a test module: the
 leading underscore keeps it out of discovery."""
 import atexit
+import struct
 import threading
+import zlib
 
 from playwright.sync_api import sync_playwright
 
@@ -36,3 +38,15 @@ def playwright():
         _driver = sync_playwright().start()
         atexit.register(_driver.stop)
     return _driver
+
+
+def png(w, h, rgb=(40, 120, 200)):
+    """A solid PNG of `w` x `h`, written with the standard library. CI's browser job has no
+    Pillow, and a picture's drawn shape is only checkable against a real file's size."""
+    raw = b"".join(b"\x00" + bytes(rgb) * w for _ in range(h))
+
+    def chunk(kind, data):
+        return (struct.pack(">I", len(data)) + kind + data
+                + struct.pack(">I", zlib.crc32(kind + data) & 0xFFFFFFFF))
+    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b""))

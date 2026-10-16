@@ -323,3 +323,18 @@ showtimes priced. The zeros that remain are all recorded decisions -- Finnkino a
 four Johku storefronts and Kino Engel (widget, bands only), Cine Mäntsälä and Bio-Kaari
 (tariff conditions the row does not settle), and the three Kinola tenants (behind the
 checkout).
+
+## Johku is priced at the ordinary admission (2026-10-16)
+
+The seven Johku storefronts were a recorded zero because an entry's amount sits beside
+`multipleprices` and nothing said which ticket it was for. Each film page draws one amount
+per screening, and its own `shows.json` request lists the tickets of the screening's price
+scheme. The maintainer set the policy the same day. The ordinary admission is a ticket named
+as the full ticket, with concessions, passes and memberships, gift cards and free tickets set
+aside, it must agree with the drawn amount, and nothing is chosen by price or position. A product
+description that states one price per person ("Liput 12,50€ / hlö") settles a scheme whose
+paid tickets all cost it, and a scheme of unknown tickets with no such statement stays
+unpriced. A statement whose sentence names a group of people, students or members for
+instance, settles nothing, and a price the ticket names establish stands beside it.
+Read 2026-10-16, 143 of 144 screenings were priced, and all 143 agreed with the film page or
+its `shows.json`. The findings are in [ticketing-platforms.md](ticketing-platforms.md).

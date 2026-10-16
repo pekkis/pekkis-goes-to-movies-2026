@@ -52,9 +52,22 @@ What shapes the parser:
   `reads` because the film pages are read from the same links. A link that is not a full
   https URL with a film path, on a host the site reads, fails the site and the previous
   files stand.
-- **No price is published.** The entry carries a pricing name and an amount beside
-  `multipleprices`, so which ticket the amount is for is not settled, and the tariff
-  pages state bands ("Normaali elokuva 13-15 €"). `price` stays empty.
+- **The price is the ordinary admission, where the source establishes it.** An entry
+  carries its price scheme and the amount the film page draws for the screening. The
+  scheme's tickets come from `shows.json`, the film page's own request, and the fewest
+  products whose answers cover every scheme are read. An ordinary ticket needs a name that
+  says so, concessions, passes and memberships, gift cards and free tickets are set aside,
+  and the ordinary tickets must agree on one price, the drawn amount. A ticket flagged as
+  the default that is not an ordinary one settles nothing, and a scheme that flags none is
+  read by its names. Where the product's own description states one price per person
+  ("Liput 12,50€ / hlö"), it settles a scheme whose paid tickets all cost that amount and
+  none is named for a group of people. A sentence about the tickets that names a group,
+  students or members for instance ("Liput opiskelijoille 8,00€ / hlö"), states no price,
+  and a price the ticket names establish stands beside it (maintainer's instruction,
+  2026-10-16). Nothing is chosen by price or by position. `multipleprices` is not read,
+  because Kino Virta's "Elokuva 11.50" says 0 and also sells an Elämyspassi ticket
+  (2026-10-16). Anything else, and a read that fails, leaves `price` empty (maintainer's
+  policy, 2026-10-16).
 - **The artwork is a landscape banner**, 2048x1365 and 2048x857 on the two measured, so
   `img` stays empty and the TMDB pass supplies a portrait poster.
 - **No sold-out state is rendered on a row.** "Loppuunmyyty" appears once per page, inside
@@ -92,6 +105,7 @@ import re
 import sys
 import time
 import urllib.request
+from decimal import Decimal
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 
@@ -178,6 +192,53 @@ TAGS_RE = re.compile(r"<[^>]+>")
 # The platform's path for a product with no canonical name. A programme entry never has it
 # and the hall hire always does, which separates the two without reading a title.
 PRODUCT_PATH = "/fi_FI/products/"
+
+# The film page's own request for a product's screenings and their ticket rows, read in
+# the storefront on 2026-10-16. Without the two flags the rows are not in the answer.
+SHOWS_PATH = "/api/{shop}/" + LOCALE + "/products/{product}/shows.json?details=true&storefront=true"
+SHOP_RE = re.compile(r"[a-z0-9_-]{1,40}")
+AMOUNT_RE = re.compile(r"\d{1,3}(?:\.\d{1,2})?")
+
+# A ticket that is not the ordinary admission: a concession (age, pension, study, service,
+# a discount group), a pass or membership, a gift card or a free ticket. The words are the
+# ones the seven storefronts used on 2026-10-16, with their Swedish and English forms. A
+# word missed here leaves two prices standing, and the screening stays unpriced.
+NOT_ORDINARY_RE = re.compile(
+    r"el[äa]ke|opiskelij|varus|laps|lasten|nuor|senior|aleryhm|alennus|\bale\b|ty[öo]t[öo]n|"
+    r"pension|studer|barn|ungdom|rabatt|child|kid|student|youth|reduced|concession|"
+    r"\d\s*v\b|\d\s*år\b|"
+    r"passi|\bpass\b|j[äa]sen|member|medlem|sarja|kausi|seteli|voucher|smartum|edenred|"
+    r"lahja|gift|present|ilmais|vapaa|\bfri\b|fribiljett|\bfree\b|kutsu|invit",
+    re.I)
+
+# The positive evidence for an ordinary ticket: one of the ticket words the measured
+# storefronts gave their full ticket, with nothing after it but its amount ("Elokuvalippu
+# 13 €", "Lippu 14 €", "Peruslippu 11.50", "Oopperalippu 20€", 2026-10-16). A ticket named
+# anything else is of no known kind, and on its own it publishes no price.
+ORDINARY_NAME_RE = re.compile(
+    r"(?:elokuva|perus|ooppera)?lippu(?:\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*(?:€|euroa?)?)?", re.I)
+
+# A description's sentences and a sentence's ticket clause, from "liput" or "lippu" to its
+# end (a point between digits ends neither), the clause's amounts and the per-person words.
+SENTENCE_RE = re.compile(r"(?:[^.!?]|(?<=\d)\.(?=\d))+")
+TICKET_CLAUSE_RE = re.compile(r"\b(?:liput|lippu)\b((?:[^.!?]|(?<=\d)\.(?=\d))*)", re.I)
+CLAUSE_AMOUNT_RE = re.compile(r"(\d{1,3}(?:[.,]\d{1,2})?)\s*€")
+PER_PERSON_RE = re.compile(r"/\s*(?:hlö|henkilö)\b|\bkaikille\b", re.I)
+
+# Words for a group of people a ticket is sold to, in Finnish, Swedish and English.
+# Screening types ("Perhekinon", "Vauvakinoon") and the price group ALERYHMÄ name no group.
+ELIGIBILITY_RE = re.compile(
+    r"opiskelij|koululai|lukiolai|ylioppila|studer|student|\belev|j[\u00e4a]sen|kerholai|"
+    r"medlem|\bmember|el[\u00e4a]k[ek]|\bpension|senior|ik[\u00e4a]ihmi|"
+    r"laps|lasten|nuor|junior|barn|ungdom|\bunga\b|child|\bkid|youth|\bteen|vuotia|"
+    r"\u00e5ring|\d\s*v\b|\d\s*\u00e5r\b|"
+    r"varus(?:mie|henkil)|siviilipalvelus|asevelvol|bev[\u00e4a]ring|v[\u00e4a]rnplikt|"
+    r"conscript|military|ty[\u00f6o]tt[\u00f6o]m|ty[\u00f6o]t[\u00f6o]n|arbetsl[\u00f6o]s|"
+    r"unemploy|haltij|kanta-?asiak|etukort|passi|innehavare|stamkund|holder|"
+    r"veteraan|veteran|asuk(?:ka|as)|kuntalai|inv\u00e5nare|\bresident|henkil\u00f6kun|"
+    r"henkil\u00f6st\u00f6|ty\u00f6ntekij|staff|employee|kutsuvier|inbjud|invit|vammai|"
+    r"invalid|handikapp|funktionsneds|disab|saattaj|avustaj|ledsag|companion|\bcarer",
+    re.I)
 
 # A paragraph shorter than this is a release note ("Elokuvateattereissa 4.9.") rather than
 # a synopsis. The same length kinola.py uses, for the same reason.
@@ -449,8 +510,9 @@ def _film_url(site, n, title, link):
 def rows(site, blocks, now):
     """The screenings the page draws from its blocks. -> ([row], report).
 
-    A row is (product, title, venue, start, url, rating, len); everything else comes from
-    the film page. `report` holds what is left out: `skipped`, the coming-soon titles, and
+    A row is (product, title, venue, start, url, rating, len) and its price scheme
+    (scheme, amount, shop); everything else comes from the film page. `report`
+    holds what is left out: `skipped`, the coming-soon titles, and
     the counts `past` and `unlisted` of entries the page does not draw, and `repeated` of
     screenings it draws in a second block.
     """
@@ -505,8 +567,165 @@ def rows(site, blocks, now):
                 "rating": RATINGS.get(entry.get("agelimit"), "")
                 if isinstance(entry.get("agelimit"), str) else "",
                 "len": str(minutes) if minutes > 0 else "",
+                "scheme": str(entry.get("pricing_id") or ""),
+                "amount": str(entry.get("price") or ""),
+                "shop": str(entry.get("shopId") or ""),
+                "stated": stated_admission(product.get("description")),
             })
     return out, report
+
+
+def stated_admission(description):
+    """The one price per person a product's own description states -> "12.5", or "".
+
+    "Perhekinon liput 10,00€ / hlö", "Liput 12,50€ / hlö" and "Liput kaikille vain 9,00€!"
+    each state one (Kino Kulttuurimylly, 2026-10-16). "Liput 12,50€ / 10,00€ / hlö" names
+    two amounts and states no single admission, and two clauses that disagree state none.
+    A ticket sentence that names a group, such as "Jäsenille liput 9,00€ / hlö", states
+    nothing. It is read from its start, and the greeting "Tervetuloa Seniorikinoon!" is not one.
+    """
+    stated = set()
+    for sentence in SENTENCE_RE.findall(_txt(description)):
+        m = TICKET_CLAUSE_RE.search(sentence)
+        if not m or ELIGIBILITY_RE.search(sentence):
+            continue
+        clause = m.group(1)
+        if not PER_PERSON_RE.search(clause):
+            continue
+        amounts = CLAUSE_AMOUNT_RE.findall(clause)
+        if len(amounts) != 1:
+            return ""
+        stated.add(Decimal(amounts[0].replace(",", ".")))
+    return f"{stated.pop().normalize():f}" if len(stated) == 1 else ""
+
+
+def scheme_tickets(shows, scheme):
+    """The ticket rows a product's `shows.json` sells under price scheme `scheme`.
+    -> [(name, price, default)], `default` "1" on the ticket the scheme marks as its
+    default, or None when no screening uses the scheme or two of them disagree."""
+    found = None
+    for s in shows if isinstance(shows, list) else ():
+        if not isinstance(s, dict) or str(s.get("pricing_id")) != str(scheme):
+            continue
+        pricing = s.get("pricing") if isinstance(s.get("pricing"), dict) else {}
+        tickets = sorted((_clean(t.get("name")), str(t.get("price")),
+                          "1" if str(t.get("default")).strip() == "1" else "")
+                         for t in _list(pricing.get("sharedProduct")) if isinstance(t, dict))
+        if found is not None and tickets != found:
+            return None
+        found = tickets
+    return found
+
+
+def _euro(amount):
+    return f"{Decimal(amount).normalize():f}\u20ac"
+
+
+def _named_price(a, tickets):
+    """The drawn amount `a` where tickets ORDINARY_NAME_RE names agree on it, else ""."""
+    ordinary = set()
+    for name, price, default in tickets:
+        name, p = (name or "").strip(), str(price or "").strip()
+        named = False
+        if NOT_ORDINARY_RE.search(name):
+            pass
+        elif not AMOUNT_RE.fullmatch(p):
+            return ""
+        elif Decimal(p) > 0:
+            m = ORDINARY_NAME_RE.fullmatch(name)
+            named = bool(m) and (not m.group(1)
+                                 or Decimal(m.group(1).replace(",", ".")) == Decimal(p))
+            if named:
+                ordinary.add(Decimal(p))
+            elif Decimal(p) != Decimal(a):
+                return ""
+        if default == "1" and not named:
+            return ""
+    return _euro(a) if ordinary == {Decimal(a)} else ""
+
+
+def _stated_price(a, tickets):
+    """The drawn amount `a` where every paid ticket costs it and none is named for a group
+    of people, else "". Only for a screening whose description states one price per person."""
+    paid = set()
+    for name, price, default in tickets:
+        p = str(price or "").strip()
+        if not AMOUNT_RE.fullmatch(p):
+            return ""
+        if Decimal(p) > 0:
+            if ELIGIBILITY_RE.search(name or ""):
+                return ""
+            paid.add(Decimal(p))
+        if default == "1" and Decimal(p) != Decimal(a):
+            return ""
+    return _euro(a) if paid == {Decimal(a)} else ""
+
+
+def ordinary_price(amount, tickets, stated=""):
+    """A screening's ordinary admission -> "13.5\u20ac", or "" where the source does not
+    establish one.
+
+    `amount` is what the film page draws for the screening, `tickets` the scheme's
+    (name, price, default) rows and `stated` what `stated_admission` reads in the product's
+    own description. Tickets ORDINARY_NAME_RE names, with any amount in the name
+    equal to the price, must agree on the drawn amount, with concessions, passes, gift cards
+    and free tickets set aside. A ticket of no known kind at another price settles nothing,
+    and so does a ticket flagged as the default that is not an ordinary one. A scheme that
+    flags no default is read by its names alone. Where the names settle nothing, a stated
+    price settles a scheme whose paid tickets all cost it. A stated price that is not the
+    drawn amount settles nothing either way. No row is picked by its price or its place.
+    """
+    a = str(amount or "").strip()
+    if not tickets or not AMOUNT_RE.fullmatch(a) or Decimal(a) <= 0:
+        return ""
+    if stated and Decimal(stated) != Decimal(a):
+        return ""
+    return _named_price(a, tickets) or (_stated_price(a, tickets) if stated else "")
+
+
+def tickets_by_scheme(site, listed, sleep):
+    """{scheme: ticket rows} for each price scheme the film screenings use.
+
+    One `shows.json` answer carries every scheme its product's screenings use, and the front
+    page says which those are. The products are read in the order that covers the most
+    schemes still open, and a product whose schemes an earlier answer settled is not read.
+    A read that fails leaves its schemes out."""
+    pid = site["provider"]
+    uses, shop = {}, {}
+    for r in listed:
+        if (r["scheme"] and r["amount"] and SHOP_RE.fullmatch(r["shop"])
+                and r["product"].isdigit() and PRODUCT_PATH not in r["url"]
+                and not not_film(site, r["url"])):
+            uses.setdefault(r["product"], set()).add(r["scheme"])
+            shop.setdefault(r["product"], r["shop"])
+    plan, left, pool = [], set().union(*uses.values()), dict(uses)
+    while left:
+        product = max(sorted(pool), key=lambda p: len(pool[p] & left))
+        left -= pool.pop(product)
+        plan.append(product)
+    # The rest follow, read only for a scheme an earlier answer did not carry.
+    plan += sorted(pool)
+    out, open_, reads = {}, set().union(*uses.values()), 0
+    for product in capped(plan, pid):
+        if not uses[product] & open_:
+            continue
+        if reads:
+            time.sleep(sleep)
+        reads += 1
+        url = site["base"].rstrip("/") + SHOWS_PATH.format(shop=shop[product], product=product)
+        try:
+            shows = json.loads(get(url))
+        except Exception as e:
+            print(f"[{pid}] price scheme(s) {', '.join(sorted(uses[product] & open_))} not "
+                  f"read ({type(e).__name__}: {e}); their screenings publish without a price")
+            open_ -= uses[product]
+            continue
+        for scheme in sorted(open_):
+            tickets = scheme_tickets(shows, scheme)
+            if tickets is not None:
+                out[scheme] = tickets
+                open_.discard(scheme)
+    return out, reads
 
 
 def _translative(phrase):
@@ -569,8 +788,9 @@ def not_film(site, url):
     return urlsplit(url or "").path.rstrip("/") in site.get("not_films", {})
 
 
-def parse(site, blocks, pages, now):
-    """-> ({venue_id: [show]}, report). `pages` is {product: film page html}.
+def parse(site, blocks, pages, now, tickets=None):
+    """-> ({venue_id: [show]}, report). `pages` is {product: film page html}, `tickets`
+    {price scheme: ticket rows} from `tickets_by_scheme`.
 
     `report` is what `rows` left out, plus `hire`, the hall-hire titles over `hire_shows`
     rows, and `unplaced`, the synopses no language could be settled for. A row with no film
@@ -607,7 +827,7 @@ def parse(site, blocks, pages, now):
             "img": "",
             "lang": f["lang"],
             "soldOut": False,
-            "price": "",
+            "price": ordinary_price(r["amount"], (tickets or {}).get(r["scheme"]), r["stated"]),
             "provider": site["provider"],
             "venue": r["venue"],
         }
@@ -668,10 +888,17 @@ def fetch_site(site, sleep=1.2):
         except Exception as e:
             print(f"[{pid}] film page {url.rsplit('/', 1)[-1]} failed ({e}); the screening "
                   f"publishes without its synopsis and genres")
-    per_venue, report = parse(site, blocks, pages, when)
+    tickets, reads = tickets_by_scheme(site, listed, sleep)
+    per_venue, report = parse(site, blocks, pages, when, tickets)
     check_shows(per_venue, pid, {v["id"] for v in site["venues"]})
     print(f"[{pid}] {len(listed)} screening(s) in {len(blocks)} schedule block(s), "
           f"{len(pages)} film page(s) read")
+    published = [s for shows in per_venue.values() for s in shows]
+    settled = {r["scheme"] for r in listed
+               if ordinary_price(r["amount"], tickets.get(r["scheme"]), r["stated"])}
+    print(f"[{pid}] prices for {sum(1 for s in published if s['price'])} of "
+          f"{len(published)} screening(s); {len(settled)} of {len(tickets)} price scheme(s) "
+          f"read establish an ordinary ticket, from {reads} shows.json read(s)")
     if report["skipped"]:
         print(f"[{pid}] {len(report['skipped'])} coming-soon entry/entries with no time, "
               f"left out: {', '.join(sorted(set(report['skipped']))[:8])}")

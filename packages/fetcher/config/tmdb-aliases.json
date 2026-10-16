@@ -388,5 +388,30 @@
     "tmdb": 1185806,
     "title": "Ryhmä Hau: Dinoelokuva",
     "note": "PAW Patrol: The Dino Movie (2026), as biorex:film:1518. Kino Yläri states no runtime, so the sibling pass cannot link it."
+  },
+  "cinemaorion:film:5a1c1977-eed5-4172-aa78-1923a79879be": {
+    "tmdb": 511819,
+    "title": "Memoria",
+    "note": "Apichatpong Weerasethakul's Memoria (2021; Finnish release 2022, the year Orion gives). 136 min on both; the other TMDB Memorias are shorts or 2025 films."
+  },
+  "cinemaniagara:film:127": {
+    "tmdb": 1035047,
+    "title": "Hyvä talo",
+    "note": "Wojciech Smarzowski's Dom dobry (2025), a literal translation of the title; Polish audio at Niagara, PL on TMDB. 105 vs 108 min. Confirmed by the maintainer."
+  },
+  "cinemaniagara:film:126": {
+    "tmdb": 1383172,
+    "title": "Kuoripojat",
+    "note": "Ministranci (2025, PL); Polish audio at Niagara. 106 vs 110 min. Identified by the maintainer."
+  },
+  "kinolaika:film:37b89f3e-3d92-43b1-b920-fee3630df1ef": {
+    "tmdb": 1382513,
+    "title": "Kana",
+    "note": "György Pálfi's Κότα (Hen; DE/HU/GR); 96 min on both. TMDB has no Finnish title and the Greek original defeats search. Identified by the maintainer."
+  },
+  "kinomyyri:film:847b12eb-e713-4a2d-bd5e-077c9bb2c7df": {
+    "tmdb": 1512967,
+    "title": "Must pori näkku",
+    "note": "Musta pori näkku (2026, EE/LV/FI); Kino Myyri drops a letter from the title and says 80 min where TMDB says 100. Identified by the maintainer."
   }
 }

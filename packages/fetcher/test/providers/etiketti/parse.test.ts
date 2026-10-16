@@ -206,6 +206,25 @@ describe("parseEtiketti", () => {
     expect(niagara.screenings[0]?.tags).toEqual(["last-screening"]);
   });
 
+  it("reads a tag by the site's own rule first: Niagara's \"Puola\" is its Polish series", () => {
+    const polish = html("niagara-autofiktio").replace(">Viimeinen näytös<", ">Puola<");
+    const batch = parseEtiketti(
+      snapshot({ "/elokuvat/3298/digger": polish }),
+      site("cinemaniagara"),
+    );
+    expect(batch.screenings[0]).toMatchObject({
+      series: ["Puolalaisia elokuvia"],
+      unmappedLabels: [],
+      labels: [{ source: "etiketti.tag", text: "Puola" }],
+    });
+    // The same tag means nothing at a site without the rule.
+    const elsewhere = parseEtiketti(snapshot({ "/elokuvat/3298/digger": polish }), {
+      ...site("cinemaniagara"),
+      tags: {},
+    });
+    expect(elsewhere.screenings[0]?.unmappedLabels).toEqual(["tag:Puola"]);
+  });
+
   it("splits Savon Kinot's cinemas by place line and drops repeated rooms", () => {
     const batch = parse("savonkinot", "savonkinot-digger");
     const venues = new Set(batch.screenings.map((s) => s.venueId.split(":")[2]));

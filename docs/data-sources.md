@@ -793,7 +793,7 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/alatalo/`, sites in 
 - **Coordinates:**
   - Kemijärvi's culture centre: OSM way 221824429.
   - Huvimylly: Raahesali, OSM node 8827057758.
-  - Pudasjärvi (Pohjantähti), Haapajärvi (Teatterisali) and Kiuruvesi (Kiurusali): not in OSM under these names, so no coordinates yet (`venue-without-geo`).
+  - Pudasjärvi (Pohjantähti), Haapajärvi (Teatterisali) and Kiuruvesi (Kiurusali) are not in OSM under these names. Their addresses come from the maintainer (2026-10-16), and their coordinates from OSM's objects at those addresses: Teollisuustie 1 (way 491511299), Kauppakatu 19 (node 245268824, the town library, which shares the address) and Lähteentie 10 A (way 182678139, the culture house).
 - **First run:** Alatalo 7 films, 13 screenings in four towns; Huvimylly 2 films, 3 screenings.
 
 ---

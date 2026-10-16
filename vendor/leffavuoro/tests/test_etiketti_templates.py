@@ -864,7 +864,7 @@ class NiagaraRegistryTest(unittest.TestCase):
                 "url": "https://cinemaniagara.fi/salikartta?id=53955", "img": "",
                 "lang": "EN-A, ES-A, FI-S, SV-S", "soldOut": True, "price": "11€",
                 "provider": "niagara", "venue": "cn-tampere"}
-        days = {today.isoformat(): {"The Invite": [show]}}
+        days = {today.isoformat(): {("The Invite", False): [show]}}
         for lang in ("fi", "en"):
             with self.subTest(lang=lang):
                 html = bp.page(

@@ -45,6 +45,78 @@ SNOWMAN2 = hit("agqbi7q5w4", "Lumiukko - Elokuvakonsertti", "2026-12-16T17:30:00
                "2026-12-16T18:00:00Z", free=False)
 # The Flow row with the larger id sits on page 1 and its twin on page 2.
 HITS = [KEVLAR, FLOW_KIDS, FESTIVAL, ISANPAIVA, FLOW, SNOWMAN, SNOWMAN2]
+SWEDISH = "Elokuva on ruotsinkielinen ja siinä on tekstitys suomeksi."
+CONCERT = dict(hit("agqconcert", "Megamuskari", "2026-11-03T08:30:00Z", free=False),
+               topics=["Kulttuuritapahtumat", "Musiikki"])
+LE = K.LE_HOST + K.LE_PATH
+PIC = "https://tapahtumasyotto.espoo.fi/media/images/"
+
+
+def le_event(hid, url=None, licence="event_only", by="", alt="Kuvassa yhtye."):
+    """One Linked Events event as the place query answers it, with one picture."""
+    return {"id": "espooevents:" + hid, "images": [
+        {"url": url or PIC + hid + ".jpg", "license": licence, "photographer_name": by,
+         "alt_text": alt, "name": "", "cropping": "286,0,914,628"}]}
+
+
+class PictureTest(unittest.TestCase):
+    def test_a_picture_keeps_its_licence_photographer_and_alt_text(self):
+        got = K.picture_of(le_event("agqconcert", by=" Katri Kuusela "))
+        self.assertEqual(got, {"img": PIC + "agqconcert.jpg", "imgLic": "event_only",
+                               "imgBy": "Katri Kuusela", "imgAlt": "Kuvassa yhtye.",
+                               "imgSrc": "Espoon tapahtumarajapinta"})
+        self.assertEqual(K.picture_of(le_event("x", licence="cc_by"))["imgLic"], "cc_by")
+
+    def test_a_picture_under_any_other_licence_is_not_published(self):
+        for licence in ("cc_by_sa", "", None):
+            with self.subTest(licence=licence):
+                self.assertIsNone(K.picture_of(le_event("x", licence=licence)))
+
+    def test_only_an_https_picture_is_taken_and_an_odd_alt_text_is_dropped(self):
+        ev = le_event("x", alt={"fi": "teksti"})
+        ev["images"].insert(0, {"url": "http://example.invalid/a.jpg", "license": "cc_by"})
+        self.assertEqual((K.picture_of(ev)["img"], K.picture_of(ev)["imgAlt"]),
+                         (PIC + "x.jpg", ""))
+        self.assertIsNone(K.picture_of({"id": "espooevents:y", "images": []}))
+
+
+def page(*paras):
+    """An event page as espoo.fi renders it, the description inside `__NEXT_DATA__`."""
+    data = {"props": {"graphQLState": {"q": {"data": {"Event": {
+        "description": "".join(f"<p>{p}</p>" for p in paras)}}}}}}
+    return ('<html><body><main>rendered</main><script id="__NEXT_DATA__" '
+            'type="application/json">' + json.dumps(data) + "</script></body></html>")
+
+
+class LanguageTest(unittest.TestCase):
+    def test_the_three_wordings_on_the_film_pages(self):
+        for sentence, lang in (
+                (SWEDISH, "SV-A, FI-S"),
+                ("Elokuva on suomenkielinen ja siinä on ruotsinkielinen tekstitys.", "FI-A, SV-S"),
+                ("Elokuva on englanninkielinen ja siinä on tekstitys kielillä suomi ja ruotsi.",
+                 "EN-A, FI-S, SV-S"),
+                ("Elokuva on suomenkielinen.", "FI-A")):
+            with self.subTest(sentence=sentence):
+                self.assertEqual(K.lang_of(["Synopsis.", sentence, "K12."]), lang)
+
+    def test_any_other_wording_gives_nothing(self):
+        for sentence in ("Elokuvassa ei ole kielellistä dialogia eikä tekstityksiä.",
+                         "Elokuva on klingoninkielinen ja siinä on tekstitys suomeksi.",
+                         "Elokuva on ruotsinkielinen ja siinä on tekstitys klingoniksi.",
+                         SWEDISH + " Mukana myös lyhytelokuva.",
+                         "Elokuva on ruotsinkielinen, tekstitys suomeksi."):
+            with self.subTest(sentence=sentence):
+                self.assertEqual(K.lang_of([sentence]), "")
+
+    def test_the_description_is_read_from_the_page_data_as_plain_paragraphs(self):
+        got = K.description(page("Alex &amp; Robin.", "<strong>Elokuva on ruotsinkielinen</strong>"
+                                 " ja siinä on tekstitys\u00a0suomeksi."))
+        self.assertEqual(got, ["Alex & Robin.", SWEDISH])
+        self.assertEqual(K.lang_of(got), "SV-A, FI-S")
+
+    def test_a_page_without_its_data_has_no_description(self):
+        self.assertEqual(K.description("<html><p>Elokuva on suomenkielinen.</p></html>"), [])
+
 
 
 class RowsTest(unittest.TestCase):
@@ -67,12 +139,46 @@ class RowsTest(unittest.TestCase):
         shows, report = self.rows(day)
         self.assertEqual((len(shows), report["long"]), (1, []))
 
-    def test_a_hit_outside_the_film_topic_fails_the_site(self):
-        concert = dict(hit("agqconcert", "Megamuskari", "2026-11-03T10:00:00Z"),
-                       topics=["Musiikki", "Kulttuuritapahtumat"])
+    def test_a_hit_outside_the_film_topic_is_an_event_labelled_by_its_topics(self):
+        dance = dict(hit("agqdance", "Elokuva: Päivätanssit (K7)", "2026-11-12T12:00:00Z"),
+                     topics=["Kulttuuritapahtumat", "Liikunta", "Musiikki", "Tanssi"])
+        shows, _ = self.rows(KEVLAR, CONCERT, dance)
+        self.assertEqual([(s["title"], s["rating"], s["method"], s["price"], s.get("nonFilm"))
+                          for s in shows], [
+            ("Kevlarsjäl", "K-12", "", "Vapaa pääsy", None),
+            ("Megamuskari", "", "Musiikki", "", True),
+            ("Elokuva: Päivätanssit (K7)", "", "Liikunta \u00b7 Musiikki \u00b7 Tanssi",
+             "Vapaa pääsy", True),
+        ])
+        common.check_shows({VENUE: shows}, "kannusali", {VENUE})
+
+    def test_a_concert_and_a_film_under_one_title_key_apart(self):
+        concert = dict(CONCERT, title="Michael", eventStartTime="2026-12-11T17:00:00Z")
+        film = hit("agqaxzismq", "Elokuva: Michael (K12)", "2026-12-10T12:00:00Z")
+        shows, _ = self.rows(film, concert)
+        self.assertEqual([(s["title"], s["eventId"], s.get("nonFilm")) for s in shows],
+                         [("Michael", "michael", None), ("Michael", "tapahtuma-michael", True)])
+        common.check_shows({VENUE: shows}, "kannusali", {VENUE})
+
+    def test_a_hit_at_another_place_fails_the_site(self):
+        elsewhere = dict(CONCERT, location="Sellosali")
         with self.assertRaises(K.EventRowError) as e:
-            self.rows(KEVLAR, concert)
-        self.assertIn("Elokuvat", str(e.exception))
+            self.rows(KEVLAR, elsewhere)
+        self.assertIn("Sellosali", str(e.exception))
+
+    def test_a_closing_sold_out_note_leaves_the_title_and_marks_the_row(self):
+        sold = [dict(CONCERT, id=f"event:espooevents:agqsold{n}", title=title,
+                     eventStartTime=f"2026-11-1{n}T17:00:00Z")
+                for n, title in enumerate(("Tuomari Nurmio (LOPPUUNMYYTY)",
+                                           "Ykspihlajan Kino-Orkesteri LOPPUUNMYYTY",
+                                           "LOPPUUNMYYTY", "Loppuunmyyty ilta"))]
+        shows, _ = self.rows(*sold)
+        self.assertEqual([(s["title"], s["soldOut"], s["eventId"]) for s in shows], [
+            ("Tuomari Nurmio", True, "tapahtuma-tuomari-nurmio"),
+            ("Ykspihlajan Kino-Orkesteri", True, "tapahtuma-ykspihlajan-kino-orkesteri"),
+            ("LOPPUUNMYYTY", False, "tapahtuma-loppuunmyyty"),
+            ("Loppuunmyyty ilta", False, "tapahtuma-loppuunmyyty-ilta"),
+        ])
 
     def test_two_hits_at_one_start_collapse_to_the_smallest_id_in_either_order(self):
         for order in ((FLOW_KIDS, FLOW), (FLOW, FLOW_KIDS)):
@@ -134,13 +240,14 @@ class RowsTest(unittest.TestCase):
                           s["method"], s["original"], s["len"], s["genres"], s["soldOut"]),
                          ("kannusali", VENUE, "Kannusali", "", "", "", "", "", "", False))
         self.assertEqual(s["eventId"], "kevlarsjäl")
+        self.assertNotIn("nonFilm", s)
         common.check_shows({VENUE: [s]}, "kannusali", {VENUE})
 
     def test_a_hit_it_cannot_read_fails_the_site(self):
         for field, value in (("title", ""), ("path", None), ("path", "fi/tapahtumat/x"),
                              ("eventStartTime", None), ("eventStartTime", "soon"),
                              ("eventStartTime", "2026-11-04T12:00:00"),
-                             ("eventEndTime", "later")):
+                             ("eventEndTime", "later"), ("topics", None)):
             with self.subTest(field=field, value=value):
                 bad = dict(KEVLAR, **{field: value})
                 with self.assertRaises(K.EventRowError):
@@ -161,17 +268,33 @@ class ServiceTest(unittest.TestCase):
         self.addCleanup(lambda: setattr(run, "OUT", self._out))
         self._get = K.get_text
         self.addCleanup(lambda: setattr(K, "get_text", self._get))
-        self.calls = []
+        self.calls, self.pages, self.le_calls = [], [], []
 
-    def serve(self, hits, total=None, short=False):
+    def serve(self, hits, total=None, short=False, pages=None, le=None):
+        """`pages` maps an event id to its page, or to an exception the read raises. `le` is
+        the Linked Events answers in order, each a dict or an exception."""
+        answers = list(le or [{"data": [], "meta": {"next": None}}])
+
         def get_text(url, **kw):
+            if url.startswith(LE):
+                self.le_calls.append(url)
+                answer = answers.pop(0)
+                if isinstance(answer, Exception):
+                    raise answer
+                return json.dumps(answer)
+            if url.startswith(SITE["base"] + EVENT):
+                self.pages.append(url)
+                answer = (pages or {}).get(url.rsplit(":", 1)[1], page("No language here."))
+                if isinstance(answer, Exception):
+                    raise answer
+                return answer
             if url != URL:
                 raise AssertionError(f"unexpected request to {url}")
             body = json.loads(kw["data"].decode("utf-8"))
             self.calls.append((body, kw))
-            page = body["pagination"]
-            got = hits[page["offset"]:page["offset"] + page["perPage"]]
-            if short and page["offset"]:
+            window = body["pagination"]
+            got = hits[window["offset"]:window["offset"] + window["perPage"]]
+            if short and window["offset"]:
                 got = []
             return json.dumps({"total": len(hits) if total is None else total,
                                "hits": [{"_source": h} for h in got], "aggs": {}})
@@ -212,7 +335,7 @@ class ServiceTest(unittest.TestCase):
             K.fetch_site(SITE)
         body, kw = self.calls[0]
         self.assertEqual(body["filters"]["fixedFilters"]["tprId"], "21430")
-        self.assertEqual(body["filters"]["topics"], ["Elokuvat"])
+        self.assertEqual(body["filters"]["topics"], [])
         self.assertEqual((body["langcode"], body["type"], body["showLongLastingEvents"]),
                          ("fi", "event", True))
         self.assertEqual(kw["headers"]["content-type"], "application/json")
@@ -257,6 +380,81 @@ class ServiceTest(unittest.TestCase):
         self.assertEqual(self.area()["shows"][0]["title"], "Earlier")
 
 
+    def test_one_page_per_film_gives_every_screening_its_languages(self):
+        twin = hit("agqam36pti", "Elokuva: Kevlarsjäl (K12)", "2026-10-21T15:00:00Z")
+        self.serve(HITS + [twin], pages={"agqam3geym": page("Synopsis.", SWEDISH),
+                                         "agqaol4qfu": page("Elokuva on suomenkielinen ja "
+                                                            "siinä on ruotsinkielinen tekstitys.")})
+        with contextlib.redirect_stdout(io.StringIO()):
+            shows = K.fetch_site(SITE)[VENUE]
+        self.assertEqual([(s["title"], s["lang"]) for s in shows], [
+            ("Kevlarsjäl", "SV-A, FI-S"), ("Kevlarsjäl", "SV-A, FI-S"),
+            ("Isänpäivä", "FI-A, SV-S"), ("Flow.", ""),
+            ("Lumiukko - Elokuvakonsertti", ""), ("Lumiukko - Elokuvakonsertti", "")])
+        self.assertEqual(len(self.pages), 4, self.pages)
+        self.assertEqual(sum(p.endswith("agqam3geym") for p in self.pages), 1)
+
+    def test_a_page_that_fails_leaves_its_film_without_languages_and_the_rest_read(self):
+        self.serve(HITS, pages={"agqam3geym": OSError("connection reset"),
+                                "agqaol4qfu": page(SWEDISH)})
+        code, log = self.main()
+        self.assertEqual(code, 0, log)
+        langs = {s["title"]: s["lang"] for s in self.area()["shows"]}
+        self.assertEqual((langs["Kevlarsjäl"], langs["Isänpäivä"]), ("", "SV-A, FI-S"))
+        self.assertIn("event page for Kevlarsjäl: OSError: connection reset", log)
+        self.assertIn("languages read for 1 of 4 film(s)", log)
+
+    def test_a_concert_is_published_and_its_page_is_not_read(self):
+        self.serve(HITS + [CONCERT], pages={"agqconcert": page(SWEDISH)})
+        code, log = self.main()
+        self.assertEqual(code, 0, log)
+        shows = self.area()["shows"]
+        concert = next(s for s in shows if s["title"] == "Megamuskari")
+        self.assertEqual((concert["nonFilm"], concert["method"], concert["lang"]),
+                         (True, "Musiikki", ""))
+        self.assertFalse(any(p.endswith("agqconcert") for p in self.pages), self.pages)
+        self.assertIn("6 showtimes, 5 of them films", log)
+
+    def test_one_query_gives_each_non_film_event_its_picture_and_no_film_one(self):
+        self.serve(HITS + [CONCERT], le=[{"data": [
+            le_event("agqconcert", by="Katri Kuusela"), le_event("agqam3geym")],
+            "meta": {"next": None}}])
+        code, log = self.main()
+        self.assertEqual(code, 0, log)
+        shows = self.area()["shows"]
+        concert = next(s for s in shows if s.get("nonFilm"))
+        self.assertEqual({k: concert[k] for k in ("img", "imgLic", "imgBy", "imgSrc")},
+                         {"img": PIC + "agqconcert.jpg", "imgLic": "event_only",
+                          "imgBy": "Katri Kuusela", "imgSrc": "Espoon tapahtumarajapinta"})
+        film = next(s for s in shows if s["title"] == "Kevlarsjäl")
+        self.assertEqual((film["img"], film.get("imgLic")), ("", None))
+        self.assertEqual(len(self.le_calls), 1)
+        self.assertIn("location=tprek:21430", self.le_calls[0])
+        self.assertIn("event pictures for 1 of 1 non-film event(s)", log)
+
+    def test_the_next_page_is_asked_of_the_declared_host(self):
+        self.serve([CONCERT], le=[
+            {"data": [], "meta": {"next": "https://elsewhere.invalid/events/v1/event/?page=2"}},
+            {"data": [le_event("agqconcert")], "meta": {"next": None}}])
+        with contextlib.redirect_stdout(io.StringIO()):
+            shows = K.fetch_site(SITE)[VENUE]
+        self.assertEqual(self.le_calls[1], LE + "?page=2")
+        self.assertEqual(shows[0]["img"], PIC + "agqconcert.jpg")
+
+    def test_a_failed_or_endless_query_costs_the_pictures_and_nothing_else(self):
+        endless = {"data": [], "meta": {"next": LE + "?page=n"}}
+        for le, said in (([OSError("connection reset")], "OSError: connection reset"),
+                         ([endless] * K.LE_PAGES, "more than 5 pages")):
+            with self.subTest(said=said):
+                self.le_calls = []
+                self.serve(HITS + [CONCERT], le=le)
+                code, log = self.main()
+                self.assertEqual(code, 0, log)
+                self.assertIn(f"event pictures: ", log)
+                self.assertIn(said, log)
+                concert = next(s for s in self.area()["shows"] if s.get("nonFilm"))
+                self.assertEqual((concert["img"], concert.get("imgLic")), ("", None))
+
 class RegistryTest(unittest.TestCase):
     def test_the_registry_entry(self):
         p = registry.by_id("kannusali")
@@ -277,7 +475,8 @@ class RegistryTest(unittest.TestCase):
 class SiteTest(unittest.TestCase):
     def test_the_site_names_the_host_it_is_read_from(self):
         self.assertEqual(SITE["base"], "https://www.espoo.fi")
-        self.assertNotIn("reads", SITE)
+        self.assertEqual(SITE["reads"], ("api.espoo.fi",))
+        self.assertEqual(K.LE_HOST, "https://api.espoo.fi")
         self.assertEqual(SITE["venues"], [{"id": "kannusali-espoo", "name": "Kannusali",
                                            "short": "Kannusali", "city": "Espoo"}])
 

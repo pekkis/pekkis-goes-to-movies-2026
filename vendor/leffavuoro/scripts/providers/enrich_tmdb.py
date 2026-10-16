@@ -766,7 +766,8 @@ def gather(shows):
     out = {}
     for s in shows:
         k = norm(s.get("title"))
-        if not k:
+        # A concert or a stage show an adapter marks `nonFilm` is never searched.
+        if not k or s.get("nonFilm"):
             continue
         e = out.setdefault(k, {"t": s.get("title"), "_o": {}, "_y": set(), "_m": set()})
         o = (s.get("original") or "").strip()
@@ -1553,7 +1554,7 @@ def main() -> int:
             continue
         for s in docs[p].get("shows", []):
             c = cache.get(norm(s.get("title")))
-            if isinstance(c, dict) and c.get("x") and c.get("i"):
+            if isinstance(c, dict) and c.get("x") and c.get("i") and not s.get("nonFilm"):
                 donors.append({**s, "tmdbId": c["i"]})
     table, clashes = shared_ratings(donors)
     for d in clashes:
@@ -1576,7 +1577,8 @@ def main() -> int:
                 s["rating"] = ""
                 s.pop("rsrc", None)
             c = cache.get(norm(s.get("title")))
-            if not trusted(c):
+            # A `nonFilm` row takes nothing, even from a film published under its title.
+            if s.get("nonFilm") or not trusted(c):
                 # A weak candidate, a title that matched nothing, or no entry at all:
                 # nothing is written, and what an earlier run wrote from a weak candidate
                 # comes off, run.py having carried it here from the previous file.

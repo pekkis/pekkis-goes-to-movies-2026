@@ -16,7 +16,6 @@ import { defineSites, SiteBase, SiteVenue } from "../sites.ts";
  * re-verified 2026-10-10 against the live sites.
  */
 
-/** Platform defaults for screening tags (`<span class="tag">`); sites may override. */
 export const EtikettiVenue = SiteVenue.extend({
   /**
    * The venue's part of the place line, e.g. "TRIO 123" in "TRIO 123 | VIP-SALI" or
@@ -495,6 +494,9 @@ export const ETIKETTI_SITES: EtikettiSite[] = defineSites(EtikettiSite, [
     homepage: "https://cinemaniagara.fi",
     verifiedAt: V,
     noSubtitlesUnreliable: true,
+    // The tag of the special series "PUOLALAISIA ELOKUVIA" (2026-10-16, per the maintainer);
+    // elsewhere "Puola" could as well be a language.
+    tags: { Puola: { series: "Puolalaisia elokuvia" } },
     notes:
       'Own template: no place line, time in .time, labels without colons. "Ensi-ilta" is the ' +
       "original premiere here, so it is not used.",

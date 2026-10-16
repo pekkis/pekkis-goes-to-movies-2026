@@ -232,7 +232,8 @@ def merge(out: pathlib.Path, per_venue: dict, label: str, order: int = 0) -> Non
         added = skipped = note_sentences = 0
         per_lang = {}
         for shows in per_venue.values():
-            for s in shows:
+            # The slot is keyed by title and read for every film under it.
+            for s in (s for s in shows if not s.get("nonFilm")):
                 for lang, syn in texts(s.get("_syn")).items():
                     key = norm(s["title"])
                     syn, dropped = drop_note_sentences(syn)

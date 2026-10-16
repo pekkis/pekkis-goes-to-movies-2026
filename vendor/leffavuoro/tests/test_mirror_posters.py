@@ -198,6 +198,37 @@ class MirrorTest(unittest.TestCase):
         self.assertIn("2 downloaded", " ".join(lines))
         self.assertIn("0 failed", " ".join(lines))
 
+    @unittest.skipUnless(not mirror_posters.pillow_problem(), "Pillow unusable")
+    def test_an_event_picture_is_mirrored_wider_and_measured_and_a_poster_is_not(self):
+        """A `nonFilm` row's picture is drawn uncropped across the sheet, so it keeps up to
+        EVENT_W and its size goes on the row; a small one is not enlarged. A film's poster is
+        downscaled to POSTER_W as before and carries no size."""
+        from PIL import Image
+        self.srv.files["/wide.jpg"] = jpeg_bytes(2000, 1000)
+        self.srv.files["/small.jpg"] = jpeg_bytes(900, 300)
+        self.srv.files["/poster.jpg"] = jpeg_bytes(800, 1200)
+        area = self.root / "data" / "area-kannusali-espoo.json"
+        area.write_text(json.dumps({"generated": "2026-10-16T00:00:00+00:00", "dates": [],
+                                    "horizon": "", "shows": [
+            {"title": "Konsertti", "nonFilm": True, "img": f"{self.url}/wide.jpg"},
+            {"title": "Toinen", "nonFilm": True, "img": f"{self.url}/small.jpg"},
+            {"title": "Elokuva", "img": f"{self.url}/poster.jpg"}]}), encoding="utf-8")
+        rc, _ = self.run_main()
+        self.assertEqual(rc, mirror_posters.OK)
+        wide, small, film = json.loads(area.read_text(encoding="utf-8"))["shows"]
+        self.assertEqual((wide["imgW"], wide["imgH"]), (mirror_posters.EVENT_W, 640))
+        self.assertEqual((small["imgW"], small["imgH"]), (900, 300))
+        for s in (wide, small):
+            with Image.open(self.root / s["img"]) as im:
+                self.assertEqual(im.size, (s["imgW"], s["imgH"]))
+        with Image.open(self.root / film["img"]) as im:
+            self.assertEqual(im.width, mirror_posters.POSTER_W)
+        self.assertNotIn("imgW", film)
+        before = (area.read_bytes(), area.stat().st_mtime_ns)
+        self.run_main()
+        self.assertEqual((area.read_bytes(), area.stat().st_mtime_ns), before,
+                         "a second run wrote the file again")
+
     # -- 2. Pillow absent, default invocation --------------------------------------
 
     def test_a_missing_pillow_is_a_distinct_non_zero_exit(self):

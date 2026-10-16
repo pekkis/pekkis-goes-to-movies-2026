@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { SeriesKind, type ProviderBatch, type SeriesRef } from "@pgtm/model";
 import { z } from "zod";
-import { labelKey } from "../providers/labels.ts";
+import { labelKey } from "../providers/label-key.ts";
 import { slugify } from "../providers/parsing.ts";
 
 /**

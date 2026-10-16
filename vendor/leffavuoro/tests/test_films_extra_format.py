@@ -144,6 +144,24 @@ class WritersAgreeTest(unittest.TestCase):
             self.assertTrue(blob.endswith(b"}\n"))
 
 
+class NonFilmTextTest(unittest.TestCase):
+    """A `nonFilm` row's text never fills the synopsis slot of a film under its title."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.dir = pathlib.Path(tmp.name)
+        synmerge.reset()
+        self.addCleanup(synmerge.reset)
+
+    def test_a_concerts_text_is_not_filed_under_the_films_title(self):
+        synmerge.merge(self.dir, {"v": [dict(show("Michael", "Konsertin oma kuvaus, joka ei "
+                                                  "kerro elokuvasta mitään."), nonFilm=True),
+                                        show("Autofiktio", FI)]}, "p", 0)
+        films = json.loads((self.dir / "films-extra.json").read_text(encoding="utf-8"))["films"]
+        self.assertNotIn("michael", films)
+        self.assertIn("autofiktio", films)
+
 class NoOtherWriterTest(unittest.TestCase):
     """mirror_posters needs Pillow and a server to drive, so its call is read instead.
     The committed file below is what catches a writer that bypasses the emitter."""

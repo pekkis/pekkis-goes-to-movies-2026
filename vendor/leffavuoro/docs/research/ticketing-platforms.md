@@ -1015,7 +1015,8 @@ agent, kinokulma.fi in the built-in browser, and the storefront's JavaScript bun
   other five tenants' entries name their own site's host. Bio Marilyn's film pages on
   both hosts parse to the same film facts.
 - An entry also carries `price` and `pricing_name` ("Elokuva 13 €") with `multipleprices`,
-  plus director, original title and MACCS language fields. None of these is read.
+  plus director, original title and MACCS language fields. None of these is read. The
+  price is read from 2026-10-16, in the section on tickets below.
 - Bio Marilyn lists four Kerro Kaikille screenings in both of its blocks, and the
   committed file held each of them twice.
 - kuvatahti.fi's front page carries the payload with no `showtimes` item, so no schedule.
@@ -1059,6 +1060,111 @@ the six tenants and Kino Kulttuurimylly)
 read has not failed for completeness, so a switch would fix nothing. If the logs show
 `loading` or `error` states again, a fallback that requests only the incomplete block's own
 key is the design to try.
+
+---
+
+## Johku storefront: one ticket or several per screening (2026-10-16)
+
+**Findings** (read 2026-10-16 between 09:40 and 10:40 Helsinki time, one front page per
+tenant, one `shows.json` per price scheme, and two film pages per tenant rendered)
+
+- A schedule entry names its price scheme (`pricing_id`, `pricing_name`), the scheme's
+  amount (`price`) and `multipleprices`. The front page draws no price.
+- The film page draws each screening with one amount ("Pe 16.10.2026 klo 17.30 Bio
+  Marilyn 15,00 €"), and the same film can cost 14,00 € on another day. The amount comes
+  from `/api/{shop}/fi_FI/products/{id}/shows.json?details=true&storefront=true`, the page's
+  own request. Without the two flags the answer carries no price and no ticket rows.
+- Each screening there lists its scheme's tickets under `pricing.sharedProduct`. Of 147
+  screenings, 78 sell one ticket at the entry's amount. They are Bio Marilyn's 16 of 16,
+  Bio Forum's 28 of 28, Vihdin Kino's 16 of 17, Kino Hannikainen's 10 of 17 and Kino
+  Kulttuurimylly's 8 of 15. Vihdin Kino's 17th has no scheme at all.
+- The other 68 sell more than one ticket. Kinokulma's 29 add a ticket 2 € cheaper for
+  pensioners, students and children under 12. Kino Hannikainen's 7 add a 12 € senior
+  ticket, and Kino Kulttuurimylly's 7 a 10 € discount-group ticket. Kino Virta's 25 add an
+  Elämyspassi ticket, and 18 of them also a 20 € gift card and a city-paid free ticket.
+- `multipleprices` is 1 on 61 of the 68. Kino Virta's "Elokuva 11.50" scheme says 0 and
+  sells Peruslippu 11,50 € and Elämyspassi 9,50 €.
+- On the film pages the full ticket is drawn alone, with no "alkaen". 13 priced screenings
+  compared across the five tenants agreed with the published amount, 13 of 13.
+
+**The ordinary admission, read again the same day** (about 12:40 Helsinki time, every film
+page of the seven tenants rendered)
+
+- With concessions, passes, gift cards and free tickets set aside by name, 140 of 146
+  screenings are left with one ordinary price equal to the drawn amount. Kinokulma's 29,
+  Kino Virta's 25 and Kino Hannikainen's 17 are all priced.
+- Of the 146, the film pages drew 136. 131 were priced and agreed with the drawn amount,
+  and 5 were blank. The other 10 were not drawn, and 9 of them priced. A `shows.json`
+  check of three films read 24 rows, 15 of them among the 131. All 9 not-drawn priced rows
+  agreed with it once its unpadded dates ("1.11.2026") were read correctly. A first
+  reading reported two as absent, and that was the key's fault.
+- Kino Kulttuurimylly's 5 "Perhekino" screenings sell only "ELOKUVALIPPU ALERYHMÄ 10 €",
+  and the page draws 10,00 €. The film page says nothing more about who may buy it. A
+  discount-group ticket alone establishes no ordinary admission, and they stay unpriced.
+
+**Positive evidence of an ordinary ticket** (read about 13:50 Helsinki time)
+
+- Each scheme marks one ticket `"default": "1"`. In every multi-ticket scheme it is the
+  full ticket. A scheme of one ticket marks it default even when it is a concession or
+  free ("ELOKUVALIPPU ALERYHMÄ 10 €", "Vapaalippu"). The flag is never evidence on its
+  own. A ticket flagged as the default that is not an ordinary one blocks the price, and a
+  scheme that flags no default is read by its names alone. The `canonical` slugs are
+  stale ("Lippu 14 €" has `lippu-13-5-euro`).
+- Every full ticket is named with one word, Elokuvalippu, Lippu, Peruslippu or
+  Oopperalippu, and nothing after it but its amount. "Vauvakino: 12,50 €", sold alone for
+  Kino Kulttuurimylly's baby screening, carries no such name and is now unpriced too.
+- With that rule 139 of 146 were priced. The film pages drew 136. 130 priced ones agreed
+  and 6 were blank, the five Perhekino and the Vauvakino screening. Of the 10 not drawn,
+  9 were priced and all 9 agreed with `shows.json`, and the tenth is Vihdin Kino's club
+  screening, which has no scheme.
+
+**The product's own statement** (read about 15:00 Helsinki time, every product description
+on the seven front pages)
+
+- Of 86 product descriptions, only Kino Kulttuurimylly's 11 state a price. Its four
+  Perhekino products say "Perhekinon liput 10,00€ / hlö" or "Liput 10,00€ / hlö", the
+  Vauvakino product "Liput 12,50€ / hlö", and both Seniorikino products "Liput kaikille vain
+  9,00€". Its four other films name two prices ("Liput 12,50€ / 10,00€ / hlö").
+- Each screening states its admission per person, and the only ticket each sells costs
+  it. With that statement read per product, all 15 Kino Kulttuurimylly screenings were
+  priced, and 143 of 144 across the seven. All 134 drawn on the film pages agreed, and the
+  9 not drawn agreed with `shows.json`.
+
+**The read overhead** (the committed run logs, and the read plan replayed on the live front
+pages about 15:05 Helsinki time)
+
+- The five cloud runs before prices were read, 2026-10-15 15:13 to 2026-10-16 07:27 UTC,
+  made 74 to 76 Johku requests, with 151 to 187 s of fetching summed and 60 to 66 s of
+  module wall time. f5db5800b, reading one `shows.json` per scheme, made 99, and all 25 new
+  ones were answered no-store. Its fetching summed 234.8 s and its wall time 77.9 s.
+- No URL was read twice. Bio Marilyn's product 1071 and Kinokulma's Lapin sota carry
+  more than one scheme in their answers, and reading by products that cover every scheme
+  took 21 reads where one per scheme took 25.
+
+**Groups of people in a statement** (read about 16:15 Helsinki time, every product description
+on the seven front pages)
+
+- The front pages carried the same 86 product descriptions. 11 carry a sentence with
+  "liput" or "lippu", all of them Kino Kulttuurimylly's, and none of those sentences
+  names a group of people. The Perhekino and Vauvakino products name their screening type
+  ("Perhekinon liput", "Vauvakinoon"), and the Perhekino ticket "ELOKUVALIPPU ALERYHMÄ 10 €"
+  names a price group.
+- Over whole descriptions the words for groups of people match 11 other sentences. They are
+  synopsis text, such as "nuoren naisen" in Kerro Kaikille's, and the greeting "Tervetuloa
+  Seniorikinoon!" before "Liput kaikille vain 9,00€!".
+- With the ticket sentence and the ticket names read for groups of people, 141 of 142
+  screenings were priced from 21 `shows.json` reads. The programme had two screenings fewer
+  than at 15:00, and the blank one is Vihdin Kino's club screening, which has no price
+  scheme. All 141 agreed with the film page or its `shows.json`.
+
+**Status and next step**
+
+`johku.py` publishes the ordinary admission where a ticket named as one, or the product's
+own per-person statement, establishes it, on the maintainer's policy of 2026-10-16. A
+ticket sentence that names a group of people states no price, and a stated price settles
+nothing where a paid ticket is named for one. A price the ticket names establish stands
+beside such a sentence. The record is in
+[docs/archive/2026-09-providers.md](../archive/2026-09-providers.md). No next step.
 
 ---
 
@@ -1855,7 +1961,9 @@ button only where none is; see the 2026-09-25 entry in `docs/archive/2026-09-pro
   and on none of the 29 concerts and stage shows. Titles do not classify: a concert named
   "Ykspihlajan Kino-Orkesteri" has no film topic.
 - Each hit's `path` is `/fi/tapahtumat/espooevents:{id}`, a public event page. Four of them
-  answered 200. The free rows carry no ticket link and no price; `isFreeEvent` is set.
+  answered 200. Read again 2026-10-15, the page is rendered on the server and carries the
+  event in `__NEXT_DATA__` (`props.graphQLState.*.data.Event`), its description included.
+  Every film's description gives its spoken and subtitle languages in one sentence. The free rows carry no ticket link and no price; `isFreeEvent` is set.
 - Two film-topic rows are not one screening each. The two Flow rows on 22.11. share start,
   end and hall, and their descriptions say the Children's Weekend row is the same
   screening. The "Espoo Ciné Film Festival Kannusalissa 2026" row spans 49 hours with no
@@ -1868,8 +1976,16 @@ button only where none is; see the 2026-09-25 entry in `docs/archive/2026-09-pro
   other is logged as collapsed.
 - A row spanning over 24 hours is left out and logged.
 - The film concert "Lumiukko - Elokuvakonsertti" is published, with an empty price.
+- Since 2026-10-15 every event at the place is read, and the ones under no film topic are
+  published with `nonFilm`. Lippu.fi sells the paid ones and quotes "alkaen" prices.
 - `price` is "Vapaa pääsy" only where `isFreeEvent` is true.
-- No image is published: the `eventImages` are not licensed to this site.
+- Each event's picture comes from Espoo's Linked Events, one query by place
+  (`api.espoo.fi/events/v1/event/?location=tprek:21430&include=images`), which gives its
+  licence, photographer and alt text. HRI's page for the dataset (read 2026-10-16): "Aineiston
+  lisenssi on lähtökohtaisesti Creative Commons BY 4.0. Joissakin rajapinnan kautta
+  saatavissa kuvissa käyttölupa on rajatumpi ”event only”, eli kuvaa ei saa irrottaa
+  asiayhteydestä." On 2026-10-16 the 29 non-film events had one picture each, 28 `event_only`
+  and 1 `cc_by`, all landscape from 1.77:1 to 2.95:1, and four named a photographer.
 - `where="cloud"` is provisional. Whether espoo.fi answers a runner is unknown until a
   committed cloud log shows it.
 - `enrich_tmdb.clean` takes "Elokuva:" and a trailing rating such as "(K12)" off the search

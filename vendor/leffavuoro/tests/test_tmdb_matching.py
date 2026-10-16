@@ -1005,6 +1005,10 @@ class PublishedCoverageTest(unittest.TestCase):
         # Nälkäpeli -elokuvaa". A marathon of four films, not the 2012 film the plain title
         # matched, and no single TMDB record covers it, so an initials tile is right.
         "N\u00e4lk\u00e4peli- elokuvamaraton": "a four-film marathon, not the 2012 film",
+        # Finnkino, 22.10.2026 at three cinemas: "Event cinema, Komedia, Teatteri", 110
+        # minutes in English. A recording of Noel Coward's stage comedy, not Wong Kar-wai's
+        # 1995 film the plain title matched at Cinema Sheryl. Finnkino's own poster draws.
+        "Fallen Angels by No\u00ebl Coward": "Coward's play on stage, not the 1995 film",
     }
 
     @classmethod
