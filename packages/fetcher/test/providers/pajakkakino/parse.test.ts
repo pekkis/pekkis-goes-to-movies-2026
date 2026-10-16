@@ -60,4 +60,57 @@ describe("parsePajakkakino", () => {
     expect(result.warnings.map((w) => w.code)).toEqual(["invalid-row"]);
     expect(isIncomplete(result)).toBe(true);
   });
+
+  describe("Römppäviikot's rows", () => {
+    // Pirjo's last row, rewritten the ways the film week's posts write theirs.
+    const LAST = "MA 19.10. KLO 18:00";
+    const variant = (row: string, title = "PIRJO I SVERIGE") =>
+      parsePajakkakino(
+        snapshot({
+          posts: POSTS().map((p) =>
+            JSON.parse(
+              JSON.stringify(p)
+                .replace(LAST, row)
+                .replace('"PIRJO I SVERIGE"', JSON.stringify(title)),
+            ),
+          ),
+        }),
+        SITE,
+      );
+    const late = (result: ReturnType<typeof parsePajakkakino>) =>
+      result.screenings.filter((s) => s.businessDate === "2026-10-19").map((s) => s.startsAt);
+
+    it("reads two times on one row", () => {
+      const result = variant("MA 19.10. KLO 16:30 &amp; 18:30");
+      expect(result.warnings).toEqual([]);
+      expect(late(result)).toEqual(["2026-10-19T16:30:00+03:00", "2026-10-19T18:30:00+03:00"]);
+    });
+
+    it("keeps a row whose note says the film starts", () => {
+      const result = variant("MA 19.10. KLO 18:00 elokuva alkaa");
+      expect(result.warnings).toEqual([]);
+      expect(late(result)).toEqual(["2026-10-19T18:00:00+03:00"]);
+    });
+
+    it("skips a reading circle, a date without a time and a time still to come", () => {
+      for (const row of [
+        "MA 19.10. KLO 16:30 alkaen lukupiiri, tervetuloa lukemaan yhdessä Pajakkakinoon!",
+        "MA 19.10.",
+        "MA 19.10 KLO ? ilmoitetaan myöhemmin",
+      ]) {
+        const result = variant(row);
+        expect(result.warnings).toEqual([]);
+        expect(late(result)).toEqual([]);
+      }
+    });
+
+    it("strips the film week and the reading-circle note from the title", () => {
+      const result = variant(LAST, "RÖMPPÄVIIKOT: PIRJO I SVERIGE (ELOKUVA + LUKUPIIRI)");
+      const listing = result.listings.find((l) => l.title.fi === "PIRJO I SVERIGE");
+      expect(listing).toBeDefined();
+      expect(result.screenings.find((s) => s.listingId === listing!.id)?.series).toEqual([
+        "Römppäviikot",
+      ]);
+    });
+  });
 });

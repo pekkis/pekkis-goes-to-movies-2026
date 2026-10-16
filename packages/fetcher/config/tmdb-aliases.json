@@ -328,5 +328,10 @@
     "tmdb": 1368337,
     "title": "The Odyssey",
     "note": "Christopher Nolan's The Odyssey (2026), which ten other cinemas match automatically; Levi Summit states no runtime, so three TMDB titles tie."
+  },
+  "pajakkakino:film:13970": {
+    "tmdb": 653,
+    "title": "NOSFERATU (1922)",
+    "note": "Nosferatu (1922) in the Römppäviikot film week, as riviera:film:28163 (verified by the maintainer 2026-10-14); a 2023 'Nosferatu' (92 min) ties with it on title and runtime."
   }
 }

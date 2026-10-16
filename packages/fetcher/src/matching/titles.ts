@@ -22,6 +22,15 @@ export const titlePrefix = (title: string): string | undefined => {
  * Drops trailing parenthesized qualifiers cinemas add to a title:
  * "Nalle Puhin elokuva (dub)", "Vaiana (liveaction)", "Autot (uudelleenjulkaisu)".
  */
+/**
+ * A production year the cinema writes into the title's trailing parentheses:
+ * "NOSFERATU (1922)", "Scream (1996)". stripQualifiers drops it, so read it first.
+ */
+export const yearInTitle = (title: string): number | undefined => {
+  const year = title.match(/\((1[89]\d{2}|20\d{2})\)(?:\s*\([^()]*\))*\s*$/)?.[1];
+  return year ? Number(year) : undefined;
+};
+
 export const stripQualifiers = (title: string): string => {
   const stripped = title.replace(/(\s*\([^()]*\))+\s*$/, "").trim();
   return stripped || title.trim();

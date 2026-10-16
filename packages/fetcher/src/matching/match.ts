@@ -5,7 +5,7 @@ import type { MovieDetails, SearchResult } from "../tmdb/raw.ts";
 import type { Aliases } from "./aliases.ts";
 import { toCountryCodes } from "./countries.ts";
 import { decide, gatherEvidence, type ListingFacts } from "./score.ts";
-import { normalizeTitle, stripQualifiers, titlePrefix } from "./titles.ts";
+import { normalizeTitle, stripQualifiers, titlePrefix, yearInTitle } from "./titles.ts";
 
 /** How many search hits get their details fetched and scored. */
 const MAX_CANDIDATES = 5;
@@ -87,6 +87,7 @@ export const matchListings = async (
     }
 
     const clean = stripQualifiers(title);
+    const listingYear = listing.year ?? yearInTitle(title);
     const original = listing.originalTitle && stripQualifiers(listing.originalTitle);
     const alternate =
       original && normalizeTitle(original) !== normalizeTitle(clean) ? original : undefined;
@@ -95,7 +96,7 @@ export const matchListings = async (
       ...(alternate && { alternateTitles: [alternate] }),
       countries: toCountryCodes(listing.countries),
       ...(listing.runtimeMinutes && { runtimeMinutes: listing.runtimeMinutes }),
-      ...(listing.year && { year: listing.year }),
+      ...(listingYear && { year: listingYear }),
       ...(listing.rating && { rating: listing.rating }),
     };
     const queries = [clean, titlePrefix(clean), alternate].filter((q): q is string => Boolean(q));

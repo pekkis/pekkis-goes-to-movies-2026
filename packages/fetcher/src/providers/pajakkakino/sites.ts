@@ -25,8 +25,10 @@ export const PAJAKKAKINO_SITES: PajakkakinoSite[] = defineSites(PajakkakinoSite,
     homepage: "https://www.pajakkakino.fi",
     base: "https://www.pajakkakino.fi",
     titlePrefixes: {
-      Romppaviikot: { series: "Romppaviikot" },
-      Romppaviikko: { series: "Romppaviikot" },
+      Römppäviikot: { series: "Römppäviikot" },
+      Römppäviikko: { series: "Römppäviikot" },
+      // "RAKKAUTTA JA VIRTAHEPOJA (ELOKUVA + LUKUPIIRI)": the film, with a reading circle.
+      "ELOKUVA + LUKUPIIRI": {},
     },
     verifiedAt: "2026-10-15",
     notes:

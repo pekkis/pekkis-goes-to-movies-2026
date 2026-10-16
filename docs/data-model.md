@@ -68,7 +68,7 @@ output JSON  →  pnpm ingest  →  PostgreSQL (history kept)
 
 1. **An alias** ([config/tmdb-aliases.json](../packages/fetcher/config/tmdb-aliases.json)) always wins. `"tmdb": null` means the film is not on TMDB, so it is no longer searched for.
    **An IMDb id from the cinema** (Kinola, Johku) is looked up with TMDB's `/find` next (match method `imdb`). The cinema's **original title** is searched too and counts as a title match. Both are facts from the source, so they do not loosen the rules below.
-2. **Search** (`language=fi-FI`, which also hits translated titles) runs with the title and with the part before the subtitle (`"Practical Magic: Lumotut sisaret"` → `"Practical Magic"`). A trailing qualifier in parentheses is dropped first (`"Vaiana (liveaction)"` → `"Vaiana"`). Details are fetched for the five most likely hits.
+2. **Search** (`language=fi-FI`, which also hits translated titles) runs with the title and with the part before the subtitle (`"Practical Magic: Lumotut sisaret"` → `"Practical Magic"`). A trailing qualifier in parentheses is dropped first (`"Vaiana (liveaction)"` → `"Vaiana"`). A year in those parentheses (`"NOSFERATU (1922)"`) is kept as the listing's year when the cinema states none, so a same-named film of another year is not chosen on title and runtime alone (a 2023 "Nosferatu" was, 2026-10-16; regression test in `test/matching/match.test.ts`). Details are fetched for the five most likely hits.
 3. **Evidence** ([score.ts](../packages/fetcher/src/matching/score.ts)) for each candidate:
    - title: `exact` (including translations and alternative titles) / `prefix` / `none`
    - year: within current year −3…+1

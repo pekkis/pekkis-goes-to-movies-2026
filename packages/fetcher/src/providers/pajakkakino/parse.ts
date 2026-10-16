@@ -27,8 +27,60 @@ const Post = z.looseObject({
 });
 
 const WEEKDAYS = ["MA", "TI", "KE", "TO", "PE", "LA", "SU"];
-/** "PE 16.10. KLO 15:30", "SU 18.10 KLO 18:00", "PE 9.10 KLO.16:30". */
-const ROW = /^(MA|TI|KE|TO|PE|LA|SU)\s+(\d{1,2})\.(\d{1,2})\.?\s+KLO\.?\s*(\d{1,2})[.:](\d{2})$/i;
+/**
+ * "PE 16.10. KLO 15:30", "SU 18.10 KLO 18:00", "PE 9.10 KLO.16:30", "TO 29.10. KLO 16:30 &
+ * 18:30", "MA 26.10. KLO 18:00 elokuva alkaa"; a date alone ("TI 27.10.") is announced.
+ */
+const ROW = /^(MA|TI|KE|TO|PE|LA|SU)\s+(\d{1,2})\.(\d{1,2})\.?(?:\s+KLO\.?\s*(.*))?$/i;
+/** The times, then a note: "16:30 & 18:30", "18:00 elokuva alkaa". */
+const TIMES = /^(\d{1,2}[.:]\d{2}(?:\s*(?:&|,|ja)\s*\d{1,2}[.:]\d{2})*)\s*(.*)$/i;
+/** A note that keeps the row a screening. */
+const FILM_NOTE = /^elokuva alkaa!?$/i;
+/** A row for something else in the house (a reading circle before the film). */
+const OTHER_NOTE = /lukupiiri/i;
+/** A time still to come: "KLO ? ilmoitetaan myöhemmin". */
+const TIME_LATER = /^\?|ilmoitetaan myöhemmin/i;
+
+type ShowTime = NonNullable<ReturnType<typeof helsinkiShowTime>>;
+
+/** A row's start times; "skip" for rows that are not (yet) screenings. */
+const rowStarts = (line: string, from: string): ShowTime[] | "skip" | "unreadable" => {
+  const m = line.match(ROW);
+  const date = m ? nearestDate(Number(m[2]), Number(m[3]), from) : undefined;
+  if (
+    !m ||
+    !date ||
+    WEEKDAYS[Temporal.PlainDate.from(date).dayOfWeek - 1] !== m[1]!.toUpperCase()
+  ) {
+    return "unreadable";
+  }
+  const rest = (m[4] ?? "").trim();
+  if (!rest || TIME_LATER.test(rest)) {
+    return "skip";
+  }
+  const t = rest.match(TIMES);
+  if (!t) {
+    return "unreadable";
+  }
+  const note = t[2]!.trim();
+  if (note && OTHER_NOTE.test(note)) {
+    return "skip";
+  }
+  if (note && !FILM_NOTE.test(note)) {
+    return "unreadable";
+  }
+  const starts = t[1]!.split(/\s*(?:&|,|ja)\s*/i).map((time) => {
+    const [hour, minute] = time.split(/[.:]/).map(Number);
+    return helsinkiShowTime({
+      year: Number(date.slice(0, 4)),
+      month: Number(m[3]),
+      day: Number(m[2]),
+      hour: hour!,
+      minute: minute!,
+    });
+  });
+  return starts.every(Boolean) ? (starts as ShowTime[]) : "unreadable";
+};
 /** Starts like a screening row: anything else after the heading is a note ("PERUTTU!"). */
 const ROWISH = /^(MA|TI|KE|TO|PE|LA|SU)\s+\d/i;
 /** A struck-through (cancelled) row is marked before the HTML becomes text. */
@@ -104,7 +156,12 @@ export const parsePajakkakino = (
       : { kind: "unknown" };
 
     const rawTitle = text(load(post.title.rendered, null, false).text());
-    const { title: unprefixed, rule } = splitTitlePrefix(rawTitle, prefixRules);
+    // A strand prefix and a closing note can both be there: "RÖMPPÄVIIKOT: RAKKAUTTA JA
+    // VIRTAHEPOJA (ELOKUVA + LUKUPIIRI)".
+    const outer = splitTitlePrefix(rawTitle, prefixRules);
+    const inner = splitTitlePrefix(outer.title, prefixRules);
+    const unprefixed = inner.title;
+    const rule = outer.rule ?? inner.rule;
     const { title, version } = splitVersion(unprefixed);
     const listingId = makeId(P, "film", String(post.id));
 
@@ -115,63 +172,59 @@ export const parsePajakkakino = (
       if (!ROWISH.test(line)) {
         continue; // a note ("PERUTTU!", "VIIMEINEN NÄYTÖS") or the credits
       }
-      const m = line.match(ROW);
-      const date = m ? nearestDate(Number(m[2]), Number(m[3]), raw.from) : undefined;
-      const weekday = date ? WEEKDAYS[Temporal.PlainDate.from(date).dayOfWeek - 1] : undefined;
-      const start =
-        m &&
-        date &&
-        weekday === m[1]!.toUpperCase() &&
-        helsinkiShowTime({
-          year: Number(date.slice(0, 4)),
-          month: Number(m[3]),
-          day: Number(m[2]),
-          hour: Number(m[4]),
-          minute: Number(m[5]),
-        });
-      if (!start) {
+      const starts = rowStarts(line, raw.from);
+      if (starts === "skip") {
+        continue;
+      }
+      if (starts === "unreadable") {
         unreadable += 1;
         continue;
       }
-      if (start.businessDate < window.from || start.businessDate > window.to) {
-        continue;
-      }
-      if (!listings.has(listingId)) {
-        listings.set(listingId, {
-          id: listingId,
+      for (const start of starts) {
+        if (start.businessDate < window.from || start.businessDate > window.to) {
+          continue;
+        }
+        if (!listings.has(listingId)) {
+          listings.set(listingId, {
+            id: listingId,
+            provider: P,
+            sourceId: String(post.id),
+            title: { fi: title },
+            ...(runtime > 0 && { runtimeMinutes: runtime }),
+            ...(rating && { rating }),
+            genres: [],
+            countries: [],
+            kind: rule?.event ? "event" : "film",
+          });
+        }
+        const spokenAudio = version.audio ?? audio;
+        const sourceId = `${post.id}-${start.startsAt.slice(0, 16).replace(/[-T:]/g, "")}`;
+        const id = makeId(P, "show", sourceId);
+        screenings.set(id, {
+          id,
           provider: P,
-          sourceId: String(post.id),
-          title: { fi: title },
-          ...(runtime > 0 && { runtimeMinutes: runtime }),
-          ...(rating && { rating }),
-          genres: [],
-          countries: [],
-          kind: rule?.event ? "event" : "film",
+          sourceId,
+          venueId,
+          listingId,
+          startsAt: start.startsAt,
+          businessDate: start.businessDate,
+          presentation: {
+            projection: "digital",
+            dimension: version.dimension ?? "2d",
+            formats: [],
+          },
+          audio: spokenAudio ? [spokenAudio] : [],
+          ...(version.dubbed !== undefined && { dubbed: version.dubbed }),
+          subtitles,
+          tags: [...(rule?.tags ?? [])],
+          series: rule?.series ? [rule.series] : [],
+          availability: "unknown",
+          // The film's post on the cinema's site, copied.
+          ticketUrl: post.link.startsWith(`${site.base}/`) ? post.link : site.homepage,
+          unmappedLabels: unmapped,
+          fetchedAt: raw.fetchedAt,
         });
       }
-      const spokenAudio = version.audio ?? audio;
-      const sourceId = `${post.id}-${start.startsAt.slice(0, 16).replace(/[-T:]/g, "")}`;
-      const id = makeId(P, "show", sourceId);
-      screenings.set(id, {
-        id,
-        provider: P,
-        sourceId,
-        venueId,
-        listingId,
-        startsAt: start.startsAt,
-        businessDate: start.businessDate,
-        presentation: { projection: "digital", dimension: version.dimension ?? "2d", formats: [] },
-        audio: spokenAudio ? [spokenAudio] : [],
-        ...(version.dubbed !== undefined && { dubbed: version.dubbed }),
-        subtitles,
-        tags: [...(rule?.tags ?? [])],
-        series: rule?.series ? [rule.series] : [],
-        availability: "unknown",
-        // The film's post on the cinema's site, copied.
-        ticketUrl: post.link.startsWith(`${site.base}/`) ? post.link : site.homepage,
-        unmappedLabels: unmapped,
-        fetchedAt: raw.fetchedAt,
-      });
     }
   }
   if (unreadable > 0) {
