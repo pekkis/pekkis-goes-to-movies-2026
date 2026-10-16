@@ -9,7 +9,7 @@ import { batch, catalog, film, screening } from "./factory.ts";
 const db = createDb(process.env["TEST_DATABASE_URL"]!);
 
 beforeAll(async () => {
-  await sql`truncate screenings, film_listings, auditoriums, venues, providers, films cascade`.execute(
+  await sql`truncate screenings, film_listings, auditoriums, venues, providers, films, series cascade`.execute(
     db,
   );
   await ingestFilms(

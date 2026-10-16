@@ -3,13 +3,21 @@ import {
   type FilmListing,
   type FinnishRating,
   type ProviderBatch,
+  type RawLabel,
   type Screening,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
-import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
+import {
+  COMMON_TITLE_PREFIXES,
+  findLabel,
+  LABELS,
+  labelEffects,
+  splitTitlePrefix,
+  splitVersion,
+} from "../labels.ts";
 import { byStartThenId, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KinoRioRawSnapshot } from "./fetch.ts";
@@ -73,11 +81,25 @@ export const parseKinoRio = (raw: KinoRioRawSnapshot, site: KinoRioSite): Provid
     const unmapped = age && !rating ? [`rating:${age}`] : [];
     const price = toCents(facts.match(PRICE)?.[1], { zeroIsFree: false });
     const dubbed = notes.some((n) => DUBBED.test(n));
+    // Block notes the label table knows are kept as labels. Only "viimeiset näytökset"
+    // speaks of every row listed; "Suomen ensi-ilta" is the film's, not each row's.
+    const known = notes.filter((n) => findLabel(n, LABELS));
+    const lastRows = labelEffects(known.map((n) => findLabel(n, LABELS))).tags.includes(
+      "last-screening",
+    );
     if (!rawTitle) {
       unreadable += lines.filter((l) => ROWISH.test(l)).length;
       continue;
     }
-    const { title: unprefixed, rule } = splitTitlePrefix(rawTitle, prefixRules);
+    const { title: unprefixed, rule, label } = splitTitlePrefix(rawTitle, prefixRules);
+    const effects = labelEffects([rule]);
+    const tags = [
+      ...new Set([...effects.tags, ...(lastRows ? (["last-screening"] as const) : [])]),
+    ];
+    const labels: RawLabel[] = [
+      ...(label ? [{ source: "title.prefix", text: label }] : []),
+      ...known.map((note) => ({ source: "block.note", text: note })),
+    ];
     const { title, version } = splitVersion(unprefixed);
     const filmKey = slugify(title);
     const listingId = makeId(P, "film", filmKey);
@@ -133,13 +155,14 @@ export const parseKinoRio = (raw: KinoRioRawSnapshot, site: KinoRioSite): Provid
         audio: audio ? [audio] : [],
         ...((version.dubbed !== undefined || dubbed) && { dubbed: version.dubbed ?? dubbed }),
         subtitles: { kind: "unknown" },
-        tags: [...(rule?.tags ?? [])],
-        series: rule?.series ? [rule.series] : [],
+        tags,
+        series: effects.series,
         availability: "unknown",
         ...(price !== undefined && { price: { amountCents: price, currency: "EUR" as const } }),
         // Tickets at the door: the programme page.
         ticketUrl: site.programme,
         unmappedLabels: unmapped,
+        ...(labels.length > 0 && { labels }),
         fetchedAt: raw.fetchedAt,
       });
     }

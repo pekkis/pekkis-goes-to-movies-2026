@@ -4,6 +4,7 @@ import {
   type Auditorium,
   type FilmListing,
   type FinnishRating,
+  type RawLabel,
   type Lang,
   type ProviderBatch,
   type Screening,
@@ -14,7 +15,13 @@ import {
 } from "@pgtm/model";
 import { normalizeLang } from "../../lib/lang.ts";
 import { dateWindow, helsinkiShowTimeAt } from "@pgtm/model/time";
-import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
+import {
+  COMMON_TITLE_PREFIXES,
+  findLabel,
+  LABELS,
+  splitTitlePrefix,
+  splitVersion,
+} from "../labels.ts";
 import { availabilityFromSeats, byStartThenId, slugify, tally, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import { EventsPage, KinolaEvent, type KinolaRawSnapshot } from "./raw.ts";
@@ -185,13 +192,22 @@ export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderB
       });
     }
 
-    const tags: ScreeningTag[] = [...(prefix?.tags ?? []), ...noteTags(e.note)];
+    const note = e.note?.trim() ?? "";
+    const noteRule = note ? findLabel(note, LABELS) : undefined;
+    const tags: ScreeningTag[] = [
+      ...(prefix?.tags ?? []),
+      ...noteTags(e.note),
+      ...(noteRule?.tags ?? []),
+    ];
     const series: string[] = prefix?.series ? [prefix.series] : [];
     let licensed = false;
+    let ageLimit: FinnishRating | undefined;
     const program = e.program?.name.trim();
     if (program) {
-      const rule = own(site.programs, program);
+      const rule = findLabel(program, site.programs ?? {}, LABELS);
       if (!rule) {
+        // A program the table does not know is the cinema's strand: the pull resolves it
+        // against the series registry.
         series.push(program);
       } else {
         tags.push(...(rule.tags ?? []));
@@ -201,8 +217,13 @@ export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderB
         if (rule.licensed) {
           licensed = true;
         }
+        ageLimit = rule.ageLimit ?? ageLimit;
       }
     }
+    const labels: RawLabel[] = [
+      ...(program ? [{ source: "kinola.program", text: program }] : []),
+      ...(note ? [{ source: "kinola.note", text: note }] : []),
+    ];
 
     const venueId = makeId(P, "venue", venue.slug);
     const room = e.room?.name.trim();
@@ -235,6 +256,7 @@ export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderB
       tags: [...new Set(tags)],
       series: [...new Set(series)],
       ...(licensed && { licensed: true }),
+      ...(ageLimit && { ageLimit }),
       availability: availabilityOf(e),
       ...(range &&
         cents !== undefined && {
@@ -249,6 +271,7 @@ export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderB
         ? e.checkout_url
         : `${site.homepage}${site.programmePath}`,
       unmappedLabels: unmapped,
+      ...(labels.length > 0 && { labels }),
       fetchedAt: raw.fetchedAt,
     });
   }

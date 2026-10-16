@@ -3,6 +3,7 @@ import * as m0001 from "./0001_initial.ts";
 import * as m0002 from "./0002_trigram_search.ts";
 import * as m0003 from "./0003_film_ratings.ts";
 import * as m0004 from "./0004_listing_imdb_id.ts";
+import * as m0005 from "./0005_labels_series.ts";
 
 /**
  * Every migration, by name, in order. Imported statically so the API bundle (tsdown)
@@ -14,4 +15,5 @@ export const MIGRATIONS: Record<string, Migration> = {
   "0002_trigram_search": m0002,
   "0003_film_ratings": m0003,
   "0004_listing_imdb_id": m0004,
+  "0005_labels_series": m0005,
 };

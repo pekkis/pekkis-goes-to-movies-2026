@@ -10,7 +10,17 @@ const NON_ISO: Record<string, Lang> = {
   swe: "sv",
   fin: "fi",
   eng: "en",
+  // Country codes written for the language (BioRex, Gilda: "JP" for Japanese).
+  jp: "ja",
+  dk: "da",
+  cz: "cs",
+  gr: "el",
+  // Hebrew's withdrawn ISO code.
+  iw: "he",
 };
+
+/** ICU's language names: a two-letter code without one is not a language. */
+const LANGUAGE_NAMES = new Intl.DisplayNames(["en"], { type: "language", fallback: "none" });
 
 /** Finnish language names as cinemas write them. */
 const FINNISH_NAMES: Record<string, Lang> = {
@@ -148,7 +158,7 @@ export const normalizeLang = (input: string): Lang | undefined => {
   if (stem !== key) {
     return own(FINNISH_NAMES, stem) ?? own(OTHER_NAMES, stem);
   }
-  if (/^[a-z]{2}$/.test(key)) {
+  if (/^[a-z]{2}$/.test(key) && LANGUAGE_NAMES.of(key) !== undefined) {
     return key;
   }
   return undefined;

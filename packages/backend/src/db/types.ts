@@ -119,6 +119,7 @@ export interface Screenings {
   firstSeenAt: Timestamp;
   formats: Generated<string[]>;
   id: string;
+  labels: Generated<Json>;
   lastSeenAt: Timestamp;
   licensed: boolean | null;
   listingId: string;
@@ -138,6 +139,14 @@ export interface Screenings {
   unmappedLabels: Generated<string[]>;
   updatedAt: Generated<Timestamp>;
   venueId: string;
+}
+
+export interface Series {
+  createdAt: Generated<Timestamp>;
+  id: string;
+  kind: string;
+  name: string;
+  updatedAt: Generated<Timestamp>;
 }
 
 export interface Venues {
@@ -163,5 +172,6 @@ export interface DB {
   films: Films;
   providers: Providers;
   screenings: Screenings;
+  series: Series;
   venues: Venues;
 }

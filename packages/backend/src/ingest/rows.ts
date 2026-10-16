@@ -1,4 +1,12 @@
-import type { Auditorium, Film, FilmListing, Provider, Screening, Venue } from "@pgtm/model";
+import type {
+  Auditorium,
+  Film,
+  FilmListing,
+  Provider,
+  Screening,
+  SeriesRef,
+  Venue,
+} from "@pgtm/model";
 import type { Insertable } from "kysely";
 import type { DB } from "../db/types.ts";
 
@@ -12,6 +20,7 @@ export type VenueRow = Insertable<DB["venues"]>;
 export type AuditoriumRow = Insertable<DB["auditoriums"]>;
 export type FilmRow = Insertable<DB["films"]>;
 export type FilmListingRow = Insertable<DB["filmListings"]>;
+export type SeriesRow = Insertable<DB["series"]>;
 export type FilmRatingRow = Omit<Insertable<DB["filmRatings"]>, "createdAt" | "updatedAt">;
 export type ScreeningRow = Omit<
   Insertable<DB["screenings"]>,
@@ -131,5 +140,8 @@ export const screeningRow = (s: Screening): ScreeningRow => ({
   priceNote: s.price?.note ?? null,
   ticketUrl: s.ticketUrl ?? null,
   unmappedLabels: s.unmappedLabels,
+  labels: JSON.stringify(s.labels ?? []),
   fetchedAt: s.fetchedAt,
 });
+
+export const seriesRow = (s: SeriesRef): SeriesRow => ({ id: s.id, name: s.name, kind: s.kind });

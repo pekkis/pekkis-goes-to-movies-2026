@@ -1,73 +1,199 @@
-import { ScreeningTag, type Lang } from "@pgtm/model";
+import {
+  Availability,
+  FinnishRating,
+  Lang,
+  Projection,
+  ScreeningTag,
+  type ProviderBatch,
+} from "@pgtm/model";
 import { z } from "zod";
 import { own } from "../lib/records.ts";
 
 /**
- * How a cinema's free-text label (a show type, a tag, a title prefix) maps onto the model.
- * Shared by platform adapters; sites override per label in their sites.ts.
+ * What a cinema's free-text label (a show type, a tag, a note, a title prefix) means.
+ * The shared table is LABELS below; sites override or extend it in their sites.ts.
  * - `{}`: ignore (a label that only means something inside the cinema)
- * - `tags`: screening tags; `series`: a series or festival name; `licensed`: bar service
- * - `event: true`: the listing is event cinema (opera, concert), not a film
- * A label with no rule becomes a `series` entry, so nothing is lost.
+ * - `tags`: screening tags; `series`: a series or festival name (resolved against
+ *   config/series.json by the pull); `event: true`: the listing is event cinema
+ * - the rest set one fact each: bar service, the age limit that comes with it,
+ *   availability, the spoken language, subtitles ("none" or a language), projection.
+ * A label with no rule is not guessed at: it goes to `unmappedLabels` (docs/classification.md).
  */
 export const LabelRule = z.object({
   tags: z.array(ScreeningTag).optional(),
   series: z.string().optional(),
   event: z.boolean().optional(),
   licensed: z.boolean().optional(),
+  ageLimit: FinnishRating.optional(),
+  availability: Availability.optional(),
+  audio: Lang.optional(),
+  dubbed: z.boolean().optional(),
+  subtitles: z.union([z.literal("none"), Lang]).optional(),
+  projection: Projection.optional(),
 });
 export type LabelRule = z.infer<typeof LabelRule>;
 
-/** "Prefix: Title" labels common to Finnish cinemas. */
-export const COMMON_TITLE_PREFIXES: Record<string, LabelRule> = {
+/**
+ * Labels Finnish cinemas print, one meaning each wherever they appear: as a title prefix
+ * ("Ennakkonäytös: Pikkuli"), an eTiketti tag, a Nexxo show type, a Kinola note.
+ * Matched without regard to case, punctuation or spacing (labelKey).
+ */
+export const LABELS: Record<string, LabelRule> = {
+  // Occasion
   "Ennakkoensi-ilta": { tags: ["preview"] },
   Ennakkonäytös: { tags: ["preview"] },
+  Ennakkonäytökset: { tags: ["preview"] },
   Ennakko: { tags: ["preview"] },
   "Ensi-ilta": { tags: ["premiere"] },
+  "Suomen ensi-ilta": { tags: ["premiere"] },
+  "Viimeinen näytös": { tags: ["last-screening"] },
+  "Viimeiset näytökset": { tags: ["last-screening"] },
+  // Audience
   Vauvakino: { tags: ["baby"] },
   Perhekino: { tags: ["kids"] },
   Lastenkino: { tags: ["kids"] },
   Seniorikino: { tags: ["senior"] },
+  Seniorinäytös: { tags: ["senior"] },
+  // Event cinema
   Ooppera: { tags: ["event-cinema"], event: true },
   Baletti: { tags: ["event-cinema"], event: true },
+  "Oopperat ja muut eventit": { tags: ["event-cinema"], event: true },
+  // Extras, price
+  Tekijävierailu: { tags: ["guest"] },
+  "Vapaa pääsy": { tags: ["free"] },
+  "Ilmainen sisäänpääsy": { tags: ["free"] },
+  "Edullinen päivänäytös": { tags: ["discount"] },
+  // Bar service; the age limit only where the label states it (Finnkino separates the two).
+  Anniskelunäytös: { licensed: true },
+  "Anniskelunäytös K18": { licensed: true, ageLimit: "K-18" },
+  "Anniskelunäytös K-18": { licensed: true, ageLimit: "K-18" },
+  // Availability
+  Kiirehdi: { availability: "few-left" },
+  "Viimeiset liput": { availability: "few-left" },
+  Loppuunmyyty: { availability: "sold-out" },
+  // Language
+  "Puhuttu suomeksi": { audio: "fi", dubbed: true },
+  "Puhuttu ruotsiksi": { audio: "sv", dubbed: true },
+  "Puhuttu englanniksi": { audio: "en" },
+  "Ei tekstitystä": { subtitles: "none" },
+  "Ei puhetta": { audio: "zxx", tags: ["no-dialogue"] },
+  // Accessibility: subtitles describing sound too, for the hard of hearing
+  "Kuvaileva tekstitys": { tags: ["captions"] },
+  "Tekstitetty heikkokuuloisille": { tags: ["captions"] },
+  Kuvailutulkkaus: { tags: ["audio-description"] },
+  // Projection
+  "35mm": { projection: "35mm" },
+  "35 mm": { projection: "35mm" },
+  "70mm": { projection: "70mm" },
+  "70 mm": { projection: "70mm" },
+  // Meaningful only inside the cinema
+  Erikoisnäytös: {},
 };
+
+/** "Prefix: Title" labels: the shared table (kept under its old name for the adapters). */
+export const COMMON_TITLE_PREFIXES: Record<string, LabelRule> = LABELS;
+
+/** A label's lookup key: case, surrounding punctuation and spacing folded. */
+export const labelKey = (label: string): string =>
+  label
+    .normalize("NFC")
+    .toLowerCase()
+    .replace(/[\s\u00a0]+/g, " ")
+    .replace(/^[\s(*"'«»–-]+|[\s)!.:,*"'«»–-]+$/g, "");
+
+/** The rule for a label, looked up in each table in turn (site rules first). */
+export const findLabel = (
+  label: string,
+  ...tables: Record<string, LabelRule>[]
+): LabelRule | undefined => {
+  const key = labelKey(label);
+  for (const table of tables) {
+    const exact = own(table, label);
+    if (exact) {
+      return exact;
+    }
+    const hit = Object.entries(table).find(([k]) => labelKey(k) === key)?.[1];
+    if (hit) {
+      return hit;
+    }
+  }
+  return undefined;
+};
+
+/** What a set of matched rules says, merged; later rules win for single facts. */
+export type LabelEffects = {
+  tags: ScreeningTag[];
+  series: string[];
+  event?: boolean;
+  licensed?: boolean;
+  ageLimit?: FinnishRating;
+  availability?: Availability;
+  audio?: Lang;
+  dubbed?: boolean;
+  subtitles?: "none" | Lang;
+  projection?: Projection;
+};
+
+export const labelEffects = (rules: (LabelRule | undefined)[]): LabelEffects => {
+  const effects: LabelEffects = { tags: [], series: [] };
+  for (const rule of rules) {
+    if (!rule) {
+      continue;
+    }
+    effects.tags.push(...(rule.tags ?? []));
+    if (rule.series) {
+      effects.series.push(rule.series);
+    }
+    for (const key of [
+      "event",
+      "licensed",
+      "ageLimit",
+      "availability",
+      "audio",
+      "dubbed",
+      "subtitles",
+      "projection",
+    ] as const) {
+      if (rule[key] !== undefined) {
+        Object.assign(effects, { [key]: rule[key] });
+      }
+    }
+  }
+  effects.tags = [...new Set(effects.tags)];
+  effects.series = [...new Set(effects.series)];
+  return effects;
+};
+
+/** A label's rule, matched without regard to case or punctuation. */
+const ruleFor = (rules: Record<string, LabelRule>, label: string): LabelRule | undefined =>
+  findLabel(label, rules);
 
 /**
  * "Ennakkonäytös: Pikkuli" -> { title: "Pikkuli", rule } when the prefix has a rule.
  * Only listed prefixes are touched: "Ryhmä Hau: Dinoelokuva" is a title, not a label.
  * The same labels at the end: "Pirjo i Sverige – Vauvakino", "Pikkuli (Ennakkonäytös!)".
  */
-/** A label's rule, matched without regard to case ("ENNAKKONÄYTÖS" is "Ennakkonäytös"). */
-const ruleFor = (rules: Record<string, LabelRule>, label: string): LabelRule | undefined => {
-  const exact = own(rules, label);
-  if (exact) {
-    return exact;
-  }
-  const lower = label.toLowerCase();
-  return Object.entries(rules).find(([key]) => key.toLowerCase() === lower)?.[1];
-};
-
 export const splitTitlePrefix = (
   raw: string,
   rules: Record<string, LabelRule>,
-): { title: string; rule?: LabelRule } => {
+): { title: string; rule?: LabelRule; label?: string } => {
   const title = raw.trim();
   const prefix = title.match(/^([^:]+):\s*(.+)$/);
   const prefixRule = prefix ? ruleFor(rules, prefix[1]!.trim()) : undefined;
   if (prefix && prefixRule) {
-    return { title: prefix[2]!.trim(), rule: prefixRule };
+    return { title: prefix[2]!.trim(), rule: prefixRule, label: prefix[1]!.trim() };
   }
   // The same labels after a dash at the end: "Pirjo i Sverige – Vauvakino".
   const suffix = title.match(/^(.+?)\s+[–-]\s+([^–-]+)$/);
   const suffixRule = suffix ? ruleFor(rules, suffix[2]!.trim()) : undefined;
   if (suffix && suffixRule) {
-    return { title: suffix[1]!.trim(), rule: suffixRule };
+    return { title: suffix[1]!.trim(), rule: suffixRule, label: suffix[2]!.trim() };
   }
   // In parentheses at the end, an exclamation mark allowed: "(Ennakkonäytös!)" (TMB).
   const paren = title.match(/^(.+?)\s*\(([^()]+?)!?\)$/);
   const parenRule = paren ? ruleFor(rules, paren[2]!.trim()) : undefined;
   if (paren && parenRule) {
-    return { title: paren[1]!.trim(), rule: parenRule };
+    return { title: paren[1]!.trim(), rule: parenRule, label: paren[2]!.trim() };
   }
   return { title };
 };
@@ -131,3 +257,16 @@ export const splitVersion = (raw: string): { title: string; version: Version } =
     title = m[1].trim();
   }
 };
+
+/**
+ * Tags that follow from other facts, whichever parser set them: a screening whose only
+ * audio is "zxx" (no linguistic content: "Ei puhetta", a silent film) has no dialogue.
+ */
+export const deriveTags = (batch: ProviderBatch): ProviderBatch => ({
+  ...batch,
+  screenings: batch.screenings.map((s) =>
+    s.audio.length === 1 && s.audio[0] === "zxx" && !s.tags.includes("no-dialogue")
+      ? { ...s, tags: [...s.tags, "no-dialogue"] }
+      : s,
+  ),
+});

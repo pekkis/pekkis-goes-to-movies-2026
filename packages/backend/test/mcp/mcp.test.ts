@@ -30,7 +30,7 @@ const call = async (client: Client, name: string, args: Record<string, unknown>)
 };
 
 beforeAll(async () => {
-  await sql`truncate screenings, film_listings, auditoriums, venues, providers, films cascade`.execute(
+  await sql`truncate screenings, film_listings, auditoriums, venues, providers, films, series cascade`.execute(
     db,
   );
   await ingestFilms(db, catalog([film()]));

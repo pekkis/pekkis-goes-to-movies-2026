@@ -1,0 +1,91 @@
+{
+  "matinea": {
+    "name": "Matinea",
+    "kind": "strand",
+    "aliases": ["Matinée"],
+    "note": "Savon Kinot's daytime screenings."
+  },
+  "cine-matinea": { "name": "Cine Matinea", "kind": "strand", "note": "Cine Mäntsälä." },
+  "hopeatahti": {
+    "name": "Hopeatähti",
+    "kind": "strand",
+    "note": "Savon Kinot's screenings for seniors."
+  },
+  "hopeacine": {
+    "name": "HopeaCine",
+    "kind": "strand",
+    "note": "Helsinki's culture houses' screenings for seniors (Malmitalo, Vuotalo)."
+  },
+  "kino-kuutamo": {
+    "name": "Kino Kuutamo",
+    "kind": "strand",
+    "aliases": ["Kino Kuutamo | Maksuttomat maanantait"],
+    "note": "Kanneltalo's free Monday screenings."
+  },
+  "yleison-suosikit": { "name": "Yleisön suosikit", "kind": "strand", "note": "Kino Helios." },
+  "kahvikino": { "name": "Kahvikino", "kind": "strand", "note": "Kino Kilta." },
+  "paivakinot": {
+    "name": "Päiväkinot",
+    "kind": "strand",
+    "aliases": ["Päiväkino"],
+    "note": "Kino Aurora's daytime screenings."
+  },
+  "leffabrunssi": { "name": "Leffabrunssi", "kind": "strand", "note": "Riviera." },
+  "kolme-kaveria-jaatelonaytos": {
+    "name": "3 Kaveria jäätelönäytös",
+    "kind": "strand",
+    "note": "Riviera's children's screenings with ice cream."
+  },
+  "neulekino": { "name": "Neulekino", "kind": "strand", "note": "Kino Pirtti." },
+  "kirjastokino": { "name": "Kirjastokino", "kind": "strand", "note": "Korjaamo Kino." },
+  "barnsondagar": { "name": "Barnsöndagar", "kind": "strand", "note": "Kino Engel." },
+  "minikino": {
+    "name": "Minikino",
+    "kind": "strand",
+    "note": "Kino Metso's children's screenings."
+  },
+  "romppaviikot": {
+    "name": "Römppäviikot",
+    "kind": "theme-week",
+    "aliases": ["Römppäviikko"],
+    "note": "Kuhmo's film weeks (Pajakkakino)."
+  },
+  "rauhanviikko": { "name": "Rauhanviikko", "kind": "theme-week", "note": "Kino Aurora." },
+  "tampere-film-festival": {
+    "name": "Tampere Film Festival",
+    "kind": "festival",
+    "aliases": ["Tampereen elokuvajuhlat"]
+  },
+  "laikku": {
+    "name": "LAIKKU – lastenelokuvafestivaali",
+    "kind": "festival",
+    "aliases": ["LAIKKU -lastenelokuvafestivaali", "LAIKKU"],
+    "note": "A children's film festival (Kino Aurora)."
+  },
+  "cinemaissi": {
+    "name": "Cinemaissí",
+    "kind": "festival",
+    "aliases": ["Cinemaissi"],
+    "note": "Latin American film festival."
+  },
+  "taidekaupungin-elokuvajuhlat": {
+    "name": "Taidekaupungin elokuvajuhlat",
+    "kind": "festival",
+    "note": "Bio Säde, Mänttä."
+  },
+  "kauhujen-kangasala": { "name": "Kauhujen Kangasala", "kind": "festival", "note": "K-Kino." },
+  "kinokopla": { "name": "Kinokopla", "kind": "club", "note": "Kino Kilta." },
+  "hyvat-kuvat-kerho": { "name": "Hyvät Kuvat -kerho", "kind": "club", "note": "Kuvakukko." },
+  "kuvi-aluesarja": {
+    "name": "KUVIn aluesarja",
+    "kind": "distributor-series",
+    "aliases": ["Kuvin aluesarja", "Kuvi", "Kuvin elokuvasarja", "KUVI"],
+    "note": "The regional series of KUVI, the federation of Finnish film societies."
+  },
+  "kuukauden-pohjoismainen": {
+    "name": "Kuukauden pohjoismainen",
+    "kind": "distributor-series",
+    "aliases": ["Walhalla - Kuukauden pohjoismainen elokuva", "Kuukauden pohjoismainen elokuva"],
+    "note": "A Nordic film of the month, distributed to several cinemas."
+  }
+}

@@ -4,13 +4,20 @@ import {
   type FinnishRating,
   type ProviderBatch,
   type Screening,
-  type ScreeningTag,
+  type RawLabel,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
-import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
+import {
+  COMMON_TITLE_PREFIXES,
+  findLabel,
+  LABELS,
+  labelEffects,
+  splitTitlePrefix,
+  splitVersion,
+} from "../labels.ts";
 import { byStartThenId, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KaarreRawSnapshot } from "./fetch.ts";
@@ -26,7 +33,6 @@ const AGE = /Ikäraja\s+(-S-|S\b|K-?\d{1,2}\b)/i;
 const PRICE = /liput\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*€/i;
 const RUNTIME = /kesto\s+(\d+)\s*h\s*(\d+)\s*min/i;
 const DUBBED = /\bdub\.?\s+suomeksi\b/i;
-const LAST = /viimeinen näytös/i;
 const RATINGS: Record<string, FinnishRating> = {
   S: "S",
   K7: "K-7",
@@ -82,7 +88,7 @@ export const parseKaarre = (raw: KaarreRawSnapshot, site: KaarreSite): ProviderB
     const price = toCents(facts.match(PRICE)?.[1], { zeroIsFree: false });
     const dubbed = DUBBED.test(facts);
 
-    const { title: unprefixed, rule } = splitTitlePrefix(rawTitle, prefixRules);
+    const { title: unprefixed, rule, label } = splitTitlePrefix(rawTitle, prefixRules);
     const { title, version } = splitVersion(unprefixed);
     const filmKey = slugify(title);
     const listingId = makeId(P, "film", filmKey);
@@ -122,9 +128,14 @@ export const parseKaarre = (raw: KaarreRawSnapshot, site: KaarreSite): ProviderB
           kind: rule?.event ? "event" : "film",
         });
       }
-      const tags: ScreeningTag[] = [
-        ...(LAST.test(m[6] ?? "") ? (["last-screening"] as const) : []),
-        ...(rule?.tags ?? []),
+      // The rest of the line is a note: "kiirehdi!", "viimeinen näytös".
+      const note = m[6]?.trim() ?? "";
+      const noteRule = note ? findLabel(note, LABELS) : undefined;
+      const rowUnmapped = note && !noteRule ? [...unmapped, `note:${note}`] : unmapped;
+      const effects = labelEffects([rule, noteRule]);
+      const labels: RawLabel[] = [
+        ...(label ? [{ source: "title.prefix", text: label }] : []),
+        ...(note ? [{ source: "row.note", text: note }] : []),
       ];
       const audio = version.audio ?? (dubbed ? "fi" : undefined);
       const sourceId = `${filmKey}-${start.startsAt.slice(0, 16).replace(/[-T:]/g, "")}`;
@@ -141,13 +152,14 @@ export const parseKaarre = (raw: KaarreRawSnapshot, site: KaarreSite): ProviderB
         audio: audio ? [audio] : [],
         ...((version.dubbed !== undefined || dubbed) && { dubbed: version.dubbed ?? dubbed }),
         subtitles: { kind: "unknown" },
-        tags,
-        series: rule?.series ? [rule.series] : [],
-        availability: "unknown",
+        tags: effects.tags,
+        series: effects.series,
+        availability: effects.availability ?? "unknown",
         ...(price !== undefined && { price: { amountCents: price, currency: "EUR" as const } }),
         // Tickets at the door: the cinema's page.
         ticketUrl: site.programme,
-        unmappedLabels: unmapped,
+        unmappedLabels: rowUnmapped,
+        ...(labels.length > 0 && { labels }),
         fetchedAt: raw.fetchedAt,
       });
     }

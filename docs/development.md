@@ -90,7 +90,7 @@ Printed by `pnpm pull` and stored in each batch. Codes marked **data missing** m
 
 `pnpm pull && pnpm ingest`, then check:
 
-1. **Warnings and unmapped labels** in the `pull` output. Each is a to-do (see above). New labels usually need a line in a rule table: `labels.ts`, a site's `tags`, or a parser's map.
+1. **Warnings and unmapped labels** in the `pull` output. Each is a to-do (see above). A new label needs a line in `LABELS` (`labels.ts`) when its meaning is general, in the site's config (`tags`, `showTypes`, `programs`, `titlePrefixes`) when only that cinema means it; a strand or festival goes to `config/series.json` (see the recipe).
 2. **Unmatched films** (the end of `pull` or `pnpm match`). Add aliases to `config/tmdb-aliases.json` after verifying on TMDB (runtime, year, countries), with the reasoning in `note`. Event cinema is never listed.
 3. **Counts per provider** in the `ingest` output.
    - A provider dropping to 0, or by a third, is suspect.
@@ -135,6 +135,12 @@ Then for every new venue:
 1. `geo` (with its `geoSource`), address and `verifiedAt`.
 2. `pnpm pull --provider <id>`; read the warnings and fix `sites.ts` until there are none.
 3. `pnpm venues:locate` lists no venue of it.
+
+**Add a label or a series** (an unmapped label in the `pull` output):
+
+1. Decide what it says. A general fact (availability, language, an occasion, an audience) goes into `LABELS` in `providers/labels.ts`, with a row in the table test in `test/providers/labels.test.ts`. A phrase only one cinema uses in its own sense goes into that site's config.
+2. A strand, festival, club or distributor series goes into `config/series.json`: a stable id (never renamed; it is in screening rows), the display `name`, the `kind`, other spellings in `aliases`, and a `note` saying where it was seen. A provider strand (`kinoregina/…`) is adopted the same way, with its name as an alias.
+3. Something that cannot be classified with certainty stays unmapped; note it under "Open questions" in [classification.md](classification.md).
 
 **Add a chain (a single source like BioRex or Finnkino):**
 

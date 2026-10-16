@@ -68,6 +68,19 @@ describe("parseKuvakukko", () => {
     );
   });
 
+  it("keeps what the notes say: a guest, free entry (also after the linked title)", () => {
+    expect(at("kuopio", "2026-10-14T17:30:00+03:00")).toMatchObject({
+      tags: ["guest"],
+      labels: [
+        { source: "title.note", text: "tekijävierailunäytös, paikalla ohjaaja + keskustelua" },
+      ],
+    });
+    expect(at("kuopio", "2026-10-16T18:00:00+03:00").tags).toEqual(["free"]);
+    const after = at("kuopio", "2026-10-15T17:30:00+03:00");
+    expect(titleOf(after)).toBe("Kuopion mediataidefestarit: Näytös B");
+    expect(after.tags).toEqual(["free"]);
+  });
+
   it("takes year, runtime, age limit and languages from the film page its heading names", () => {
     const grazia = at("kuopio", "2026-10-15T13:00:00+03:00");
     expect(grazia).toMatchObject({

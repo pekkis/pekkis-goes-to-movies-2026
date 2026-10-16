@@ -36,7 +36,10 @@ Goal: a precise, typed model that improves on the data model of Leffavuoro (Shad
 - **"Unknown" is expressed by omitting the field, never with an empty string or `false`.** For example, `licensed` (alcohol service) is absent when we do not know. The TS option `exactOptionalPropertyTypes` enforces this.
 - **Age limits:** the film's classification is `FilmListing.rating` (and `Film.rating` from TMDB). Limits set by the screen or the screening are `Auditorium.ageLimit` and `Screening.ageLimit`; for example, BioRex's REX screens are K-18.
 - **Availability:** `available`, `few-left`, `sold-out`, `not-bookable` or `unknown`. `ticketUrl` is set only while the screening is on sale.
-- **`unmappedLabels`:** source labels the parser does not recognize (e.g. `version_hfr` or `title_extension:4DX`). They are never dropped silently.
+- **`unmappedLabels`:** source labels the parser does not recognize (e.g. `version_hfr` or `title_extension:4DX`). They are never dropped silently, and never put into `series`.
+- **`labels`:** every label the source printed, verbatim, as `{ source, text }` (`etiketti.tag`, `title.prefix`, …), whether understood or not. Kept for reclassifying history; not in the API.
+- **`series`:** ids into the series catalogue: registry ids (`kuvi-aluesarja`) or a provider's own strands (`kinoregina/ken-russell`). Parsers emit names; `pull` resolves them and lists the entries on `ProviderBatch.series` (`{ id, name, kind }`). See [classification.md](classification.md#series).
+- **`tags`** are one flat array; `TAG_GROUPS` maps each to its facet (occasion, audience, extras, accessibility, price). The meaning of each label phrase: [classification.md](classification.md).
 - **Validation in two stages:**
   - Raw data is checked with source-specific schemas (e.g. [src/providers/mycloudcinema/raw.ts](../packages/fetcher/src/providers/mycloudcinema/raw.ts)). A broken row becomes a warning and does not abort the run.
   - Finally, the whole result is checked against the `ProviderBatch` schema.
@@ -49,6 +52,8 @@ fetch (I/O, polite, cached)  →  raw snapshot (stored; tests use these)
 parse (pure function: raw → ProviderBatch)  ←  unit tests against recorded responses
       ↓
 validate (Zod)  →  a broken row does not abort the run: it is reported and skipped
+      ↓
+resolve series (registry), derive tags (no-dialogue from zxx)
       ↓
 match (TMDB)  →  films.json, filmId on listings and screenings
       ↓

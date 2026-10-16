@@ -14,6 +14,12 @@ it.each([
   ["dari", "fa"],
   ["", undefined],
   ["Klingon", undefined],
+  // Country codes for languages; a two-letter code that is no language is unknown.
+  ["JP", "ja"],
+  ["DK", "da"],
+  ["IW", "he"],
+  ["xx", undefined],
+  ["ov", undefined],
 ])("normalizeLang(%s) = %s", (input, expected) => {
   expect(normalizeLang(input)).toBe(expected);
 });

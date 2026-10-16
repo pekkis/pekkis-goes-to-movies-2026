@@ -50,6 +50,23 @@ describe("parseKaarre", () => {
     expect(saari.map((s) => s.tags)).toEqual([[], [], ["last-screening"]]);
   });
 
+  it('reads "kiirehdi!" as few seats left, and keeps the note as a raw label', () => {
+    const [, hurry] = shows("UNOHDETTU SAARI");
+    expect(hurry).toMatchObject({
+      availability: "few-left",
+      labels: [{ source: "row.note", text: "kiirehdi!" }],
+      unmappedLabels: [],
+    });
+  });
+
+  it("reports a note the label table does not know", () => {
+    const html = HTML.replace("kiirehdi!", "kahvitarjoilu");
+    const [, coffee] = parseKaarre(snapshot({ html }), SITE).screenings.filter(
+      (s) => s.listingId === listing("UNOHDETTU SAARI").id,
+    );
+    expect(coffee?.unmappedLabels).toEqual(["note:kahvitarjoilu"]);
+  });
+
   it("warns about a row whose weekday fits no date", () => {
     const broken = HTML.replace("Pe 9.10. klo 18", "La 9.10. klo 18");
     const result = parseKaarre(snapshot({ html: broken }), SITE);

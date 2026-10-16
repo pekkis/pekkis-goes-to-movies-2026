@@ -107,7 +107,7 @@ export const KINOLA_SITES: KinolaSite[] = defineSites(KinolaSite, [
     notes:
       "Sells tickets outside Kinola: the API gives no checkout link, so shows link the programme.",
     programs: {
-      "Anniskelunäytös K18": { licensed: true },
+      "Anniskelunäytös K18": { licensed: true, ageLimit: "K-18" },
       "KUVIn aluesarja": { series: "KUVIn aluesarja" },
       Kahvikino: { series: "Kahvikino" },
     },

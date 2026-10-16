@@ -52,6 +52,26 @@ describe("parsePajakkakino", () => {
     });
   });
 
+  it("marks the post's latest screening when a note says the last one is coming", () => {
+    // As on the page: the note stands between two rows.
+    const posts = POSTS().map((p) =>
+      JSON.parse(
+        JSON.stringify(p).replace(
+          "<p><span><strong>MA 19.10. KLO 18:00</strong></span></p>",
+          "<p><span><strong>VIIMEINEN NÄYTÖS</strong></span></p><p><span><strong>MA 19.10. KLO 18:00</strong></span></p>",
+        ),
+      ),
+    );
+    const result = parsePajakkakino(snapshot({ posts }), SITE);
+    const listing = result.listings.find((l) => l.title.fi === "PIRJO I SVERIGE")!;
+    const shows = result.screenings.filter((s) => s.listingId === listing.id);
+    expect(shows.map((s) => s.tags)).toEqual([[], [], [], [], ["last-screening"]]);
+    expect(shows[0]?.labels).toEqual([{ source: "post.note", text: "VIIMEINEN NÄYTÖS" }]);
+    // Outside the window, the last screening is not one we list.
+    const early = parsePajakkakino(snapshot({ posts, days: 7 }), SITE).screenings;
+    expect(early.some((s) => s.tags.includes("last-screening"))).toBe(false);
+  });
+
   it("warns about a row whose weekday fits no date", () => {
     const posts = POSTS().map((p) =>
       JSON.parse(JSON.stringify(p).replace("SU 11.10. KLO 19:00", "LA 11.10. KLO 19:00")),

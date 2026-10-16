@@ -61,7 +61,14 @@ export const listScreenings = async (
       "s.subtitlesKind",
       "s.subtitlesLanguages",
       "s.tags",
-      "s.series",
+      // Series ids -> display names, in order; rows from before the series table hold
+      // the names themselves.
+      sql<string[]>`array(
+        select coalesce(se.name, x.id)
+        from unnest(s.series) with ordinality as x(id, n)
+        left join series se on se.id = x.id
+        order by x.n
+      )`.as("series"),
       "s.ageLimit",
       "s.availability",
       "s.priceAmountCents",

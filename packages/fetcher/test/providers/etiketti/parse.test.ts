@@ -317,4 +317,20 @@ describe("parseEtiketti: the data-dates template (Savon Kinot, Leffabuumi, 2026-
     expect(batch.warnings.map((w) => w.code)).toEqual(["invalid-show"]);
     expect(batch.screenings).toHaveLength(3);
   });
+
+  it("keeps a tag the series registry knows as a series, and reports any other", () => {
+    const batch = at({ "/elokuvat/107/couture-muodin-ehdoilla": page });
+    expect(batch.screenings[0]).toMatchObject({
+      series: ["Matinea"],
+      labels: [{ source: "etiketti.tag", text: "Matinea" }],
+      unmappedLabels: [],
+    });
+    const unknown = at({
+      "/elokuvat/107/couture-muodin-ehdoilla": page.replaceAll(">Matinea<", ">Kakkukahvit<"),
+    });
+    expect(unknown.screenings[0]).toMatchObject({
+      series: [],
+      unmappedLabels: ["tag:Kakkukahvit"],
+    });
+  });
 });

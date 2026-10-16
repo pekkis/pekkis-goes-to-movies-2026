@@ -7,6 +7,8 @@ import { helsinkiToday, isIsoDate } from "@pgtm/model/time";
 import { runMatching } from "../matching/run.ts";
 import { ProviderBatch } from "@pgtm/model";
 import { finishVenues, loadVenueOverrides } from "../providers/overrides.ts";
+import { deriveTags } from "../providers/labels.ts";
+import { resolveSeries } from "../series/registry.ts";
 import PQueue from "p-queue";
 import { ADAPTERS, selectAdapters, type Adapter } from "../providers/registry.ts";
 
@@ -78,7 +80,7 @@ const pullOne = async (adapter: Adapter): Promise<{ ok: boolean; lines: string[]
       { from, days, ...(values.venue && { venues: values.venue }) },
     );
     const { raw } = pulled;
-    const batch = finishVenues(pulled.batch, overrides);
+    const batch = deriveTags(resolveSeries(finishVenues(pulled.batch, overrides)));
     const stamp = raw.fetchedAt.replace(/[:.]/g, "-");
     await writeJson(join(values.out, "raw", adapter.id, `${stamp}.json`), raw);
     // The parser already validates rows; this guards the output contract itself.

@@ -10,7 +10,7 @@ import {
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, parseLocalDateTime } from "@pgtm/model/time";
-import { splitTitlePrefix as splitPrefix, splitVersion } from "../labels.ts";
+import { findLabel, LABELS, splitTitlePrefix as splitPrefix, splitVersion } from "../labels.ts";
 import { codes, parseAudio, parseSubtitles, UNKNOWN_CODE } from "../language-codes.ts";
 import { byStartThenId, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
@@ -23,7 +23,6 @@ import {
   type ShowTypeRule,
   type TitlePrefixRule,
 } from "./sites.ts";
-import { own } from "../../lib/records.ts";
 
 const RATINGS: Record<string, FinnishRating> = {
   S: "S",
@@ -58,7 +57,7 @@ export const toIso = (local: string): string | undefined => {
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const showTypeRule = (site: NexxoSite, title: string): ShowTypeRule | undefined =>
-  own(site.showTypes, title) ?? own(DEFAULT_SHOW_TYPES, title);
+  findLabel(title, site.showTypes ?? {}, DEFAULT_SHOW_TYPES, LABELS);
 
 /** "Ennakkoensi-ilta: Pikkuli" -> { title: "Pikkuli", rule } when the prefix is configured. */
 export const splitTitlePrefix = (
@@ -196,6 +195,8 @@ export const parseNexxo = (raw: NexxoRawSnapshot, site: NexxoSite): ProviderBatc
           isEvent ||= rule.event ?? false;
           licensed ||= rule.licensed ?? false;
         } else {
+          // Show types the table does not know are the cinema's strands and festivals:
+          // the pull resolves them against the series registry.
           series.push(showType);
         }
       }
@@ -267,6 +268,7 @@ export const parseNexxo = (raw: NexxoRawSnapshot, site: NexxoSite): ProviderBatc
         // No per-show booking link: the venue's programme page (verified per site).
         ticketUrl: ticketUrl(site, venue),
         unmappedLabels: unmapped,
+        ...(showType && { labels: [{ source: "nexxo.showType", text: showType }] }),
         fetchedAt: raw.fetchedAt,
       });
     }

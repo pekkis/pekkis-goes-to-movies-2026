@@ -7,7 +7,7 @@ import { batch, catalog, film, screening } from "./factory.ts";
 const db = createDb(process.env["TEST_DATABASE_URL"]!);
 
 beforeEach(async () => {
-  await sql`truncate screenings, film_listings, auditoriums, venues, providers, films cascade`.execute(
+  await sql`truncate screenings, film_listings, auditoriums, venues, providers, films, series cascade`.execute(
     db,
   );
   await ingestFilms(db, catalog());
@@ -38,6 +38,30 @@ describe("ingestBatch", () => {
     });
     expect(row.startsAt.toISOString()).toBe("2026-10-10T15:00:00.000Z");
     expect(row.firstSeenAt.toISOString()).toBe("2026-10-09T12:00:00.000Z");
+  });
+
+  it("stores raw labels and the batch's series catalogue, updating renamed series", async () => {
+    const labels = [{ source: "etiketti.tag", text: "Kiirehdi" }];
+    const kuvi = { id: "kuvi-aluesarja", name: "Kuvin aluesarja", kind: "strand" as const };
+    await ingestBatch(
+      db,
+      batch([screening("1", { labels, series: [kuvi.id] })], { series: [kuvi] }),
+    );
+    await ingestBatch(
+      db,
+      batch([screening("1", { labels, series: [kuvi.id] })], {
+        series: [{ ...kuvi, name: "KUVIn aluesarja", kind: "distributor-series" }],
+      }),
+    );
+    const row = await db
+      .selectFrom("screenings")
+      .select(["labels", "series"])
+      .where("id", "=", "testchain:show:1")
+      .executeTakeFirstOrThrow();
+    expect(row).toEqual({ labels, series: ["kuvi-aluesarja"] });
+    expect(await db.selectFrom("series").select(["id", "name", "kind"]).execute()).toEqual([
+      { id: "kuvi-aluesarja", name: "KUVIn aluesarja", kind: "distributor-series" },
+    ]);
   });
 
   it("is idempotent and bumps last_seen_at on the next fetch", async () => {
