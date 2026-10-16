@@ -333,5 +333,50 @@
     "tmdb": 653,
     "title": "NOSFERATU (1922)",
     "note": "Nosferatu (1922) in the Römppäviikot film week, as riviera:film:28163 (verified by the maintainer 2026-10-14); a 2023 'Nosferatu' (92 min) ties with it on title and runtime."
+  },
+  "savonkinot:film:107": {
+    "tmdb": 1390382,
+    "title": "Couture - Muodin ehdoilla",
+    "note": "Coutures (2026, Alice Winocour, FR/US); 103 vs 104 min. TMDB has only the French plural title; verified by the maintainer 2026-10-16."
+  },
+  "savonkinot:film:121": {
+    "tmdb": 29933,
+    "title": "Kuvi: Kanal - Kirottujen tie",
+    "note": "Kanał (1957, Andrzej Wajda) in KUVI's series; 97 vs 96 min. verified by the maintainer 2026-10-16."
+  },
+  "kinoregina:film:121177": {
+    "tmdb": 289,
+    "title": "CASABLANCA",
+    "note": "Casablanca (1942; TMDB dates the 1943 US release); 102 min both. verified by the maintainer 2026-10-16."
+  },
+  "kinoregina:film:101400": {
+    "tmdb": 31767,
+    "title": "KEN RUSSELL'S THE DEVILS",
+    "note": "The Devils (1971, GB); 114 vs 112 min. verified by the maintainer 2026-10-16."
+  },
+  "kinoregina:film:197357": {
+    "tmdb": 56231,
+    "title": "TYÖVÄENLUOKKA NOUSEE TAIVAASEEN",
+    "note": "La classe operaia va in paradiso (1971, Elio Petri); Regina states 125 min, TMDB 113. verified by the maintainer 2026-10-16."
+  },
+  "biopallas:film:hetki-ennen-valoa": {
+    "tmdb": 1015881,
+    "title": "Hetki ennen valoa",
+    "note": "Hetki ennen valoa (2026, FI/LT/BG), the only film of the name; Bio Pallas states 97 min, TMDB 87. verified by the maintainer 2026-10-16."
+  },
+  "alatalo:film:kerro-se-kaikille": {
+    "tmdb": 1304530,
+    "title": "Kerro se kaikille",
+    "note": "Kerro kaikille (2026), misspelt in the programme. verified by the maintainer 2026-10-16."
+  },
+  "alatalo:film:kero-se-kaikille": {
+    "tmdb": 1304530,
+    "title": "Kero se kaikille",
+    "note": "Kerro kaikille (2026), misspelt in the programme. verified by the maintainer 2026-10-16."
+  },
+  "alatalo:film:pirjo": {
+    "tmdb": 1729175,
+    "title": "Pirjo",
+    "note": "Pirjo i Sverige (2026), shortened in the programme. verified by the maintainer 2026-10-16."
   }
 }
