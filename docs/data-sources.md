@@ -906,11 +906,11 @@ Cinemas we know of and do not read, for the next batch. Found by comparing our v
 
 **No programme now** (re-check later): Kino Hetta, KinoPattery, Lapinsuu, Kino Visio, Tuiskula, Kino Sihis, Virta-sali, Kinokellari, Tuulensuun Palatsi, KannuKino, Kinopoli, Louhisali, Kino Caisa (festivals only), Rekolan Kino, Juvan Kino. **Skipped earlier:** Heureka (complex schedule), Kino K13 (prose), Kinotour (touring rows), Iobio (duplicate calendars).
 
-**Since added:** Bio-Salo and Bio Stara (2026-10-15), Bio Jukola (2026-10-16, through the Nexxo `movieid` fix; see the Nexxo section), Kino Jalasjärvi, Kino Rio, Suojan elokuvat and Bio Dux (2026-10-16).
+**Since added:** Bio-Salo and Bio Stara (2026-10-15), Bio Jukola (2026-10-16, through the Nexxo `movieid` fix; see the Nexxo section), Kino Jalasjärvi, Kino Rio, Suojan elokuvat, Bio Dux and Kino Yläri (2026-10-16).
 
 **From nytleffaan.fi's directory** (225 entries, a copy the maintainer saved from a browser, 2026-10-16; used only as a list of cinemas and their own sites). Not read by us yet, with the homepage it gives; most are municipal halls with occasional screenings, unchecked:
 
-- Altin Sali, Ikaalinen (ikaalinen.fi); Bio Fix, Kemiö (kemionsaari.fi); Bio Sydväst, Parainen, and the Parainen tour halls (pargas.fi); Toholampisali (toholampi.fi); Reijowaara-sali, Haapavesi (haapavesi.fi); Raahesali, Raahe (kulttuuriraahe.fi); Kuhmoisten elokuvat (kuhmoinen.fi); Kangastus, Kangasniemi (kangasniemi.fi); Kino Mäntyharju (mantyharju.fi); Kino Lusto, Punkaharju (savonlinna.fi); Elokuvateatteri Kaarre, Ivalo (inari.fi); Kino Yläri, Kittilä (kittila.fi); Kino-Väylä, Ylitornio (ylitornio.fi); Pellon kunnankino (pello.fi); Paljakkakino / Puolanka Kino (puolanka.fi); Kino Hetta, Enontekiö (enontekio.fi).
+- Altin Sali, Ikaalinen (ikaalinen.fi); Bio Fix, Kemiö (kemionsaari.fi); Bio Sydväst, Parainen, and the Parainen tour halls (pargas.fi); Toholampisali (toholampi.fi); Reijowaara-sali, Haapavesi (haapavesi.fi); Raahesali, Raahe (kulttuuriraahe.fi); Kuhmoisten elokuvat (kuhmoinen.fi); Kangastus, Kangasniemi (kangasniemi.fi); Kino Mäntyharju (mantyharju.fi); Kino Lusto, Punkaharju (savonlinna.fi); Elokuvateatteri Kaarre, Ivalo (inari.fi); Kino-Väylä, Ylitornio (ylitornio.fi); Pellon kunnankino (pello.fi); Paljakkakino / Puolanka Kino (puolanka.fi); Kino Hetta, Enontekiö (enontekio.fi).
 - Own sites, checked 2026-10-16: Kino Hannikainen is already read (Johku); Teatteri Retikka's domain (teatteriretikka.net) now serves unrelated content; Kino Hakalinna (kinohakalinna.fi) and Cinema Keuda-talo (keudatalo.fi) did not answer; Kinoma's site (hyvleffat.fi) redirects to its host's maintenance page; Sirius, Parkano says it is on a break ("Tauolla"); Jurvan teatteri's film page lists stage productions; Filmipyörä (elokuvat.org) and Cinema Nikkilä (storyhill.fi, 404) show no programme.
 - Event venues: Logomo's Kino-sali, Turku; Kulttuuritila Nuijamies, Lappeenranta; Schaumansali, Pietarsaari; Magnum at PowerPark, Härmä; Olos Polar Center, Muonio; Vimpelin Nuorisokuvat (vimpelinveto.fi).
 
@@ -949,6 +949,13 @@ The directory's entries also name data endpoints. Some are partner feeds built f
 - **A title with a date and no time** ("Lapin sota", "24.10.") is not on yet.
 - **Tickets** at the door: booking `door`, links to the front page.
 - **First run:** 12 screenings of 8 films, no warnings, all matched.
+
+## Kino Yläri (Kittilä)
+
+- **Found** through nytleffaan.fi's directory (2026-10-16); not in Leffavuoro. Shows in the auditorium of Kittilä's lower secondary school (OSM's Kittilän yläkoulu, Valtatie 9A).
+- **The municipality's page** [V]: below the "Ohjelmisto" heading each screening is one block, "to 15.10. klo 15.00 **Title** K7" (no year; the weekday must fit). The title is the bold part, the rating follows it ("K?" is not rated yet). A bold line that is itself a showtime ("pe 23.10. klo 19.00 Lapin sota K16 Ensi-ilta!") announces the row below it and is skipped; the teaser above the heading is not read.
+- **No runtimes**, so some titles need aliases (Ryhmä Hau). **Tickets** at the door (advance tickets at the municipal office): booking `door`.
+- **First run:** 6 screenings this week, 18 within a month.
 
 ## Film ratings: OMDb
 
