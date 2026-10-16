@@ -70,6 +70,9 @@ import { fetchBioMarlon } from "./biomarlon/fetch.ts";
 import { parseBioMarlon } from "./biomarlon/parse.ts";
 import { BIOMARLON_SITES, type BioMarlonSite } from "./biomarlon/sites.ts";
 import { fetchKisaKino } from "./kisakino/fetch.ts";
+import { fetchKinomaatti } from "./kinomaatti/fetch.ts";
+import { parseKinomaatti } from "./kinomaatti/parse.ts";
+import { KINOMAATTI_SITES, type KinomaattiSite } from "./kinomaatti/sites.ts";
 import { fetchVirtainPirtti } from "./virtainpirtti/fetch.ts";
 import { parseVirtainPirtti } from "./virtainpirtti/parse.ts";
 import { VIRTAINPIRTTI_SITES, type VirtainPirttiSite } from "./virtainpirtti/sites.ts";
@@ -529,6 +532,18 @@ const virtainPirttiAdapter = (site: VirtainPirttiSite): Adapter => ({
   },
 });
 
+/** The kinomaatti plugin's timetable (Kino Jalasjärvi). */
+const kinomaattiAdapter = (site: KinomaattiSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchKinomaatti(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseKinomaatti(raw, site), venues) };
+  },
+});
+
 /** KisaKino's front page and film pages. */
 const kisaKinoAdapter = (site: KisaKinoSite): Adapter => ({
   id: site.provider,
@@ -673,6 +688,7 @@ export const ADAPTERS: Adapter[] = [
   ...MARITA_SITES.map(maritaAdapter),
   ...KURIKANKINO_SITES.map(kurikanKinoAdapter),
   ...KISAKINO_SITES.map(kisaKinoAdapter),
+  ...KINOMAATTI_SITES.map(kinomaattiAdapter),
   ...PAJAKKAKINO_SITES.map(pajakkakinoAdapter),
   ...BIOMARLON_SITES.map(bioMarlonAdapter),
   ...KINOKUVA_SITES.map(kinoKuvaAdapter),
