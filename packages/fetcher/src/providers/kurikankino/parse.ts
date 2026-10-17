@@ -3,13 +3,19 @@ import {
   type FilmListing,
   type FinnishRating,
   type ProviderBatch,
+  type RawLabel,
   type Screening,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
-import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
+import {
+  COMMON_TITLE_PREFIXES,
+  splitDatedLabel,
+  splitTitlePrefix,
+  splitVersion,
+} from "../labels.ts";
 import { byStartThenId, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KurikanKinoRawSnapshot } from "./fetch.ts";
@@ -81,8 +87,14 @@ export const parseKurikanKino = (
       zeroIsFree: false,
     });
 
-    const { title: unprefixed, rule } = splitTitlePrefix(rawTitle, prefixRules);
+    // "Lapin Sota , Ensi-ilta 23.10.": the premiere is that day's screening (2026-10-17).
+    const dated = splitDatedLabel(rawTitle, prefixRules);
+    const { title: unprefixed, rule, label } = splitTitlePrefix(dated.title, prefixRules);
     const { title, version } = splitVersion(unprefixed);
+    const labels: RawLabel[] = [
+      ...(label ? [{ source: "title.prefix", text: label }] : []),
+      ...(dated.label ? [{ source: "title.note", text: dated.label }] : []),
+    ];
     const filmKey = slug ?? slugify(title);
     const listingId = makeId(P, "film", filmKey);
 
@@ -142,13 +154,21 @@ export const parseKurikanKino = (
         audio: version.audio ? [version.audio] : [],
         ...(version.dubbed !== undefined && { dubbed: version.dubbed }),
         subtitles: { kind: "unknown" },
-        tags: [...(rule?.tags ?? [])],
+        tags: [
+          ...new Set([
+            ...(rule?.tags ?? []),
+            ...(wall.getUTCDate() === dated.day && wall.getUTCMonth() + 1 === dated.month
+              ? (dated.rule?.tags ?? [])
+              : []),
+          ]),
+        ],
         series: rule?.series ? [rule.series] : [],
         availability: "unknown",
         ...(price !== undefined && { price: { amountCents: price, currency: "EUR" as const } }),
         // The film's page on the cinema's site, copied.
         ticketUrl: href.startsWith(`${site.homepage}/`) ? href : `${site.homepage}/`,
         unmappedLabels: unmapped,
+        ...(labels.length > 0 && { labels }),
         fetchedAt: raw.fetchedAt,
       });
     }

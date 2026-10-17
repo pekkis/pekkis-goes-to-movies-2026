@@ -55,6 +55,18 @@ describe("parseKurikanKino", () => {
     expect(listing("ali-g-who-iz-i")).toMatchObject({ runtimeMinutes: 98, rating: "K-16" });
   });
 
+  it("takes a dated premiere off the title and tags that day's screening (2026-10-17)", () => {
+    const html = HTML.replace("Unohdettu Saari<span", "Unohdettu Saari , Ensi-ilta 10.10.<span");
+    const result = parseKurikanKino(snapshot({ html }), SITE);
+    const saari = result.listings.find((l) => l.sourceId === "unohdettu-saari")!;
+    expect(saari.title.fi).toBe("Unohdettu Saari");
+    const shows = result.screenings.filter((s) => s.listingId === saari.id);
+    expect(shows.filter((s) => s.tags.includes("premiere")).map((s) => s.businessDate)).toEqual([
+      "2026-10-10",
+    ]);
+    expect(shows[0]?.labels).toEqual([{ source: "title.note", text: "Ensi-ilta 10.10." }]);
+  });
+
   it("keeps only showtimes inside the window", () => {
     const later = parseKurikanKino(snapshot({ from: "2026-10-15", days: 7 }), SITE);
     expect(later.screenings.map((s) => s.startsAt)).toEqual([

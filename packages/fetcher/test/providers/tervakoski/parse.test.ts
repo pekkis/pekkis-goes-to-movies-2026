@@ -50,6 +50,19 @@ describe("parseTervakoski", () => {
     expect(batch.screenings[0]?.dubbed).toBeUndefined();
   });
 
+  it("skips a private event quietly, and reads a runtime after a stray comma (2026-10-17)", () => {
+    const html = HTML.replace(
+      /Klo 19\.00 &#8211;\s*<a href="#h-kerro-kaikille"[^>]*\s*>Kerro kaikille \(K12\),<\/a\s*>\s*Kotimainen, draama, kesto 1t 52 min/,
+      "Klo 19.00 &#8211; Yksityistilaisuus</p><p>Klo 20.00 &#8211; Kerro kaikille (K12), kotimainen, kesto, 1t 52 min",
+    );
+    expect(html).not.toBe(HTML);
+    const result = parseTervakoski(snapshot({ html }), SITE);
+    expect(result.warnings).toEqual([]);
+    expect(result.screenings.map((s) => s.startsAt)).toContain("2026-10-14T20:00:00+03:00");
+    expect(result.screenings.map((s) => s.startsAt)).not.toContain("2026-10-14T19:00:00+03:00");
+    expect(result.listings.find((l) => l.title.fi === "Kerro kaikille")?.runtimeMinutes).toBe(112);
+  });
+
   it("warns about a day whose weekday fits no date", () => {
     const broken = HTML.replace("Keskiviikko 14.10.", "Tiistai 14.10.");
     const result = parseTervakoski(snapshot({ html: broken }), SITE);

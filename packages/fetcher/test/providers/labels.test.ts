@@ -7,6 +7,7 @@ import {
   labelEffects,
   labelKey,
   LABELS,
+  splitDatedLabel,
   splitTitlePrefix,
   splitVersion,
 } from "../../src/providers/labels.ts";
@@ -204,5 +205,20 @@ describe("deriveTags", () => {
       batchOf({ audio: ["zxx"] }, { audio: ["zxx"], tags: ["no-dialogue"] }, { audio: ["fi"] }),
     );
     expect(result.screenings.map((s) => s.tags)).toEqual([["no-dialogue"], ["no-dialogue"], []]);
+  });
+});
+
+describe("splitDatedLabel", () => {
+  it.each([
+    ["Lapin Sota , Ensi-ilta 23.10.", "Lapin Sota", "Ensi-ilta 23.10.", 23, 10],
+    ["Pikkuli – Ennakkonäytös 3.11", "Pikkuli", "Ennakkonäytös 3.11", 3, 11],
+    ["Hyvä, paha ja ruma, Ensi-ilta 1.12.", "Hyvä, paha ja ruma", "Ensi-ilta 1.12.", 1, 12],
+  ])("%s", (raw, title, label, day, month) => {
+    expect(splitDatedLabel(raw, LABELS)).toMatchObject({ title, label, day, month });
+  });
+
+  it("leaves titles alone that end in an unknown word and a date", () => {
+    expect(splitDatedLabel("Suomi, kesä 1.9.", LABELS)).toEqual({ title: "Suomi, kesä 1.9." });
+    expect(splitDatedLabel("Blade Runner 2049", LABELS)).toEqual({ title: "Blade Runner 2049" });
   });
 });

@@ -64,6 +64,34 @@ describe("parseHamina", () => {
     });
   });
 
+  it('reads "Orig." as the original version (2026-10-17)', () => {
+    const orig = HTML.replace("<strong>DUB</strong>", "<strong>Orig.</strong>");
+    const result = parseHamina(snapshot({ html: orig }), SITE);
+    expect(
+      result.screenings.find((s) => s.sourceId === "unohdettu-saari-202610141700"),
+    ).toMatchObject({
+      dubbed: false,
+      subtitles: { kind: "languages", languages: ["fi"] },
+      unmappedLabels: [],
+    });
+  });
+
+  it('reads a row with a doubled dot after the date ("Su 25.10.. Klo 13:00")', () => {
+    const doubled = HTML.replace("Pe 16.10. Klo 19:15", "Pe 16.10.. Klo 19:15");
+    const result = parseHamina(snapshot({ html: doubled }), SITE);
+    expect(result.warnings).toEqual([]);
+    expect(result.screenings).toHaveLength(batch.screenings.length);
+  });
+
+  it('reads a row\'s own price without the word "Liput": "Pe 23.10. Klo 15:00 (8€)"', () => {
+    const html = HTML.replace("Pe 16.10. Klo 19:15", "Pe 16.10. Klo 19:15 (8€)");
+    const result = parseHamina(snapshot({ html }), SITE);
+    expect(result.warnings).toEqual([]);
+    expect(
+      result.screenings.find((s) => s.startsAt === "2026-10-16T19:15:00+03:00")?.price,
+    ).toMatchObject({ amountCents: 800 });
+  });
+
   it("places nothing when the weekday does not fit the date", () => {
     const wrong = HTML.replace(/Ke\s+14\.10\.\s+Klo\s+17:00/, "Ti 14.10. Klo 17:00");
     const result = parseHamina(snapshot({ html: wrong }), SITE);
