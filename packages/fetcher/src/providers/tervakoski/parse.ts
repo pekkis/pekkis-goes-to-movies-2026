@@ -23,7 +23,10 @@ const DAY = /^([a-zäö]{5,})\s+(\d{1,2})\.(\d{1,2})\.?$/i;
 const ROW = /^Klo\s+(\d{1,2})[.:](\d{2})\s*[–-]\s*(.+)$/i;
 /** The title closes with its rating: "Pirjo i Sverige (S),". */
 const TITLE = /^(.+?)\s*\((S|K-?\d{1,2})\),?\s*(.*)$/i;
-const RUNTIME = /kesto\s+(\d+)\s*t(?:\s*(\d+)\s*min)?/i;
+/** "kesto 1 t 28 min", also "kesto, 1t 57 min" (2026-10-17). */
+const RUNTIME = /kesto,?\s+(\d+)\s*t(?:\s*(\d+)\s*min)?/i;
+/** A booking that is no public screening: "Klo 17.00 – Yksityistilaisuus" (2026-10-17). */
+const PRIVATE = /^yksityistilaisuus\b/i;
 const PRICE = /lippu\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*€/i;
 const DUBBED = /\bsuomeksi puhuttu\b/i;
 const RATINGS: Record<string, FinnishRating> = {
@@ -77,6 +80,9 @@ export const parseTervakoski = (
     const row = line.match(ROW);
     if (!row) {
       continue; // empty paragraphs, notes
+    }
+    if (PRIVATE.test(row[3]!.trim())) {
+      continue; // a private event: nothing to list, nothing missing
     }
     const film = row[3]!.match(TITLE);
     const start =

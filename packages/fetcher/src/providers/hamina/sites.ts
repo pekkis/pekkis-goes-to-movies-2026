@@ -39,6 +39,7 @@ export const HAMINA_SITES: HaminaSite[] = defineSites(HaminaSite, [
     // Swedish is hedged in that sentence, so only Finnish subtitles are published.
     versions: {
       OG: { dubbed: false, subtitles: ["fi"] },
+      ORIG: { dubbed: false, subtitles: ["fi"] },
       DUB: { dubbed: true, audio: "fi" },
     },
     notes:

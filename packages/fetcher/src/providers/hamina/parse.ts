@@ -17,9 +17,9 @@ import type { HaminaRawSnapshot } from "./fetch.ts";
 import type { HaminaSite } from "./sites.ts";
 
 const WEEKDAYS = ["MA", "TI", "KE", "TO", "PE", "LA", "SU"];
-/** "To 22.10. Klo 15:00", optionally "(Liput 8€)" or "| Liput 8€" for that showing. */
+/** "To 22.10. Klo 15:00" (also "Su 25.10.. Klo 13:00", 2026-10-17), optionally "(Liput 8€)", "(8€)" or "| Liput 8€" for that showing. */
 const ROW =
-  /^(Ma|Ti|Ke|To|Pe|La|Su)\s+(\d{1,2})\.(\d{1,2})\.?\s+Klo\s+(\d{1,2})[:.](\d{2})(?:\s*[|(]?\s*Liput\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*€\s*\)?)?$/i;
+  /^(Ma|Ti|Ke|To|Pe|La|Su)\s+(\d{1,2})\.(\d{1,2})\.{0,2}\s+Klo\s+(\d{1,2})[:.](\d{2})(?:\s*[|(]?\s*(?:Liput\s+)?(\d{1,3}(?:[.,]\d{1,2})?)\s*€\s*\)?)?$/i;
 /** "1 h 57 min", "1 t 28 min" */
 const DURATION = /^(?:(\d+)\s*[ht])?\s*(\d+)\s*min$/i;
 /** One plain amount: "11€". A range or "alkaen" settles nothing. */
@@ -77,7 +77,8 @@ export const parseHamina = (raw: HaminaRawSnapshot, site: HaminaSite): ProviderB
     const duration = fields.get("kesto")?.match(DURATION);
     const runtime = duration ? Number(duration[1] ?? 0) * 60 + Number(duration[2]) : 0;
     const filmPrice = toCents(fields.get("liput")?.match(PRICE)?.[1], { zeroIsFree: false });
-    const versionText = fields.get("versio")?.toUpperCase();
+    // "Orig." and "ORIG" alike (2026-10-17).
+    const versionText = fields.get("versio")?.toUpperCase().replace(/\.+$/, "");
     const siteVersion = versionText ? own(site.versions, versionText) : undefined;
     if (versionText && !siteVersion) {
       unmapped.push(`version:${versionText}`);
