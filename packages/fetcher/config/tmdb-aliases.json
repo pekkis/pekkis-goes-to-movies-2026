@@ -418,5 +418,10 @@
     "tmdb": 13528,
     "title": "KAASUVALO",
     "note": "George Cukor's Gaslight (1944): year, 114 min and US all match Regina's details; the 1940 British film is 84 min. TMDB has no Finnish title."
+  },
+  "cinemaniagara:film:109": {
+    "tmdb": 9362,
+    "title": "Tremors - Väristyksiä",
+    "note": "Tremors (1990), TMDB's Finnish title Väristyksiä; 1990, 96 min on both. The two titles joined by a dash defeat the search."
   }
 }

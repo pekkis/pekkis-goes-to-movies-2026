@@ -39,6 +39,37 @@ describe("parseKuusamotalo", () => {
     expect(batch.screenings).toHaveLength(9);
   });
 
+  it("reads a note after the times; the last screening is the day's last time (2026-10-18)", () => {
+    const noted = posts().map((p) => ({
+      ...p,
+      content: {
+        rendered: p.content.rendered.replace(
+          "Ke 21.10. klo 15 ja 19<",
+          "Ke 21.10. klo 15 ja 19 ( viimeinen näytös )<",
+        ),
+      },
+    }));
+    const result = parseKuusamotalo(snapshot({ posts: noted }), SITE);
+    expect(result.warnings).toEqual([]);
+    const day = result.screenings.filter((s) => s.businessDate === "2026-10-21");
+    expect(day.map((s) => s.tags)).toEqual([[], ["last-screening"]]);
+    expect(day[1]?.labels).toEqual([{ source: "row.note", text: "viimeinen näytös" }]);
+
+    const unknown = posts().map((p) => ({
+      ...p,
+      content: {
+        rendered: p.content.rendered.replace(
+          "Ke 21.10. klo 15 ja 19<",
+          "Ke 21.10. klo 15 ja 19 (kahvit)<",
+        ),
+      },
+    }));
+    const other = parseKuusamotalo(snapshot({ posts: unknown }), SITE);
+    expect(other.screenings.find((s) => s.businessDate === "2026-10-21")?.unmappedLabels).toEqual([
+      "note:kahvit",
+    ]);
+  });
+
   it("reads the facts before the list", () => {
     expect(batch.listings[0]).toMatchObject({ rating: "S", runtimeMinutes: 88 });
     expect(batch.screenings[0]).toMatchObject({

@@ -5,6 +5,7 @@ import type { MovieDetails, SearchResult } from "../tmdb/raw.ts";
 import type { Aliases } from "./aliases.ts";
 import { toCountryCodes } from "./countries.ts";
 import { decide, gatherEvidence, type ListingFacts } from "./score.ts";
+import { recall, remember, titleKey, type Memory } from "./memory.ts";
 import { normalizeTitle, stripQualifiers, titlePrefix, yearInTitle } from "./titles.ts";
 
 /** How many search hits get their details fetched and scored. */
@@ -13,8 +14,13 @@ const MAX_CANDIDATES = 5;
 export type MatchOutcome = {
   films: Film[];
   /** listing id -> decision */
-  links: Map<string, { filmId: string; method: "auto" | "alias" | "imdb" | "sibling" }>;
+  links: Map<
+    string,
+    { filmId: string; method: "auto" | "alias" | "imdb" | "sibling" | "remembered" }
+  >;
   unmatched: Unmatched[];
+  /** The link memory to keep for the next run (memory.ts). */
+  memory: Memory;
 };
 
 const yearOf = (date: string | null | undefined) =>
@@ -24,25 +30,40 @@ const yearOf = (date: string | null | undefined) =>
 const isRecent = (h: SearchResult, currentYear: number) =>
   (yearOf(h.release_date) ?? 0) >= currentYear - 3 ? 1 : 0;
 
-/** Recent films first, then by popularity, so the details budget goes to likely hits. */
-const rankHits = (hits: SearchResult[], currentYear: number): SearchResult[] =>
+/** 1 for a film from the year the listing states (a year either way), else 0. */
+const isListingYear = (h: SearchResult, listingYear: number | undefined) => {
+  const year = yearOf(h.release_date);
+  return listingYear !== undefined && year !== undefined && Math.abs(year - listingYear) <= 1
+    ? 1
+    : 0;
+};
+
+/**
+ * Films from the listing's own year first (a re-released classic: Ghost, 1990), then recent
+ * films, then by popularity, so the details budget goes to likely hits. Only the order of
+ * candidates changes; whether one is chosen is still `decide`'s.
+ */
+const rankHits = (
+  hits: SearchResult[],
+  currentYear: number,
+  listingYear?: number,
+): SearchResult[] =>
   [...new Map(hits.map((h) => [h.id, h])).values()].toSorted(
     (a, b) =>
+      isListingYear(b, listingYear) - isListingYear(a, listingYear) ||
       isRecent(b, currentYear) - isRecent(a, currentYear) ||
       (b.popularity ?? 0) - (a.popularity ?? 0),
   );
 
 /** Normalized title without qualifiers: listings sharing it may be the same film. */
-const siblingKey = (listing: FilmListing) => {
-  const title = listing.title.fi ?? listing.title.en ?? listing.title.sv;
-  return title ? normalizeTitle(stripQualifiers(title)) : undefined;
-};
+const siblingKey = titleKey;
 
 export const matchListings = async (
   listings: FilmListing[],
   tmdb: TmdbClient,
   aliases: Aliases,
   now: Date = new Date(),
+  memory: Memory = {},
 ): Promise<MatchOutcome> => {
   const fetchedAt = now.toISOString();
   const currentYear = now.getUTCFullYear();
@@ -101,7 +122,7 @@ export const matchListings = async (
     };
     const queries = [clean, titlePrefix(clean), alternate].filter((q): q is string => Boolean(q));
     const hits = (await Promise.all(queries.map((q) => tmdb.search(q)))).flat();
-    const ranked = rankHits(hits, currentYear).slice(0, MAX_CANDIDATES);
+    const ranked = rankHits(hits, currentYear, listingYear).slice(0, MAX_CANDIDATES);
     const details = await Promise.all(ranked.map((hit) => tmdb.movie(hit.id)));
     const decision = decide(details.map((d) => gatherEvidence(facts, d, currentYear)));
 
@@ -138,12 +159,23 @@ export const matchListings = async (
         Math.abs(listing.runtimeMinutes - other.runtimeMinutes) <= 3,
     );
     const filmIds = new Set(siblings.map((s) => links.get(s.id)!.filmId));
+    // Last, a link this very listing had on an earlier run, if its title and runtime still
+    // agree: the sibling it leaned on may have left the programme.
+    const remembered = recall(memory, listing);
     if (filmIds.size === 1) {
       links.set(listing.id, { filmId: [...filmIds][0]!, method: "sibling" });
+    } else if (filmIds.size === 0 && remembered) {
+      const tmdbId = Number(remembered.slice("tmdb:".length));
+      links.set(listing.id, { filmId: keep(await tmdb.movie(tmdbId)), method: "remembered" });
     } else {
       stillUnmatched.push(entry);
     }
   }
 
-  return { films: [...films.values()], links, unmatched: stillUnmatched };
+  return {
+    films: [...films.values()],
+    links,
+    unmatched: stillUnmatched,
+    memory: remember(memory, listings, links, now),
+  };
 };

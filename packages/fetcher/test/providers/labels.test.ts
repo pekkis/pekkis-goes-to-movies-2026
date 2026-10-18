@@ -162,6 +162,7 @@ describe("the shared label table", () => {
     ["Kuvailutulkkaus", { tags: ["audio-description"] }],
     ["35 mm", { projection: "35mm" }],
     ["Anniskelunäytös K-18", { licensed: true, ageLimit: "K-18" }],
+    ["K18 - Anniskelunäytös", { licensed: true, ageLimit: "K-18" }],
     ["Oopperat ja muut eventit", { tags: ["event-cinema"], event: true }],
   ])("%s", (label, rule) => {
     expect(findLabel(label, LABELS)).toMatchObject(rule);

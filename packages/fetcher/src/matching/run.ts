@@ -42,6 +42,7 @@ export const runMatching = async (out: string, env: Env) => {
     await loadAliases(),
     new Date(),
     enrich,
+    join(out, "cache", "match-memory.json"),
   );
   const unmatched = `${catalog.unmatched.length} unmatched`;
   console.log(

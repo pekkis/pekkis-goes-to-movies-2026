@@ -637,7 +637,7 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/kuusamotalo
 - **WordPress's public REST route:** `GET https://kinokuusamotalo.fi/wp-json/wp/v2/posts?per_page=40&_fields=id,link,title,content`. One post per film, plus old notices (gift cards, closing times) **[V]**.
 - **A film post** carries:
   - a list of facts: "-S-", "Kesto 1h 28min", "Liput 12€";
-  - an "Esitysajat:" heading with lines like "Ke 14.10. klo 15 ja 19" (several times a day; no year, inferred and checked against the weekday).
+  - an "Esitysajat:" heading with lines like "Ke 14.10. klo 15 ja 19" (several times a day; no year, inferred and checked against the weekday). A note in parentheses may follow the times ("klo 15 ja 19 ( viimeinen näytös )", 2026-10-18 [V]); it is read through the shared label table, and "viimeinen näytös" tags only the day's last time.
 
   Posts without "Esitysajat:" are notices and are skipped.
 

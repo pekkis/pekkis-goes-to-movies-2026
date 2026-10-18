@@ -69,6 +69,9 @@ export const LABELS: Record<string, LabelRule> = {
   Anniskelunäytös: { licensed: true },
   "Anniskelunäytös K18": { licensed: true, ageLimit: "K-18" },
   "Anniskelunäytös K-18": { licensed: true, ageLimit: "K-18" },
+  // The age first: Bio Rex Kokkola (2026-10-18).
+  "K18 - Anniskelunäytös": { licensed: true, ageLimit: "K-18" },
+  "K-18 - Anniskelunäytös": { licensed: true, ageLimit: "K-18" },
   // Availability
   Kiirehdi: { availability: "few-left" },
   "Viimeiset liput": { availability: "few-left" },

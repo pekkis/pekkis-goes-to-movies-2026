@@ -496,7 +496,11 @@ export const ETIKETTI_SITES: EtikettiSite[] = defineSites(EtikettiSite, [
     noSubtitlesUnreliable: true,
     // The tag of the special series "PUOLALAISIA ELOKUVIA" (2026-10-16, per the maintainer);
     // elsewhere "Puola" could as well be a language.
-    tags: { Puola: { series: "Puolalaisia elokuvia" } },
+    // "Cinemadrome": a night of genre classics, several on 35 mm (2026-10-24; seen 2026-10-18).
+    tags: {
+      Puola: { series: "Puolalaisia elokuvia" },
+      Cinemadrome: { series: "Cinemadrome" },
+    },
     notes:
       'Own template: no place line, time in .time, labels without colons. "Ensi-ilta" is the ' +
       "original premiere here, so it is not used.",
