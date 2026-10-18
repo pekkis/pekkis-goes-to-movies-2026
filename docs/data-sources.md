@@ -606,8 +606,8 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/hamina/`, s
 - **The town's own page**, moved to `https://www.hamina.fi/hyvinvointi-vapaa-aika/kino-hamina/` (the old `/asukkaalle/…` path redirects) **[V]**. One `.large-content-showcase` block per film:
   - title;
   - a paragraph of labelled fields: "Ikäraja: 7", "Kesto: 1 h 57 min" or "1 t 28 min", "Liput: 11€", "Versio: DUB" (and Ensi-ilta, Levittäjä, Ohjaus, not read);
-  - a paragraph of screenings: "To 22.10. Klo 15:00 (Liput 8€)", no year (inferred and checked against the weekday). A price on the row overrides the film's.
-- **Versions** by the page's own legend, in the site config: "OG = Alkuperäinen kieli, tekstitys suomeksi (ja) ruotsiksi" gives Finnish subtitles (the Swedish is hedged, not published); "DUB = Puhuttu suomeksi" gives dubbed Finnish.
+  - a paragraph of screenings: "To 22.10. Klo 15:00 (Liput 8€)", also "(8€)" and the typo "Su 25.10.. Klo 13:00" (2026-10-17 [V]), no year (inferred and checked against the weekday). A price on the row overrides the film's.
+- **Versions** by the page's own legend, in the site config: "OG = Alkuperäinen kieli, tekstitys suomeksi (ja) ruotsiksi" gives Finnish subtitles (the Swedish is hedged, not published); "DUB = Puhuttu suomeksi" gives dubbed Finnish. "Orig." (2026-10-17 [V]) is read as OG; trailing dots are ignored.
 - **Tickets at the door**, no reservations; screenings link the page.
 - **Coordinates:** the page gives Isoympyräkatu 30 A, 49400 Hamina; OSM has no cinema there, so the point is the address geocoded with Nominatim (the building's café node).
 - **First run:** 4 films (all matched), 18 screenings, no warnings.
@@ -637,7 +637,7 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/kuusamotalo
 - **WordPress's public REST route:** `GET https://kinokuusamotalo.fi/wp-json/wp/v2/posts?per_page=40&_fields=id,link,title,content`. One post per film, plus old notices (gift cards, closing times) **[V]**.
 - **A film post** carries:
   - a list of facts: "-S-", "Kesto 1h 28min", "Liput 12€";
-  - an "Esitysajat:" heading with lines like "Ke 14.10. klo 15 ja 19" (several times a day; no year, inferred and checked against the weekday).
+  - an "Esitysajat:" heading with lines like "Ke 14.10. klo 15 ja 19" (several times a day; no year, inferred and checked against the weekday). A note in parentheses may follow the times ("klo 15 ja 19 ( viimeinen näytös )", 2026-10-18 [V]); it is read through the shared label table, and "viimeinen näytös" tags only the day's last time.
 
   Posts without "Esitysajat:" are notices and are skipped.
 
@@ -825,6 +825,7 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Le
 - **The stamp** `esitysaika` is the Helsinki wall-clock time written as if it were UTC (1791572400 is 19:00Z, printed "pe 9.10. 19:00") [V]. It gives the year; the printed day and time must agree with it, or the row is `invalid-row`.
 - **Times are printed twice** (the desktop card and a mobile copy); only the card's own copy is read.
 - **The page lists the past week too**, so the window filter drops the old ones.
+- **A dated label after the title** [V, 2026-10-17]: "Lapin Sota , Ensi-ilta 23.10." is taken off the title (`splitDatedLabel` in `labels.ts`) and tags only that day's screenings `premiere`.
 - **Tickets:** the site states no way of buying, so booking is `info` and each screening links to the film's page.
 
 ## KisaKino (Saarijärvi)
@@ -873,7 +874,7 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Le
 ## Kino Tervakoski (Janakkala)
 
 - **Found** by the maintainer (janakkala.fi/kino), 2026-10-15; not in Leffavuoro. Run by the municipality's youth services in Tervakosken Seuratalo.
-- **The programme page** [V] (`/kino/ohjelmisto-2-2-2/`, the municipality's WordPress path, which may change): day headings in bold ("Keskiviikko 14.10.", no year; the weekday must fit the nearest date), then one paragraph per screening ("Klo 17.00 – Pirjo i Sverige (S), kotimainen, komedia, kesto 1 t 28 min, lippu 10,00 €"). The title closes with its rating in parentheses; "SUOMEKSI PUHUTTU" marks a Finnish-dubbed print. The list ends at the first separator (`hr`) after the first day; posters and synopses follow it.
+- **The programme page** [V] (`/kino/ohjelmisto-2-2-2/`, the municipality's WordPress path, which may change): day headings in bold ("Keskiviikko 14.10.", no year; the weekday must fit the nearest date), then one paragraph per screening ("Klo 17.00 – Pirjo i Sverige (S), kotimainen, komedia, kesto 1 t 28 min, lippu 10,00 €"). The title closes with its rating in parentheses; "SUOMEKSI PUHUTTU" marks a Finnish-dubbed print. "Klo 17.00 – Yksityistilaisuus" is a private booking, skipped without a warning, and "kesto, 1t 57 min" (a stray comma) still gives the runtime (2026-10-17 [V]). The list ends at the first separator (`hr`) after the first day; posters and synopses follow it.
 - **Tickets** at the door: booking `door`, links to the programme page.
 - **First run:** 4 screenings of 4 films (the page lists the current week), all matched.
 

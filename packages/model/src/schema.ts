@@ -128,10 +128,11 @@ export const FilmListing = z.object({
   filmId: z.string().optional(),
   /**
    * How `filmId` was decided: `auto` (TMDB search), `alias` (config/tmdb-aliases.json),
-   * `imdb` (the provider's IMDb id, looked up on TMDB) or `sibling` (same title and
-   * runtime as a listing another provider already linked).
+   * `imdb` (the provider's IMDb id, looked up on TMDB), `sibling` (same title and
+   * runtime as a listing another provider already linked) or `remembered` (this listing's
+   * own certain link from an earlier run, its title and runtime unchanged).
    */
-  match: z.enum(["auto", "alias", "imdb", "sibling"]).optional(),
+  match: z.enum(["auto", "alias", "imdb", "sibling", "remembered"]).optional(),
 });
 export type FilmListing = z.infer<typeof FilmListing>;
 

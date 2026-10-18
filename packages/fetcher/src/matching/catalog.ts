@@ -4,6 +4,7 @@ import { FilmCatalog, ProviderBatch, type Film } from "@pgtm/model";
 import type { TmdbClient } from "../tmdb/client.ts";
 import type { Aliases } from "./aliases.ts";
 import { matchListings } from "./match.ts";
+import { loadMemory, saveMemory } from "./memory.ts";
 
 export const CATALOG_FILE = "films.json";
 
@@ -21,6 +22,8 @@ export const buildCatalog = async (
   now: Date = new Date(),
   /** Adds data from other sources (ratings) before the catalog is written. */
   enrich: (films: Film[]) => Promise<Film[]> = async (films) => films,
+  /** Where certain links are remembered between runs (memory.ts); none when omitted. */
+  memoryPath?: string,
 ): Promise<FilmCatalog> => {
   const files = (await readdir(dir)).filter((f) => f.endsWith(".json") && f !== CATALOG_FILE);
   const batches = await Promise.all(
@@ -35,7 +38,11 @@ export const buildCatalog = async (
     tmdb,
     aliases,
     now,
+    memoryPath ? await loadMemory(memoryPath) : {},
   );
+  if (memoryPath) {
+    await saveMemory(memoryPath, outcome.memory);
+  }
 
   for (const { file, batch } of batches) {
     const listings = batch.listings.map(({ filmId: _f, match: _m, ...listing }) => {

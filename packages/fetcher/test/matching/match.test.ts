@@ -244,6 +244,83 @@ describe("matchListings", () => {
     expect(result.unmatched.map((u) => u.listingId)).toEqual(["finnkino:film:HO1"]);
   });
 
+  it("keeps a sibling's link when the anchor has left the programme (2026-10-18)", async () => {
+    const { client } = fakeTmdb(
+      [details({ id: 20, title: "Practical Magic 2", runtime: 130 })],
+      {},
+    );
+    const finnkino: FilmListing = {
+      ...listing("HO1", "Practical Magic: Lumotut sisaret", 127),
+      id: "finnkino:film:HO1",
+      provider: "finnkino",
+      countries: [],
+    };
+    const anchor = listing("1", "Practical Magic: Lumotut sisaret", 127);
+    const aliases = { "biorex:film:1": { tmdb: 20, title: "x" } };
+    const day1 = await matchListings([anchor, finnkino], client, aliases, NOW);
+    expect(day1.links.get("finnkino:film:HO1")?.method).toBe("sibling");
+
+    // The next day BioRex no longer shows it: Finnkino's listing keeps its film.
+    const day2 = await matchListings([finnkino], client, {}, NOW, day1.memory);
+    expect(day2.links.get("finnkino:film:HO1")).toEqual({
+      filmId: "tmdb:20",
+      method: "remembered",
+    });
+    expect(day2.unmatched).toEqual([]);
+    expect(day2.films.map((f) => f.tmdbId)).toEqual([20]);
+  });
+
+  it("forgets a remembered link when the listing's title or runtime changed", async () => {
+    const { client } = fakeTmdb([details({ id: 20, title: "X", runtime: 100 })], {});
+    const memory = {
+      "biorex:film:1": {
+        filmId: "tmdb:20",
+        titleKey: "digger",
+        runtimeMinutes: 100,
+        lastSeen: NOW.toISOString(),
+      },
+    };
+    const renamed = await matchListings([listing("1", "Other Film")], client, {}, NOW, memory);
+    expect(renamed.links.has("biorex:film:1")).toBe(false);
+    const longer = await matchListings([listing("1", "Digger", 130)], client, {}, NOW, memory);
+    expect(longer.links.has("biorex:film:1")).toBe(false);
+    const same = await matchListings([listing("1", "Digger", 101)], client, {}, NOW, memory);
+    expect(same.links.get("biorex:film:1")?.method).toBe("remembered");
+  });
+
+  it("lets a fresh confident match win over a memory", async () => {
+    const { client } = fakeTmdb(
+      [details({ id: 21, title: "Digger", runtime: 100 }), details({ id: 20, title: "Y" })],
+      { Digger: [21] },
+    );
+    const memory = {
+      "biorex:film:1": {
+        filmId: "tmdb:20",
+        titleKey: "digger",
+        runtimeMinutes: 100,
+        lastSeen: NOW.toISOString(),
+      },
+    };
+    const result = await matchListings([listing("1", "Digger")], client, {}, NOW, memory);
+    expect(result.links.get("biorex:film:1")).toEqual({ filmId: "tmdb:21", method: "auto" });
+    expect(result.memory["biorex:film:1"]?.filmId).toBe("tmdb:21");
+  });
+
+  it("scores a classic of the listing's year even behind five recent namesakes (Ghost, 1990)", async () => {
+    const recent = [1, 2, 3, 4, 5].map((n) =>
+      details({ id: n, title: `Ghost ${n}`, release_date: "2025-01-01", runtime: 90 }),
+    );
+    const ghost = details({ id: 251, title: "Ghost", release_date: "1990-07-13", runtime: 127 });
+    const { client } = fakeTmdb([...recent, ghost], { Ghost: [1, 2, 3, 4, 5, 251] });
+    const result = await matchListings(
+      [{ ...listing("1", "Ghost", 126), year: 1990 }],
+      client,
+      {},
+      NOW,
+    );
+    expect(result.links.get("biorex:film:1")).toEqual({ filmId: "tmdb:251", method: "auto" });
+  });
+
   it("does not auto-match an event that states no runtime", async () => {
     // Julia's "Don Giovanni (Vicenza festivaali / Mozart)" matched a 2023 Don Giovanni.
     const { client, calls } = fakeTmdb([details({ id: 30, title: "Don Giovanni" })], {

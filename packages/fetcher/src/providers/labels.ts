@@ -69,6 +69,9 @@ export const LABELS: Record<string, LabelRule> = {
   Anniskelunäytös: { licensed: true },
   "Anniskelunäytös K18": { licensed: true, ageLimit: "K-18" },
   "Anniskelunäytös K-18": { licensed: true, ageLimit: "K-18" },
+  // The age first: Bio Rex Kokkola (2026-10-18).
+  "K18 - Anniskelunäytös": { licensed: true, ageLimit: "K-18" },
+  "K-18 - Anniskelunäytös": { licensed: true, ageLimit: "K-18" },
   // Availability
   Kiirehdi: { availability: "few-left" },
   "Viimeiset liput": { availability: "few-left" },
@@ -194,6 +197,32 @@ export const splitTitlePrefix = (
     return { title: paren[1]!.trim(), rule: parenRule, label: paren[2]!.trim() };
   }
   return { title };
+};
+
+/**
+ * A label with a date after a comma or dash at the end of a title: "Lapin Sota , Ensi-ilta
+ * 23.10." -> { title: "Lapin Sota", label: "Ensi-ilta 23.10.", rule, day: 23, month: 10 }.
+ * The rule holds only on that day (the premiere is one screening's, not the run's). Only
+ * labels the rules know are taken off; any other text stays in the title.
+ */
+export const splitDatedLabel = (
+  raw: string,
+  rules: Record<string, LabelRule>,
+): { title: string; label?: string; rule?: LabelRule; day?: number; month?: number } => {
+  const title = raw.trim();
+  // The last comma, or dash between spaces ("Ensi-ilta" keeps its own hyphen).
+  const m = title.match(/^(.+)(?:\s*,\s*|\s+[–-]\s+)(.+?)\s+(\d{1,2})\.(\d{1,2})\.?$/);
+  const rule = m ? findLabel(m[2]!, rules) : undefined;
+  if (!m || !rule) {
+    return { title };
+  }
+  return {
+    title: m[1]!.trim(),
+    label: title.slice(m[1]!.length).replace(/^(?:\s*,\s*|\s+[–-]\s+)/, ""),
+    rule,
+    day: Number(m[3]),
+    month: Number(m[4]),
+  };
 };
 
 export type Version = {

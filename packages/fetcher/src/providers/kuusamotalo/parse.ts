@@ -10,7 +10,13 @@ import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { z } from "zod";
 import { own } from "../../lib/records.ts";
-import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
+import {
+  COMMON_TITLE_PREFIXES,
+  findLabel,
+  LABELS,
+  splitTitlePrefix,
+  splitVersion,
+} from "../labels.ts";
 import { byStartThenId, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KuusamotaloRawSnapshot } from "./fetch.ts";
@@ -101,8 +107,13 @@ export const parseKuusamotalo = (
         unreadable += 1;
         continue;
       }
+      // A note after the times: "klo 15 ja 19 ( viimeinen näytös )" (2026-10-18).
+      const noted = m[4]!.match(/^(.*?)\s*\(\s*([^()]+?)\s*\)\s*$/);
+      const note = noted?.[2];
+      const noteRule = note ? findLabel(note, LABELS) : undefined;
       // "klo 15 ja 19": several screenings on one day.
-      for (const t of m[4]!.split(/\s*(?:,|\bja\b)\s*/i)) {
+      const times = (noted ? noted[1]! : m[4]!).split(/\s*(?:,|\bja\b)\s*/i);
+      for (const [i, t] of times.entries()) {
         const tm = t.trim().match(TIME);
         const start =
           tm &&
@@ -151,13 +162,22 @@ export const parseKuusamotalo = (
           audio: version.audio ? [version.audio] : [],
           ...(version.dubbed !== undefined && { dubbed: version.dubbed }),
           subtitles: { kind: "unknown" },
-          tags: [...(rule?.tags ?? [])],
+          tags: [
+            ...new Set([
+              ...(rule?.tags ?? []),
+              // "Viimeinen näytös" is the day's last time; any other note covers the row.
+              ...(noteRule?.tags ?? []).filter(
+                (tag) => tag !== "last-screening" || i === times.length - 1,
+              ),
+            ]),
+          ],
           series: rule?.series ? [rule.series] : [],
-          availability: "unknown",
+          availability: noteRule?.availability ?? "unknown",
           ...(price !== undefined && { price: { amountCents: price, currency: "EUR" as const } }),
           // The film's post on the cinema's site, copied.
           ticketUrl: post.link.startsWith(`${site.base}/`) ? post.link : site.homepage,
-          unmappedLabels: [],
+          unmappedLabels: note && !noteRule ? [`note:${note}`] : [],
+          ...(note && { labels: [{ source: "row.note", text: note }] }),
           fetchedAt: raw.fetchedAt,
         });
       }
