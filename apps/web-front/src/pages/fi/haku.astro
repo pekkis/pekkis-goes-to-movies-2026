@@ -1,0 +1,48 @@
+---
+import { LocateButton } from "../../components/LocateButton.tsx";
+import { SearchForm } from "../../components/SearchForm.tsx";
+import { SearchResults } from "../../components/SearchResults.tsx";
+import Base from "../../layouts/Base.astro";
+import { loadSearchPage } from "../../lib/search.ts";
+import { fi } from "../../lib/text.ts";
+import { helsinkiShowTimeAt, helsinkiToday } from "@pgtm/model/time";
+import { sprinkles } from "../../styles/sprinkles.css.ts";
+
+// The programme day: until 05.00, last night's shows are still "today".
+const now = Astro.locals.now;
+const today = helsinkiShowTimeAt(now.toString())?.businessDate ?? helsinkiToday(now);
+const page = await loadSearchPage(Astro.locals.api, Astro.url.searchParams, today);
+const placeName = page.place?.kind === "city" ? page.place.name : fi.myLocation;
+---
+
+<Base title={fi.searchTitle}>
+  <h1>{fi.searchTitle}</h1>
+  <p class={sprinkles({ marginBottom: "md" })}>{fi.searchIntro}</p>
+  <SearchForm page={page}>
+    <LocateButton slot="locate" client:idle />
+  </SearchForm>
+  {
+    page.state === "start" ? (
+      <p>{fi.startHint}</p>
+    ) : (
+      <>
+        {page.place && (
+          <p class={sprinkles({ marginBottom: "sm" })}>{fi.around(placeName, fi.km(page.params.radiusKm))}</p>
+        )}
+        {page.params.film && (
+          <p class={sprinkles({ marginBottom: "sm" })}>
+            {page.films.length
+              ? `${fi.filmsFound}: ${page.films.map((f) => f.title).join(", ")}`
+              : fi.noFilmFound(page.params.film)}
+          </p>
+        )}
+        <SearchResults
+          client:idle
+          screenings={page.screenings}
+          distances={page.distances}
+          now={Astro.locals.now.toString()}
+        />
+      </>
+    )
+  }
+</Base>

@@ -4,13 +4,14 @@ The public website: server-rendered pages that search engines can index, from ou
 
 ## Pages
 
-| URL                            | Page                                                                                                                                   | Data                    |
-| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| `/`                            | redirects to `/fi/`                                                                                                                    | –                       |
-| `/fi/`                         | cities, as links                                                                                                                       | `/v1/venues`            |
-| `/fi/kaupungit/{city}`         | a city's day: its venues, then every screening in start order                                                                          | `/v1/screenings?city=`  |
-| `/fi/elokuvateatterit/{venue}` | a venue's day, film by film: address, map link, the cinema's website, each film (alphabetical) with its showtimes                      | `/v1/screenings?venue=` |
-| `/fi/kartta`                   | every venue on a map: clusters when zoomed out, a popup per pin linking to the venue page; below it, the same venues as a list by city | `/v1/venues`            |
+| URL                            | Page                                                                                                                                   | Data                                                                    |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `/`                            | redirects to `/fi/`                                                                                                                    | –                                                                       |
+| `/fi/`                         | cities, as links                                                                                                                       | `/v1/venues`                                                            |
+| `/fi/kaupungit/{city}`         | a city's day: its venues, then every screening in start order                                                                          | `/v1/screenings?city=`                                                  |
+| `/fi/elokuvateatterit/{venue}` | a venue's day, film by film: address, map link, the cinema's website, each film (alphabetical) with its showtimes                      | `/v1/screenings?venue=`                                                 |
+| `/fi/kartta`                   | every venue on a map: clusters when zoomed out, a popup per pin linking to the venue page; below it, the same venues as a list by city | `/v1/venues`                                                            |
+| `/fi/haku`                     | search: days, a place and maybe a film name, then narrow by time of day, venue and film ([below](#search-fihaku))                      | `/v1/screenings?bbox=`, `/v1/films/search`, `/v1/films/{id}/screenings` |
 
 - **Slugs** are derived from names (`src/lib/cities.ts`, `src/lib/venues.ts`):
   - a city: `Jyväskylä` → `jyvaskyla`;
@@ -149,7 +150,43 @@ pnpm web:build && node apps/web-front/dist/server/entry.mjs   # production serve
 - `test/components/`: Testing Library under `// @vitest-environment happy-dom`.
 - `test/pages/`: Astro's Container API renders a real page, with a fake API passed in `locals`.
 
+## Search (`/fi/haku`)
+
+Built for the mockup presentation and the first user tests (2026-10-23). It shows the two ways people look for something to watch, on one page, in either order:
+
+- **Time and place first:** check days, choose a city or "Käytä sijaintiani" and a radius, then narrow by time of day, venue and film.
+- **Film first:** type a film name. Its screenings on the checked days come up nationwide, or within the radius once a place is set.
+
+**The query** is a plain GET form, server-rendered, which works without JavaScript ([SearchForm.tsx](../apps/web-front/src/components/SearchForm.tsx)):
+
+| Parameter      | Meaning                                                                               |
+| -------------- | ------------------------------------------------------------------------------------- |
+| `paiva` (0–7×) | days, from today's programme day and the six after it; none or invalid means today    |
+| `kaupunki`     | a city slug; its centre is the mean of its venues' coordinates. Wins over `lat`/`lon` |
+| `lat`, `lon`   | the browser's location, set by the `LocateButton` island, which clears `kaupunki`     |
+| `sade`         | radius: 5, 10, 25 (default), 50 or 100 km                                             |
+| `elokuva`      | a film name, two characters or more: up to 3 films from `/v1/films/search`            |
+
+**Loading** ([lib/search.ts](../apps/web-front/src/lib/search.ts)):
+
+- Without a place or a film, only the form is shown, so the whole country is never loaded.
+- With a place, each day is loaded with `bbox` (`bboxAround` from `@pgtm/model/geo`), and screenings beyond the radius are dropped by `distanceKm`.
+- With a film, each film's screenings are loaded per day, with the `bbox` too when a place is set.
+
+**Facets** ([lib/facets.ts](../apps/web-front/src/lib/facets.ts), the `SearchResults` island):
+
+- There are three: time of day (before 12, 12–17, 17–21, 21 and later, where a show after midnight counts as late), venue (nearest first, with distance) and film (alphabetical).
+- Nothing checked means everything is shown.
+- Each value's count applies the _other_ facets. A value that would show nothing is disabled, and unchecking can still lead to an empty result, which the page says.
+- Long lists get a type-to-narrow field; the venue field matches the city too.
+- The selection is a jotai atom in the island's own store (its `ClockIsland`).
+
 ## Known gaps
+
+- **Search:**
+  - facet choices are not in the URL, so a narrowed view can't be shared or bookmarked;
+  - there is no address search, only a city or the browser's location;
+  - a wide search is heavy. Seven days around Helsinki is about 3 MB of HTML, because the screenings are rendered and also passed to the island as props. nginx's gzip brings it to roughly a twentieth. Trimming the island's props or rendering only the first part would help.
 
 - **Typecheck:** `astro check` doesn't support TypeScript 7. `tsc` checks the `.ts`/`.tsx` files (`src/env.d.ts` declares `*.astro` modules), and the `.astro` templates themselves go unchecked.
 - **Formatting and linting:** oxfmt doesn't format `.astro` files. oxlint does check their frontmatter.

@@ -7,6 +7,7 @@ import { searchFilmSummaries } from "../queries/films.ts";
 import { listScreenings } from "../queries/screenings.ts";
 import { listVenues } from "../queries/venues.ts";
 import { helsinkiToday } from "../search/showtimes.ts";
+import { distanceKm } from "@pgtm/model/geo";
 
 /**
  * MCP server for chatbots: the same read-only data as the HTTP API, as three tools a model
@@ -38,16 +39,6 @@ const time = z
 const programmeMinutes = (hhmm: string): number => {
   const [h, m] = hhmm.split(":").map(Number) as [number, number];
   return (h * 60 + m - 5 * 60 + 24 * 60) % (24 * 60);
-};
-
-const distanceKm = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => {
-  const rad = Math.PI / 180;
-  const dLat = (b.lat - a.lat) * rad;
-  const dLon = (b.lon - a.lon) * rad;
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLon / 2) ** 2;
-  return 2 * 6371 * Math.asin(Math.sqrt(h));
 };
 
 type ScreeningOut = z.infer<typeof Screening>;
