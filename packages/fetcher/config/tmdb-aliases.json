@@ -423,5 +423,15 @@
     "tmdb": 9362,
     "title": "Tremors - Väristyksiä",
     "note": "Tremors (1990), TMDB's Finnish title Väristyksiä; 1990, 96 min on both. The two titles joined by a dash defeat the search."
+  },
+  "korjaamo:film:5233": {
+    "tmdb": 1397364,
+    "title": "La Grazia",
+    "note": "Paolo Sorrentino's La grazia (2025, IT). Korjaamo says 113 min where TMDB says 133, too far for automatic matching. Confirmed by the maintainer (2026-10-19)."
+  },
+  "kinometso:film:901": {
+    "tmdb": 1733496,
+    "title": "Pat & Mat",
+    "note": "Pat & Mat: Zpátky na venkově (2026, CZ), a children's film; Kino Metso says 40 min, TMDB has no runtime. Confirmed by the maintainer (2026-10-19)."
   }
 }
