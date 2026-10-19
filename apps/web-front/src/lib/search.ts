@@ -21,7 +21,7 @@ import { citiesOf, citySlug, type City } from "./cities.ts";
 
 /** Days the form offers: today and the six after it. */
 export const DAYS_AHEAD = 7;
-export const RADII_KM = [5, 10, 25, 50, 100] as const;
+export const RADII_KM = [5, 10, 15, 20, 25, 50, 100, 200] as const;
 export const DEFAULT_RADIUS_KM = 25;
 /** Films a name search may bring: the best few, and the island can uncheck the rest. */
 const FILMS_PER_SEARCH = 3;

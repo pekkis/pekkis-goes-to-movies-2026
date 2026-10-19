@@ -35,6 +35,8 @@ describe("parseSearchParams", () => {
       radiusKm: 10,
       film: "Lapin sota",
     });
+    expect(parseSearchParams(q("sade=15"), TODAY).radiusKm).toBe(15);
+    expect(parseSearchParams(q("sade=200"), TODAY).radiusKm).toBe(200);
     expect(parseSearchParams(q("sade=7&lat=40&lon=23&elokuva=x"), TODAY)).toEqual({
       days: [TODAY],
       radiusKm: 25,

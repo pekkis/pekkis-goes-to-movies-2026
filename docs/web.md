@@ -164,7 +164,7 @@ Built for the mockup presentation and the first user tests (2026-10-23). It show
 | `paiva` (0–7×) | days, from today's programme day and the six after it; none or invalid means today                                                                |
 | `kaupunki`     | a city slug; its centre is the mean of its venues' coordinates. Wins over `lat`/`lon`                                                             |
 | `lat`, `lon`   | the browser's location, filled in by the `LocateButton` island, which clears `kaupunki` and shows "Oma sijainti"; like a city, it waits for "Hae" |
-| `sade`         | radius: 5, 10, 25 (default), 50 or 100 km                                                                                                         |
+| `sade`         | radius: 5, 10, 15, 20, 25 (default), 50, 100 or 200 km                                                                                            |
 | `elokuva`      | a film name, two characters or more: up to 3 films from `/v1/films/search`                                                                        |
 
 **Loading** ([lib/search.ts](../apps/web-front/src/lib/search.ts)):
