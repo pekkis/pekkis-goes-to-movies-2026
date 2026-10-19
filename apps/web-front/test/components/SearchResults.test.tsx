@@ -28,11 +28,14 @@ const SHOWS = [
   }),
 ];
 
+const FINNKINO = { id: "finnkino", name: "Finnkino" };
+
 const renderResults = () =>
   render(
     <SearchResults
       screenings={SHOWS}
       distances={{ plevna: 0.4, atlas: 1.2 }}
+      providers={{ plevna: FINNKINO, atlas: FINNKINO }}
       now={NOON_INSTANT.toString()}
     />,
   );
@@ -45,7 +48,7 @@ const countOf = (facetName: string, label: string) =>
   option(facetName, label).closest("label")!.lastElementChild!.textContent;
 
 describe("SearchResults", () => {
-  it("shows everything by day, venues nearest first with their distance", () => {
+  it("shows everything by day, a provider's venues under it, nearest first", () => {
     renderResults();
     expect(screen.getByText("3 näytöstä")).toBeTruthy();
     expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent)).toEqual([
@@ -54,6 +57,7 @@ describe("SearchResults", () => {
     ]);
     const venues = within(facet("Elokuvateatterit")).getAllByRole("checkbox");
     expect(venues.map((v) => v.closest("label")!.textContent)).toEqual([
+      "Finnkino3",
       "Plevna · 0,4 km2",
       "Atlas · 1,2 km1",
     ]);
@@ -103,5 +107,61 @@ describe("SearchResults: long lists", () => {
         .getAllByRole("checkbox")
         .map((c) => c.closest("label")!.textContent),
     ).toEqual(["Kino 3 · Tampere1"]);
+  });
+});
+
+describe("SearchResults: providers", () => {
+  // Finnkino runs two of the three venues; Niagara is its own provider.
+  const shows = [
+    ...SHOWS,
+    screening({
+      id: "4",
+      venue: venue("niagara", "Cinema Niagara"),
+      film: film("digger", "Digger"),
+    }),
+  ];
+  const renderProviders = () =>
+    render(
+      <SearchResults
+        screenings={shows}
+        distances={{ plevna: 0.4, atlas: 1.2, niagara: 0.2 }}
+        providers={{
+          plevna: FINNKINO,
+          atlas: FINNKINO,
+          niagara: { id: "cinemaniagara", name: "Cinema Niagara" },
+        }}
+        now={NOON_INSTANT.toString()}
+      />,
+    );
+
+  it("orders venues by provider and checks a chain's venues with one click", () => {
+    renderProviders();
+    const venues = within(facet("Elokuvateatterit")).getAllByRole("checkbox");
+    // Cinema Niagara, then Finnkino with its two venues; a lone venue gets no group row.
+    expect(venues.map((v) => v.closest("label")!.textContent)).toEqual([
+      "Cinema Niagara · 0,2 km1",
+      "Finnkino3",
+      "Plevna · 0,4 km2",
+      "Atlas · 1,2 km1",
+    ]);
+    fireEvent.click(option("Elokuvateatterit", "^Finnkino"));
+    expect((option("Elokuvateatterit", "Plevna") as HTMLInputElement).checked).toBe(true);
+    expect((option("Elokuvateatterit", "Atlas") as HTMLInputElement).checked).toBe(true);
+    expect(screen.getByText("3 näytöstä")).toBeTruthy();
+    // Clicking it again unchecks the chain.
+    fireEvent.click(option("Elokuvateatterit", "^Finnkino"));
+    expect(screen.getByText("4 näytöstä")).toBeTruthy();
+  });
+
+  it("shows a chain half-checked when only some of its venues are", () => {
+    renderProviders();
+    fireEvent.click(option("Elokuvateatterit", "Atlas"));
+    const chain = option("Elokuvateatterit", "^Finnkino") as HTMLInputElement;
+    expect(chain.checked).toBe(false);
+    expect(chain.indeterminate).toBe(true);
+    // A click on a half-checked chain checks all of it.
+    fireEvent.click(chain);
+    expect(chain.checked).toBe(true);
+    expect(chain.indeterminate).toBe(false);
   });
 });

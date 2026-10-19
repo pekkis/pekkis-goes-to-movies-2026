@@ -117,3 +117,13 @@ export const dayHeading = style({
   paddingBottom: vars.space.xs,
   borderBottom: `${vars.border.strongWidth} solid ${vars.color.border}`,
 });
+
+/** A group's members (a provider's venues), indented under the group's own checkbox. */
+export const nested = style({
+  display: "grid",
+  gap: vars.space.xxs,
+  marginTop: vars.space.xxs,
+  marginBottom: vars.space.xs,
+  paddingLeft: vars.space.lg,
+  borderLeft: `${vars.border.width} solid ${vars.color.border}`,
+});

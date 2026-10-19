@@ -104,7 +104,12 @@ export type SearchPage = {
   screenings: Screening[];
   /** Venue id -> km from the place, for venues in the results. */
   distances: Record<string, number>;
+  /** Venue id -> who runs it (a chain or the cinema itself), for venues in the results. */
+  providers: Record<string, Provider>;
 };
+
+/** A venue's provider as the venue list gives it: "finnkino" / "Finnkino". */
+export type Provider = { id: string; name: string };
 
 const byStart = (a: Screening, b: Screening) =>
   a.startsAt.localeCompare(b.startsAt) || a.id.localeCompare(b.id);
@@ -125,7 +130,7 @@ export const loadSearchPage = async (
     ...(place && { place }),
   };
   if (!place && !params.film) {
-    return { ...base, films: [], state: "start", screenings: [], distances: {} };
+    return { ...base, films: [], state: "start", screenings: [], distances: {}, providers: {} };
   }
 
   const bbox = place
@@ -156,5 +161,12 @@ export const loadSearchPage = async (
         ]),
       )
     : {};
-  return { ...base, films, state: "results", screenings, distances };
+  const venueProvider = new Map(venues.map((v) => [v.id, v.provider]));
+  const providers = Object.fromEntries(
+    screenings.flatMap((s) => {
+      const p = venueProvider.get(s.venue.id);
+      return p ? [[s.venue.id, { id: p.id, name: p.name }]] : [];
+    }),
+  );
+  return { ...base, films, state: "results", screenings, distances, providers };
 };

@@ -40,6 +40,7 @@ const placeName = page.place?.kind === "city" ? page.place.name : fi.myLocation;
           client:idle
           screenings={page.screenings}
           distances={page.distances}
+          providers={page.providers}
           now={Astro.locals.now.toString()}
         />
       </>
