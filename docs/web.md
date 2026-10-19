@@ -159,13 +159,13 @@ Built for the mockup presentation and the first user tests (2026-10-23). It show
 
 **The query** is a plain GET form, server-rendered, which works without JavaScript ([SearchForm.tsx](../apps/web-front/src/components/SearchForm.tsx)):
 
-| Parameter      | Meaning                                                                               |
-| -------------- | ------------------------------------------------------------------------------------- |
-| `paiva` (0–7×) | days, from today's programme day and the six after it; none or invalid means today    |
-| `kaupunki`     | a city slug; its centre is the mean of its venues' coordinates. Wins over `lat`/`lon` |
-| `lat`, `lon`   | the browser's location, set by the `LocateButton` island, which clears `kaupunki`     |
-| `sade`         | radius: 5, 10, 25 (default), 50 or 100 km                                             |
-| `elokuva`      | a film name, two characters or more: up to 3 films from `/v1/films/search`            |
+| Parameter      | Meaning                                                                                                                                           |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `paiva` (0–7×) | days, from today's programme day and the six after it; none or invalid means today                                                                |
+| `kaupunki`     | a city slug; its centre is the mean of its venues' coordinates. Wins over `lat`/`lon`                                                             |
+| `lat`, `lon`   | the browser's location, filled in by the `LocateButton` island, which clears `kaupunki` and shows "Oma sijainti"; like a city, it waits for "Hae" |
+| `sade`         | radius: 5, 10, 25 (default), 50 or 100 km                                                                                                         |
+| `elokuva`      | a film name, two characters or more: up to 3 films from `/v1/films/search`                                                                        |
 
 **Loading** ([lib/search.ts](../apps/web-front/src/lib/search.ts)):
 
@@ -175,10 +175,11 @@ Built for the mockup presentation and the first user tests (2026-10-23). It show
 
 **Facets** ([lib/facets.ts](../apps/web-front/src/lib/facets.ts), the `SearchResults` island):
 
-- There are three: time of day (before 12, 12–17, 17–21, 21 and later, where a show after midnight counts as late), venue (nearest first, with distance) and film (alphabetical).
+- There are three: time of day (before 12, 12–17, 17–21, 21 and later, where a show after midnight counts as late), venue and film (alphabetical).
+- **Venues are listed by provider**, nearest first within each. A provider with two or more venues in the results gets its own checkbox, which checks or unchecks all of them, and shows half-checked when only some are. A season ticket holder can pick "Finnkino" in one click (maintainer's feedback, 2026-10-19). A cinema that is its own provider is a plain row.
 - Nothing checked means everything is shown.
 - Each value's count applies the _other_ facets. A value that would show nothing is disabled, and unchecking can still lead to an empty result, which the page says.
-- Long lists get a type-to-narrow field; the venue field matches the city too.
+- Long lists get a type-to-narrow field; the venue field matches the city and the provider too.
 - The selection is a jotai atom in the island's own store (its `ClockIsland`).
 
 ## Known gaps
