@@ -40,6 +40,40 @@ export const fi = {
   osmNotice: "Teattereiden sijainnit © OpenStreetMap-tekijät (ODbL).",
   helsinkiNotice:
     "Osa näytöksistä Helsingin ja Espoon kaupunkien Linked Events -rajapinnoista (CC BY 4.0).",
+  // The search page (/fi/haku).
+  search: "Hae",
+  searchTitle: "Hae elokuvaa",
+  searchIntro:
+    "Valitse päivät ja paikka, tai kirjoita elokuvan nimi. Rajaa sitten kellonajan, teatterin ja elokuvan mukaan.",
+  days: "Päivät",
+  today: "tänään",
+  place: "Paikka",
+  chooseCity: "Valitse kaupunki",
+  myLocation: "Oma sijainti",
+  locateMe: "Käytä sijaintiani",
+  locating: "Haetaan sijaintia…",
+  locationFailed: "Sijaintia ei saatu. Valitse kaupunki.",
+  radius: "Etäisyys enintään",
+  km: (n: number) => `${n.toLocaleString("fi-FI")} km`,
+  filmName: "Elokuvan nimi (vapaaehtoinen)",
+  filmExample: "esim. Lapin sota",
+  startHint: "Valitse paikka tai kirjoita elokuvan nimi, niin näet näytökset.",
+  noFilmFound: (q: string) => `Elokuvaa ”${q}” ei löytynyt.`,
+  filmsFound: "Haetut elokuvat",
+  narrow: "Rajaa",
+  filmsFacet: "Elokuvat",
+  timeOfDay: "Kellonaika",
+  timeSlots: {
+    morning: "ennen klo 12",
+    afternoon: "klo 12–17",
+    evening: "klo 17–21",
+    late: "klo 21 jälkeen",
+  },
+  filterFilms: "Etsi listasta",
+  clear: "Tyhjennä",
+  toResults: (n: number) => `Siirry näytöksiin (${n}) ↓`,
+  noMatches: "Valinnoilla ei löytynyt näytöksiä. Poista jokin rajaus.",
+  around: (place: string, km: string) => `${place}, enintään ${km}`,
 } as const;
 
 const languageNames = new Intl.DisplayNames(["fi"], { type: "language" });

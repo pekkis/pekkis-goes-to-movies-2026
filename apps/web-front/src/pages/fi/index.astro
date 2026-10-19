@@ -9,7 +9,8 @@ const cities = citiesOf(await listVenues(Astro.locals.api));
 ---
 
 <Base title={fi.siteName}>
-  <p class={sprinkles({ marginBottom: "lg" })}>{fi.tagline}</p>
+  <p class={sprinkles({ marginBottom: "md" })}>{fi.tagline}</p>
+  <p class={sprinkles({ marginBottom: "lg" })}><a href="/fi/haku">{fi.searchTitle} →</a></p>
   <h1 class={sprinkles({ marginBottom: "md" })}>{fi.cities}</h1>
   <ul role="list" class={sprinkles({ display: "flex", flexWrap: "wrap", gap: "sm" })}>
     {cities.map((c) => <li><a href={`/fi/kaupungit/${c.slug}`}>{c.name}</a></li>)}

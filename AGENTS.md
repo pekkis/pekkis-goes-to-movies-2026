@@ -27,7 +27,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
   - the `showtimes` CLI;
   - a read-only HTTP API (Hono, OpenAPI), and an MCP server on it for chatbots (`/mcp/{MCP_TOKEN}`, off unless the token is set; internal testing);
   - a Flutter map app by a teammate in `apps/fpgm` (an early scaffold);
-  - the public website in `apps/web-front`: Astro (SSR) + React + Vanilla Extract. City pages, venue pages and a venue map (MapLibre). See [docs/web.md](docs/web.md).
+  - the public website in `apps/web-front`: Astro (SSR) + React + Vanilla Extract. City pages, venue pages, a venue map (MapLibre) and a search page (`/fi/haku`: days, place and film, narrowed by time of day, venue and film). See [docs/web.md](docs/web.md).
 
 - **Visual style: a grey mockup, on purpose.** There is no visual identity yet; it comes after user testing. See the rule below.
 - **Not started here:** design and user research. The course work happens outside this repository.
@@ -168,7 +168,7 @@ apps/web-front/                 @pgtm/web-front: the website (Astro SSR, React, 
   src/components/               React components; islands (client:idle) for live UI; clock.tsx: jotai clock atom, ClockIsland, useShowStatus
   src/styles/                   design system: theme.css.ts (all tokens), containers.ts, sprinkles, reset, recipes/
   src/lib/                      typed API client (hc<AppType>), page loaders, cities, time, text (Finnish UI text)
-packages/model/                 @pgtm/model: src/schema.ts, the domain model (Zod + types); src/time.ts (`@pgtm/model/time`): Temporal dates and times; source-only
+packages/model/                 @pgtm/model: src/schema.ts, the domain model (Zod + types); src/time.ts (`@pgtm/model/time`): Temporal dates and times; src/geo.ts (`@pgtm/model/geo`): distances; source-only
 packages/fetcher/               @pgtm/fetcher: fetch, normalize, match → data/normalized/*.json
   src/lib/                      env, paths, http (ky + p-queue, per-host pacing; GET, and postForm for POST sources; text decoded by its stated charset), lang, cache, records
   src/providers/adapter.ts      Adapter (id, platform, pull), restrictToVenues

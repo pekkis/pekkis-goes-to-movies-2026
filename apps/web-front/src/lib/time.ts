@@ -26,3 +26,16 @@ export const formatDay = (date: string): string =>
   weekday.format(
     Temporal.PlainDate.from(date).toZonedDateTime({ timeZone: "UTC" }).epochMilliseconds,
   );
+
+const shortDay = new Intl.DateTimeFormat("fi-FI", {
+  timeZone: "UTC",
+  weekday: "short",
+  day: "numeric",
+  month: "numeric",
+});
+
+/** "2026-10-19" -> "ma 19.10." (for the search page's day checkboxes). */
+export const formatShortDay = (date: string): string =>
+  shortDay.format(
+    Temporal.PlainDate.from(date).toZonedDateTime({ timeZone: "UTC" }).epochMilliseconds,
+  );
