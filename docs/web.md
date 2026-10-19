@@ -167,6 +167,8 @@ Built for the mockup presentation and the first user tests (2026-10-23). It show
 | `sade`         | radius: 5, 10, 15, 20, 25 (default), 50, 100 or 200 km                                                                                            |
 | `elokuva`      | a film name, two characters or more: up to 3 films from `/v1/films/search`                                                                        |
 
+**Locating** (`LocateButton`) always ends: found, or a message for each failure (permission denied, location unavailable, timed out). The browser's own `timeout` starts only once permission is given, so a dismissed permission prompt (Firefox) or a macOS without location services for the browser can leave the request unanswered. A 20-second watchdog ends the wait, and the button can be pressed again; a late answer to an abandoned request is ignored (seen on the live site, 2026-10-19 [V]).
+
 **Loading** ([lib/search.ts](../apps/web-front/src/lib/search.ts)):
 
 - Without a place or a film, only the form is shown, so the whole country is never loaded.

@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { LocateButton } from "../../src/components/LocateButton.tsx";
+import { LOCATE_WATCHDOG_MS, LocateButton } from "../../src/components/LocateButton.tsx";
 
 afterEach(cleanup);
 
@@ -42,10 +42,48 @@ describe("LocateButton", () => {
     expect(submit).not.toHaveBeenCalled();
   });
 
-  it("says so when the location can't be had", () => {
-    withGeolocation((_ok, fail) => fail?.({ code: 1 } as GeolocationPositionError));
+  it.each([
+    [1, "Selain ei antanut sijaintia."],
+    [2, "Sijaintia ei saatu. Tarkista, että sijaintipalvelut ovat päällä"],
+    [3, "Sijaintia ei saatu ajoissa."],
+  ])("says why when the browser answers with error %s", (code, text) => {
+    withGeolocation((_ok, fail) => fail?.({ code } as GeolocationPositionError));
     renderInForm();
     fireEvent.click(screen.getByRole("button", { name: "Käytä sijaintiani" }));
-    expect(screen.getByRole("status").textContent).toBe("Sijaintia ei saatu. Valitse kaupunki.");
+    expect(screen.getByRole("status").textContent).toContain(text);
+  });
+
+  it("gives up on a browser that never answers, and can be pressed again", () => {
+    vi.useFakeTimers();
+    try {
+      // The first request hangs (a dismissed permission prompt); keep its callback.
+      let late: PositionCallback | undefined;
+      withGeolocation((ok) => {
+        late = ok;
+      });
+      const { form } = renderInForm();
+      const press = () => fireEvent.click(screen.getByRole("button", { name: /sijainti/i }));
+      press();
+      expect(screen.getByRole("button").textContent).toBe("Haetaan sijaintia…");
+      act(() => {
+        vi.advanceTimersByTime(LOCATE_WATCHDOG_MS);
+      });
+      expect(screen.getByRole("status").textContent).toContain("Sijaintia ei saatu ajoissa.");
+      expect(screen.getByRole("button").textContent).toBe("Käytä sijaintiani");
+
+      // An answer to the abandoned request changes nothing.
+      act(() => late?.({ coords: { latitude: 60, longitude: 25 } } as GeolocationPosition));
+      expect(form.elements.namedItem("lat")).toBeNull();
+
+      // Pressed again, the browser answers this time.
+      withGeolocation((ok) =>
+        ok({ coords: { latitude: 61.5, longitude: 23.76 } } as GeolocationPosition),
+      );
+      press();
+      expect((form.elements.namedItem("lat") as HTMLInputElement).value).toBe("61.5000");
+      expect(screen.getByRole("status").textContent).toBe("Sijainti haettu. Paina Hae.");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
