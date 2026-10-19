@@ -94,6 +94,37 @@ server {
 }
 ```
 
+**Compression and headers.** Ubuntu's default `nginx.conf` turns `gzip on` but leaves `gzip_types` commented out, so only `text/html` is compressed. On 2026-10-19 [V], the site's JavaScript, CSS and the API's JSON went out uncompressed: MapLibre's chunk on `/fi/kartta` was 1.05 MB instead of 279 kB, and React's client 213 kB instead of 66 kB. Put this in the `http {}` block, for example as `/etc/nginx/conf.d/compression.conf`:
+
+```nginx
+gzip on;
+gzip_vary on;                 # Vary: Accept-Encoding, so caches keep both versions apart
+gzip_proxied any;
+gzip_comp_level 5;
+gzip_min_length 1024;
+gzip_types text/css text/javascript application/javascript application/json
+           image/svg+xml text/plain application/xml;
+# Not text/event-stream: compressing MCP's server-sent events would hold them back.
+server_tokens off;            # no nginx version in the Server header
+```
+
+Optionally, add HSTS in each `server { listen 443 … }` block above (no `includeSubDomains`, since other sites share the domain):
+
+```nginx
+add_header Strict-Transport-Security "max-age=31536000" always;
+```
+
+**Check it after `nginx -t && systemctl reload nginx`:**
+
+```sh
+W=https://movies.pekkis.eu A=https://api.movies.pekkis.eu
+js=$(curl -s $W/fi/ | grep -o '/_astro/[^"]*\.js' | head -1)
+for u in $W/fi/ $W$js $A/v1/venues; do
+  curl -s -o /dev/null -D - -H 'accept-encoding: gzip' "$u" | grep -i -E 'content-encoding|vary'
+done   # each should say content-encoding: gzip and vary: Accept-Encoding
+curl -s -o /dev/null -D - $W/fi/ | grep -i x-robots-tag   # noindex, nofollow until launch
+```
+
 These match `API_PORT=3579` and `WEB_PORT=4321`; use your own if they differ. `listen 443 ssl http2` works on every nginx version; from 1.25.1 on it's deprecated in favour of a separate `http2 on;`, which older versions reject as an unknown directive.
 
 ## Backups
