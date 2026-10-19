@@ -52,7 +52,11 @@ export const fi = {
   myLocation: "Oma sijainti",
   locateMe: "Käytä sijaintiani",
   locating: "Haetaan sijaintia…",
-  locationFailed: "Sijaintia ei saatu. Valitse kaupunki.",
+  locationDenied:
+    "Selain ei antanut sijaintia. Salli se selaimen (ja käyttöjärjestelmän) asetuksista tai valitse kaupunki.",
+  locationUnavailable:
+    "Sijaintia ei saatu. Tarkista, että sijaintipalvelut ovat päällä, tai valitse kaupunki.",
+  locationTimeout: "Sijaintia ei saatu ajoissa. Yritä uudelleen tai valitse kaupunki.",
   locationFound: "Sijainti haettu. Paina Hae.",
   radius: "Etäisyys enintään",
   km: (n: number) => `${n.toLocaleString("fi-FI")} km`,
