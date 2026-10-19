@@ -9,7 +9,13 @@ import {
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
-import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion, type Version } from "../labels.ts";
+import {
+  COMMON_TITLE_PREFIXES,
+  isPrivateBooking,
+  splitTitlePrefix,
+  splitVersion,
+  type Version,
+} from "../labels.ts";
 import { byStartThenId, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { BioPallasRawSnapshot } from "./fetch.ts";
@@ -92,6 +98,9 @@ export const parseBioPallas = (raw: BioPallasRawSnapshot, site: BioPallasSite): 
     }
     if (start.businessDate < window.from || start.businessDate > window.to) {
       return;
+    }
+    if (isPrivateBooking(rawTitle)) {
+      return; // a private event: nothing to list, nothing missing (2026-10-19)
     }
     const unmapped: string[] = [];
     if (versionLine && lineVersion.audio === undefined && lineVersion.dubbed === undefined) {

@@ -4,6 +4,7 @@ import {
   COMMON_TITLE_PREFIXES,
   deriveTags,
   findLabel,
+  isPrivateBooking,
   labelEffects,
   labelKey,
   LABELS,
@@ -221,5 +222,18 @@ describe("splitDatedLabel", () => {
   it("leaves titles alone that end in an unknown word and a date", () => {
     expect(splitDatedLabel("Suomi, kesä 1.9.", LABELS)).toEqual({ title: "Suomi, kesä 1.9." });
     expect(splitDatedLabel("Blade Runner 2049", LABELS)).toEqual({ title: "Blade Runner 2049" });
+  });
+});
+
+describe("isPrivateBooking", () => {
+  it.each([
+    ["Yksityistilaisuus", true],
+    [" yksityisnäytös ", true],
+    ["Suljettu tilaisuus", true],
+    ["Yksityinen tilaisuus", true],
+    ["Kerro kaikille", false],
+    ["Yksityisetsivä Pikkuli", false],
+  ])("%s -> %s", (title, isPrivate) => {
+    expect(isPrivateBooking(title)).toBe(isPrivate);
   });
 });

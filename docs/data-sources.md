@@ -771,6 +771,7 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/biopallas/`
   Component ids change on every edit, so nothing is keyed on them. Day headings repeat the dates and are not read. The coming-soon list has a lone date with no "Klo" and is not a screening.
 
 - **Tickets at the door**; screenings link the page.
+- **Private bookings** ("Yksityistilaisuus" as a title, 2026-10-19 [V]) are skipped without a warning (`isPrivateBooking` in `labels.ts`, shared with Kino Tervakoski).
 - **Coordinates:** OSM node 2068950851 "Bio Pallas" (Nils Grabbegatan, no number, so no address). The city is Raasepori, as with Bio Forum.
 - **First run:** 11 films, 23 screenings, no warnings. Hetki ennen valoa is listed at 97 min (TMDB 87), so it waits for an alias.
 
@@ -874,7 +875,7 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Le
 ## Kino Tervakoski (Janakkala)
 
 - **Found** by the maintainer (janakkala.fi/kino), 2026-10-15; not in Leffavuoro. Run by the municipality's youth services in Tervakosken Seuratalo.
-- **The programme page** [V] (`/kino/ohjelmisto-2-2-2/`, the municipality's WordPress path, which may change): day headings in bold ("Keskiviikko 14.10.", no year; the weekday must fit the nearest date), then one paragraph per screening ("Klo 17.00 – Pirjo i Sverige (S), kotimainen, komedia, kesto 1 t 28 min, lippu 10,00 €"). The title closes with its rating in parentheses; "SUOMEKSI PUHUTTU" marks a Finnish-dubbed print. "Klo 17.00 – Yksityistilaisuus" is a private booking, skipped without a warning, and "kesto, 1t 57 min" (a stray comma) still gives the runtime (2026-10-17 [V]). The list ends at the first separator (`hr`) after the first day; posters and synopses follow it.
+- **The programme page** [V] (`/kino/ohjelmisto-2-2-2/`, the municipality's WordPress path, which may change): day headings in bold ("Keskiviikko 14.10.", no year; the weekday must fit the nearest date), then one paragraph per screening ("Klo 17.00 – Pirjo i Sverige (S), kotimainen, komedia, kesto 1 t 28 min, lippu 10,00 €"). The title closes with its rating in parentheses; "SUOMEKSI PUHUTTU" marks a Finnish-dubbed print. "Klo 17.00 – Yksityistilaisuus" is a private booking, skipped without a warning (`isPrivateBooking`), and "kesto, 1t 57 min" (a stray comma) still gives the runtime (2026-10-17 [V]). The list ends at the first separator (`hr`) after the first day; posters and synopses follow it.
 - **Tickets** at the door: booking `door`, links to the programme page.
 - **First run:** 4 screenings of 4 films (the page lists the current week), all matched.
 
