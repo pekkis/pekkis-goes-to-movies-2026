@@ -35,6 +35,8 @@ describe("parseSearchParams", () => {
       radiusKm: 10,
       film: "Lapin sota",
     });
+    expect(parseSearchParams(q("sade=15"), TODAY).radiusKm).toBe(15);
+    expect(parseSearchParams(q("sade=200"), TODAY).radiusKm).toBe(200);
     expect(parseSearchParams(q("sade=7&lat=40&lon=23&elokuva=x"), TODAY)).toEqual({
       days: [TODAY],
       radiusKm: 25,
@@ -74,6 +76,8 @@ describe("loadSearchPage", () => {
     expect(page.screenings.map((s) => s.id)).toEqual(["a", "b"]);
     expect(Object.keys(page.distances).toSorted()).toEqual(["t:venue:atlas", "t:venue:plevna"]);
     expect(page.distances["t:venue:plevna"]).toBeLessThan(1);
+    // Who runs each venue, from the venue list, for grouping by provider.
+    expect(page.providers["t:venue:plevna"]).toEqual({ id: "testchain", name: "Test Chain" });
     const asked = fake.requests.filter((u) => u.pathname === "/v1/screenings");
     expect(asked.map((u) => u.searchParams.get("date"))).toEqual(["2026-10-13", "2026-10-14"]);
     expect(asked[0]?.searchParams.get("bbox")).toMatch(/^[\d.]+,[\d.]+,[\d.]+,[\d.]+$/);

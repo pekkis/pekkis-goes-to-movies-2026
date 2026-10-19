@@ -3,6 +3,7 @@ import {
   applySelection,
   facetCounts,
   NOTHING_CHECKED,
+  setAll,
   timeSlot,
   toggle,
   type Selection,
@@ -81,5 +82,14 @@ describe("toggle", () => {
     expect([...once.films]).toEqual(["digger"]);
     expect([...toggle(once, "films", "digger").films]).toEqual([]);
     expect(NOTHING_CHECKED.films.size).toBe(0);
+  });
+});
+
+describe("setAll", () => {
+  it("checks a group of values at once, and unchecks only those", () => {
+    const some = toggle(NOTHING_CHECKED, "venues", "niagara");
+    const chain = setAll(some, "venues", ["plevna", "atlas"], true);
+    expect([...chain.venues].toSorted()).toEqual(["atlas", "niagara", "plevna"]);
+    expect([...setAll(chain, "venues", ["plevna", "atlas"], false).venues]).toEqual(["niagara"]);
   });
 });

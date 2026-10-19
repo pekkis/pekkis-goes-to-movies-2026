@@ -85,3 +85,21 @@ export const toggle = <F extends Facet>(
   }
   return { ...selection, [facet]: next };
 };
+
+/** The selection with several values of one facet checked, or all of them unchecked. */
+export const setAll = <F extends Facet>(
+  selection: Selection,
+  facet: F,
+  values: readonly string[],
+  on: boolean,
+): Selection => {
+  const next = new Set(selection[facet] as ReadonlySet<string>);
+  for (const value of values) {
+    if (on) {
+      next.add(value);
+    } else {
+      next.delete(value);
+    }
+  }
+  return { ...selection, [facet]: next };
+};

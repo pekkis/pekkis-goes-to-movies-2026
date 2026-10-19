@@ -17,12 +17,13 @@ const setField = (form: HTMLFormElement, name: string, value: string) => {
 };
 
 /**
- * "Käytä sijaintiani": asks the browser for its location, puts it into the search form
- * (clearing the city, which would otherwise win) and submits. An island (`client:idle`);
- * without JavaScript or permission, the city choice is there.
+ * "Käytä sijaintiani": asks the browser for its location and puts it into the search form,
+ * clearing the city (which would otherwise win) and naming the place "Oma sijainti". Like
+ * choosing a city, it does not submit: the days and radius can still change before "Hae".
+ * An island (`client:idle`); without JavaScript or permission, the city choice is there.
  */
 export const LocateButton = () => {
-  const [state, setState] = useState<"idle" | "locating" | "failed">("idle");
+  const [state, setState] = useState<"idle" | "locating" | "found" | "failed">("idle");
   return (
     <>
       <button
@@ -41,7 +42,12 @@ export const LocateButton = () => {
               setField(form, "lat", coords.latitude.toFixed(4));
               setField(form, "lon", coords.longitude.toFixed(4));
               setField(form, "kaupunki", "");
-              form.requestSubmit();
+              // The empty choice is the place now: say so in the list itself.
+              const city = form.elements.namedItem("kaupunki");
+              if (city instanceof HTMLSelectElement && city.options[0]) {
+                city.options[0].text = fi.myLocation;
+              }
+              setState("found");
             },
             () => setState("failed"),
             { maximumAge: 600_000, timeout: 15_000 },
@@ -51,6 +57,7 @@ export const LocateButton = () => {
         {state === "locating" ? fi.locating : fi.locateMe}
       </button>
       {state === "failed" && <span role="status">{fi.locationFailed}</span>}
+      {state === "found" && <span role="status">{fi.locationFound}</span>}
     </>
   );
 };
