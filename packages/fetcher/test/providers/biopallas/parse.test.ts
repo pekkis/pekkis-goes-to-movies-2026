@@ -41,6 +41,16 @@ describe("parseBioPallas", () => {
     });
   });
 
+  it("skips a private booking listed as a title, without a warning (2026-10-19)", () => {
+    const html = HTML.replaceAll("Other Mommy", "Yksityistilaisuus");
+    const result = parseBioPallas(snapshot({ html }), SITE);
+    expect(result.warnings).toEqual([]);
+    expect(result.listings.map((l) => l.title.fi)).not.toContain("Yksityistilaisuus");
+    expect(result.screenings).toHaveLength(
+      batch.screenings.filter((s) => !s.sourceId.startsWith("other-mommy")).length,
+    );
+  });
+
   it("reads one amount with a description as the price", () => {
     expect(show("kerro-kaikille-202610131400").price).toEqual({
       amountCents: 1200,

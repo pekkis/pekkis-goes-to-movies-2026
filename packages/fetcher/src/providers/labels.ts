@@ -225,6 +225,16 @@ export const splitDatedLabel = (
   };
 };
 
+/**
+ * A booking that is no public screening, listed in a programme: "Yksityistilaisuus"
+ * (Kino Tervakoski 2026-10-17, Bio Pallas 2026-10-19), "Yksityisnäytös". Nothing to list
+ * and nothing missing, so parsers skip it without a warning.
+ */
+export const isPrivateBooking = (title: string): boolean =>
+  /^(?:yksityistilaisuus|yksityisnäytös|yksityinen tilaisuus|suljettu tilaisuus)\b/i.test(
+    title.trim(),
+  );
+
 export type Version = {
   dubbed?: boolean;
   /** Audio language the version marker states. */

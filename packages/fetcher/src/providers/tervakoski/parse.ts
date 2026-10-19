@@ -9,7 +9,12 @@ import {
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
-import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
+import {
+  COMMON_TITLE_PREFIXES,
+  isPrivateBooking,
+  splitTitlePrefix,
+  splitVersion,
+} from "../labels.ts";
 import { byStartThenId, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { TervakoskiRawSnapshot } from "./fetch.ts";
@@ -25,8 +30,6 @@ const ROW = /^Klo\s+(\d{1,2})[.:](\d{2})\s*[–-]\s*(.+)$/i;
 const TITLE = /^(.+?)\s*\((S|K-?\d{1,2})\),?\s*(.*)$/i;
 /** "kesto 1 t 28 min", also "kesto, 1t 57 min" (2026-10-17). */
 const RUNTIME = /kesto,?\s+(\d+)\s*t(?:\s*(\d+)\s*min)?/i;
-/** A booking that is no public screening: "Klo 17.00 – Yksityistilaisuus" (2026-10-17). */
-const PRIVATE = /^yksityistilaisuus\b/i;
 const PRICE = /lippu\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*€/i;
 const DUBBED = /\bsuomeksi puhuttu\b/i;
 const RATINGS: Record<string, FinnishRating> = {
@@ -81,7 +84,7 @@ export const parseTervakoski = (
     if (!row) {
       continue; // empty paragraphs, notes
     }
-    if (PRIVATE.test(row[3]!.trim())) {
+    if (isPrivateBooking(row[3]!)) {
       continue; // a private event: nothing to list, nothing missing
     }
     const film = row[3]!.match(TITLE);
