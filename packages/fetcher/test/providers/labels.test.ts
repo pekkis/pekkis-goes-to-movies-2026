@@ -234,6 +234,8 @@ describe("isPrivateBooking", () => {
     [" yksityisnäytös ", true],
     ["Suljettu tilaisuus", true],
     ["Yksityinen tilaisuus", true],
+    ["Yritystapahtuma", true],
+    ["Tilavaraus - 6h", true],
     ["Kerro kaikille", false],
     ["Yksityisetsivä Pikkuli", false],
   ])("%s -> %s", (title, isPrivate) => {

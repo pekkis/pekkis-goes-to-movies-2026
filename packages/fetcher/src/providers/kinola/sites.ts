@@ -73,6 +73,18 @@ export const KINOLA_SITES: KinolaSite[] = defineSites(KinolaSite, [
         city: "Helsinki",
         kinolaName: "Pop Up Kino Helsinki",
       },
+      {
+        // In Kino Myyri's feed from 2026-10-20, first shows 30.10. Kinola says "Helsinki";
+        // it is in Vantaa (the maintainer), and OSM has the cinema at this address.
+        slug: "rekola",
+        name: "Rekolan Kino",
+        city: "Vantaa",
+        kinolaName: "Rekolan Kino",
+        address: "Rekolantie 43",
+        postalCode: "01400",
+        geo: { lat: 60.328834, lon: 25.072149 },
+        geoSource: "osm:node/506773443",
+      },
     ],
   },
   {

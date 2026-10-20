@@ -115,6 +115,7 @@ Origin: Leffavuoro's `scripts/providers/cinemantsala.py`, re-verified with three
   - the same rating icons (`rating_fi_12.svg`) and `business_date` convention;
   - two halls, "Sali 1" and "Sali 2";
   - `audio_lang` codes and `movie_audio_style_id` for dubs.
+- **Hall rentals** [V, 2026-10-20]: BioRex lists a corporate booking as a show ("Yritystapahtuma", extension "Tilavaraus - 6h"). Rows whose title or extension is a private booking (`isPrivateBooking` in `labels.ts`) are skipped without a warning.
 - **One day per request** [V, 2026-10-20]: since that morning, Cine Mäntsälä's `getShowTimesDays` answers only the requested day, whatever `number_of_days` says. It had answered the week the day before, and BioRex still answers everything it has published. A 7-day request brought only today, and the batch would have marked the rest of the week removed. The site is now asked one day at a time (`daysPerRequest: 1`, seven requests).
 - **`subtitle_lang` is a Finnish phrase**, not a code **[V]**: "Suomeksi ja ruotsiksi", "Ruotsiksi", "suomeksi", "Ei" (none). The platform parser reads both vocabularies.
 - **`title_extension` is a label:** "Ennakkonäytös!" **[V]**, read by the shared title-label rules as a `preview` tag. A site's own whole labels are site config (`titleExtensions`): Cine Mäntsälä's "Cine Matinea" (also "- näytös") is the series Cine Matinea (its matinée strand), "Leffa & viini-näytös!" the series Leffa & viini with the bar open (2026-10-20; no age limit is stated, so none is set), and "Cine Konsertti" (also "!") the series Cine Konsertti, event cinema, which makes the listing an event **[V]** 2026-10-15. Leffavuoro also saw "Leffa & Kaffe - näytös" **[A]**; it would show as an unmapped label until added.
@@ -1070,6 +1071,7 @@ Found on 2026-10-10. Adapter: `packages/fetcher/src/providers/kinola/`, cinemas 
 
 ---
 
+- **Rekolan Kino** (2026-10-20): a third venue in Kino Myyri's feed, first shows 30.10. Kinola gives its locality as "Helsinki", but it's in Vantaa: Rekolantie 43, 01400 (the maintainer), OSM node 506773443 "Rekolan Kino" **[V]**.
 - **Pop Up Kino Helsinki** (2026-10-15): Kino Myyri's feed also carries Pop Up Kino's screenings (popupkino.fi, Myyri's owner) under the venue "Pop Up Kino Helsinki". Pop Up Kino screens at changing places (KOM-teatteri in Hakaniemi in October 2026, next the Salvation Army hall), and the feed names none, so the venue has **no address or coordinates**: it shows in Helsinki's listings but not on the map, with a `venue-without-geo` warning each pull **[V]**.
 
 ## Johku (storefront schedule JSON)
