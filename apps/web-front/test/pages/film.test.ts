@@ -72,7 +72,10 @@ describe("front page", () => {
     });
     const html = await res.text();
     expect(html).toContain("Uudet elokuvat");
-    expect(html).toContain("Alkamassa viikon aikana");
+    // Coming premieres before the ones already started.
+    expect(html.indexOf("Alkamassa viikon aikana")).toBeLessThan(
+      html.indexOf("Alkaneet viikon aikana"),
+    );
     expect(html).toContain('href="/fi/elokuvat/unohdettu-saari-1185806"');
     expect(html).toContain('src="https://image.tmdb.org/t/p/w154/saari.jpg"');
     expect(html).toContain("1. näytös to 15.10.");

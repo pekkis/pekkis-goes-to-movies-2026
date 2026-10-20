@@ -114,16 +114,22 @@ export const filmOpenings = async (
   db: Kysely<DB>,
   from: string,
   to: string,
+  /** Only films with a screening (not removed) between these days too. */
+  playing?: { from: string; to: string },
 ): Promise<z.infer<typeof FilmOpening>[]> => {
-  const rows = await db
+  let query = db
     .selectFrom("screenings")
     .select(["filmId", sql<string>`min(business_date)::text`.as("firstShowing")])
     .where("filmId", "is not", null)
     .where("removedAt", "is", null)
     .groupBy("filmId")
-    .having(sql<boolean>`min(business_date) between ${from}::date and ${to}::date`)
-    .orderBy("firstShowing")
-    .execute();
+    .having(sql<boolean>`min(business_date) between ${from}::date and ${to}::date`);
+  if (playing) {
+    query = query.having(
+      sql<boolean>`bool_or(business_date between ${playing.from}::date and ${playing.to}::date)`,
+    );
+  }
+  const rows = await query.orderBy("firstShowing").execute();
   const films = await Promise.all(rows.map((r) => getFilm(db, r.filmId!)));
   return rows.flatMap((row, i) => {
     const film = films[i];

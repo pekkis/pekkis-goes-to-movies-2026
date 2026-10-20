@@ -101,9 +101,19 @@ export const getFilm = async (api: Api, id: string): Promise<Film | undefined> =
   return res.json();
 };
 
-/** Films whose first showing falls between two programme days, earliest first. */
-export const filmOpenings = async (api: Api, from: string, to: string): Promise<FilmOpening[]> => {
-  const res = await api.v1.films.openings.$get({ query: { from, to } });
+/**
+ * Films whose first showing falls between two programme days, earliest first; with
+ * `playing`, only those with a screening between those days too.
+ */
+export const filmOpenings = async (
+  api: Api,
+  from: string,
+  to: string,
+  playing?: { from: string; to: string },
+): Promise<FilmOpening[]> => {
+  const res = await api.v1.films.openings.$get({
+    query: { from, to, ...(playing && { playingFrom: playing.from, playingTo: playing.to }) },
+  });
   if (!res.ok) {
     throw new ApiError(res.status, "/v1/films/openings");
   }

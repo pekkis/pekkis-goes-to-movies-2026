@@ -52,7 +52,7 @@ export const fi = {
   noScreeningsOn: (day: string) => `Ei näytöksiä ${day}.`,
   newFilms: "Uudet elokuvat",
   newFilmsIntro:
-    "Elokuvat, joiden ensimmäinen näytös oli viikon sisällä tai on tulossa viikon sisällä.",
+    "Elokuvat, joiden ensimmäinen näytös on tulossa tai oli viikon sisällä ja joita esitetään seuraavan viikon aikana.",
   openedThisWeek: "Alkaneet viikon aikana",
   comingThisWeek: "Alkamassa viikon aikana",
   firstShowing: (day: string) => `1. näytös ${day}`,

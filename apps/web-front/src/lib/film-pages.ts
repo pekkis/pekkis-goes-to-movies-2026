@@ -71,18 +71,23 @@ export const loadFilmPage = async (
 };
 
 export type FrontPage = {
+  /** First showing still to come, in the next seven days. */
+  coming: FilmOpening[];
   /** First shown in the past week, today included. */
   opened: FilmOpening[];
-  /** First showing still to come, in the next week. */
-  coming: FilmOpening[];
 };
 
-/** The front page's new films: first showing a week either side of today, each list by title. */
+/**
+ * The front page's new films: first showing in the past week or the next seven days, and
+ * still playing in those seven days (a film that started last week and has nothing left
+ * this week is not listed). Each list by title.
+ */
 export const loadFrontPage = async (api: Api, today: string): Promise<FrontPage> => {
-  const openings = await filmOpenings(api, addDays(today, -7), addDays(today, 7));
+  const week = { from: today, to: addDays(today, 6) };
+  const openings = await filmOpenings(api, addDays(today, -7), week.to, week);
   const sorted = openings.toSorted((a, b) => byTitle(a.film, b.film));
   return {
-    opened: sorted.filter((o) => o.firstShowing <= today),
     coming: sorted.filter((o) => o.firstShowing > today),
+    opened: sorted.filter((o) => o.firstShowing <= today),
   };
 };

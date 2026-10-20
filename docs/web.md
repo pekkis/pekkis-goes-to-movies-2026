@@ -155,7 +155,7 @@ pnpm web:build && node apps/web-front/dist/server/entry.mjs   # production serve
 
 - **URL:** `/fi/elokuvat/lapin-sota-1450460`, the Finnish title's slug and the TMDB id. Only the number counts. A slug with another title (renamed on TMDB, or typed by hand) redirects (301) to the current one, keeping `?date=`. Unmatched cinema listings have no film page; their titles stay plain text in lists. Every film title in a screening list links here (`FilmName`).
 - **The page:** the film from TMDB (`FilmHead`), the next seven days as links with their counts (`FilmDays`), and the chosen day's screenings in the search page's island, `SearchResults`, which hides its film facet when there is one film. Without `?date=`, it opens on the first of the seven days with screenings. Critics' scores are not shown, as they are opt-in.
-- **New films on the front page:** `GET /v1/films/openings`, films whose first screening in our data (previews included) falls within a week either side of today. They are split into "already started" and "starting", each alphabetical. Revivals and festival screenings count as new when they first appear (2026-10-20: 138 films).
+- **New films on the front page:** `GET /v1/films/openings` with `playingFrom`/`playingTo`: films whose first screening in our data (previews included) was in the past week or comes in the next seven days, and that still have a screening in those seven days. A film that started last week and has nothing left this week is not listed. Coming premieres first, then those already started, each alphabetical. Revivals and festival screenings count as new when they first appear (2026-10-20: 65 films, 138 before the playing filter).
 
 ## Posters and images
 

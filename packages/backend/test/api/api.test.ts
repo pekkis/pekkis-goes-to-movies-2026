@@ -252,6 +252,11 @@ describe("films", () => {
     ]);
     // A film first shown before the range is not new in it.
     expect((await get("/v1/films/openings?from=2026-10-11&to=2026-10-12")).body).toEqual([]);
+    // Only films still playing in a range: tmdb:100 plays on the 10th and 11th, not later.
+    const playing = "/v1/films/openings?from=2026-10-09&to=2026-10-12&playingFrom=";
+    expect((await get(`${playing}2026-10-11&playingTo=2026-10-17`)).body).toHaveLength(1);
+    expect((await get(`${playing}2026-10-12&playingTo=2026-10-17`)).body).toEqual([]);
+    expect((await get(`${playing}2026-10-12`)).status).toBe(400);
     expect((await get("/v1/films/openings?from=2026-10-12&to=2026-10-09")).status).toBe(400);
     expect((await get("/v1/films/openings?from=2026-01-01&to=2026-12-31")).status).toBe(400);
   });

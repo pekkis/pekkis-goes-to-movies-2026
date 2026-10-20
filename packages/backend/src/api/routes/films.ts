@@ -48,6 +48,12 @@ const openings = createRoute({
         description: "Last programme day, YYYY-MM-DD. Default: a week after today.",
         example: "2026-10-27",
       }),
+      playingFrom: z.iso.date().optional().openapi({
+        description:
+          "With playingTo: only films with a screening between these days too, e.g. the coming week.",
+        example: "2026-10-20",
+      }),
+      playingTo: z.iso.date().optional().openapi({ example: "2026-10-26" }),
     }),
   },
   responses: {
@@ -112,7 +118,12 @@ export const filmRoutes = (db: Kysely<DB>) =>
           400,
         );
       }
-      return c.json(await filmOpenings(db, from, to), 200);
+      if ((q.playingFrom === undefined) !== (q.playingTo === undefined)) {
+        return c.json({ error: "playingFrom and playingTo go together" }, 400);
+      }
+      const playing =
+        q.playingFrom && q.playingTo ? { from: q.playingFrom, to: q.playingTo } : undefined;
+      return c.json(await filmOpenings(db, from, to, playing), 200);
     })
     .openapi(one, async (c) => {
       const film = await getFilm(db, c.req.valid("param").id);

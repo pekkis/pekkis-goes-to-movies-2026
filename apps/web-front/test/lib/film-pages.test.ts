@@ -64,7 +64,7 @@ describe("loadFilmPage", () => {
 });
 
 describe("loadFrontPage", () => {
-  it("asks for a week either side of today and splits by first showing, each by title", async () => {
+  it("asks for new films still playing this week, coming ones first, each by title", async () => {
     const opening = (id: string, title: string, firstShowing: string) => ({
       film: film({ id, title }),
       firstShowing,
@@ -81,9 +81,9 @@ describe("loadFrontPage", () => {
     expect(page.opened.map((o) => o.film.title)).toEqual(["Avaruusboltsit", "Digger", "Öljy"]);
     expect(page.coming.map((o) => o.film.title)).toEqual(["Lapin sota"]);
     const asked = fake.requests.find((u) => u.pathname === "/v1/films/openings")!;
-    expect([asked.searchParams.get("from"), asked.searchParams.get("to")]).toEqual([
-      "2026-10-06",
-      "2026-10-20",
-    ]);
+    // First showing from a week back to six days ahead; playing in today and the next six.
+    expect(
+      ["from", "to", "playingFrom", "playingTo"].map((k) => asked.searchParams.get(k)),
+    ).toEqual(["2026-10-06", "2026-10-19", "2026-10-13", "2026-10-19"]);
   });
 });

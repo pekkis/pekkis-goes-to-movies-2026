@@ -21,10 +21,10 @@ const cities = citiesOf(venues);
 
   <h1 class={sprinkles({ marginBottom: "sm" })}>{fi.newFilms}</h1>
   <p class={sprinkles({ marginBottom: "md" })}>{fi.newFilmsIntro}</p>
-  <h2 class={sprinkles({ marginBottom: "sm" })}>{fi.openedThisWeek}</h2>
-  {films.opened.length ? <FilmGrid openings={films.opened} /> : <p class={sprinkles({ marginBottom: "lg" })}>{fi.noNewFilms}</p>}
   <h2 class={sprinkles({ marginBottom: "sm" })}>{fi.comingThisWeek}</h2>
   {films.coming.length ? <FilmGrid openings={films.coming} /> : <p class={sprinkles({ marginBottom: "lg" })}>{fi.noNewFilms}</p>}
+  <h2 class={sprinkles({ marginBottom: "sm" })}>{fi.openedThisWeek}</h2>
+  {films.opened.length ? <FilmGrid openings={films.opened} /> : <p class={sprinkles({ marginBottom: "lg" })}>{fi.noNewFilms}</p>}
 
   <h2 class={sprinkles({ marginBottom: "md" })}>{fi.cities}</h2>
   <ul role="list" class={sprinkles({ display: "flex", flexWrap: "wrap", gap: "sm" })}>
