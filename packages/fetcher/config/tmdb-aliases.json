@@ -448,5 +448,10 @@
     "tmdb": 129659,
     "title": "Opimmeko rakastamaan",
     "note": "Wojciech Has's Jak być kochaną (1963, PL); 92 vs 97 min. TMDB has no Finnish title. Identified by the maintainer (2026-10-20)."
+  },
+  "kuvakukko:film:hiljaiset-sillat": {
+    "tmdb": 688,
+    "title": "Hiljaiset sillat",
+    "note": "Clint Eastwood's The Bridges of Madison County (1995), TMDB's Finnish title Hiljaiset sillat, its only hit. Kuvakukko gives no year or runtime; KUVI regional series, 26.10.2026. Confirmed by the maintainer (2026-10-20)."
   }
 }
