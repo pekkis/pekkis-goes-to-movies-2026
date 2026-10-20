@@ -453,5 +453,10 @@
     "tmdb": 688,
     "title": "Hiljaiset sillat",
     "note": "Clint Eastwood's The Bridges of Madison County (1995), TMDB's Finnish title Hiljaiset sillat, its only hit. Kuvakukko gives no year or runtime; KUVI regional series, 26.10.2026. Confirmed by the maintainer (2026-10-20)."
+  },
+  "biosavoy:film:pikkuli-och-himmelshinden": {
+    "tmdb": 1403476,
+    "title": "PIKKULI OCH HIMMELSHINDEN",
+    "note": "Pikkuli ja Tähtipeura in Swedish (Bio Savoy, Mariehamn). Kino Engel lists the same Swedish title, linked by runtime; Bio Savoy gives none, and TMDB has no Swedish title (2026-10-20)."
   }
 }
