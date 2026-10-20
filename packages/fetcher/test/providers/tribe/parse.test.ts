@@ -44,6 +44,24 @@ describe("parseTribe: Ritz Vaasa", () => {
     });
   });
 
+  it('reads "English [Finnish]" titles: the Finnish title in brackets (2026-10-20)', () => {
+    const ritz = page("ritz");
+    const events = ritz.events.map((e) =>
+      e["id"] === 10003757 ? { ...e, title: "Tell Everyone [Kerro kaikille]" } : e,
+    );
+    const result = parseTribe(snapshot([{ ...ritz, events }]), RITZ);
+    const listing = result.listings.find(
+      (l) => l.id === result.screenings.find((s) => s.sourceId === "10003757")!.listingId,
+    );
+    expect(listing?.title).toEqual({ fi: "Kerro kaikille", en: "Tell Everyone" });
+    // Square brackets elsewhere, or at a site without the quirk, stay as they are.
+    const plain = parseTribe(snapshot([{ ...ritz, events }]), {
+      ...RITZ,
+      bracketedFinnishTitle: false,
+    });
+    expect(plain.listings.map((l) => l.title.fi)).toContain("Tell Everyone [Kerro kaikille]");
+  });
+
   it("takes a year and an age limit out of the title", () => {
     expect(listingOf("10003749")).toMatchObject({ title: { fi: "Wholetrain" }, year: 2006 });
     expect(listingOf("10003775")).toMatchObject({

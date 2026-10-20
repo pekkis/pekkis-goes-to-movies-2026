@@ -56,6 +56,9 @@ export const LABELS: Record<string, LabelRule> = {
   Lastenkino: { tags: ["kids"] },
   Seniorikino: { tags: ["senior"] },
   Seniorinäytös: { tags: ["senior"] },
+  // "First time at the movies", for small children (Bio Marilyn, 2026-10-20).
+  "EkaKertaLeffassa-näytös": { series: "EkaKertaLeffassa", tags: ["kids"] },
+  EkaKertaLeffassa: { series: "EkaKertaLeffassa", tags: ["kids"] },
   // Event cinema
   Ooppera: { tags: ["event-cinema"], event: true },
   Baletti: { tags: ["event-cinema"], event: true },

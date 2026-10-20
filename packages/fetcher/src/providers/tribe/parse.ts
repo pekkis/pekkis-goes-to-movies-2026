@@ -179,7 +179,12 @@ export const parseTribe = (raw: TribeRawSnapshot, site: TribeSite): ProviderBatc
       if (year) {
         rawTitle = year[1]!;
       }
-      const { title, version } = splitVersion(rawTitle);
+      // "Tell Everyone [Kerro kaikille]": the Finnish title in brackets, the English before.
+      const bracketed = site.bracketedFinnishTitle
+        ? rawTitle.match(/^(.+?)\s*\[([^\]]+)\]\s*$/)
+        : undefined;
+      const english = bracketed?.[1]!.trim();
+      const { title, version } = splitVersion(bracketed ? bracketed[2]!.trim() : rawTitle);
       const rating = facts.rating ?? titleRating;
 
       const filmKey = slugify(title);
@@ -189,7 +194,7 @@ export const parseTribe = (raw: TribeRawSnapshot, site: TribeSite): ProviderBatc
           id: listingId,
           provider: P,
           sourceId: filmKey,
-          title: { fi: title },
+          title: { fi: title, ...(english && english !== title && { en: english }) },
           ...(year && { year: Number(year[2]) }),
           ...(facts.runtime && { runtimeMinutes: facts.runtime }),
           ...(rating && { rating }),

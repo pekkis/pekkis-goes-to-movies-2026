@@ -16,6 +16,11 @@ export const TribeSite = SiteBase.extend({
   booking: Provider.shape.booking,
   /** Endings that are not part of the title: "Lapin sota -elokuvanäytös". */
   titleSuffixes: z.array(z.string().min(1)),
+  /**
+   * Titles written "English [Finnish]": "Tell Everyone [Kerro kaikille]" (Ritz, 2026-10-20).
+   * The bracketed part is the Finnish title, the rest the English one.
+   */
+  bracketedFinnishTitle: z.boolean().optional(),
 });
 export type TribeSite = z.infer<typeof TribeSite>;
 
@@ -28,6 +33,7 @@ export const TRIBE_SITES: TribeSite[] = defineSites(TribeSite, [
     category: 19,
     booking: "door",
     titleSuffixes: [],
+    bracketedFinnishTitle: true,
     verifiedAt: "2026-10-14",
     notes: 'Tickets at the door ("sold at the door" in every description).',
     venues: [

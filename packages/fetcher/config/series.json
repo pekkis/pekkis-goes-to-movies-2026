@@ -5,7 +5,11 @@
     "aliases": ["Matinée"],
     "note": "Savon Kinot's daytime screenings."
   },
-  "cine-matinea": { "name": "Cine Matinea", "kind": "strand", "note": "Cine Mäntsälä." },
+  "cine-matinea": {
+    "name": "Cine Matinea",
+    "kind": "strand",
+    "note": "Cine Mäntsälä."
+  },
   "hopeatahti": {
     "name": "Hopeatähti",
     "kind": "strand",
@@ -22,23 +26,47 @@
     "aliases": ["Kino Kuutamo | Maksuttomat maanantait"],
     "note": "Kanneltalo's free Monday screenings."
   },
-  "yleison-suosikit": { "name": "Yleisön suosikit", "kind": "strand", "note": "Kino Helios." },
-  "kahvikino": { "name": "Kahvikino", "kind": "strand", "note": "Kino Kilta." },
+  "yleison-suosikit": {
+    "name": "Yleisön suosikit",
+    "kind": "strand",
+    "note": "Kino Helios."
+  },
+  "kahvikino": {
+    "name": "Kahvikino",
+    "kind": "strand",
+    "note": "Kino Kilta."
+  },
   "paivakinot": {
     "name": "Päiväkinot",
     "kind": "strand",
     "aliases": ["Päiväkino"],
     "note": "Kino Aurora's daytime screenings."
   },
-  "leffabrunssi": { "name": "Leffabrunssi", "kind": "strand", "note": "Riviera." },
+  "leffabrunssi": {
+    "name": "Leffabrunssi",
+    "kind": "strand",
+    "note": "Riviera."
+  },
   "kolme-kaveria-jaatelonaytos": {
     "name": "3 Kaveria jäätelönäytös",
     "kind": "strand",
     "note": "Riviera's children's screenings with ice cream."
   },
-  "neulekino": { "name": "Neulekino", "kind": "strand", "note": "Kino Pirtti." },
-  "kirjastokino": { "name": "Kirjastokino", "kind": "strand", "note": "Korjaamo Kino." },
-  "barnsondagar": { "name": "Barnsöndagar", "kind": "strand", "note": "Kino Engel." },
+  "neulekino": {
+    "name": "Neulekino",
+    "kind": "strand",
+    "note": "Kino Pirtti."
+  },
+  "kirjastokino": {
+    "name": "Kirjastokino",
+    "kind": "strand",
+    "note": "Korjaamo Kino."
+  },
+  "barnsondagar": {
+    "name": "Barnsöndagar",
+    "kind": "strand",
+    "note": "Kino Engel."
+  },
   "minikino": {
     "name": "Minikino",
     "kind": "strand",
@@ -50,7 +78,11 @@
     "aliases": ["Römppäviikko"],
     "note": "Kuhmo's film weeks (Pajakkakino)."
   },
-  "rauhanviikko": { "name": "Rauhanviikko", "kind": "theme-week", "note": "Kino Aurora." },
+  "rauhanviikko": {
+    "name": "Rauhanviikko",
+    "kind": "theme-week",
+    "note": "Kino Aurora."
+  },
   "tampere-film-festival": {
     "name": "Tampere Film Festival",
     "kind": "festival",
@@ -73,9 +105,21 @@
     "kind": "festival",
     "note": "Bio Säde, Mänttä."
   },
-  "kauhujen-kangasala": { "name": "Kauhujen Kangasala", "kind": "festival", "note": "K-Kino." },
-  "kinokopla": { "name": "Kinokopla", "kind": "club", "note": "Kino Kilta." },
-  "hyvat-kuvat-kerho": { "name": "Hyvät Kuvat -kerho", "kind": "club", "note": "Kuvakukko." },
+  "kauhujen-kangasala": {
+    "name": "Kauhujen Kangasala",
+    "kind": "festival",
+    "note": "K-Kino."
+  },
+  "kinokopla": {
+    "name": "Kinokopla",
+    "kind": "club",
+    "note": "Kino Kilta."
+  },
+  "hyvat-kuvat-kerho": {
+    "name": "Hyvät Kuvat -kerho",
+    "kind": "club",
+    "note": "Kuvakukko."
+  },
   "kuvi-aluesarja": {
     "name": "KUVIn aluesarja",
     "kind": "distributor-series",
@@ -87,5 +131,16 @@
     "kind": "distributor-series",
     "aliases": ["Walhalla - Kuukauden pohjoismainen elokuva", "Kuukauden pohjoismainen elokuva"],
     "note": "A Nordic film of the month, distributed to several cinemas."
+  },
+  "laatusarja": {
+    "name": "LaatuSarja",
+    "kind": "strand",
+    "note": "Bio-Salo's quality-film series, as a title prefix \"LaatuSarja: …\" (seen 2026-10-20; the maintainer)."
+  },
+  "ekakertaleffassa": {
+    "name": "EkaKertaLeffassa",
+    "kind": "strand",
+    "aliases": ["EkaKertaLeffassa-näytös", "Eka kerta leffassa"],
+    "note": "\"First time at the movies\": screenings for small children (Bio Marilyn, 2026-10-20)."
   }
 }
