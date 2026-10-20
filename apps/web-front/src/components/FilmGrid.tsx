@@ -1,15 +1,23 @@
-import type { FilmOpening } from "../lib/api.ts";
+import type { FilmSummary } from "../lib/api.ts";
 import { filmPath } from "../lib/films.ts";
-import { fi } from "../lib/text.ts";
 import { formatShortDay } from "../lib/time.ts";
 import * as css from "./Film.css.ts";
 import { Poster } from "./Poster.tsx";
 
-/** Poster cards linking to the films' pages, with each film's first showing. */
-export const FilmGrid = ({ openings }: { openings: FilmOpening[] }) => (
+/**
+ * Poster cards linking to the films' pages, each with a day under it: a new film's first
+ * showing, a classic's next one (`label` words it).
+ */
+export const FilmGrid = ({
+  films,
+  label,
+}: {
+  films: { film: FilmSummary; day: string }[];
+  label: (day: string) => string;
+}) => (
   <div className={css.gridContainer}>
     <ul role="list" className={css.grid}>
-      {openings.map(({ film, firstShowing }) => {
+      {films.map(({ film, day }) => {
         const path = filmPath(film);
         const body = (
           <>
@@ -26,7 +34,7 @@ export const FilmGrid = ({ openings }: { openings: FilmOpening[] }) => (
             ) : (
               body
             )}
-            <span className={css.cardMeta}>{fi.firstShowing(formatShortDay(firstShowing))}</span>
+            <span className={css.cardMeta}>{label(formatShortDay(day))}</span>
           </li>
         );
       })}

@@ -2,11 +2,13 @@ import { addDays, isIsoDate } from "@pgtm/model/time";
 import {
   filmDayScreenings,
   filmOpenings,
+  filmsPlaying,
   getFilm,
   listVenues,
   type Api,
   type Film,
   type FilmOpening,
+  type FilmPlaying,
   type Screening,
 } from "./api.ts";
 import { byTitle, filmIdOfSlug, filmPath } from "./films.ts";
@@ -75,19 +77,25 @@ export type FrontPage = {
   coming: FilmOpening[];
   /** First shown in the past week, today included. */
   opened: FilmOpening[];
+  /** Classics playing in the next seven days (old films, and the cinemas' own classics). */
+  classics: FilmPlaying[];
 };
 
 /**
- * The front page's new films: first showing in the past week or the next seven days, and
- * still playing in those seven days (a film that started last week and has nothing left
- * this week is not listed). Each list by title.
+ * The front page: new films (first showing in the past week or the next seven days, still
+ * playing in those seven days), and classics playing in them. A classic is never "new":
+ * a film with a classic screening this week goes to the classics only. Each list by title.
  */
 export const loadFrontPage = async (api: Api, today: string): Promise<FrontPage> => {
   const week = { from: today, to: addDays(today, 6) };
-  const openings = await filmOpenings(api, addDays(today, -7), week.to, week);
+  const [openings, classics] = await Promise.all([
+    filmOpenings(api, addDays(today, -7), week.to, week, "classic"),
+    filmsPlaying(api, week.from, week.to, "classic"),
+  ]);
   const sorted = openings.toSorted((a, b) => byTitle(a.film, b.film));
   return {
     coming: sorted.filter((o) => o.firstShowing > today),
     opened: sorted.filter((o) => o.firstShowing <= today),
+    classics: classics.toSorted((a, b) => byTitle(a.film, b.film)),
   };
 };

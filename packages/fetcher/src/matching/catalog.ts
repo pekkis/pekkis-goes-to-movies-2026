@@ -5,6 +5,7 @@ import type { TmdbClient } from "../tmdb/client.ts";
 import type { Aliases } from "./aliases.ts";
 import { matchListings } from "./match.ts";
 import { loadMemory, saveMemory } from "./memory.ts";
+import { withClassicTag } from "../providers/labels.ts";
 
 export const CATALOG_FILE = "films.json";
 
@@ -44,14 +45,25 @@ export const buildCatalog = async (
     await saveMemory(memoryPath, outcome.memory);
   }
 
+  // A film's release year: TMDB's for a matched film, else the cinema's own.
+  const filmYears = new Map<string, number>(
+    outcome.films.flatMap((f) =>
+      f.releaseDate ? [[`tmdb:${f.tmdbId}`, Number(f.releaseDate.slice(0, 4))] as const] : [],
+    ),
+  );
+  const currentYear = now.getUTCFullYear();
+
   for (const { file, batch } of batches) {
     const listings = batch.listings.map(({ filmId: _f, match: _m, ...listing }) => {
       const link = outcome.links.get(listing.id);
       return link ? { ...listing, filmId: link.filmId, match: link.method } : listing;
     });
+    const listingYears = new Map(batch.listings.map((l) => [l.id, l.year]));
     const screenings = batch.screenings.map(({ filmId: _f, ...screening }) => {
       const link = outcome.links.get(screening.listingId);
-      return link ? { ...screening, filmId: link.filmId } : screening;
+      const linked = link ? { ...screening, filmId: link.filmId } : screening;
+      const year = (link && filmYears.get(link.filmId)) ?? listingYears.get(screening.listingId);
+      return withClassicTag(linked, year, currentYear);
     });
     await writeJson(join(dir, file), ProviderBatch.parse({ ...batch, listings, screenings }));
   }

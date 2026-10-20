@@ -24,6 +24,9 @@ const api = createApi(
       nextCursor: null,
     }),
     "/v1/films/openings": [{ film: film(), firstShowing: "2026-10-15" }],
+    "/v1/films/playing": [
+      { film: film({ id: "tmdb:251", title: "Ghost" }), nextShowing: "2026-10-14" },
+    ],
   }).impl,
 );
 
@@ -79,6 +82,10 @@ describe("front page", () => {
     expect(html).toContain('href="/fi/elokuvat/unohdettu-saari-1185806"');
     expect(html).toContain('src="https://image.tmdb.org/t/p/w154/saari.jpg"');
     expect(html).toContain("1. näytös to 15.10.");
+    // Classics after the new films, with their next showing.
+    expect(html.indexOf("Klassikot")).toBeGreaterThan(html.indexOf("Alkaneet viikon aikana"));
+    expect(html).toContain('href="/fi/elokuvat/ghost-251"');
+    expect(html).toContain("seuraava näytös ke 14.10.");
     expect(html).toContain('href="/fi/kaupungit/jyvaskyla"');
   });
 });

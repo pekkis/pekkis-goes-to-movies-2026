@@ -51,7 +51,12 @@ beforeAll(async () => {
       filmId: undefined,
       startsAt: "2026-10-10T19:30:00+03:00",
     }),
-    screening("6", { businessDate: "2026-10-11", startsAt: "2026-10-11T18:00:00+03:00" }),
+    // Marked a classic, as the pull does for old films.
+    screening("6", {
+      businessDate: "2026-10-11",
+      startsAt: "2026-10-11T18:00:00+03:00",
+      tags: ["classic"],
+    }),
     screening("gone", { startsAt: "2026-10-10T21:00:00+03:00" }),
   ]);
   b.venues.push(HELSINKI);
@@ -88,6 +93,7 @@ describe("meta", () => {
     expect(status).toBe(200);
     expect(Object.keys(body.paths).toSorted()).toEqual([
       "/v1/films/openings",
+      "/v1/films/playing",
       "/v1/films/search",
       "/v1/films/{id}",
       "/v1/films/{id}/screenings",
@@ -259,6 +265,26 @@ describe("films", () => {
     expect((await get(`${playing}2026-10-12`)).status).toBe(400);
     expect((await get("/v1/films/openings?from=2026-10-12&to=2026-10-09")).status).toBe(400);
     expect((await get("/v1/films/openings?from=2026-01-01&to=2026-12-31")).status).toBe(400);
+  });
+
+  it("lists films playing in a range, optionally only screenings with a tag", async () => {
+    const all = await get("/v1/films/playing?from=2026-10-10&to=2026-10-11");
+    expect(all.body).toEqual([
+      { film: expect.objectContaining({ id: "tmdb:100" }), nextShowing: "2026-10-10" },
+    ]);
+    const classics = await get("/v1/films/playing?from=2026-10-10&to=2026-10-11&tag=classic");
+    expect(classics.body.map((p: { nextShowing: string }) => p.nextShowing)).toEqual([
+      "2026-10-11",
+    ]);
+    expect((await get("/v1/films/playing?from=2026-10-12&to=2026-10-11")).status).toBe(400);
+  });
+
+  it("leaves out films with a screening carrying a tag, within the playing range", async () => {
+    const base = "/v1/films/openings?from=2026-10-09&to=2026-10-12&excludeTag=classic";
+    expect((await get(base)).body).toEqual([]);
+    // The classic screening is on the 11th: playing only on the 10th, the film stays.
+    const tenth = await get(`${base}&playingFrom=2026-10-10&playingTo=2026-10-10`);
+    expect(tenth.body).toHaveLength(1);
   });
 
   it("finds films by fuzzy title", async () => {

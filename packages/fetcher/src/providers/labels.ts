@@ -310,3 +310,22 @@ export const deriveTags = (batch: ProviderBatch): ProviderBatch => ({
       : s,
   ),
 });
+
+/**
+ * A film released this many years ago or more is a classic, whoever shows it: a derived
+ * tag, next to the cinemas' own "Klassikko" (Finnkino). 20 years takes in Ghost (1990) and
+ * Thelma & Louise (1991), not La La Land (2016).
+ */
+export const CLASSIC_AGE_YEARS = 20;
+
+/** The screening tagged `classic` when its film's `year` is old enough; unchanged otherwise. */
+export const withClassicTag = <S extends { tags: ScreeningTag[] }>(
+  screening: S,
+  year: number | undefined,
+  currentYear: number,
+): S =>
+  year !== undefined &&
+  currentYear - year >= CLASSIC_AGE_YEARS &&
+  !screening.tags.includes("classic")
+    ? { ...screening, tags: [...screening.tags, "classic"] }
+    : screening;

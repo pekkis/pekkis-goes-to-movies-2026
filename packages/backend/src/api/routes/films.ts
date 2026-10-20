@@ -2,12 +2,12 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { router } from "../hono.ts";
 import type { Kysely } from "kysely";
 import type { DB } from "../../db/types.ts";
-import { filmOpenings, getFilm, searchFilmSummaries } from "../../queries/films.ts";
+import { filmOpenings, filmsPlaying, getFilm, searchFilmSummaries } from "../../queries/films.ts";
 import { listScreenings } from "../../queries/screenings.ts";
 import { helsinkiToday } from "../../search/showtimes.ts";
 import { addDays, daysBetween } from "@pgtm/model/time";
 import { afterParam, bboxParam, dateParam, idParam, limitParam, parseBbox } from "../params.ts";
-import { ErrorBody, Film, FilmOpening, ScreeningPage, SearchHit } from "../schemas.ts";
+import { ErrorBody, Film, FilmOpening, FilmPlaying, ScreeningPage, SearchHit } from "../schemas.ts";
 
 const search = createRoute({
   method: "get",
@@ -54,12 +54,48 @@ const openings = createRoute({
         example: "2026-10-20",
       }),
       playingTo: z.iso.date().optional().openapi({ example: "2026-10-26" }),
+      excludeTag: z.string().optional().openapi({
+        description:
+          "Leave out films with a screening carrying this tag (within playingFrom–playingTo when given), e.g. classic.",
+        example: "classic",
+      }),
     }),
   },
   responses: {
     200: {
       description: "Films with their first showing, earliest first",
       content: { "application/json": { schema: z.array(FilmOpening) } },
+    },
+    400: { description: "Bad parameters", content: { "application/json": { schema: ErrorBody } } },
+  },
+});
+
+const playingRoute = createRoute({
+  method: "get",
+  path: "/v1/films/playing",
+  tags: ["films"],
+  summary:
+    "Films with screenings between two days, optionally with a tag (default: the next seven days)",
+  request: {
+    query: z.object({
+      from: z.iso
+        .date()
+        .optional()
+        .openapi({ description: "Default: today.", example: "2026-10-20" }),
+      to: z.iso.date().optional().openapi({
+        description: "Default: six days after today.",
+        example: "2026-10-26",
+      }),
+      tag: z.string().optional().openapi({
+        description: "Only screenings carrying this tag, e.g. classic.",
+        example: "classic",
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Films with their first such day, earliest first",
+      content: { "application/json": { schema: z.array(FilmPlaying) } },
     },
     400: { description: "Bad parameters", content: { "application/json": { schema: ErrorBody } } },
   },
@@ -123,7 +159,21 @@ export const filmRoutes = (db: Kysely<DB>) =>
       }
       const playing =
         q.playingFrom && q.playingTo ? { from: q.playingFrom, to: q.playingTo } : undefined;
-      return c.json(await filmOpenings(db, from, to, playing), 200);
+      return c.json(await filmOpenings(db, from, to, playing, q.excludeTag), 200);
+    })
+    .openapi(playingRoute, async (c) => {
+      const q = c.req.valid("query");
+      const today = await helsinkiToday(db);
+      const from = q.from ?? today;
+      const to = q.to ?? addDays(today, 6);
+      const span = daysBetween(from, to);
+      if (span < 0 || span > OPENINGS_MAX_DAYS) {
+        return c.json(
+          { error: `from must not be after to, at most ${OPENINGS_MAX_DAYS} days` },
+          400,
+        );
+      }
+      return c.json(await filmsPlaying(db, from, to, q.tag), 200);
     })
     .openapi(one, async (c) => {
       const film = await getFilm(db, c.req.valid("param").id);

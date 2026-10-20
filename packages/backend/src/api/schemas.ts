@@ -135,6 +135,14 @@ export const FilmOpening = z
   })
   .openapi("FilmOpening");
 
+export const FilmPlaying = z
+  .object({
+    film: FilmSummary,
+    /** The first programme day in the asked range with a (matching) screening. */
+    nextShowing: z.string().openapi({ example: "2026-10-21" }),
+  })
+  .openapi("FilmPlaying");
+
 export const SearchHit = z
   .object({ score: z.number().openapi({ example: 0.83 }), film: FilmSummary })
   .openapi("SearchHit");

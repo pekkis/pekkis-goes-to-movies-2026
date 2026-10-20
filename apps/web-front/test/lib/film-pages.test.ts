@@ -70,6 +70,10 @@ describe("loadFrontPage", () => {
       firstShowing,
     });
     const fake = fakeFetch({
+      "/v1/films/playing": [
+        { film: film({ id: "tmdb:9", title: "Thelma ja Louise" }), nextShowing: "2026-10-15" },
+        { film: film({ id: "tmdb:8", title: "Casablanca" }), nextShowing: "2026-10-14" },
+      ],
       "/v1/films/openings": [
         opening("tmdb:1", "Öljy", "2026-10-09"),
         opening("tmdb:2", "Digger", "2026-10-13"),
@@ -83,7 +87,17 @@ describe("loadFrontPage", () => {
     const asked = fake.requests.find((u) => u.pathname === "/v1/films/openings")!;
     // First showing from a week back to six days ahead; playing in today and the next six.
     expect(
-      ["from", "to", "playingFrom", "playingTo"].map((k) => asked.searchParams.get(k)),
-    ).toEqual(["2026-10-06", "2026-10-19", "2026-10-13", "2026-10-19"]);
+      ["from", "to", "playingFrom", "playingTo", "excludeTag"].map((k) =>
+        asked.searchParams.get(k),
+      ),
+    ).toEqual(["2026-10-06", "2026-10-19", "2026-10-13", "2026-10-19", "classic"]);
+    // Classics playing this week, by title.
+    expect(page.classics.map((c) => c.film.title)).toEqual(["Casablanca", "Thelma ja Louise"]);
+    const classics = fake.requests.find((u) => u.pathname === "/v1/films/playing")!;
+    expect(["from", "to", "tag"].map((k) => classics.searchParams.get(k))).toEqual([
+      "2026-10-13",
+      "2026-10-19",
+      "classic",
+    ]);
   });
 });

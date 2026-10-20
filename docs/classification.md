@@ -73,7 +73,7 @@ Computed, never scraped:
 
 - `no-dialogue`: the screening's only audio is `zxx` (implemented).
 - domestic: FI among production countries (to do).
-- classic: years since release (to do; some cinemas already label it).
+- `classic`: the film was released at least 20 years ago (`CLASSIC_AGE_YEARS`, `withClassicTag` in `labels.ts`). It's derived when matching writes the batches (`buildCatalog`), from TMDB's release year, or the cinema's own year for an unmatched listing. It joins the cinemas' own classic labels (Finnkino's "Klassikko"). On 2026-10-20 [V]: 77 screenings, 30 films in the coming week. The front page lists classics separately and keeps them out of the new films.
 - new release: Finnish release date within a few weeks (to do).
 
 ## Roadmap

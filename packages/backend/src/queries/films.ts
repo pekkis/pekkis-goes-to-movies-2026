@@ -1,6 +1,6 @@
 import type { z } from "@hono/zod-openapi";
 import { sql, type Kysely } from "kysely";
-import type { Film, FilmOpening, FilmSummary, SearchHit } from "../api/schemas.ts";
+import type { Film, FilmOpening, FilmPlaying, FilmSummary, SearchHit } from "../api/schemas.ts";
 import type { DB } from "../db/types.ts";
 import { filmDetails, listingDetails, searchFilms } from "../search/showtimes.ts";
 import { backdropUrl, posterUrl, yearOf } from "./common.ts";
@@ -116,6 +116,8 @@ export const filmOpenings = async (
   to: string,
   /** Only films with a screening (not removed) between these days too. */
   playing?: { from: string; to: string },
+  /** Leave out films with a screening carrying this tag (in `playing`, when given). */
+  excludeTag?: string,
 ): Promise<z.infer<typeof FilmOpening>[]> => {
   let query = db
     .selectFrom("screenings")
@@ -129,10 +131,45 @@ export const filmOpenings = async (
       sql<boolean>`bool_or(business_date between ${playing.from}::date and ${playing.to}::date)`,
     );
   }
+  if (excludeTag) {
+    const within = playing
+      ? sql`business_date between ${playing.from}::date and ${playing.to}::date`
+      : sql`true`;
+    query = query.having(
+      sql<boolean>`not coalesce(bool_or(${excludeTag} = any(tags) and ${within}), false)`,
+    );
+  }
   const rows = await query.orderBy("firstShowing").execute();
   const films = await Promise.all(rows.map((r) => getFilm(db, r.filmId!)));
   return rows.flatMap((row, i) => {
     const film = films[i];
     return film ? [{ film: summaryOf(film), firstShowing: row.firstShowing }] : [];
+  });
+};
+
+/**
+ * TMDB films with a screening (not removed) between `from` and `to`, optionally only
+ * screenings carrying `tag` ("classic"), each with its first such day, earliest first.
+ */
+export const filmsPlaying = async (
+  db: Kysely<DB>,
+  from: string,
+  to: string,
+  tag?: string,
+): Promise<z.infer<typeof FilmPlaying>[]> => {
+  let query = db
+    .selectFrom("screenings")
+    .select(["filmId", sql<string>`min(business_date)::text`.as("nextShowing")])
+    .where("filmId", "is not", null)
+    .where("removedAt", "is", null)
+    .where(sql<boolean>`business_date between ${from}::date and ${to}::date`);
+  if (tag) {
+    query = query.where(sql<boolean>`${tag} = any(tags)`);
+  }
+  const rows = await query.groupBy("filmId").orderBy("nextShowing").execute();
+  const films = await Promise.all(rows.map((r) => getFilm(db, r.filmId!)));
+  return rows.flatMap((row, i) => {
+    const film = films[i];
+    return film ? [{ film: summaryOf(film), nextShowing: row.nextShowing }] : [];
   });
 };

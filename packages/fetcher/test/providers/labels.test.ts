@@ -3,6 +3,7 @@ import type { ProviderBatch, Screening } from "@pgtm/model";
 import {
   COMMON_TITLE_PREFIXES,
   deriveTags,
+  withClassicTag,
   findLabel,
   isPrivateBooking,
   labelEffects,
@@ -237,5 +238,21 @@ describe("isPrivateBooking", () => {
     ["Yksityisetsivä Pikkuli", false],
   ])("%s -> %s", (title, isPrivate) => {
     expect(isPrivateBooking(title)).toBe(isPrivate);
+  });
+});
+
+describe("withClassicTag", () => {
+  it.each([
+    [1990, ["classic"]],
+    [2006, ["classic"]],
+    [2007, []],
+    [2026, []],
+    [undefined, []],
+  ])("a film from %s, shown in 2026 -> %o", (year, tags) => {
+    expect(withClassicTag({ tags: [] }, year, 2026).tags).toEqual(tags);
+  });
+
+  it("keeps a cinema's own classic tag once", () => {
+    expect(withClassicTag({ tags: ["classic" as const] }, 1942, 2026).tags).toEqual(["classic"]);
   });
 });

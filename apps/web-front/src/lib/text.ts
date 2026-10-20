@@ -57,6 +57,11 @@ export const fi = {
   comingThisWeek: "Alkamassa viikon aikana",
   firstShowing: (day: string) => `1. näytös ${day}`,
   noNewFilms: "Ei uusia elokuvia.",
+  classics: "Klassikot",
+  classicsIntro:
+    "Yli 20 vuotta vanhat elokuvat ja teattereiden omat klassikkonäytökset seuraavan viikon aikana.",
+  nextShowing: (day: string) => `seuraava näytös ${day}`,
+  noClassics: "Ei klassikoita tällä viikolla.",
   // The search page (/fi/haku).
   search: "Hae",
   searchTitle: "Hae elokuvaa",
