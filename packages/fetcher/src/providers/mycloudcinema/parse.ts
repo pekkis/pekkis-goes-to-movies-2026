@@ -19,7 +19,7 @@ import { Envelope, RawCinema, RawShowtime, type MyCloudCinemaRawSnapshot } from 
 import type { MyCloudCinemaSite } from "./sites.ts";
 import { providerOf } from "../sites.ts";
 import { own } from "../../lib/records.ts";
-import { COMMON_TITLE_PREFIXES, type LabelRule } from "../labels.ts";
+import { COMMON_TITLE_PREFIXES, isPrivateBooking, type LabelRule } from "../labels.ts";
 import { byStartThenId } from "../parsing.ts";
 
 /** The pattern the cinema's own programme page links to: `{ticketBase}/#/book/{id}`. */
@@ -384,6 +384,10 @@ export const parseMyCloudCinema = (
           message: row.error.message,
           context: { cinemaId, showTimeId: (item as { show_time_id?: unknown })?.show_time_id },
         });
+        continue;
+      }
+      // A hall rented out ("Yritystapahtuma", "Tilavaraus - 6h"): nothing for the public.
+      if (isPrivateBooking(row.data.title) || isPrivateBooking(row.data.title_extension ?? "")) {
         continue;
       }
       const screening = parseScreening(P, site, row.data, venue.id, fetchedAt);

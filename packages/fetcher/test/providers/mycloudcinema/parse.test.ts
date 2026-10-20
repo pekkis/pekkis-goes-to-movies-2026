@@ -45,6 +45,23 @@ describe("MyCloudCinema: BioRex", () => {
     expect(batch.window).toEqual({ from: "2026-10-09", to: "2026-10-15" });
   });
 
+  it('skips a hall rented out: "Yritystapahtuma", "Tilavaraus - 6h" (2026-10-20)', () => {
+    const showtimes = loadFixture("mycloudcinema", "biorex-showtimes.json") as Record<
+      string,
+      { data: Record<string, unknown>[] }
+    >;
+    const first = showtimes["1"]!.data[0]!;
+    showtimes["1"]!.data[0] = {
+      ...first,
+      title: "Yritystapahtuma",
+      title_extension: "Tilavaraus - 6h",
+    };
+    const result = parseBiorex(snapshot({ showtimes }));
+    expect(result.warnings).toEqual([]);
+    expect(result.screenings.some((s) => s.sourceId === String(first["show_time_id"]))).toBe(false);
+    expect(result.screenings).toHaveLength(batch.screenings.length - 1);
+  });
+
   it("skips offline, company and closed cinemas", () => {
     expect(batch.venues.map((v) => v.sourceId)).toEqual(["1", "4", "12", "13", "14"]);
   });
