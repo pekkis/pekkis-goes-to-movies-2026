@@ -443,5 +443,10 @@
     "tmdb": 69381,
     "title": "EkaKertaLeffassa-näytös : Pikku Kummitus Lapanen",
     "note": "Lilla Spöket Laban (2006, SE), TMDB's Finnish title Pikku Kummitus Lapanen; 45 vs 44 min. The short 2006 film for an EkaKertaLeffassa (first time at the movies) screening, not the 60-min Pikku Kummitus Lapanen keppostelee (2026) the cinema also shows. No year from the cinema, so the matcher's recent-years window left it out."
+  },
+  "cinemaniagara:film:94": {
+    "tmdb": 129659,
+    "title": "Opimmeko rakastamaan",
+    "note": "Wojciech Has's Jak być kochaną (1963, PL); 92 vs 97 min. TMDB has no Finnish title. Identified by the maintainer (2026-10-20)."
   }
 }
