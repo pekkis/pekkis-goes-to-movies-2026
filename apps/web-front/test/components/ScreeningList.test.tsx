@@ -16,7 +16,7 @@ describe("ScreeningList", () => {
     renderWithClock(<ScreeningList screenings={[screening()]} />);
     expect(screen.getByText("18.00")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Unohdettu saari" }).getAttribute("href")).toBe(
-      "https://www.themoviedb.org/movie/1185806",
+      "/fi/elokuvat/unohdettu-saari-1185806",
     );
     expect(screen.getByRole("link", { name: "Liput" }).getAttribute("href")).toBe(
       "https://kino.example/liput/1",

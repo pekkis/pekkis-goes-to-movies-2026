@@ -433,5 +433,20 @@
     "tmdb": 1733496,
     "title": "Pat & Mat",
     "note": "Pat & Mat: Zpátky na venkově (2026, CZ), a children's film; Kino Metso says 40 min, TMDB has no runtime. Confirmed by the maintainer (2026-10-19)."
+  },
+  "savonkinot:film:122": {
+    "tmdb": 957,
+    "title": "Avaruusboltsit",
+    "note": "Spaceballs (1987), TMDB's Finnish title Avaruusboltsit; 93 vs 96 min. A re-release with no year, so the matcher's recent-years window left it out. Confirmed by the maintainer (2026-10-20)."
+  },
+  "biomarilyn:film:818": {
+    "tmdb": 69381,
+    "title": "EkaKertaLeffassa-näytös : Pikku Kummitus Lapanen",
+    "note": "Lilla Spöket Laban (2006, SE), TMDB's Finnish title Pikku Kummitus Lapanen; 45 vs 44 min. The short 2006 film for an EkaKertaLeffassa (first time at the movies) screening, not the 60-min Pikku Kummitus Lapanen keppostelee (2026) the cinema also shows. No year from the cinema, so the matcher's recent-years window left it out."
+  },
+  "cinemaniagara:film:94": {
+    "tmdb": 129659,
+    "title": "Opimmeko rakastamaan",
+    "note": "Wojciech Has's Jak być kochaną (1963, PL); 92 vs 97 min. TMDB has no Finnish title. Identified by the maintainer (2026-10-20)."
   }
 }

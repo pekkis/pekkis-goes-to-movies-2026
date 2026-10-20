@@ -127,6 +127,26 @@ export const Film = FilmSummary.extend({
   trailers: z.array(z.object({ site: z.string(), key: z.string(), name: z.string() })),
 }).openapi("Film");
 
+export const FilmOpening = z
+  .object({
+    film: FilmSummary,
+    /** The day the film opens: its Finnish premiere when known, else `firstShowing`. */
+    opening: z.string().openapi({ example: "2026-10-23" }),
+    /** The programme day of the film's first screening in our data (previews included). */
+    firstShowing: z.string().openapi({ example: "2026-10-20" }),
+    /** The Finnish premiere date (TMDB), when known. */
+    finnishPremiere: nullableString.openapi({ example: "2026-10-23" }),
+  })
+  .openapi("FilmOpening");
+
+export const FilmPlaying = z
+  .object({
+    film: FilmSummary,
+    /** The first programme day in the asked range with a (matching) screening. */
+    nextShowing: z.string().openapi({ example: "2026-10-21" }),
+  })
+  .openapi("FilmPlaying");
+
 export const SearchHit = z
   .object({ score: z.number().openapi({ example: 0.83 }), film: FilmSummary })
   .openapi("SearchHit");

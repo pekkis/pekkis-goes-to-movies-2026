@@ -51,7 +51,12 @@ beforeAll(async () => {
       filmId: undefined,
       startsAt: "2026-10-10T19:30:00+03:00",
     }),
-    screening("6", { businessDate: "2026-10-11", startsAt: "2026-10-11T18:00:00+03:00" }),
+    // Marked a classic, as the pull does for old films.
+    screening("6", {
+      businessDate: "2026-10-11",
+      startsAt: "2026-10-11T18:00:00+03:00",
+      tags: ["classic"],
+    }),
     screening("gone", { startsAt: "2026-10-10T21:00:00+03:00" }),
   ]);
   b.venues.push(HELSINKI);
@@ -87,6 +92,8 @@ describe("meta", () => {
     const { status, body } = await get("/openapi.json");
     expect(status).toBe(200);
     expect(Object.keys(body.paths).toSorted()).toEqual([
+      "/v1/films/openings",
+      "/v1/films/playing",
       "/v1/films/search",
       "/v1/films/{id}",
       "/v1/films/{id}/screenings",
@@ -240,6 +247,75 @@ describe("screenings", () => {
 });
 
 describe("films", () => {
+  it("lists films opening in a range, with the day", async () => {
+    const { status, body } = await get("/v1/films/openings?from=2026-10-09&to=2026-10-12");
+    expect(status).toBe(200);
+    // No Finnish premiere date: the film opens on its first screening with us.
+    expect(body).toEqual([
+      {
+        film: expect.objectContaining({ id: "tmdb:100", kind: "film" }),
+        opening: "2026-10-10",
+        firstShowing: "2026-10-10",
+        finnishPremiere: null,
+      },
+    ]);
+    // A film first shown before the range is not new in it.
+    expect((await get("/v1/films/openings?from=2026-10-11&to=2026-10-12")).body).toEqual([]);
+    // Only films still playing in a range: tmdb:100 plays on the 10th and 11th, not later.
+    const playing = "/v1/films/openings?from=2026-10-09&to=2026-10-12&playingFrom=";
+    expect((await get(`${playing}2026-10-11&playingTo=2026-10-17`)).body).toHaveLength(1);
+    expect((await get(`${playing}2026-10-12&playingTo=2026-10-17`)).body).toEqual([]);
+    expect((await get(`${playing}2026-10-12`)).status).toBe(400);
+    expect((await get("/v1/films/openings?from=2026-10-12&to=2026-10-09")).status).toBe(400);
+    expect((await get("/v1/films/openings?from=2026-01-01&to=2026-12-31")).status).toBe(400);
+  });
+
+  it("opens a film on its Finnish premiere date when TMDB knows it", async () => {
+    const premiere = (date: string | null) =>
+      db
+        .updateTable("films")
+        .set({ finnishReleaseDate: date })
+        .where("id", "=", "tmdb:100")
+        .execute();
+    try {
+      // Premiered long ago (The Substance, 2024): not new, whatever our first screening says.
+      await premiere("2024-09-27");
+      expect((await get("/v1/films/openings?from=2026-10-09&to=2026-10-12")).body).toEqual([]);
+      // Premiering inside the range: it opens then, though screenings started earlier.
+      await premiere("2026-10-12");
+      const { body } = await get("/v1/films/openings?from=2026-10-11&to=2026-10-13");
+      expect(body).toEqual([
+        expect.objectContaining({
+          opening: "2026-10-12",
+          firstShowing: "2026-10-10",
+          finnishPremiere: "2026-10-12",
+        }),
+      ]);
+    } finally {
+      await premiere(null);
+    }
+  });
+
+  it("lists films playing in a range, optionally only screenings with a tag", async () => {
+    const all = await get("/v1/films/playing?from=2026-10-10&to=2026-10-11");
+    expect(all.body).toEqual([
+      { film: expect.objectContaining({ id: "tmdb:100" }), nextShowing: "2026-10-10" },
+    ]);
+    const classics = await get("/v1/films/playing?from=2026-10-10&to=2026-10-11&tag=classic");
+    expect(classics.body.map((p: { nextShowing: string }) => p.nextShowing)).toEqual([
+      "2026-10-11",
+    ]);
+    expect((await get("/v1/films/playing?from=2026-10-12&to=2026-10-11")).status).toBe(400);
+  });
+
+  it("leaves out films with a screening carrying a tag, within the playing range", async () => {
+    const base = "/v1/films/openings?from=2026-10-09&to=2026-10-12&excludeTag=classic";
+    expect((await get(base)).body).toEqual([]);
+    // The classic screening is on the 11th: playing only on the 10th, the film stays.
+    const tenth = await get(`${base}&playingFrom=2026-10-10&playingTo=2026-10-10`);
+    expect(tenth.body).toHaveLength(1);
+  });
+
   it("finds films by fuzzy title", async () => {
     const { body } = await get("/v1/films/search?q=testielokva");
     expect(body[0].film).toMatchObject({ id: "tmdb:100", kind: "film" });

@@ -1,4 +1,5 @@
 import type { Screening } from "./api.ts";
+import { citySlug } from "./cities.ts";
 
 export type FilmShows = { film: Screening["film"]; screenings: Screening[] };
 
@@ -22,3 +23,23 @@ export const groupByFilm = (screenings: readonly Screening[]): FilmShows[] => {
 
 export const tmdbUrl = (filmId: string): string =>
   `https://www.themoviedb.org/movie/${filmId.slice("tmdb:".length)}`;
+
+/**
+ * A TMDB film's page: `/fi/elokuvat/lapin-sota-1450460`. The number is the id; the title
+ * only makes the URL readable, so a renamed film's old links still work (and redirect).
+ * Unmatched listings have no page.
+ */
+export const filmPath = (film: { id: string; title: string }): string | undefined => {
+  const tmdb = film.id.match(/^tmdb:(\d+)$/);
+  if (!tmdb) {
+    return undefined;
+  }
+  const slug = citySlug(film.title);
+  return `/fi/elokuvat/${slug ? `${slug}-` : ""}${tmdb[1]}`;
+};
+
+/** The film id a film page's slug names (`lapin-sota-1450460` -> `tmdb:1450460`). */
+export const filmIdOfSlug = (slug: string): string | undefined => {
+  const n = slug.match(/(?:^|-)(\d+)$/)?.[1];
+  return n ? `tmdb:${n}` : undefined;
+};

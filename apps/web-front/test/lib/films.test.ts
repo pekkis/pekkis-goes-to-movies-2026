@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { byTitle, groupByFilm } from "../../src/lib/films.ts";
+import { byTitle, filmIdOfSlug, filmPath, groupByFilm } from "../../src/lib/films.ts";
 import { screening } from "../fixtures.ts";
 
 const film = (id: string, title: string) => ({ ...screening().film, id, title });
@@ -42,5 +42,25 @@ describe("byTitle", () => {
         .toSorted(byTitle)
         .map((f) => f.title),
     ).toEqual(expected);
+  });
+});
+
+describe("film pages", () => {
+  it.each([
+    [{ id: "tmdb:1450460", title: "Lapin sota" }, "/fi/elokuvat/lapin-sota-1450460"],
+    [{ id: "tmdb:957", title: "Avaruusboltsit" }, "/fi/elokuvat/avaruusboltsit-957"],
+    [{ id: "tmdb:7", title: "!!!" }, "/fi/elokuvat/7"],
+    [{ id: "biorex:film:1518", title: "Ryhmä Hau" }, undefined],
+  ])("filmPath(%o) = %s", (named, path) => {
+    expect(filmPath(named)).toBe(path);
+  });
+
+  it.each([
+    ["lapin-sota-1450460", "tmdb:1450460"],
+    ["7", "tmdb:7"],
+    ["blade-runner-2049-335984", "tmdb:335984"],
+    ["lapin-sota", undefined],
+  ])("filmIdOfSlug(%s) = %s", (slug, id) => {
+    expect(filmIdOfSlug(slug)).toBe(id);
   });
 });

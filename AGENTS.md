@@ -27,7 +27,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
   - the `showtimes` CLI;
   - a read-only HTTP API (Hono, OpenAPI), and an MCP server on it for chatbots (`/mcp/{MCP_TOKEN}`, off unless the token is set; internal testing);
   - a Flutter map app by a teammate in `apps/fpgm` (an early scaffold);
-  - the public website in `apps/web-front`: Astro (SSR) + React + Vanilla Extract. City pages, venue pages, a venue map (MapLibre) and a search page (`/fi/haku`: days, place and film, narrowed by time of day, venue and film). See [docs/web.md](docs/web.md).
+  - the public website in `apps/web-front`: Astro (SSR) + React + Vanilla Extract. A front page of new films, film pages (`/fi/elokuvat/{name}-{tmdb}`, from TMDB, with the day's screenings), city pages, venue pages, a venue map (MapLibre) and a search page (`/fi/haku`: days, place and film, narrowed by time of day, venue and film). Posters go through `Poster` and `lib/images.ts`, so their source can change in one place. See [docs/web.md](docs/web.md).
 
 - **Visual style: a grey mockup, on purpose.** There is no visual identity yet; it comes after user testing. See the rule below.
 - **Not started here:** design and user research. The course work happens outside this repository.

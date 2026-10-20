@@ -3,6 +3,7 @@ import type { ProviderBatch, Screening } from "@pgtm/model";
 import {
   COMMON_TITLE_PREFIXES,
   deriveTags,
+  withClassicTag,
   findLabel,
   isPrivateBooking,
   labelEffects,
@@ -130,6 +131,7 @@ describe("series in titles", () => {
       "Taidekaupungin elokuvajuhlat",
     ],
     ["Muumipappa – Minikino", "Muumipappa", "Minikino"],
+    ["LaatuSarja: The Testament of Ann Lee", "The Testament of Ann Lee", "LaatuSarja"],
   ])("%s", (raw, title, series) => {
     expect(splitTitlePrefix(raw, COMMON_TITLE_PREFIXES)).toEqual({
       title,
@@ -165,6 +167,7 @@ describe("the shared label table", () => {
     ["Anniskelunäytös K-18", { licensed: true, ageLimit: "K-18" }],
     ["K18 - Anniskelunäytös", { licensed: true, ageLimit: "K-18" }],
     ["Oopperat ja muut eventit", { tags: ["event-cinema"], event: true }],
+    ["EkaKertaLeffassa-näytös", { series: "EkaKertaLeffassa", tags: ["kids"] }],
   ])("%s", (label, rule) => {
     expect(findLabel(label, LABELS)).toMatchObject(rule);
   });
@@ -235,5 +238,21 @@ describe("isPrivateBooking", () => {
     ["Yksityisetsivä Pikkuli", false],
   ])("%s -> %s", (title, isPrivate) => {
     expect(isPrivateBooking(title)).toBe(isPrivate);
+  });
+});
+
+describe("withClassicTag", () => {
+  it.each([
+    [1990, ["classic"]],
+    [2021, ["classic"]],
+    [2022, []],
+    [2026, []],
+    [undefined, []],
+  ])("a film from %s, shown in 2026 -> %o", (year, tags) => {
+    expect(withClassicTag({ tags: [] }, year, 2026).tags).toEqual(tags);
+  });
+
+  it("keeps a cinema's own classic tag once", () => {
+    expect(withClassicTag({ tags: ["classic" as const] }, 1942, 2026).tags).toEqual(["classic"]);
   });
 });

@@ -1,0 +1,48 @@
+---
+import { programmeToday } from "@pgtm/model/time";
+import { FilmDays } from "../../../components/FilmDays.tsx";
+import { FilmHead } from "../../../components/FilmHead.tsx";
+import { SearchResults } from "../../../components/SearchResults.tsx";
+import Base from "../../../layouts/Base.astro";
+import { loadFilmPage } from "../../../lib/film-pages.ts";
+import { fi } from "../../../lib/text.ts";
+import { formatDay } from "../../../lib/time.ts";
+import { sprinkles } from "../../../styles/sprinkles.css.ts";
+
+const page = await loadFilmPage(
+  Astro.locals.api,
+  Astro.params.film ?? "",
+  Astro.url.searchParams.get("date"),
+  programmeToday(Astro.locals.now),
+);
+if (page?.kind === "redirect") {
+  return Astro.redirect(`${page.path}${Astro.url.search}`, 301);
+}
+if (!page) {Astro.response.status = 404;}
+---
+
+{
+  page ? (
+    <Base title={`${page.film.title} – ${formatDay(page.date)}`} description={page.film.overview.fi ?? undefined}>
+      <FilmHead film={page.film} />
+      <h2 class={sprinkles({ marginBottom: "sm" })}>{fi.screeningsByDay}</h2>
+      <FilmDays days={page.days} date={page.date} />
+      {page.screenings.length ? (
+        <SearchResults
+          client:idle
+          screenings={page.screenings}
+          distances={{}}
+          providers={page.providers}
+          now={Astro.locals.now.toString()}
+        />
+      ) : (
+        <p>{fi.noScreeningsOn(formatDay(page.date))}</p>
+      )}
+    </Base>
+  ) : (
+    <Base title={fi.filmNotFound}>
+      <h1>{fi.filmNotFound}</h1>
+      <p><a href="/fi/haku">{fi.searchTitle}</a></p>
+    </Base>
+  )
+}

@@ -142,6 +142,13 @@ export const helsinkiShowTimeAt = (instant: string): ShowTime | undefined => {
   });
 };
 
+/**
+ * Today's programme day in Helsinki: until 05.00, last night's programme is still "today"
+ * (a 01.00 show belongs to the evening before).
+ */
+export const programmeToday = (now: Temporal.Instant = currentInstant()): string =>
+  helsinkiShowTimeAt(now.toString())?.businessDate ?? helsinkiToday(now);
+
 /** Whole minutes from `now` until `instant`, rounded up (negative once it has passed). */
 export const minutesUntil = (instant: string, now: Temporal.Instant): number =>
   Math.ceil((Temporal.Instant.from(instant).epochMilliseconds - now.epochMilliseconds) / 60_000);

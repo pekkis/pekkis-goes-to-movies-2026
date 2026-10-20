@@ -1,4 +1,4 @@
-import type { Screening, Venue } from "../src/lib/api.ts";
+import type { Film, Screening, Venue } from "../src/lib/api.ts";
 
 /** Noon on the fixtures' day: the default screening (18.00) is "later". */
 export const NOON = new Date("2026-10-13T12:00:00+03:00");
@@ -70,3 +70,20 @@ export const fakeFetch = (routes: Record<string, unknown>) => {
   }) as typeof fetch;
   return { impl, requests };
 };
+
+/** A TMDB film as GET /v1/films/{id} gives it. */
+export const film = (over: Partial<Film> = {}): Film => ({
+  ...screening().film,
+  posterUrl: "https://image.tmdb.org/t/p/w500/saari.jpg",
+  tmdbId: 1185806,
+  imdbId: null,
+  titles: { fi: "Unohdettu saari", sv: null, en: "The Forgotten Island" },
+  releaseDate: "2026-09-01",
+  finnishReleaseDate: "2026-10-02",
+  genres: ["Animaatio", "Seikkailu"],
+  countries: ["US"],
+  overview: { fi: "Kaksi ystävää ja saari.", sv: null, en: null },
+  backdropUrl: null,
+  trailers: [{ site: "YouTube", key: "abc123", name: "Traileri" }],
+  ...over,
+});

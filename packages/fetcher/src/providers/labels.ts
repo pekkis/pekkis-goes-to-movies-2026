@@ -56,6 +56,9 @@ export const LABELS: Record<string, LabelRule> = {
   Lastenkino: { tags: ["kids"] },
   Seniorikino: { tags: ["senior"] },
   Seniorinäytös: { tags: ["senior"] },
+  // "First time at the movies", for small children (Bio Marilyn, 2026-10-20).
+  "EkaKertaLeffassa-näytös": { series: "EkaKertaLeffassa", tags: ["kids"] },
+  EkaKertaLeffassa: { series: "EkaKertaLeffassa", tags: ["kids"] },
   // Event cinema
   Ooppera: { tags: ["event-cinema"], event: true },
   Baletti: { tags: ["event-cinema"], event: true },
@@ -307,3 +310,23 @@ export const deriveTags = (batch: ProviderBatch): ProviderBatch => ({
       : s,
   ),
 });
+
+/**
+ * A film released this many years ago or more is shown again, whoever shows it: a derived
+ * `classic` tag, next to the cinemas' own "Klassikko" (Finnkino). The front page lists these
+ * as re-runs ("Uusintaesitykset"). 5 years, the maintainer's choice (2026-10-20), takes in
+ * anniversary and re-releases like Avengers: Endgame Encore (2019), not this year's films.
+ */
+export const CLASSIC_AGE_YEARS = 5;
+
+/** The screening tagged `classic` when its film's `year` is old enough; unchanged otherwise. */
+export const withClassicTag = <S extends { tags: ScreeningTag[] }>(
+  screening: S,
+  year: number | undefined,
+  currentYear: number,
+): S =>
+  year !== undefined &&
+  currentYear - year >= CLASSIC_AGE_YEARS &&
+  !screening.tags.includes("classic")
+    ? { ...screening, tags: [...screening.tags, "classic"] }
+    : screening;

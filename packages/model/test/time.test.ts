@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   addDays,
+  programmeToday,
   currentInstant,
   dateWindow,
   daysBetween,
@@ -161,5 +162,15 @@ describe("nearestDate", () => {
   it("rejects impossible dates, and ones no nearby year has", () => {
     expect(nearestDate(31, 2, "2026-10-13")).toBeUndefined();
     expect(nearestDate(29, 2, "2026-10-13")).toBeUndefined(); // 2027 is no leap year
+  });
+});
+
+describe("programmeToday", () => {
+  it.each([
+    ["2026-10-20T12:00:00+03:00", "2026-10-20"],
+    ["2026-10-21T01:30:00+03:00", "2026-10-20"],
+    ["2026-10-21T05:00:00+03:00", "2026-10-21"],
+  ])("%s -> %s", (now, day) => {
+    expect(programmeToday(Temporal.Instant.from(now))).toBe(day);
   });
 });

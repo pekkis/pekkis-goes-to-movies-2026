@@ -73,7 +73,7 @@ Computed, never scraped:
 
 - `no-dialogue`: the screening's only audio is `zxx` (implemented).
 - domestic: FI among production countries (to do).
-- classic: years since release (to do; some cinemas already label it).
+- `classic`: the film was released at least 5 years ago (`CLASSIC_AGE_YEARS`, `withClassicTag` in `labels.ts`; 5 is the maintainer's choice of 2026-10-20, after trying 20). The website calls these re-runs, "Uusintaesitykset". It's derived when matching writes the batches (`buildCatalog`), from TMDB's release year, or the cinema's own year for an unmatched listing. It joins the cinemas' own classic labels (Finnkino's "Klassikko"). On 2026-10-20 [V], with 5 years: 38 films in the coming week (30 with 20 years). The front page lists them as re-runs and keeps them out of the new films. The tag is only ever added: lowering the age takes effect on `pnpm match && pnpm ingest`, raising it only on a fresh `pnpm pull`.
 - new release: Finnish release date within a few weeks (to do).
 
 ## Roadmap
@@ -84,5 +84,6 @@ Computed, never scraped:
 
 ## Open questions
 
+- **A real "classic" category** (the maintainer, 2026-10-20): today `classic` means "at least 5 years old, or the cinema says classic", and the website calls it re-runs. A true classics category (canon, age plus standing, or a curated list) is still to be designed, and may need its own tag or series.
 - Marathons and double features: an occasion tag, or a series?
 - Food screenings (Leffabrunssi, Kahvikino, "3 Kaveria jäätelönäytös"): strands now; an `extras` tag as well?

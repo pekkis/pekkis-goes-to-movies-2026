@@ -1,5 +1,5 @@
 import type { Screening } from "../lib/api.ts";
-import { tmdbUrl } from "../lib/films.ts";
+import { FilmName } from "./FilmName.tsx";
 import { fi, languageName } from "../lib/text.ts";
 import { formatTime } from "../lib/time.ts";
 import { venuePath } from "../lib/venues.ts";
@@ -43,7 +43,7 @@ const ScreeningRow = ({ s }: { s: Screening }) => {
       </div>
       <div>
         <div className={css.title}>
-          {s.film.kind === "film" ? <a href={tmdbUrl(s.film.id)}>{s.film.title}</a> : s.film.title}
+          <FilmName film={s.film} />
           {s.film.rating && <span className={css.badge}>{s.film.rating}</span>}
           <Availability value={s.availability} />
         </div>

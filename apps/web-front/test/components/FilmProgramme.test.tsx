@@ -23,7 +23,7 @@ describe("FilmProgramme", () => {
     );
     const film = screen.getByRole("heading", { name: "Unohdettu saari" });
     expect(within(film).getByRole("link").getAttribute("href")).toBe(
-      "https://www.themoviedb.org/movie/1185806",
+      "/fi/elokuvat/unohdettu-saari-1185806",
     );
     expect(screen.getByText("K-7 · 100 min · 2026")).toBeTruthy();
     const tickets = screen.getAllByRole("link", { name: /^Liput, klo/ });
