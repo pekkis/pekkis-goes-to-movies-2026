@@ -127,6 +127,14 @@ export const Film = FilmSummary.extend({
   trailers: z.array(z.object({ site: z.string(), key: z.string(), name: z.string() })),
 }).openapi("Film");
 
+export const FilmOpening = z
+  .object({
+    film: FilmSummary,
+    /** The programme day of the film's first screening in our data (previews included). */
+    firstShowing: z.string().openapi({ example: "2026-10-23" }),
+  })
+  .openapi("FilmOpening");
+
 export const SearchHit = z
   .object({ score: z.number().openapi({ example: 0.83 }), film: FilmSummary })
   .openapi("SearchHit");

@@ -230,13 +230,16 @@ const Results = ({
             counts={counts.venues}
             filterable={venues.length > 8}
           />
-          <FacetGroup
-            facet="films"
-            legend={fi.filmsFacet}
-            options={films}
-            counts={counts.films}
-            filterable={films.length > 8}
-          />
+          {/* One film (a film's own page): nothing to choose between. */}
+          {films.length > 1 && (
+            <FacetGroup
+              facet="films"
+              legend={fi.filmsFacet}
+              options={films}
+              counts={counts.films}
+              filterable={films.length > 8}
+            />
+          )}
           {anyChecked && (
             <button
               type="button"

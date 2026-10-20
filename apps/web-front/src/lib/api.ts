@@ -8,6 +8,8 @@ export const createApi = (baseUrl: string, fetchImpl: typeof fetch = fetch) =>
 export type Api = ReturnType<typeof createApi>;
 export type Venue = InferResponseType<Api["v1"]["venues"]["$get"], 200>[number];
 export type Screening = InferResponseType<Api["v1"]["screenings"]["$get"], 200>["items"][number];
+export type Film = InferResponseType<Api["v1"]["films"][":id"]["$get"], 200>;
+export type FilmOpening = InferResponseType<Api["v1"]["films"]["openings"]["$get"], 200>[number];
 export type FilmSummary = InferResponseType<
   Api["v1"]["films"]["search"]["$get"],
   200
@@ -83,4 +85,27 @@ export const filmDayScreenings = async (
     throw new ApiError(res.status, `/v1/films/${filmId}/screenings`);
   }
   return (await res.json()).items;
+};
+
+/** A film (TMDB) or listing with everything we know; undefined for an unknown id. */
+export const getFilm = async (api: Api, id: string): Promise<Film | undefined> => {
+  const res = await api.v1.films[":id"].$get({ param: { id } });
+  if (res.status === 404) {
+    return undefined;
+  }
+  // The typed response knows only 200 and 404; a server error is still possible.
+  const any = res as Response;
+  if (!any.ok) {
+    throw new ApiError(any.status, `/v1/films/${id}`);
+  }
+  return res.json();
+};
+
+/** Films whose first showing falls between two programme days, earliest first. */
+export const filmOpenings = async (api: Api, from: string, to: string): Promise<FilmOpening[]> => {
+  const res = await api.v1.films.openings.$get({ query: { from, to } });
+  if (!res.ok) {
+    throw new ApiError(res.status, "/v1/films/openings");
+  }
+  return res.json();
 };

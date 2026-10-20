@@ -111,6 +111,20 @@ export type SearchPage = {
 /** A venue's provider as the venue list gives it: "finnkino" / "Finnkino". */
 export type Provider = { id: string; name: string };
 
+/** Venue id -> its provider, for the venues the screenings are at (to group them by it). */
+export const providersOf = (
+  venues: readonly Venue[],
+  screenings: readonly Screening[],
+): Record<string, Provider> => {
+  const byVenue = new Map(venues.map((v) => [v.id, v.provider]));
+  return Object.fromEntries(
+    screenings.flatMap((s) => {
+      const p = byVenue.get(s.venue.id);
+      return p ? [[s.venue.id, { id: p.id, name: p.name }]] : [];
+    }),
+  );
+};
+
 const byStart = (a: Screening, b: Screening) =>
   a.startsAt.localeCompare(b.startsAt) || a.id.localeCompare(b.id);
 
@@ -161,12 +175,12 @@ export const loadSearchPage = async (
         ]),
       )
     : {};
-  const venueProvider = new Map(venues.map((v) => [v.id, v.provider]));
-  const providers = Object.fromEntries(
-    screenings.flatMap((s) => {
-      const p = venueProvider.get(s.venue.id);
-      return p ? [[s.venue.id, { id: p.id, name: p.name }]] : [];
-    }),
-  );
-  return { ...base, films, state: "results", screenings, distances, providers };
+  return {
+    ...base,
+    films,
+    state: "results",
+    screenings,
+    distances,
+    providers: providersOf(venues, screenings),
+  };
 };

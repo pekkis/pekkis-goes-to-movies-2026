@@ -87,6 +87,7 @@ describe("meta", () => {
     const { status, body } = await get("/openapi.json");
     expect(status).toBe(200);
     expect(Object.keys(body.paths).toSorted()).toEqual([
+      "/v1/films/openings",
       "/v1/films/search",
       "/v1/films/{id}",
       "/v1/films/{id}/screenings",
@@ -240,6 +241,21 @@ describe("screenings", () => {
 });
 
 describe("films", () => {
+  it("lists films whose first showing falls in a range, with that day", async () => {
+    const { status, body } = await get("/v1/films/openings?from=2026-10-09&to=2026-10-12");
+    expect(status).toBe(200);
+    expect(body).toEqual([
+      {
+        film: expect.objectContaining({ id: "tmdb:100", kind: "film" }),
+        firstShowing: "2026-10-10",
+      },
+    ]);
+    // A film first shown before the range is not new in it.
+    expect((await get("/v1/films/openings?from=2026-10-11&to=2026-10-12")).body).toEqual([]);
+    expect((await get("/v1/films/openings?from=2026-10-12&to=2026-10-09")).status).toBe(400);
+    expect((await get("/v1/films/openings?from=2026-01-01&to=2026-12-31")).status).toBe(400);
+  });
+
   it("finds films by fuzzy title", async () => {
     const { body } = await get("/v1/films/search?q=testielokva");
     expect(body[0].film).toMatchObject({ id: "tmdb:100", kind: "film" });

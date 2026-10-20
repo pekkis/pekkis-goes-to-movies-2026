@@ -33,15 +33,16 @@ pnpm api:down   # stops the API containers; Postgres keeps running
 
 ## Endpoints
 
-| Endpoint                                                                  | Purpose                                           |
-| ------------------------------------------------------------------------- | ------------------------------------------------- |
-| `GET /v1/health`                                                          | `{ ok, db }`; 503 when the database is down       |
-| `GET /v1/venues?bbox=&city=`                                              | Venues with coordinates and provider              |
-| `GET /v1/venues/{id}`                                                     | One venue                                         |
-| `GET /v1/screenings?date=&bbox=&city=&venue=&film=&after=&limit=&cursor=` | What's on: one day's screenings, filtered         |
-| `GET /v1/films/search?q=&limit=`                                          | Fuzzy title search in any language, typos allowed |
-| `GET /v1/films/{id}`                                                      | Film details (TMDB) or listing details            |
-| `GET /v1/films/{id}/screenings?date=&bbox=&after=`                        | Where and when a film plays on a day              |
+| Endpoint                                                                  | Purpose                                                                                                                                                                                 |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /v1/health`                                                          | `{ ok, db }`; 503 when the database is down                                                                                                                                             |
+| `GET /v1/venues?bbox=&city=`                                              | Venues with coordinates and provider                                                                                                                                                    |
+| `GET /v1/venues/{id}`                                                     | One venue                                                                                                                                                                               |
+| `GET /v1/screenings?date=&bbox=&city=&venue=&film=&after=&limit=&cursor=` | What's on: one day's screenings, filtered                                                                                                                                               |
+| `GET /v1/films/openings?from=&to=`                                        | Films whose first screening (previews included) falls between two programme days, with that day; default a week either side of today, at most 62 days. Our history starts on 2026-10-09 |
+| `GET /v1/films/search?q=&limit=`                                          | Fuzzy title search in any language, typos allowed                                                                                                                                       |
+| `GET /v1/films/{id}`                                                      | Film details (TMDB) or listing details                                                                                                                                                  |
+| `GET /v1/films/{id}/screenings?date=&bbox=&after=`                        | Where and when a film plays on a day                                                                                                                                                    |
 
 **Parameters:**
 

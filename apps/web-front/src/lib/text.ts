@@ -40,6 +40,23 @@ export const fi = {
   osmNotice: "Teattereiden sijainnit © OpenStreetMap-tekijät (ODbL).",
   helsinkiNotice:
     "Osa näytöksistä Helsingin ja Espoon kaupunkien Linked Events -rajapinnoista (CC BY 4.0).",
+  // Posters and film pages.
+  posterOf: (title: string) => `${title} – juliste`,
+  noPoster: (title: string) => `${title} – ei julistetta`,
+  filmNotFound: "Elokuvaa ei löytynyt.",
+  originalTitle: "Alkuperäinen nimi",
+  finnishPremiere: "Ensi-ilta Suomessa",
+  trailer: "Traileri (YouTube)",
+  onTmdb: "Elokuva TMDB:ssä",
+  screeningsByDay: "Näytökset",
+  noScreeningsOn: (day: string) => `Ei näytöksiä ${day}.`,
+  newFilms: "Uudet elokuvat",
+  newFilmsIntro:
+    "Elokuvat, joiden ensimmäinen näytös oli viikon sisällä tai on tulossa viikon sisällä.",
+  openedThisWeek: "Alkaneet viikon aikana",
+  comingThisWeek: "Alkamassa viikon aikana",
+  firstShowing: (day: string) => `1. näytös ${day}`,
+  noNewFilms: "Ei uusia elokuvia.",
   // The search page (/fi/haku).
   search: "Hae",
   searchTitle: "Hae elokuvaa",

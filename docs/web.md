@@ -4,14 +4,15 @@ The public website: server-rendered pages that search engines can index, from ou
 
 ## Pages
 
-| URL                            | Page                                                                                                                                   | Data                                                                    |
-| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `/`                            | redirects to `/fi/`                                                                                                                    | –                                                                       |
-| `/fi/`                         | cities, as links                                                                                                                       | `/v1/venues`                                                            |
-| `/fi/kaupungit/{city}`         | a city's day: its venues, then every screening in start order                                                                          | `/v1/screenings?city=`                                                  |
-| `/fi/elokuvateatterit/{venue}` | a venue's day, film by film: address, map link, the cinema's website, each film (alphabetical) with its showtimes                      | `/v1/screenings?venue=`                                                 |
-| `/fi/kartta`                   | every venue on a map: clusters when zoomed out, a popup per pin linking to the venue page; below it, the same venues as a list by city | `/v1/venues`                                                            |
-| `/fi/haku`                     | search: days, a place and maybe a film name, then narrow by time of day, venue and film ([below](#search-fihaku))                      | `/v1/screenings?bbox=`, `/v1/films/search`, `/v1/films/{id}/screenings` |
+| URL                            | Page                                                                                                                                                                                                                | Data                                                                    |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `/`                            | redirects to `/fi/`                                                                                                                                                                                                 | –                                                                       |
+| `/fi/`                         | new films (first showing within a week either side of today) as poster cards, then the cities as links                                                                                                              | `/v1/films/openings`, `/v1/venues`                                      |
+| `/fi/kaupungit/{city}`         | a city's day: its venues, then every screening in start order                                                                                                                                                       | `/v1/screenings?city=`                                                  |
+| `/fi/elokuvateatterit/{venue}` | a venue's day, film by film: address, map link, the cinema's website, each film (alphabetical) with its showtimes                                                                                                   | `/v1/screenings?venue=`                                                 |
+| `/fi/kartta`                   | every venue on a map: clusters when zoomed out, a popup per pin linking to the venue page; below it, the same venues as a list by city                                                                              | `/v1/venues`                                                            |
+| `/fi/haku`                     | search: days, a place and maybe a film name, then narrow by time of day, venue and film ([below](#search-fihaku))                                                                                                   | `/v1/screenings?bbox=`, `/v1/films/search`, `/v1/films/{id}/screenings` |
+| `/fi/elokuvat/{name}-{tmdb}`   | a TMDB film: poster, titles, facts, synopsis, trailer and TMDB links; the next seven days as links with counts; the chosen day's screenings, narrowed by time of day and venue (by provider) ([below](#film-pages)) | `/v1/films/{id}`, `/v1/films/{id}/screenings?date=`                     |
 
 - **Slugs** are derived from names (`src/lib/cities.ts`, `src/lib/venues.ts`):
   - a city: `Jyväskylä` → `jyvaskyla`;
@@ -149,6 +150,17 @@ pnpm web:build && node apps/web-front/dist/server/entry.mjs   # production serve
 - `test/lib/`: loaders and helpers, with `fakeFetch` from `test/fixtures.ts`. No network.
 - `test/components/`: Testing Library under `// @vitest-environment happy-dom`.
 - `test/pages/`: Astro's Container API renders a real page, with a fake API passed in `locals`.
+
+## Film pages
+
+- **URL:** `/fi/elokuvat/lapin-sota-1450460`, the Finnish title's slug and the TMDB id. Only the number counts. A slug with another title (renamed on TMDB, or typed by hand) redirects (301) to the current one, keeping `?date=`. Unmatched cinema listings have no film page; their titles stay plain text in lists. Every film title in a screening list links here (`FilmName`).
+- **The page:** the film from TMDB (`FilmHead`), the next seven days as links with their counts (`FilmDays`), and the chosen day's screenings in the search page's island, `SearchResults`, which hides its film facet when there is one film. Without `?date=`, it opens on the first of the seven days with screenings. Critics' scores are not shown, as they are opt-in.
+- **New films on the front page:** `GET /v1/films/openings`, films whose first screening in our data (previews included) falls within a week either side of today. They are split into "already started" and "starting", each alphabetical. Revivals and festival screenings count as new when they first appear (2026-10-20: 138 films).
+
+## Posters and images
+
+- **One component, one source of URLs:** `Poster` (sizes `sm`, `md`, `lg`; theme tokens `size.posterSm/Md/Lg`) asks `posterSource(url, px)` in `lib/images.ts` for an image covering its width, and twice that for sharp screens. Today that picks TMDB's fixed widths (`w92` … `w780`) from the URL the API gives. Our own imgproxy later replaces that function only.
+- **No poster:** a bordered box with the title, the wireframe placeholder. Images are lazy except a film page's own poster.
 
 ## Search (`/fi/haku`)
 

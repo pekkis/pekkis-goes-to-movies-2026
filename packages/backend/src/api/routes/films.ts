@@ -2,11 +2,12 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { router } from "../hono.ts";
 import type { Kysely } from "kysely";
 import type { DB } from "../../db/types.ts";
-import { getFilm, searchFilmSummaries } from "../../queries/films.ts";
+import { filmOpenings, getFilm, searchFilmSummaries } from "../../queries/films.ts";
 import { listScreenings } from "../../queries/screenings.ts";
 import { helsinkiToday } from "../../search/showtimes.ts";
+import { addDays, daysBetween } from "@pgtm/model/time";
 import { afterParam, bboxParam, dateParam, idParam, limitParam, parseBbox } from "../params.ts";
-import { ErrorBody, Film, ScreeningPage, SearchHit } from "../schemas.ts";
+import { ErrorBody, Film, FilmOpening, ScreeningPage, SearchHit } from "../schemas.ts";
 
 const search = createRoute({
   method: "get",
@@ -23,6 +24,36 @@ const search = createRoute({
     200: {
       description: "Hits, best first",
       content: { "application/json": { schema: z.array(SearchHit) } },
+    },
+    400: { description: "Bad parameters", content: { "application/json": { schema: ErrorBody } } },
+  },
+});
+
+/** The longest span `openings` answers for. */
+const OPENINGS_MAX_DAYS = 62;
+
+const openings = createRoute({
+  method: "get",
+  path: "/v1/films/openings",
+  tags: ["films"],
+  summary:
+    "Films whose first screening falls between two days (default: a week either side of today)",
+  request: {
+    query: z.object({
+      from: z.iso.date().optional().openapi({
+        description: "First programme day, YYYY-MM-DD. Default: a week before today.",
+        example: "2026-10-13",
+      }),
+      to: z.iso.date().optional().openapi({
+        description: "Last programme day, YYYY-MM-DD. Default: a week after today.",
+        example: "2026-10-27",
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Films with their first showing, earliest first",
+      content: { "application/json": { schema: z.array(FilmOpening) } },
     },
     400: { description: "Bad parameters", content: { "application/json": { schema: ErrorBody } } },
   },
@@ -68,6 +99,20 @@ export const filmRoutes = (db: Kysely<DB>) =>
     .openapi(search, async (c) => {
       const { q, limit } = c.req.valid("query");
       return c.json(await searchFilmSummaries(db, q, limit), 200);
+    })
+    .openapi(openings, async (c) => {
+      const q = c.req.valid("query");
+      const today = await helsinkiToday(db);
+      const from = q.from ?? addDays(today, -7);
+      const to = q.to ?? addDays(today, 7);
+      const span = daysBetween(from, to);
+      if (span < 0 || span > OPENINGS_MAX_DAYS) {
+        return c.json(
+          { error: `from must not be after to, at most ${OPENINGS_MAX_DAYS} days` },
+          400,
+        );
+      }
+      return c.json(await filmOpenings(db, from, to), 200);
     })
     .openapi(one, async (c) => {
       const film = await getFilm(db, c.req.valid("param").id);

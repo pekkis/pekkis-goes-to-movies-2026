@@ -5,12 +5,11 @@ import { SearchResults } from "../../components/SearchResults.tsx";
 import Base from "../../layouts/Base.astro";
 import { loadSearchPage } from "../../lib/search.ts";
 import { fi } from "../../lib/text.ts";
-import { helsinkiShowTimeAt, helsinkiToday } from "@pgtm/model/time";
+import { programmeToday } from "@pgtm/model/time";
 import { sprinkles } from "../../styles/sprinkles.css.ts";
 
 // The programme day: until 05.00, last night's shows are still "today".
-const now = Astro.locals.now;
-const today = helsinkiShowTimeAt(now.toString())?.businessDate ?? helsinkiToday(now);
+const today = programmeToday(Astro.locals.now);
 const page = await loadSearchPage(Astro.locals.api, Astro.url.searchParams, today);
 const placeName = page.place?.kind === "city" ? page.place.name : fi.myLocation;
 ---

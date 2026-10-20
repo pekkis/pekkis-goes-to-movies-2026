@@ -39,3 +39,16 @@ export const formatShortDay = (date: string): string =>
   shortDay.format(
     Temporal.PlainDate.from(date).toZonedDateTime({ timeZone: "UTC" }).epochMilliseconds,
   );
+
+const fullDate = new Intl.DateTimeFormat("fi-FI", {
+  timeZone: "UTC",
+  day: "numeric",
+  month: "numeric",
+  year: "numeric",
+});
+
+/** "2026-10-23" -> "23.10.2026". */
+export const formatDate = (date: string): string =>
+  fullDate.format(
+    Temporal.PlainDate.from(date).toZonedDateTime({ timeZone: "UTC" }).epochMilliseconds,
+  );

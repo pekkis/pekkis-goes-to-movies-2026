@@ -1,5 +1,6 @@
 import type { Screening } from "../lib/api.ts";
-import { groupByFilm, tmdbUrl } from "../lib/films.ts";
+import { groupByFilm } from "../lib/films.ts";
+import { FilmName } from "./FilmName.tsx";
 import { fi } from "../lib/text.ts";
 import { formatTime } from "../lib/time.ts";
 import { button } from "../styles/recipes/button.css.ts";
@@ -52,7 +53,7 @@ export const FilmProgramme = ({ screenings }: { screenings: readonly Screening[]
     {groupByFilm(screenings).map(({ film, screenings: shows }) => (
       <li key={film.id} className={css.film}>
         <h2 className={css.title}>
-          {film.kind === "film" ? <a href={tmdbUrl(film.id)}>{film.title}</a> : film.title}
+          <FilmName film={film} />
         </h2>
         <p className={css.facts}>
           {[film.rating, film.runtimeMinutes && fi.minutes(film.runtimeMinutes), film.year]

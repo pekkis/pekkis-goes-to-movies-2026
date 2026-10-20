@@ -36,6 +36,10 @@ export const vars = createThemeContract({
     timeColumn: null,
     /** The map's height: most of a phone screen, capped on large screens. */
     map: null,
+    /** Poster widths (2:3), in step with POSTER_PX in components/Poster.tsx. */
+    posterSm: null,
+    posterMd: null,
+    posterLg: null,
   },
 });
 
@@ -64,7 +68,14 @@ const shared = {
     weight: { regular: "400", semibold: "600", bold: "700", heavy: "800" },
   },
   border: { width: "1px", strongWidth: "3px", focusWidth: "2px" },
-  size: { page: "56rem", timeColumn: "4rem", map: "min(70vh, 40rem)" },
+  size: {
+    page: "56rem",
+    timeColumn: "4rem",
+    map: "min(70vh, 40rem)",
+    posterSm: "4rem",
+    posterMd: "9rem",
+    posterLg: "14rem",
+  },
 };
 
 // Grey mockup on purpose: no visual identity before user testing (AGENTS.md, docs/web.md).

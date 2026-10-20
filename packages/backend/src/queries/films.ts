@@ -1,6 +1,6 @@
 import type { z } from "@hono/zod-openapi";
-import type { Kysely } from "kysely";
-import type { Film, FilmSummary, SearchHit } from "../api/schemas.ts";
+import { sql, type Kysely } from "kysely";
+import type { Film, FilmOpening, FilmSummary, SearchHit } from "../api/schemas.ts";
 import type { DB } from "../db/types.ts";
 import { filmDetails, listingDetails, searchFilms } from "../search/showtimes.ts";
 import { backdropUrl, posterUrl, yearOf } from "./common.ts";
@@ -102,5 +102,31 @@ export const searchFilmSummaries = async (
   return hits.flatMap((hit, i) => {
     const film = films[i];
     return film ? [{ score: Number(hit.score.toFixed(3)), film: summaryOf(film) }] : [];
+  });
+};
+
+/**
+ * TMDB films whose first screening (the earliest programme day of any screening not
+ * removed, previews included) falls between `from` and `to`, earliest first. Our history
+ * starts on 2026-10-09: a film running before that "first shows" on its first day with us.
+ */
+export const filmOpenings = async (
+  db: Kysely<DB>,
+  from: string,
+  to: string,
+): Promise<z.infer<typeof FilmOpening>[]> => {
+  const rows = await db
+    .selectFrom("screenings")
+    .select(["filmId", sql<string>`min(business_date)::text`.as("firstShowing")])
+    .where("filmId", "is not", null)
+    .where("removedAt", "is", null)
+    .groupBy("filmId")
+    .having(sql<boolean>`min(business_date) between ${from}::date and ${to}::date`)
+    .orderBy("firstShowing")
+    .execute();
+  const films = await Promise.all(rows.map((r) => getFilm(db, r.filmId!)));
+  return rows.flatMap((row, i) => {
+    const film = films[i];
+    return film ? [{ film: summaryOf(film), firstShowing: row.firstShowing }] : [];
   });
 };
