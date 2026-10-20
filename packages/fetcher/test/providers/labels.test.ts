@@ -244,8 +244,8 @@ describe("isPrivateBooking", () => {
 describe("withClassicTag", () => {
   it.each([
     [1990, ["classic"]],
-    [2006, ["classic"]],
-    [2007, []],
+    [2021, ["classic"]],
+    [2022, []],
     [2026, []],
     [undefined, []],
   ])("a film from %s, shown in 2026 -> %o", (year, tags) => {

@@ -26,9 +26,9 @@ const cities = citiesOf(venues);
   <h2 class={sprinkles({ marginBottom: "sm" })}>{fi.openedThisWeek}</h2>
   {films.opened.length ? <FilmGrid films={films.opened.map((o) => ({ film: o.film, day: o.firstShowing }))} label={fi.firstShowing} /> : <p class={sprinkles({ marginBottom: "lg" })}>{fi.noNewFilms}</p>}
 
-  <h2 class={sprinkles({ marginBottom: "sm" })}>{fi.classics}</h2>
-  <p class={sprinkles({ marginBottom: "md" })}>{fi.classicsIntro}</p>
-  {films.classics.length ? <FilmGrid films={films.classics.map((c) => ({ film: c.film, day: c.nextShowing }))} label={fi.nextShowing} /> : <p class={sprinkles({ marginBottom: "lg" })}>{fi.noClassics}</p>}
+  <h2 class={sprinkles({ marginBottom: "sm" })}>{fi.reruns}</h2>
+  <p class={sprinkles({ marginBottom: "md" })}>{fi.rerunsIntro}</p>
+  {films.reruns.length ? <FilmGrid films={films.reruns.map((c) => ({ film: c.film, day: c.nextShowing }))} label={fi.nextShowing} /> : <p class={sprinkles({ marginBottom: "lg" })}>{fi.noReruns}</p>}
 
   <h2 class={sprinkles({ marginBottom: "md" })}>{fi.cities}</h2>
   <ul role="list" class={sprinkles({ display: "flex", flexWrap: "wrap", gap: "sm" })}>

@@ -44,13 +44,13 @@ const noSearch: TmdbClient = {
     details({
       id,
       title: id === 251 ? "Ghost" : "New",
-      release_date: id === 251 ? "1990-07-13" : "2020-01-01",
+      release_date: id === 251 ? "1990-07-13" : "2025-01-01",
     }),
   findByImdb: async () => undefined,
 };
 
 describe("buildCatalog", () => {
-  it("tags screenings of films released 20 years ago or more as classics", async () => {
+  it("tags screenings of films released CLASSIC_AGE_YEARS ago or more as classics", async () => {
     const dir = await mkdtemp(join(tmpdir(), "pgtm-catalog-"));
     const batch: ProviderBatch = {
       provider: {
@@ -70,7 +70,7 @@ describe("buildCatalog", () => {
         listing("ghost", "Ghost"),
         listing("new", "New"),
         // Not on TMDB: the cinema's own year decides.
-        listing("local", "Paikallinen dokumentti", { year: 2001 }),
+        listing("local", "Paikallinen dokumentti", { year: 2015 }),
       ],
       screenings: [
         screening("1", "kino:film:ghost"),

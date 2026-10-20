@@ -91,8 +91,8 @@ describe("loadFrontPage", () => {
         asked.searchParams.get(k),
       ),
     ).toEqual(["2026-10-06", "2026-10-19", "2026-10-13", "2026-10-19", "classic"]);
-    // Classics playing this week, by title.
-    expect(page.classics.map((c) => c.film.title)).toEqual(["Casablanca", "Thelma ja Louise"]);
+    // Re-runs playing this week, by title.
+    expect(page.reruns.map((c) => c.film.title)).toEqual(["Casablanca", "Thelma ja Louise"]);
     const classics = fake.requests.find((u) => u.pathname === "/v1/films/playing")!;
     expect(["from", "to", "tag"].map((k) => classics.searchParams.get(k))).toEqual([
       "2026-10-13",

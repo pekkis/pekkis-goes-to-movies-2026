@@ -77,18 +77,21 @@ export type FrontPage = {
   coming: FilmOpening[];
   /** First shown in the past week, today included. */
   opened: FilmOpening[];
-  /** Classics playing in the next seven days (old films, and the cinemas' own classics). */
-  classics: FilmPlaying[];
+  /**
+   * Re-runs playing in the next seven days: films with a `classic` screening (old films,
+   * and the cinemas' own classics).
+   */
+  reruns: FilmPlaying[];
 };
 
 /**
  * The front page: new films (first showing in the past week or the next seven days, still
- * playing in those seven days), and classics playing in them. A classic is never "new":
- * a film with a classic screening this week goes to the classics only. Each list by title.
+ * playing in those seven days), and re-runs playing in them. A re-run is never "new": a
+ * film with a `classic` screening this week goes to the re-runs only. Each list by title.
  */
 export const loadFrontPage = async (api: Api, today: string): Promise<FrontPage> => {
   const week = { from: today, to: addDays(today, 6) };
-  const [openings, classics] = await Promise.all([
+  const [openings, reruns] = await Promise.all([
     filmOpenings(api, addDays(today, -7), week.to, week, "classic"),
     filmsPlaying(api, week.from, week.to, "classic"),
   ]);
@@ -96,6 +99,6 @@ export const loadFrontPage = async (api: Api, today: string): Promise<FrontPage>
   return {
     coming: sorted.filter((o) => o.firstShowing > today),
     opened: sorted.filter((o) => o.firstShowing <= today),
-    classics: classics.toSorted((a, b) => byTitle(a.film, b.film)),
+    reruns: reruns.toSorted((a, b) => byTitle(a.film, b.film)),
   };
 };
