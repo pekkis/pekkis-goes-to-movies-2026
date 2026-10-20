@@ -106,9 +106,11 @@ export const searchFilmSummaries = async (
 };
 
 /**
- * TMDB films whose first screening (the earliest programme day of any screening not
- * removed, previews included) falls between `from` and `to`, earliest first. Our history
- * starts on 2026-10-09: a film running before that "first shows" on its first day with us.
+ * TMDB films that open between `from` and `to`: on their Finnish premiere date when TMDB
+ * knows it, otherwise on their first screening with us (the earliest programme day of any
+ * screening not removed, previews included). The premiere date wins because our history
+ * starts on 2026-10-09: a film that premiered months ago (The Substance, 2024) would
+ * otherwise look new on its first screening in our data. Earliest opening first.
  */
 export const filmOpenings = async (
   db: Kysely<DB>,
@@ -119,31 +121,46 @@ export const filmOpenings = async (
   /** Leave out films with a screening carrying this tag (in `playing`, when given). */
   excludeTag?: string,
 ): Promise<z.infer<typeof FilmOpening>[]> => {
+  const opening = sql`coalesce(f.finnish_release_date, min(s.business_date))`;
   let query = db
-    .selectFrom("screenings")
-    .select(["filmId", sql<string>`min(business_date)::text`.as("firstShowing")])
-    .where("filmId", "is not", null)
-    .where("removedAt", "is", null)
-    .groupBy("filmId")
-    .having(sql<boolean>`min(business_date) between ${from}::date and ${to}::date`);
+    .selectFrom("screenings as s")
+    .innerJoin("films as f", "f.id", "s.filmId")
+    .select([
+      "s.filmId",
+      sql<string>`min(s.business_date)::text`.as("firstShowing"),
+      sql<string | null>`f.finnish_release_date::text`.as("finnishPremiere"),
+      sql<string>`${opening}::text`.as("opening"),
+    ])
+    .where("s.removedAt", "is", null)
+    .groupBy(["s.filmId", "f.finnishReleaseDate"])
+    .having(sql<boolean>`${opening} between ${from}::date and ${to}::date`);
   if (playing) {
     query = query.having(
-      sql<boolean>`bool_or(business_date between ${playing.from}::date and ${playing.to}::date)`,
+      sql<boolean>`bool_or(s.business_date between ${playing.from}::date and ${playing.to}::date)`,
     );
   }
   if (excludeTag) {
     const within = playing
-      ? sql`business_date between ${playing.from}::date and ${playing.to}::date`
+      ? sql`s.business_date between ${playing.from}::date and ${playing.to}::date`
       : sql`true`;
     query = query.having(
-      sql<boolean>`not coalesce(bool_or(${excludeTag} = any(tags) and ${within}), false)`,
+      sql<boolean>`not coalesce(bool_or(${excludeTag} = any(s.tags) and ${within}), false)`,
     );
   }
-  const rows = await query.orderBy("firstShowing").execute();
+  const rows = await query.orderBy("opening").execute();
   const films = await Promise.all(rows.map((r) => getFilm(db, r.filmId!)));
   return rows.flatMap((row, i) => {
     const film = films[i];
-    return film ? [{ film: summaryOf(film), firstShowing: row.firstShowing }] : [];
+    return film
+      ? [
+          {
+            film: summaryOf(film),
+            opening: row.opening,
+            firstShowing: row.firstShowing,
+            finnishPremiere: row.finnishPremiere,
+          },
+        ]
+      : [];
   });
 };
 

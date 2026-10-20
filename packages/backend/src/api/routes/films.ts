@@ -37,7 +37,7 @@ const openings = createRoute({
   path: "/v1/films/openings",
   tags: ["films"],
   summary:
-    "Films whose first screening falls between two days (default: a week either side of today)",
+    "Films opening between two days: on their Finnish premiere, else their first screening (default: a week either side of today)",
   request: {
     query: z.object({
       from: z.iso.date().optional().openapi({

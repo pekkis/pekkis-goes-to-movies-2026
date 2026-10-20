@@ -247,13 +247,16 @@ describe("screenings", () => {
 });
 
 describe("films", () => {
-  it("lists films whose first showing falls in a range, with that day", async () => {
+  it("lists films opening in a range, with the day", async () => {
     const { status, body } = await get("/v1/films/openings?from=2026-10-09&to=2026-10-12");
     expect(status).toBe(200);
+    // No Finnish premiere date: the film opens on its first screening with us.
     expect(body).toEqual([
       {
         film: expect.objectContaining({ id: "tmdb:100", kind: "film" }),
+        opening: "2026-10-10",
         firstShowing: "2026-10-10",
+        finnishPremiere: null,
       },
     ]);
     // A film first shown before the range is not new in it.
@@ -265,6 +268,32 @@ describe("films", () => {
     expect((await get(`${playing}2026-10-12`)).status).toBe(400);
     expect((await get("/v1/films/openings?from=2026-10-12&to=2026-10-09")).status).toBe(400);
     expect((await get("/v1/films/openings?from=2026-01-01&to=2026-12-31")).status).toBe(400);
+  });
+
+  it("opens a film on its Finnish premiere date when TMDB knows it", async () => {
+    const premiere = (date: string | null) =>
+      db
+        .updateTable("films")
+        .set({ finnishReleaseDate: date })
+        .where("id", "=", "tmdb:100")
+        .execute();
+    try {
+      // Premiered long ago (The Substance, 2024): not new, whatever our first screening says.
+      await premiere("2024-09-27");
+      expect((await get("/v1/films/openings?from=2026-10-09&to=2026-10-12")).body).toEqual([]);
+      // Premiering inside the range: it opens then, though screenings started earlier.
+      await premiere("2026-10-12");
+      const { body } = await get("/v1/films/openings?from=2026-10-11&to=2026-10-13");
+      expect(body).toEqual([
+        expect.objectContaining({
+          opening: "2026-10-12",
+          firstShowing: "2026-10-10",
+          finnishPremiere: "2026-10-12",
+        }),
+      ]);
+    } finally {
+      await premiere(null);
+    }
   });
 
   it("lists films playing in a range, optionally only screenings with a tag", async () => {

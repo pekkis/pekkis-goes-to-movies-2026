@@ -130,8 +130,12 @@ export const Film = FilmSummary.extend({
 export const FilmOpening = z
   .object({
     film: FilmSummary,
+    /** The day the film opens: its Finnish premiere when known, else `firstShowing`. */
+    opening: z.string().openapi({ example: "2026-10-23" }),
     /** The programme day of the film's first screening in our data (previews included). */
-    firstShowing: z.string().openapi({ example: "2026-10-23" }),
+    firstShowing: z.string().openapi({ example: "2026-10-20" }),
+    /** The Finnish premiere date (TMDB), when known. */
+    finnishPremiere: nullableString.openapi({ example: "2026-10-23" }),
   })
   .openapi("FilmOpening");
 

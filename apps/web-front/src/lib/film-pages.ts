@@ -13,6 +13,8 @@ import {
 } from "./api.ts";
 import { byTitle, filmIdOfSlug, filmPath } from "./films.ts";
 import { dayOptions, providersOf, type Provider } from "./search.ts";
+import { fi } from "./text.ts";
+import { formatShortDay } from "./time.ts";
 
 /** One of the film page's day links: a day and how many screenings it has. */
 export type FilmDay = { date: string; count: number };
@@ -85,8 +87,9 @@ export type FrontPage = {
 };
 
 /**
- * The front page: new films (first showing in the past week or the next seven days, still
- * playing in those seven days), and re-runs playing in them. A re-run is never "new": a
+ * The front page: new films (opening in the past week or the next seven days, still
+ * playing in those seven days), and re-runs playing in them. A film opens on its Finnish
+ * premiere when TMDB knows it, else on its first screening with us. A re-run is never "new": a
  * film with a `classic` screening this week goes to the re-runs only. Each list by title.
  */
 export const loadFrontPage = async (api: Api, today: string): Promise<FrontPage> => {
@@ -97,8 +100,14 @@ export const loadFrontPage = async (api: Api, today: string): Promise<FrontPage>
   ]);
   const sorted = openings.toSorted((a, b) => byTitle(a.film, b.film));
   return {
-    coming: sorted.filter((o) => o.firstShowing > today),
-    opened: sorted.filter((o) => o.firstShowing <= today),
+    coming: sorted.filter((o) => o.opening > today),
+    opened: sorted.filter((o) => o.opening <= today),
     reruns: reruns.toSorted((a, b) => byTitle(a.film, b.film)),
   };
 };
+
+/** A new film's card note: "ensi-ilta pe 23.10." on its Finnish premiere, else its first showing. */
+export const openingNote = (o: FilmOpening): string =>
+  o.finnishPremiere === o.opening
+    ? fi.premiereOn(formatShortDay(o.opening))
+    : fi.firstShowing(formatShortDay(o.opening));

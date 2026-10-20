@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createApi } from "../../src/lib/api.ts";
-import { loadFilmPage, loadFrontPage } from "../../src/lib/film-pages.ts";
+import { loadFilmPage, loadFrontPage, openingNote } from "../../src/lib/film-pages.ts";
 import { fakeFetch, film, screening, venue } from "../fixtures.ts";
 
 const TODAY = "2026-10-13";
@@ -65,9 +65,11 @@ describe("loadFilmPage", () => {
 
 describe("loadFrontPage", () => {
   it("asks for new films still playing this week, coming ones first, each by title", async () => {
-    const opening = (id: string, title: string, firstShowing: string) => ({
+    const opening = (id: string, title: string, day: string) => ({
       film: film({ id, title }),
-      firstShowing,
+      opening: day,
+      firstShowing: day,
+      finnishPremiere: null,
     });
     const fake = fakeFetch({
       "/v1/films/playing": [
@@ -99,5 +101,17 @@ describe("loadFrontPage", () => {
       "2026-10-19",
       "classic",
     ]);
+  });
+});
+
+describe("openingNote", () => {
+  it("says premiere when the film opens on its Finnish premiere, else first showing", () => {
+    const base = { film: film(), firstShowing: "2026-10-20" };
+    expect(openingNote({ ...base, opening: "2026-10-23", finnishPremiere: "2026-10-23" })).toBe(
+      "ensi-ilta pe 23.10.",
+    );
+    expect(openingNote({ ...base, opening: "2026-10-20", finnishPremiere: null })).toBe(
+      "1. näytös ti 20.10.",
+    );
   });
 });

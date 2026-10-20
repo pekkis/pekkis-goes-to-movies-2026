@@ -4,7 +4,8 @@ import { FilmGrid } from "../../components/FilmGrid.tsx";
 import Base from "../../layouts/Base.astro";
 import { listVenues } from "../../lib/api.ts";
 import { citiesOf } from "../../lib/cities.ts";
-import { loadFrontPage } from "../../lib/film-pages.ts";
+import { loadFrontPage, openingNote } from "../../lib/film-pages.ts";
+import { formatShortDay } from "../../lib/time.ts";
 import { fi } from "../../lib/text.ts";
 import { sprinkles } from "../../styles/sprinkles.css.ts";
 
@@ -22,13 +23,13 @@ const cities = citiesOf(venues);
   <h1 class={sprinkles({ marginBottom: "sm" })}>{fi.newFilms}</h1>
   <p class={sprinkles({ marginBottom: "md" })}>{fi.newFilmsIntro}</p>
   <h2 class={sprinkles({ marginBottom: "sm" })}>{fi.comingThisWeek}</h2>
-  {films.coming.length ? <FilmGrid films={films.coming.map((o) => ({ film: o.film, day: o.firstShowing }))} label={fi.firstShowing} /> : <p class={sprinkles({ marginBottom: "lg" })}>{fi.noNewFilms}</p>}
+  {films.coming.length ? <FilmGrid films={films.coming.map((o) => ({ film: o.film, note: openingNote(o) }))} /> : <p class={sprinkles({ marginBottom: "lg" })}>{fi.noNewFilms}</p>}
   <h2 class={sprinkles({ marginBottom: "sm" })}>{fi.openedThisWeek}</h2>
-  {films.opened.length ? <FilmGrid films={films.opened.map((o) => ({ film: o.film, day: o.firstShowing }))} label={fi.firstShowing} /> : <p class={sprinkles({ marginBottom: "lg" })}>{fi.noNewFilms}</p>}
+  {films.opened.length ? <FilmGrid films={films.opened.map((o) => ({ film: o.film, note: openingNote(o) }))} /> : <p class={sprinkles({ marginBottom: "lg" })}>{fi.noNewFilms}</p>}
 
   <h2 class={sprinkles({ marginBottom: "sm" })}>{fi.reruns}</h2>
   <p class={sprinkles({ marginBottom: "md" })}>{fi.rerunsIntro}</p>
-  {films.reruns.length ? <FilmGrid films={films.reruns.map((c) => ({ film: c.film, day: c.nextShowing }))} label={fi.nextShowing} /> : <p class={sprinkles({ marginBottom: "lg" })}>{fi.noReruns}</p>}
+  {films.reruns.length ? <FilmGrid films={films.reruns.map((c) => ({ film: c.film, note: fi.nextShowing(formatShortDay(c.nextShowing)) }))} /> : <p class={sprinkles({ marginBottom: "lg" })}>{fi.noReruns}</p>}
 
   <h2 class={sprinkles({ marginBottom: "md" })}>{fi.cities}</h2>
   <ul role="list" class={sprinkles({ display: "flex", flexWrap: "wrap", gap: "sm" })}>

@@ -23,7 +23,14 @@ const api = createApi(
       items: url.searchParams.get("date") === "2026-10-13" ? [screening()] : [],
       nextCursor: null,
     }),
-    "/v1/films/openings": [{ film: film(), firstShowing: "2026-10-15" }],
+    "/v1/films/openings": [
+      {
+        film: film(),
+        opening: "2026-10-15",
+        firstShowing: "2026-10-14",
+        finnishPremiere: "2026-10-15",
+      },
+    ],
     "/v1/films/playing": [
       { film: film({ id: "tmdb:251", title: "Ghost" }), nextShowing: "2026-10-14" },
     ],
@@ -81,7 +88,7 @@ describe("front page", () => {
     );
     expect(html).toContain('href="/fi/elokuvat/unohdettu-saari-1185806"');
     expect(html).toContain('src="https://image.tmdb.org/t/p/w154/saari.jpg"');
-    expect(html).toContain("1. näytös to 15.10.");
+    expect(html).toContain("ensi-ilta to 15.10.");
     // Re-runs after the new films, with their next showing.
     expect(html.indexOf("Uusintaesitykset")).toBeGreaterThan(
       html.indexOf("Alkaneet viikon aikana"),
