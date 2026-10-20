@@ -16,11 +16,15 @@ export type FetchOptions = {
   now?: () => Date;
 };
 
-/** `[from, days]` split into windows of at most WINDOW_DAYS: 7 days is one request. */
-export const windows = (from: string, days: number): { date: string; days: number }[] =>
-  Array.from({ length: Math.ceil(days / WINDOW_DAYS) }, (_, i) => ({
-    date: addDays(from, i * WINDOW_DAYS),
-    days: Math.min(WINDOW_DAYS, days - i * WINDOW_DAYS),
+/** `[from, days]` split into windows of at most `size` days: 7 days is one request. */
+export const windows = (
+  from: string,
+  days: number,
+  size: number = WINDOW_DAYS,
+): { date: string; days: number }[] =>
+  Array.from({ length: Math.ceil(days / size) }, (_, i) => ({
+    date: addDays(from, i * size),
+    days: Math.min(size, days - i * size),
   }));
 
 /** I/O only: fetches raw responses without interpreting them beyond picking cinemas. */
@@ -43,7 +47,7 @@ export const fetchMyCloudCinema = async (
   const showtimes: Record<string, unknown[]> = {};
   for (const id of ids) {
     showtimes[id] = [];
-    for (const window of windows(from, days)) {
+    for (const window of windows(from, days, site.daysPerRequest)) {
       showtimes[id].push(
         await http.getJson(`${site.api}/show_times/getShowTimesDays`, {
           cinema_id: id,

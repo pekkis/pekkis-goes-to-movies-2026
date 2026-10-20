@@ -210,6 +210,14 @@ describe("fetch windows", () => {
   ])("splits %d days into windows of at most 7", (days, expected) => {
     expect(windows("2026-10-13", days)).toEqual(expected);
   });
+
+  it("asks one day at a time when the site answers only one (Cine Mäntsälä)", () => {
+    expect(windows("2026-10-20", 3, 1)).toEqual([
+      { date: "2026-10-20", days: 1 },
+      { date: "2026-10-21", days: 1 },
+      { date: "2026-10-22", days: 1 },
+    ]);
+  });
 });
 
 describe("field parsers", () => {
@@ -273,6 +281,18 @@ describe("field parsers", () => {
       tags: [],
       series: ["Cine Matinea"],
       event: false,
+      unmapped: [],
+    });
+  });
+
+  it("reads Cine Mäntsälä's film-and-wine label whole: its series, the bar open (2026-10-20)", () => {
+    const mantsala = MYCLOUDCINEMA_SITES.find((x) => x.provider === "cinemantsala")!;
+    expect(parseTitleExtension("Leffa & viini-näytös!", mantsala.titleExtensions)).toEqual({
+      formats: [],
+      tags: [],
+      series: ["Leffa & viini"],
+      event: false,
+      licensed: true,
       unmapped: [],
     });
   });

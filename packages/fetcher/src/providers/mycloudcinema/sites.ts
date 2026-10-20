@@ -17,6 +17,12 @@ export const MyCloudCinemaSite = SiteBase.extend({
    * programme page links to (copied, never requested).
    */
   ticketBase: z.url(),
+  /**
+   * Days asked per `getShowTimesDays` request. Most instances answer a whole week (BioRex
+   * answers everything it has published, whatever `number_of_days` says); Cine Mäntsälä's
+   * has answered only the requested day since 2026-10-20, so it is asked one day at a time.
+   */
+  daysPerRequest: z.number().int().min(1).max(7).default(7),
   /** Read only these cinema ids (default: every active cinema the API lists). */
   cinemaIds: z.array(z.number().int().positive()).optional(),
   /** Cities for cinemas whose API record leaves `city` empty, by cinema id. */
@@ -45,12 +51,16 @@ const sites = z.array(MyCloudCinemaSite).parse([
     api: "https://mantsala.cine.fi/webservices",
     ticketBase: "https://mantsala.cine.fi",
     cinemaIds: [1],
+    // Answers only the requested day, whatever number_of_days says (2026-10-20 [V]).
+    daysPerRequest: 1,
     // The cinema's matinée and concert strands, written with and without "- näytös" / "!"
     // (seen 2026-10-15).
     titleExtensions: {
       "Cine Matinea - näytös": { series: "Cine Matinea" },
       "Cine Matinea": { series: "Cine Matinea" },
       "Cine Konsertti": { series: "Cine Konsertti", tags: ["event-cinema"], event: true },
+      // A film with wine: the bar is open; no age limit is stated (seen 2026-10-20).
+      "Leffa & viini-näytös": { series: "Leffa & viini", licensed: true },
     },
     verifiedAt: "2026-10-13",
     notes:

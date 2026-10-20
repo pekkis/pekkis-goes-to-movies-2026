@@ -88,6 +88,8 @@ export const parseTitleExtension = (
   tags: ScreeningTag[];
   series: string[];
   event: boolean;
+  licensed?: boolean;
+  ageLimit?: FinnishRating;
   unmapped: string[];
 } => {
   const rule = raw ? labelRule(raw, siteLabels) : undefined;
@@ -97,6 +99,8 @@ export const parseTitleExtension = (
       tags: [...(rule.tags ?? [])],
       series: rule.series ? [rule.series] : [],
       event: rule.event ?? false,
+      ...(rule.licensed && { licensed: true }),
+      ...(rule.ageLimit && { ageLimit: rule.ageLimit }),
       unmapped: [],
     };
   }
@@ -234,7 +238,9 @@ const parseScreening = (
   }
 
   const tags: ScreeningTag[] = [...title.tags, ...(s.version_kids ? (["kids"] as const) : [])];
-  const { ageLimit } = parseScreenName(s.screen_name);
+  // The screen's own limit (BioRex's K-18 screens) first, then what the label says.
+  const ageLimit = parseScreenName(s.screen_name).ageLimit ?? title.ageLimit;
+  const extensionText = s.title_extension?.trim();
   const status = availability(s);
 
   return {
@@ -265,9 +271,13 @@ const parseScreening = (
     ...(ageLimit && { ageLimit }),
     tags,
     series: title.series,
+    ...(title.licensed && { licensed: true }),
     availability: status,
     ...(status !== "not-bookable" && { ticketUrl: ticketUrl(site, s.show_time_id) }),
     unmappedLabels: unmapped,
+    ...(extensionText && {
+      labels: [{ source: "mycloudcinema.titleExtension", text: extensionText }],
+    }),
     fetchedAt,
   };
 };
