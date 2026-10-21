@@ -30,7 +30,10 @@ services:
     cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
     security_opt:
       - no-new-privileges:true
-    mem_limit: 1g
+    # A ceiling, not a reservation (the database is ~25 MB; the server has 64 GB). /dev/shm
+    # is raised from Docker's 64 MB, which parallel queries can outgrow.
+    mem_limit: 4g
+    shm_size: 256m
     pids_limit: 256
     # Parallel query workers may use more than one core. Docker refuses a value above the
     # host's core count: fine on the server (8 cores) and any laptop.
