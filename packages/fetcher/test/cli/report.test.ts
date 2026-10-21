@@ -1,6 +1,12 @@
 import type { ProviderBatch } from "@pgtm/model";
 import { describe, expect, it } from "vitest";
-import { batchReport, failureReport, summaryReport } from "../../src/cli/report.ts";
+import {
+  batchReport,
+  failureReport,
+  progressReport,
+  summaryReport,
+  tookReport,
+} from "../../src/cli/report.ts";
 import { plain, type Paint } from "../../src/lib/paint.ts";
 
 /** Marks each painted span: <yellow>…</yellow>, <red+bold>…</red+bold>. */
@@ -55,5 +61,24 @@ describe("the pull report", () => {
     expect(summaryReport(101, 102, "data", tag)).toBe(
       "<red+bold>pulled 101 of 102 providers</red+bold> into data",
     );
+  });
+});
+
+describe("progress", () => {
+  it("names what a running pull is waiting for, longest first, a long wait in yellow", () => {
+    const now = 1_000_000;
+    const running = new Map([
+      ["kinopirtti", now - 20_000],
+      ["biosalo", now - 245_000],
+    ]);
+    expect(progressReport(71, 102, running, now, tag)).toBe(
+      "<cyan>… 71 of 102 done</cyan>; running: <yellow>biosalo 4 min 05 s</yellow>, kinopirtti 20 s",
+    );
+    expect(progressReport(102, 102, new Map(), now, plain)).toBe("… 102 of 102 done");
+  });
+
+  it("says how long a provider took, a slow one in yellow", () => {
+    expect(tookReport(12_400, tag)).toBe("(12 s)");
+    expect(tookReport(65_000, tag)).toBe("<yellow>(1 min 05 s)</yellow>");
   });
 });

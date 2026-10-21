@@ -68,10 +68,23 @@ export type BatchResult = {
   removed: number;
   /**
    * Why removals were not inferred, or false when they were: "incomplete" (data-missing
-   * warnings, see isIncomplete) or "empty" (no screenings at all and no warning to say why).
+   * warnings, see isIncomplete), "empty" (no screenings at all and no warning to say why)
+   * or "drop" (far fewer upcoming screenings than we hold: a source answering in part).
    */
-  removalsSkipped: false | "incomplete" | "empty";
+  removalsSkipped: false | "incomplete" | "empty" | "drop";
 };
+
+/**
+ * A batch with under this share of the upcoming screenings we hold for its venues and days,
+ * and at least DROP_MIN fewer, is a source answering in part, not a cinema cancelling:
+ * Cine Mäntsälä's API returned only today instead of the week on 2026-10-20.
+ */
+export const DROP_SHARE = 0.5;
+export const DROP_MIN = 10;
+
+/** Whether `incoming` upcoming screenings, against `held`, look like a partial answer. */
+export const looksPartial = (held: number, incoming: number): boolean =>
+  incoming < held * DROP_SHARE && held - incoming >= DROP_MIN;
 
 /**
  * Upserts one provider's batch in a transaction. Screenings keep history:
@@ -88,6 +101,28 @@ export type BatchResult = {
 export const ingestBatch = (db: Kysely<DB>, batch: ProviderBatch): Promise<BatchResult> =>
   db.transaction().execute(async (trx) => {
     const seenAt = batch.fetchedAt;
+    // What we hold for this batch's venues and days still to come, before writing anything.
+    const upcoming = () =>
+      trx
+        .selectFrom("screenings")
+        .where("providerId", "=", batch.provider.id)
+        .where(sql<boolean>`venue_id = any(${batch.venues.map((v) => v.id)}::text[])`)
+        .where("businessDate", ">=", batch.window.from)
+        .where("businessDate", "<=", batch.window.to)
+        .where("startsAt", ">", new Date(seenAt))
+        .where("removedAt", "is", null);
+    const held = batch.venues.length
+      ? Number(
+          (
+            await upcoming()
+              .select(sql<number>`count(*)`.as("n"))
+              .executeTakeFirstOrThrow()
+          ).n,
+        )
+      : 0;
+    const incoming = batch.screenings.filter(
+      (s) => Date.parse(s.startsAt) > Date.parse(seenAt),
+    ).length;
     await upsert(trx, "providers", [providerRow(batch.provider)]);
     await upsert(trx, "venues", batch.venues.map(venueRow));
     await upsert(trx, "auditoriums", batch.auditoriums.map(auditoriumRow));
@@ -129,6 +164,10 @@ export const ingestBatch = (db: Kysely<DB>, batch: ProviderBatch): Promise<Batch
     // Nothing at all, and nothing said why: assume the parser, not the cinema.
     if (batch.screenings.length === 0) {
       return { inserted, updated, removed: 0, removalsSkipped: "empty" };
+    }
+    // Most of what we hold vanished at once: assume the source answered in part.
+    if (looksPartial(held, incoming)) {
+      return { inserted, updated, removed: 0, removalsSkipped: "drop" };
     }
 
     const removed = await trx

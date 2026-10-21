@@ -92,8 +92,12 @@ Printed by `pnpm pull` and stored in each batch. Codes marked **data missing** m
 
 - **red:** a provider that `FAILED`, a data-missing warning (`invalid-*`, `unknown-*`, `result-code`: screenings may be lost), the summary when anything failed;
 - **yellow:** other warnings (deliberate skips, `venue-without-geo`), a provider with 0 screenings, unmatched films;
-- **cyan:** unmapped labels and the alias hint, to-dos rather than faults;
+- **cyan:** unmapped labels, the alias hint, and the progress line;
 - **green:** the summary when every provider pulled.
+
+Every provider's line ends with how long it took (yellow from a minute). Every 30 s, a progress line says how many are done and which providers are still running, and for how long ("… 71 of 102 done; running: biosalo 4 min 05 s, …"). A source that hangs shows by name. A pull takes longer than the 2 minutes it used to: eTiketti reads every film's page 1.5 s apart, and from Tuesday cinemas list two weeks of films.
+
+**Retry-After:** a 503 or 429 asking us to wait up to 30 s is retried after that wait. One asking for longer (a maintenance window: Bio-Salo and Kuusamotalo said `Retry-After: 7200` on 2026-10-21) fails at once, so the rest of the pull isn't held up; before that fix, ky waited the full two hours (`maxRetryAfter` was unbounded).
 
 1. **Warnings and unmapped labels** in the `pull` output. Each is a to-do (see above). A new label needs a line in `LABELS` (`labels.ts`) when its meaning is general, in the site's config (`tags`, `showTypes`, `programs`, `titlePrefixes`) when only that cinema means it; a strand or festival goes to `config/series.json` (see the recipe).
 2. **Unmatched films** (the end of `pull` or `pnpm match`). Add aliases to `config/tmdb-aliases.json` after verifying on TMDB (runtime, year, countries), with the reasoning in `note`. Event cinema is never listed.

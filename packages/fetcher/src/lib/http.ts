@@ -1,4 +1,4 @@
-import ky, { type KyInstance } from "ky";
+import ky, { HTTPError, type KyInstance } from "ky";
 import PQueue from "p-queue";
 
 /** `contact` (URL or email) lets cinemas reach whoever runs the fetcher. */
@@ -27,6 +27,27 @@ export type HttpClientOptions = {
   headers?: Record<string, string>;
   /** Goes into the User-Agent. */
   contact?: string;
+  /** Tests pass a fake; requests otherwise go through the global fetch. */
+  fetch?: typeof fetch;
+};
+
+/**
+ * The longest `Retry-After` we wait for. A server busy for a moment gets its pause; one
+ * under maintenance ("Retry-After: 7200", Bio-Salo and Kuusamotalo on 2026-10-21) is not
+ * retried at all, so one source can't stall a whole pull for hours.
+ */
+export const MAX_RETRY_AFTER_MS = 30_000;
+
+/** A `Retry-After` value (seconds or an HTTP date) in milliseconds from `now`; undefined if absent or unreadable. */
+export const retryAfterMs = (value: string | null, now: Date = new Date()): number | undefined => {
+  if (value === null || value.trim() === "") {
+    return undefined;
+  }
+  if (/^\d+$/.test(value.trim())) {
+    return Number(value.trim()) * 1000;
+  }
+  const date = Date.parse(value);
+  return Number.isNaN(date) ? undefined : Math.max(0, date - now.getTime());
 };
 
 /**
@@ -54,10 +75,23 @@ export const createHttpClient = ({
   timeoutMs = 20_000,
   headers = {},
   contact,
+  fetch: fetchImpl,
 }: HttpClientOptions = {}): HttpClient => {
   const client: KyInstance = ky.create({
     timeout: timeoutMs,
-    retry: { limit: 2 },
+    retry: {
+      limit: 2,
+      maxRetryAfter: MAX_RETRY_AFTER_MS,
+      // A long wait asked for means maintenance: fail now, the next pull will try again.
+      shouldRetry: ({ error }) => {
+        const wait =
+          error instanceof HTTPError
+            ? retryAfterMs(error.response.headers.get("Retry-After"))
+            : undefined;
+        return wait !== undefined && wait > MAX_RETRY_AFTER_MS ? false : undefined;
+      },
+    },
+    ...(fetchImpl && { fetch: fetchImpl }),
     headers: { "user-agent": userAgent(contact), accept: "application/json", ...headers },
   });
 
