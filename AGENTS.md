@@ -1,6 +1,6 @@
 # AGENTS.md – Pekkis goes to movies
 
-Instructions for AI agents (and humans) working in this repository. Rules first, then how the code is built, then reference. Details live in `docs/`: [development.md](docs/development.md) (principles, testing, warnings, recipes), [data-sources.md](docs/data-sources.md), [data-model.md](docs/data-model.md), [classification.md](docs/classification.md), [database.md](docs/database.md), [api.md](docs/api.md), [cli.md](docs/cli.md), [web.md](docs/web.md), [deploy.md](docs/deploy.md).
+Instructions for AI agents (and humans) working in this repository. Rules first, then how the code is built, then reference. Details live in `docs/`: [development.md](docs/development.md) (principles, testing, warnings, recipes), [data-sources.md](docs/data-sources.md), [data-model.md](docs/data-model.md), [classification.md](docs/classification.md), [database.md](docs/database.md), [api.md](docs/api.md), [cli.md](docs/cli.md), [web.md](docs/web.md), [deploy.md](docs/deploy.md), [design/](docs/design/journey-map.md).
 
 ## What this is
 
@@ -30,7 +30,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
   - the public website in `apps/web-front`: Astro (SSR) + React + Vanilla Extract. A front page of new films, film pages (`/fi/elokuvat/{name}-{tmdb}`, from TMDB, with the day's screenings), city pages, venue pages, a venue map (MapLibre) and a search page (`/fi/haku`: days, place and film, narrowed by time of day, venue and film). Posters go through `Poster` and `lib/images.ts`, so their source can change in one place. See [docs/web.md](docs/web.md).
 
 - **Visual style: a grey mockup, on purpose.** There is no visual identity yet; it comes after user testing. See the rule below.
-- **Not started here:** design and user research. The course work happens outside this repository.
+- **Design happens here, user research outside:** mockups are built as code, and design documents live in [docs/design/](docs/design/) (customer journey maps: [journey-map.md](docs/design/journey-map.md)). User research (the questionnaire, now in Microsoft Forms) stays outside the repository until we decide otherwise.
 - **Backlog:** GitHub issues (`gh issue list`; labels `provider`, `tmdb`, `geo`, `backlog`).
 - **Prior work:** [Leffavuoro / Shady-Dev/kino](https://github.com/Shady-Dev/kino) (AGPL-3.0, about 230 cinemas). A code-only copy is in [vendor/leffavuoro/](vendor/leffavuoro/UPSTREAM.md). Read it first when adding a platform; its adapters may be ported (credit them in the site file's header), its `data/` may not be used.
 
@@ -129,6 +129,7 @@ pnpm web:dev / web:build     # the website on :4321 (API_URL points it at the AP
 pnpm check                   # typecheck + lint (zero warnings) + fmt:check + web build + test
 pnpm test / typecheck / lint / fmt / fmt:check
 pnpm vendor:leffavuoro --sync   # sync the pekkis/kino fork with upstream, refresh vendor/leffavuoro
+pnpm design:render           # docs/design/journey-map.md -> PNGs beside it: Mermaid diagrams and one slide per journey
 ```
 
 - First run: `pnpm db:up && pnpm migrate && pnpm pull && pnpm ingest`.
@@ -161,7 +162,7 @@ Dockerfile, .dockerignore       API image (serve, migrate, ingest): tsdown bundl
 apps/web-front/Dockerfile       website image (Astro standalone server); its own Dockerfile.dockerignore
 .env, data/                     gitignored: secrets; raw/, normalized/, cache/ (tmdb, omdb, osm, geocode, token)
 docs/                           development, data-sources, data-model, database, api, cli
-vendor/leffavuoro/, scripts/    Leffavuoro reference copy (not built, linted or formatted) and its refresher
+vendor/leffavuoro/, scripts/    Leffavuoro reference copy (not built, linted or formatted); scripts: its refresher, data:push, design:render
 apps/fpgm/                      the teammate's Flutter app: own tooling, not in the pnpm workspace; do not edit unasked
 apps/web-front/                 @pgtm/web-front: the website (Astro SSR, React, Vanilla Extract); see docs/web.md
   src/pages/, src/layouts/      thin .astro routes and layout; logic lives in src/lib/
@@ -227,7 +228,8 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
 - **Libraries:**
   - `zod` v4, `ky`, `p-queue`;
   - `cheerio` (eTiketti HTML);
-  - `playwright` (Finnkino token only, the installed Chrome);
+  - `playwright` (Finnkino token, and `design:render` at the root; the installed Chrome);
+  - `mermaid` (root dev dependency: `design:render` draws design documents' diagrams offline);
   - `kysely` + `pg` (+ `kysely-codegen`);
   - `hono` + `@hono/zod-openapi` + `@scalar/hono-api-reference`;
   - `tsdown` (Docker bundle only);

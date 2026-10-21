@@ -23,6 +23,7 @@
     "fmt:check": "oxfmt --check",
     "check": "pnpm typecheck && pnpm lint && pnpm fmt:check && pnpm web:build && pnpm test",
     "vendor:leffavuoro": "node scripts/vendor-leffavuoro.ts",
+    "design:render": "node scripts/render-diagrams.ts && node scripts/render-journey-maps.ts",
     "venues:locate": "pnpm --filter @pgtm/fetcher venues:locate",
     "api:dev": "pnpm --filter @pgtm/backend api:dev",
     "api:up": "docker compose --profile app up -d --build --wait",
@@ -32,8 +33,10 @@
   },
   "devDependencies": {
     "@types/node": "^26.6.4",
+    "mermaid": "^12.2.0",
     "oxfmt": "^0.72.0",
     "oxlint": "^1.87.0",
+    "playwright": "^1.64.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   },
