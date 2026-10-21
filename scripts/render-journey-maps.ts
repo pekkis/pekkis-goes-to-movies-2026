@@ -116,7 +116,7 @@ const curve = (
   return line + marks;
 };
 
-const slide = (j: Journey) => {
+const slide = (j: Journey, drafted: string) => {
   const width = W - 2 * PAD;
   // Where both curves meet at the same feeling, the word is printed once (above).
   const same = new Set(
@@ -162,7 +162,7 @@ const slide = (j: Journey) => {
     <div class="row">${row("Thinks", "Thinks", "thinks")}</div>
     <div class="row">${row("Pain points", "Pain points", "pain")}</div>
     <div class="row">${row("Opportunities", "With us", "opportunity")}</div>
-    <footer>Draft for user testing, ${new Date().toISOString().slice(0, 10)}: assumptions, not yet research.</footer>
+    <footer>Draft for user testing, ${drafted}: assumptions, not yet research.</footer>
   </section>`;
 };
 
@@ -191,7 +191,10 @@ const css = `
   footer { margin-top: auto; font-size: 16px; color: #888; }
 `;
 
-const journeys = parse(await readFile(source, "utf8"));
+const md = await readFile(source, "utf8");
+// The document's own date ("Status: a first draft, 2026-10-21"), so a rerun changes nothing.
+const drafted = md.match(/\*\*Status:[^*]*?(\d{4}-\d{2}-\d{2})/)?.[1] ?? "undated";
+const journeys = parse(md);
 if (!journeys.length) {
   console.error(`No "## Journey" sections in ${source}`);
   process.exit(1);
@@ -206,7 +209,9 @@ try {
     if (j.stages.length !== 7 || j.today.length !== 7 || j.withUs.length !== 7) {
       throw new Error(`Journey ${j.letter}: expected 7 stages and 7 feelings in each row`);
     }
-    await page.setContent(`<!doctype html><meta charset="utf-8"><style>${css}</style>${slide(j)}`);
+    await page.setContent(
+      `<!doctype html><meta charset="utf-8"><style>${css}</style>${slide(j, drafted)}`,
+    );
     const file = join(dirname(source), `journey-${j.letter.toLowerCase()}-slide.png`);
     await page.locator(".slide").screenshot({ path: file });
     console.log(`wrote ${file.slice(root.length + 1)}`);
