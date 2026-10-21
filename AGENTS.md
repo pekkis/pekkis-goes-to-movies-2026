@@ -1,6 +1,6 @@
 # AGENTS.md – Pekkis goes to movies
 
-Instructions for AI agents (and humans) working in this repository. Rules first, then how the code is built, then reference. Details live in `docs/`: [development.md](docs/development.md) (principles, testing, warnings, recipes), [data-sources.md](docs/data-sources.md), [data-model.md](docs/data-model.md), [classification.md](docs/classification.md), [database.md](docs/database.md), [api.md](docs/api.md), [cli.md](docs/cli.md), [web.md](docs/web.md), [deploy.md](docs/deploy.md).
+Instructions for AI agents (and humans) working in this repository. Rules first, then how the code is built, then reference. Details live in `docs/`: [development.md](docs/development.md) (principles, testing, warnings, recipes), [data-sources.md](docs/data-sources.md), [data-model.md](docs/data-model.md), [classification.md](docs/classification.md), [database.md](docs/database.md), [api.md](docs/api.md), [cli.md](docs/cli.md), [web.md](docs/web.md), [deploy.md](docs/deploy.md), [design/](docs/design/journey-map.md).
 
 ## What this is
 
@@ -30,7 +30,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
   - the public website in `apps/web-front`: Astro (SSR) + React + Vanilla Extract. A front page of new films, film pages (`/fi/elokuvat/{name}-{tmdb}`, from TMDB, with the day's screenings), city pages, venue pages, a venue map (MapLibre) and a search page (`/fi/haku`: days, place and film, narrowed by time of day, venue and film). Posters go through `Poster` and `lib/images.ts`, so their source can change in one place. See [docs/web.md](docs/web.md).
 
 - **Visual style: a grey mockup, on purpose.** There is no visual identity yet; it comes after user testing. See the rule below.
-- **Not started here:** design and user research. The course work happens outside this repository.
+- **Design happens here, user research outside:** mockups are built as code, and design documents live in [docs/design/](docs/design/) (customer journey maps: [journey-map.md](docs/design/journey-map.md)). User research (the questionnaire, now in Microsoft Forms) stays outside the repository until we decide otherwise.
 - **Backlog:** GitHub issues (`gh issue list`; labels `provider`, `tmdb`, `geo`, `backlog`).
 - **Prior work:** [Leffavuoro / Shady-Dev/kino](https://github.com/Shady-Dev/kino) (AGPL-3.0, about 230 cinemas). A code-only copy is in [vendor/leffavuoro/](vendor/leffavuoro/UPSTREAM.md). Read it first when adding a platform; its adapters may be ported (credit them in the site file's header), its `data/` may not be used.
 
