@@ -21,6 +21,33 @@ So the focus group is made of hobbyists. Their needs are the sharpest, and their
 
 We also want to see the website in use, so the session has a short **individual** hands-on part: each person on a laptop of their own, writing down what confused them, before the group discusses it. That keeps the group from echoing its loudest member.
 
+## The questionnaire and the focus group
+
+We also run a questionnaire (Microsoft Forms, outside this repository). The two answer different questions:
+
+- **The questionnaire counts:** how many go how often, which sites they use, how many compare cinemas, what matters most.
+- **The focus group explains:** why, how, and what it feels like, through stories and disagreements.
+
+So the focus group doesn't repeat the questionnaire's closed questions. It turns the ones that need a "why" into open questions, and leaves the pure counts to the form. The questionnaire's results also make good material for the group: "In our survey, most people said they choose the film first. Is that how it is for you?"
+
+| Questionnaire                                     | In the focus group                                                                  |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Q1 visits in 12 months, Q2 city                   | The screening question when recruiting; the warm-up                                 |
+| Q3 sites and apps used                            | Part 3: "How do you keep track of what's on?"                                       |
+| Q4 compared cinemas last time                     | Part 3: "Tell us about your last visit: did you compare? How?"                      |
+| Q5 what was difficult, Q8 hard to find or compare | Part 3: stories of missed screenings and annoyances                                 |
+| Q6 the three things that matter most              | Part 3: the ranking exercise, alone first, then discussed                           |
+| Q7 how you travel                                 | Part 3: "How far would you go, and how do you get there?"                           |
+| Q9 one place useful?                              | Part 5, after using the site: "Is it useful? What would make it more so?"           |
+| Q10 list, map, title search or chat               | Parts 4–6: they try the search, the map and the chat, then compare                  |
+| Q11, Q15 device                                   | Warm-up: "Where are you, and on what, when you look up showtimes?"; noted in part 4 |
+| Q12 one change                                    | Wrap-up                                                                             |
+| Q13 film first, time first, or cinema first       | Part 3: "Think of your last three visits: what came first?"                         |
+| Q14 satisfaction with current tools               | Part 3: "What works well in what you use now?" (the good side too)                  |
+| Q16–17 Finnkino's redesigned site                 | Part 3: its own short topic                                                         |
+
+**For hobbyists,** the questionnaire could still add a few options: "special screenings (retrospectives, series, film prints, guest screenings)" in Q6, "newsletters, film clubs or festival programmes" in Q3, and "I follow a series, a festival or a cinema's programme" in Q13. Its last page is also a natural place to recruit: a separate sign-up for the focus group, so the answers stay anonymous.
+
 ## Participants
 
 - **5–8 hobbyists**: people who go to the cinema at least twice a month, or who follow film clubs, festivals, retrospectives or a cinema's own series.
@@ -39,7 +66,7 @@ We also want to see the website in use, so the session has a short **individual*
   - paper and pens for individual notes; sticky notes for the concept round.
 - **Check the data that morning:** pick the films and screenings for the tasks from that week's programme (see "Tasks").
 
-## The session (about 90 minutes)
+## The session (about 100 minutes)
 
 ### 1. Welcome (5 min)
 
@@ -52,18 +79,31 @@ We also want to see the website in use, so the session has a short **individual*
 Round the table:
 
 - "Your name, and the last film you saw in a cinema. Where, and how did you find that screening?"
+- "When you look up showtimes, where are you, and on what: phone, laptop?"
 - "What's the best cinema experience you've had? What made it?"
 
-### 3. Moviegoing as a hobby (20 min)
+### 3. Moviegoing as a hobby (25 min)
 
 Open questions; let the conversation run, follow up on what's interesting.
 
-- "How do you keep track of what's on? Which sites, newsletters, social media, apps?"
+**Finding screenings**
+
+- "How do you keep track of what's on? Which sites, apps, newsletters, film clubs, social media?"
 - "How do you find out about retrospectives, series, film prints, guest screenings?"
+- "Tell us about your last visit: did you compare cinemas or screenings? How did you do it?"
+- "Think of your last three visits: what came first, the film, the time or the cinema?"
+
+**What hurts, and what works**
+
 - "Have you missed a screening you would have wanted to see? How did that happen?"
-- "How far have you travelled for a screening? What makes it worth it?"
-- "What matters when you choose a screening: the version, subtitles, the cinema, the hall, the print or format, the time?"
-- "What annoys you about the cinemas' own sites?"
+- "What's hard to find or compare on the cinemas' sites?"
+- "And what works well in what you use now?"
+- "Finnkino redesigned its website. Have you used the new one? What do you like or dislike about it?" (Stay neutral: let them judge it.)
+
+**Choosing**
+
+- **Ranking exercise (5 min):** everyone gets the same cards: _the film, the start time, the cinema, the price, language and subtitles, format (IMAX, 70 mm), film print (35 mm), a series or retrospective, guests and talks, the cinema's facilities._ Alone, pick and rank your top three; then compare in the group: "Why that one first?" The disagreements are the interesting part.
+- "How far have you travelled for a screening? How do you get there, and what makes it worth it?"
 
 Then show the journey maps (A and B):
 
@@ -82,6 +122,7 @@ Tasks (pick the details from that week's programme):
 3. **The double feature** _(should work)_: "Plan a Saturday in Helsinki with two films back to back."
 4. **On film** _(a probe: not built)_: "Find a screening on 35 mm this week." (There are prints at Kino Regina and Cinema Niagara, and 70 mm at Bio Rex Lasipalatsi, but the website doesn't show projection yet.)
 5. **The series** _(a probe: not built)_: "Find every screening of [a cinema's series, e.g. Kino Regina's director series]."
+6. **The map** _(should work)_: "On the map, find the cinemas near [a place you know]. Which would you go to?"
 
 The probes are expected to fail. We want to see _how_ hobbyists look for these things, and what they'd expect to find.
 
@@ -90,6 +131,8 @@ The probes are expected to fail. We want to see _how_ hobbyists look for these t
 - "What was easy? What was hard or confusing?" (everyone reads one note first, then discussion)
 - "What did you look for and not find?"
 - "On the film and series tasks, what did you try? Where would you have expected it?"
+- "Is it useful to have every cinema in one place? What would make it more useful?"
+- "Search, map, or searching by film title: which way suited you? When?"
 - "Would you use this instead of what you use now? What would it take?"
 
 ### 6. The chat (10 min)
