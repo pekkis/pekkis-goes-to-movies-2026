@@ -40,7 +40,6 @@ export const KUVAKUKKO_SITES: KuvakukkoSite[] = defineSites(KuvakukkoSite, [
       "Kino Manttu": {},
       "Kuvin aluesarja": { series: "Kuvin aluesarja" },
       "Hyvät Kuvat-kerho": { series: "Hyvät Kuvat -kerho" },
-      "Hopeatähti-sarja": { series: "Hopeatähti" },
     },
     titleNotes: { tekijävierailu: { tags: ["guest"] }, "vapaa pääsy": { tags: ["free"] } },
     notes:

@@ -56,6 +56,11 @@ export const LABELS: Record<string, LabelRule> = {
   Lastenkino: { tags: ["kids"] },
   Seniorikino: { tags: ["senior"] },
   Seniorinäytös: { tags: ["senior"] },
+  // Hopeatähti: daytime screenings for older audiences and pensioners, as series and clubs
+  // around Finland (the maintainer, 2026-10-21).
+  Hopeatähti: { series: "Hopeatähti", tags: ["senior"] },
+  "Hopeatähti-kerho": { series: "Hopeatähti", tags: ["senior"] },
+  "Hopeatähti-sarja": { series: "Hopeatähti", tags: ["senior"] },
   // "First time at the movies", for small children (Bio Marilyn, 2026-10-20).
   "EkaKertaLeffassa-näytös": { series: "EkaKertaLeffassa", tags: ["kids"] },
   EkaKertaLeffassa: { series: "EkaKertaLeffassa", tags: ["kids"] },

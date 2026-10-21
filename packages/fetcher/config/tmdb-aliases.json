@@ -463,5 +463,10 @@
     "tmdb": 511,
     "title": "Luvattu maa (Ziemia obiecana / The Promised Land)",
     "note": "Andrzej Wajda's Ziemia obiecana (1975; Aurora gives the production year 1974, 179 min vs TMDB's 170). Cinema Sheryl's screening of the same film links to TMDB 511 by its IMDb id (2026-10-21)."
+  },
+  "kuvakukko:film:amelie": {
+    "tmdb": 194,
+    "title": "Hopeatähti-kerho: Amélie",
+    "note": "Jean-Pierre Jeunet's Le Fabuleux Destin d'Amélie Poulain (2001), TMDB's Finnish title Amélie; not the 2025 animation of a similar name. Kuvakukko gives no year or runtime. Confirmed by the maintainer (2026-10-21)."
   }
 }

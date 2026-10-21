@@ -132,7 +132,6 @@ describe("series in titles", () => {
     ],
     ["Muumipappa – Minikino", "Muumipappa", "Minikino"],
     ["LaatuSarja: The Testament of Ann Lee", "The Testament of Ann Lee", "LaatuSarja"],
-    ["Hopeatähti-kerho: Amélie", "Amélie", "Hopeatähti-kerho"],
   ])("%s", (raw, title, series) => {
     expect(splitTitlePrefix(raw, COMMON_TITLE_PREFIXES)).toEqual({
       title,
@@ -169,6 +168,8 @@ describe("the shared label table", () => {
     ["K18 - Anniskelunäytös", { licensed: true, ageLimit: "K-18" }],
     ["Oopperat ja muut eventit", { tags: ["event-cinema"], event: true }],
     ["EkaKertaLeffassa-näytös", { series: "EkaKertaLeffassa", tags: ["kids"] }],
+    ["Hopeatähti-kerho", { series: "Hopeatähti", tags: ["senior"] }],
+    ["Hopeatähti", { series: "Hopeatähti", tags: ["senior"] }],
   ])("%s", (label, rule) => {
     expect(findLabel(label, LABELS)).toMatchObject(rule);
   });

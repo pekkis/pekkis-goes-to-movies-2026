@@ -386,7 +386,7 @@ Probed 2026-10-14: the programme page, then the linked film pages. Adapter: `pac
 - **The year** is inferred (`nearestDate`, at most 30 days back) and checked against the weekday. A mismatch places nothing and warns.
 - **Titles:**
   - The first link with text is the title (one row opens with an empty link); an unlinked row is the rest of the line.
-  - Configured series prefixes: "Kuvin aluesarja:", "Hyvät Kuvat-kerho:", "Hopeatähti-sarja:", and "Kino Manttu:" (no meaning).
+  - Configured series prefixes: "Kuvin aluesarja:", "Hyvät Kuvat-kerho:", and "Kino Manttu:" (no meaning). "Hopeatähti-sarja:" and "Hopeatähti-kerho:" come from the shared label table: the Hopeatähti series plus the `senior` tag (2026-10-21).
   - A trailing parenthesis opening with a configured word is a note, closed or not: dropped from the title, kept as a label and read by its rule ("tekijävierailu…" → `guest`, "vapaa pääsy…" → `free`). After a linked title the note is outside the link ("Näytös B</a> (vapaa pääsy)") and read from the rest of the line [V, 2026-10-16].
   - Festival rows keep their full title ("Kuopion mediataidefestarit: Näytös B"), as the part after the colon means nothing alone.
 - **Links are not used:** the rows link to reused pages of other films (`/kino-manttu-digger/` holds "Two Seasons, Two Strangers"), or even to an image. Tickets are sold at the door only ("lipunmyynti vain Kuvakukossa", "Ei ennakkovarauksia … vain käteinen"), so `booking` is `door` and every screening links to the programme page.
