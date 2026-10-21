@@ -31,9 +31,9 @@ The diagrams are Mermaid `journey` charts. GitHub renders them in place. For sli
 | **Thinks**          | "What's on, anything good?"          | "Is there something besides Finnkino?"                                 | "Is this dubbed? What time does it end?"                                           | "Is there a better option I missed?"            | "Hope there are seats left"                                                                                   | "Will we make it?"                                  | "We should do this more often"              |
 | **Touchpoints**     | Messaging app                        | Each cinema's own site, search engine, social media                    | Cinemas' sites, the chat with the friend                                           | –                                               | The cinema's ticket page                                                                                      | Map app, bus                                        | Social media, chat                          |
 | **Pain points**     | –                                    | One site per cinema; Finnkino's site sucks; small cinemas hard to find | No single view; languages and subtitles unclear; times spread across many tabs     | Uncertainty: alternatives not seen together     | Finnkino's site sucks ([HS 2025](https://www.hs.fi/kulttuuri/art-2000011591275.html)); every checkout differs | Distance and travel time not shown                  | Nothing to come back to                     |
-| **Opportunities**   | Something to send the friend: a link | **All the cinemas in one search by place and day** (`/fi/haku`)        | **Filters by time of day, cinema and film; languages and subtitles on every show** | **Live status:** "starts in 30 min", "few left" | **A direct link to the right show's ticket page**                                                             | **Distance in the results; the map** (`/fi/kartta`) | Ideas: "coming soon", reminders (not built) |
-| **Feeling today**   | 4 · interested                       | 2 · frustrated                                                         | 2 · confused                                                                       | 3 · unsure                                      | 3 · neutral                                                                                                   | 3 · rushed                                          | 4 · satisfied                               |
-| **Feeling with us** | 4 · interested                       | 5 · relieved                                                           | 4 · in control                                                                     | 4 · confident                                   | 3 · neutral (still the cinema's checkout)                                                                     | 4 · on time                                         | 4 · satisfied                               |
+| **Opportunities**   | Something to send the friend: a link | **All the cinemas in one search by place and day** (`/fi/haku`)        | **Filters by time of day, cinema and film; languages and subtitles on every show** | **Live status:** "starts in 30 min", "few left" | **Straight to the show's own purchase flow**: only seats and payment left, none of the cinema site's own maze | **Distance in the results; the map** (`/fi/kartta`) | Ideas: "coming soon", reminders (not built) |
+| **Feeling today**   | 4 · interested                       | 2 · frustrated                                                         | 2 · confused                                                                       | 3 · unsure                                      | 2 · annoyed                                                                                                   | 3 · rushed                                          | 4 · satisfied                               |
+| **Feeling with us** | 4 · interested                       | 5 · relieved                                                           | 4 · in control                                                                     | 4 · confident                                   | 4 · quick                                                                                                     | 4 · on time                                         | 4 · satisfied                               |
 
 ```mermaid
 ---
@@ -57,7 +57,7 @@ journey
   section Decide
     Picks one, unsure: 3: Aino
   section Buy
-    Cinema's checkout: 3: Aino
+    Hunts for the show to buy: 2: Aino
   section Go
     Route worked out apart: 3: Aino
   section Afterwards
@@ -86,7 +86,7 @@ journey
   section Decide
     Sees few seats left: 4: Aino, Pekkis
   section Buy
-    Link to the right show: 3: Aino, Cinema
+    Straight to seat choice: 4: Aino, Cinema
   section Go
     Distance known, on time: 4: Aino
   section Afterwards
@@ -106,15 +106,15 @@ journey
 
 **Goal:** find where and when the film plays within reasonable distance, and not miss it.
 
-| Stage               | 1. Trigger                                        | 2. Find the film                                      | 3. Find where and when                                                      | 4. Decide                                                                                     | 5. Buy                                                                                           | 6. Go                                 | 7. Afterwards                                               |
-| ------------------- | ------------------------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------- | ----------------------------------------------------------- |
-| **Does**            | Hears about the film; remembers its name, roughly | Searches the web with the name, maybe misspelt        | Checks the chains' sites, then guesses at small cinemas, film clubs, events | Picks a day and a place; maybe a longer drive                                                 | Follows the ticket link, or pays at the door                                                     | Drives to a town nearby               | Recommends it; looks for similar films                      |
-| **Thinks**          | "That sounds like something for me"               | "What was it called in Finnish?"                      | "Is this only in Helsinki?"                                                 | "Is it worth the drive? Is this the last showing?"                                            | "Can I buy online, or only at the door?"                                                         | "Where do I park?"                    | "Where do I find more like this?"                           |
-| **Touchpoints**     | Radio, newspaper, a friend                        | Search engine                                         | Chains' sites, small cinemas' own pages, Facebook, event calendars          | –                                                                                             | The cinema's ticket page, or the door                                                            | Car, map app                          | Friends, social media                                       |
-| **Pain points**     | –                                                 | Finnish, Swedish and original titles differ; spelling | Finnkino's site sucks; small and touring shows hard to find                 | No overview of all showings; last showings missed                                             | Finnkino's site sucks; booking differs by cinema                                                 | –                                     | No way to follow a film or a series                         |
-| **Opportunities**   | –                                                 | **Typo-tolerant search in any title language**        | **Every showing nationwide in one place, nearest first**                    | **The film page: all days and places.** A "last showing" mark: the data has it, not shown yet | **The cinema's own link.** What it leads to (buy, reserve, door): the data has it, not shown yet | **Address and map on the venue page** | Ideas: follow a film or a series, re-run alerts (not built) |
-| **Feeling today**   | 4 · curious                                       | 3 · unsure                                            | 1 · frustrated                                                              | 2 · worried about missing it                                                                  | 3 · neutral                                                                                      | 4 · expectant                         | 4 · satisfied                                               |
-| **Feeling with us** | 4 · curious                                       | 4 · found it                                          | 5 · relieved                                                                | 4 · confident                                                                                 | 3 · neutral                                                                                      | 4 · expectant                         | 4 · satisfied                                               |
+| Stage               | 1. Trigger                                        | 2. Find the film                                      | 3. Find where and when                                                      | 4. Decide                                                                     | 5. Buy                                                                    | 6. Go                                 | 7. Afterwards                                               |
+| ------------------- | ------------------------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------- | ----------------------------------------------------------- |
+| **Does**            | Hears about the film; remembers its name, roughly | Searches the web with the name, maybe misspelt        | Checks the chains' sites, then guesses at small cinemas, film clubs, events | Picks a day and a place; maybe a longer drive                                 | Follows the ticket link, or pays at the door                              | Drives to a town nearby               | Recommends it; looks for similar films                      |
+| **Thinks**          | "That sounds like something for me"               | "What was it called in Finnish?"                      | "Is this only in Helsinki?"                                                 | "Is it worth the drive? Is this the last showing?"                            | "Can I buy online, or only at the door?"                                  | "Where do I park?"                    | "Where do I find more like this?"                           |
+| **Touchpoints**     | Radio, newspaper, a friend                        | Search engine                                         | Chains' sites, small cinemas' own pages, Facebook, event calendars          | –                                                                             | The cinema's ticket page, or the door                                     | Car, map app                          | Friends, social media                                       |
+| **Pain points**     | –                                                 | Finnish, Swedish and original titles differ; spelling | Finnkino's site sucks; small and touring shows hard to find                 | No overview of all showings; last showings missed                             | Finnkino's site sucks; booking differs by cinema                          | –                                     | No way to follow a film or a series                         |
+| **Opportunities**   | –                                                 | **Typo-tolerant search in any title language**        | **Every showing nationwide in one place, nearest first**                    | **The film page: all days and places** (a "last showing" mark: not shown yet) | **Straight to the show's own purchase flow**: only seats and payment left | **Address and map on the venue page** | Ideas: follow a film or a series, re-run alerts (not built) |
+| **Feeling today**   | 4 · curious                                       | 3 · unsure                                            | 1 · frustrated                                                              | 2 · worried about missing it                                                  | 2 · annoyed                                                               | 4 · expectant                         | 4 · satisfied                                               |
+| **Feeling with us** | 4 · curious                                       | 4 · found it                                          | 5 · relieved                                                                | 4 · confident                                                                 | 4 · quick                                                                 | 4 · expectant                         | 4 · satisfied                                               |
 
 ```mermaid
 ---
@@ -137,7 +137,7 @@ journey
   section Decide
     Last showing? Unsure: 2: Matti
   section Buy
-    How does this one sell?: 3: Matti
+    How does this one sell?: 2: Matti
   section Go
     Drives to the next town: 4: Matti
   section Afterwards
@@ -165,7 +165,7 @@ journey
   section Decide
     All days and places: 4: Matti, Pekkis
   section Buy
-    The cinema's own link: 3: Matti, Cinema
+    Straight to seat choice: 4: Matti, Cinema
   section Go
     Address and map: 4: Matti
   section Afterwards
@@ -177,7 +177,7 @@ journey
 ## What the maps tell us
 
 - **The biggest gain is in finding and comparing** (stages 2–4): the scattered information is the problem both personas share. That's what the service is built around: 157 venues in 110 cities in one place.
-- **Buying stays at the cinema** (stage 5): we link to each cinema's own ticket page and never sell tickets. The feeling there doesn't improve with us, and that's by design. The opportunity is to make the handover clear: which show the link opens, and whether it buys, reserves or only informs (the data knows; the website doesn't say yet).
+- **Buying stays at the cinema, but with the least of its site** (stage 5): we never sell tickets, but the ticket link most often opens that very show's purchase flow on the cinema's site. Seat selection and payment are all that's left of the cinema's own site, not its navigation, search and listings (Finnkino's above all). This is one of the service's best features: in the maintainer's own use it already works this way whenever the cinema's site allows a direct link, which it most often does. Still to do: say on the link what it leads to (buy, reserve or only information; the data knows, the website doesn't say yet).
 - **Small and touring cinemas** are where film-first users hurt most, and where we differ most from the chains' own sites.
 - **Afterwards** (stage 7) is empty in both maps: following films, series or re-runs is a possible next step, not built.
 
