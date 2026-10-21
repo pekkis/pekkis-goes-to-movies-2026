@@ -13,7 +13,8 @@
   "hopeatahti": {
     "name": "Hopeatähti",
     "kind": "strand",
-    "note": "Savon Kinot's screenings for seniors."
+    "aliases": ["Hopeatähti-kerho", "Hopeatähti-sarja"],
+    "note": "Daytime screenings for older audiences and pensioners, run as series and clubs around Finland (the maintainer, 2026-10-21); seen at Savon Kinot and Kino Kuvakukko (\"Hopeatähti-kerho: …\", \"Hopeatähti-sarja: …\"). The shared label table adds the senior tag."
   },
   "hopeacine": {
     "name": "HopeaCine",

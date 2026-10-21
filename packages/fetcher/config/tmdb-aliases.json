@@ -458,5 +458,15 @@
     "tmdb": 1403476,
     "title": "PIKKULI OCH HIMMELSHINDEN",
     "note": "Pikkuli ja Tähtipeura in Swedish (Bio Savoy, Mariehamn). Kino Engel lists the same Swedish title, linked by runtime; Bio Savoy gives none, and TMDB has no Swedish title (2026-10-20)."
+  },
+  "kinoaurora:film:1149": {
+    "tmdb": 511,
+    "title": "Luvattu maa (Ziemia obiecana / The Promised Land)",
+    "note": "Andrzej Wajda's Ziemia obiecana (1975; Aurora gives the production year 1974, 179 min vs TMDB's 170). Cinema Sheryl's screening of the same film links to TMDB 511 by its IMDb id (2026-10-21)."
+  },
+  "kuvakukko:film:amelie": {
+    "tmdb": 194,
+    "title": "Hopeatähti-kerho: Amélie",
+    "note": "Jean-Pierre Jeunet's Le Fabuleux Destin d'Amélie Poulain (2001), TMDB's Finnish title Amélie; not the 2025 animation of a similar name. Kuvakukko gives no year or runtime. Confirmed by the maintainer (2026-10-21)."
   }
 }
