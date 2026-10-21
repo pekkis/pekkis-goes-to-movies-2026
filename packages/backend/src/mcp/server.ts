@@ -6,6 +6,7 @@ import type { DB } from "../db/types.ts";
 import { searchFilmSummaries } from "../queries/films.ts";
 import { listScreenings } from "../queries/screenings.ts";
 import { listVenues } from "../queries/venues.ts";
+import { MAX_ID, MAX_TEXT } from "../api/params.ts";
 import { helsinkiToday } from "../search/showtimes.ts";
 import { distanceKm } from "@pgtm/model/geo";
 
@@ -94,7 +95,11 @@ export const createMcpServer = (db: Kysely<DB>): McpServer => {
         "Fuzzy-search films showing in Finnish cinemas by any title (Finnish, Swedish, " +
         "English, original); typos are fine. Returns film ids for whats_on.",
       inputSchema: {
-        query: z.string().min(2).describe("Film name, e.g. 'odysseia' or 'Kerro kaikille'"),
+        query: z
+          .string()
+          .min(2)
+          .max(MAX_TEXT)
+          .describe("Film name, e.g. 'odysseia' or 'Kerro kaikille'"),
         include_ratings: z.boolean().default(false).describe("Add critics' scores"),
       },
       annotations: { readOnlyHint: true, openWorldHint: false },
@@ -127,7 +132,7 @@ export const createMcpServer = (db: Kysely<DB>): McpServer => {
         "time window and film. Each has the cinema's own ticket link.",
       inputSchema: {
         date: z.iso.date().optional().describe("YYYY-MM-DD; default today in Helsinki"),
-        city: z.string().optional().describe("City, e.g. 'Tampere'"),
+        city: z.string().max(MAX_TEXT).optional().describe("City, e.g. 'Tampere'"),
         near: z
           .object({
             lat: z.number().min(59).max(71),
@@ -140,8 +145,8 @@ export const createMcpServer = (db: Kysely<DB>): McpServer => {
         before: time
           .optional()
           .describe("Only shows starting before this time (05:00 counts as day start)"),
-        film_id: z.string().optional().describe("From find_film, e.g. 'tmdb:1368337'"),
-        venue_id: z.string().optional().describe("From list_venues"),
+        film_id: z.string().max(MAX_ID).optional().describe("From find_film, e.g. 'tmdb:1368337'"),
+        venue_id: z.string().max(MAX_ID).optional().describe("From list_venues"),
         include_ratings: z.boolean().default(false).describe("Add critics' scores"),
         limit: z.number().int().min(1).max(MAX_RESULTS).default(40),
       },
@@ -192,7 +197,7 @@ export const createMcpServer = (db: Kysely<DB>): McpServer => {
     {
       title: "List cinemas",
       description: "Cinemas we have showtimes for, optionally in one city.",
-      inputSchema: { city: z.string().optional().describe("City, e.g. 'Helsinki'") },
+      inputSchema: { city: z.string().max(MAX_TEXT).optional().describe("City, e.g. 'Helsinki'") },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
     async ({ city }) => {

@@ -25,6 +25,12 @@ export const RADII_KM = [5, 10, 15, 20, 25, 50, 100, 200] as const;
 export const DEFAULT_RADIUS_KM = 25;
 /** Films a name search may bring: the best few, and the island can uncheck the rest. */
 const FILMS_PER_SEARCH = 3;
+/** The API's cap on free text: a longer film or city name is ignored, as if not given. */
+const MAX_TEXT = 100;
+const text = (value: string | null): string | undefined => {
+  const trimmed = value?.trim();
+  return trimmed && trimmed.length <= MAX_TEXT ? trimmed : undefined;
+};
 
 /** Finland's bounds, as the API's MCP tools take them. */
 const Lat = z.coerce.number().min(59).max(71);
@@ -53,8 +59,8 @@ export const parseSearchParams = (params: URLSearchParams, today: string): Searc
   const lat = Lat.safeParse(params.get("lat") ?? undefined);
   const lon = Lon.safeParse(params.get("lon") ?? undefined);
   const radius = Number(params.get("sade"));
-  const city = params.get("kaupunki")?.trim();
-  const film = params.get("elokuva")?.trim();
+  const city = text(params.get("kaupunki"));
+  const film = text(params.get("elokuva"));
   return {
     days: days.length ? days : [today],
     ...(lat.success && lon.success ? { here: { lat: lat.data, lon: lon.data } } : {}),

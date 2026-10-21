@@ -73,4 +73,14 @@ describe("pageHeaders", () => {
     pageHeaders(on, { indexing: true });
     expect(on.has("x-robots-tag")).toBe(false);
   });
+
+  it("limits what a page may do, and reports what the coming policy would block", () => {
+    const headers = new Headers({ "content-type": "text/html" });
+    pageHeaders(headers, { indexing: false });
+    expect(headers.get("x-content-type-options")).toBe("nosniff");
+    expect(headers.get("x-frame-options")).toBe("DENY");
+    expect(headers.get("referrer-policy")).toBe("strict-origin-when-cross-origin");
+    expect(headers.get("permissions-policy")).toContain("geolocation=(self)");
+    expect(headers.get("content-security-policy-report-only")).toContain("frame-ancestors 'none'");
+  });
 });

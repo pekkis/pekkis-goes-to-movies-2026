@@ -6,7 +6,16 @@ import { filmOpenings, filmsPlaying, getFilm, searchFilmSummaries } from "../../
 import { listScreenings } from "../../queries/screenings.ts";
 import { helsinkiToday } from "../../search/showtimes.ts";
 import { addDays, daysBetween } from "@pgtm/model/time";
-import { afterParam, bboxParam, dateParam, idParam, limitParam, parseBbox } from "../params.ts";
+import {
+  afterParam,
+  bboxParam,
+  dateParam,
+  idParam,
+  limitParam,
+  MAX_TEXT,
+  parseBbox,
+  tagParam,
+} from "../params.ts";
 import { ErrorBody, Film, FilmOpening, FilmPlaying, ScreeningPage, SearchHit } from "../schemas.ts";
 
 const search = createRoute({
@@ -16,7 +25,7 @@ const search = createRoute({
   summary: "Fuzzy film search by any title (Finnish, Swedish, English, original; typos allowed)",
   request: {
     query: z.object({
-      q: z.string().trim().min(2).openapi({ example: "odysey" }),
+      q: z.string().trim().min(2).max(MAX_TEXT).openapi({ example: "odysey" }),
       limit: limitParam(10, 50),
     }),
   },
@@ -54,11 +63,9 @@ const openings = createRoute({
         example: "2026-10-20",
       }),
       playingTo: z.iso.date().optional().openapi({ example: "2026-10-26" }),
-      excludeTag: z.string().optional().openapi({
-        description:
-          "Leave out films with a screening carrying this tag (within playingFrom–playingTo when given), e.g. classic.",
-        example: "classic",
-      }),
+      excludeTag: tagParam(
+        "Leave out films with a screening carrying this tag (within playingFrom–playingTo when given), e.g. classic.",
+      ),
     }),
   },
   responses: {
@@ -86,10 +93,7 @@ const playingRoute = createRoute({
         description: "Default: six days after today.",
         example: "2026-10-26",
       }),
-      tag: z.string().optional().openapi({
-        description: "Only screenings carrying this tag, e.g. classic.",
-        example: "classic",
-      }),
+      tag: tagParam("Only screenings carrying this tag, e.g. classic."),
     }),
   },
   responses: {

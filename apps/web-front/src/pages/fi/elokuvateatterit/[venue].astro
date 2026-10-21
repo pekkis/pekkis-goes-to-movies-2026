@@ -4,6 +4,7 @@ import { VenueProgramme } from "../../../components/VenueProgramme.tsx";
 import Base from "../../../layouts/Base.astro";
 import { citySlug } from "../../../lib/cities.ts";
 import { groupByFilm } from "../../../lib/films.ts";
+import { safeHref } from "../../../lib/links.ts";
 import { loadVenuePage } from "../../../lib/pages.ts";
 import { fi } from "../../../lib/text.ts";
 import { formatDay } from "../../../lib/time.ts";
@@ -17,7 +18,7 @@ const page = await loadVenuePage(
 );
 if (!page) {Astro.response.status = 404;}
 const venue = page?.venue;
-const website = venue?.url ?? venue?.provider.homepage;
+const website = safeHref(venue?.url ?? venue?.provider.homepage);
 const address = [venue?.address, [venue?.postalCode, venue?.city].filter(Boolean).join(" ")]
   .filter(Boolean)
   .join(", ");

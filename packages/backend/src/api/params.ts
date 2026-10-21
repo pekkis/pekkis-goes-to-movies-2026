@@ -1,5 +1,17 @@
 import { z } from "@hono/zod-openapi";
+import { ScreeningTag } from "@pgtm/model";
 import type { Bbox } from "../queries/common.ts";
+
+/**
+ * Longest free text (a film name, a city) and id (a venue, a film, a cursor) we accept. Real
+ * ones are far shorter; the caps keep a huge string away from the fuzzy search and the logs.
+ */
+export const MAX_TEXT = 100;
+export const MAX_ID = 200;
+
+/** A screening tag: one of the model's, so a typo is a 400, not an empty answer. */
+export const tagParam = (description: string) =>
+  z.enum(ScreeningTag.options).optional().openapi({ description, example: "classic" });
 
 const NUM = String.raw`-?\d+(?:\.\d+)?`;
 
@@ -58,5 +70,6 @@ export const idParam = (example: string) =>
     id: z
       .string()
       .min(1)
+      .max(MAX_ID)
       .openapi({ param: { name: "id", in: "path" }, example }),
   });

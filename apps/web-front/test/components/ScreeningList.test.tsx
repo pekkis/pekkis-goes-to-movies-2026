@@ -43,6 +43,13 @@ describe("ScreeningList", () => {
     expect(screen.getByText("Loppuunmyyty")).toBeTruthy();
   });
 
+  it("never prints a ticket link that is not http(s)", () => {
+    renderWithClock(
+      <ScreeningList screenings={[screening({ ticketUrl: "javascript:alert(1)" })]} />,
+    );
+    expect(screen.queryByRole("link", { name: "Liput" })).toBeNull();
+  });
+
   it("marks shows that start soon or have started, and keeps it current", () => {
     // Noon: 11.50 started 10 min ago (tickets still sold), 12.30 starts in 30 min.
     renderWithClock(<ScreeningList screenings={[at("11:50"), at("12:30"), at("18:00")]} />);

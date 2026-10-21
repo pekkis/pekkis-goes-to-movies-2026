@@ -16,6 +16,13 @@ export type EntityKind = z.infer<typeof EntityKind>;
 export const Id = z.string().regex(/^[a-z0-9-]+:(venue|screen|film|show):[^:\s]+$/);
 export type Id = z.infer<typeof Id>;
 
+/**
+ * A link we print as an `href`: http or https only. `z.url()` alone accepts `javascript:` and
+ * `data:`, so a cinema's compromised page could otherwise put a script on our site.
+ */
+export const HttpUrl = z.url({ protocol: /^https?$/ });
+export type HttpUrl = z.infer<typeof HttpUrl>;
+
 export const makeId = (provider: ProviderId, kind: EntityKind, sourceId: string | number): Id =>
   `${provider}:${kind}:${sourceId}`;
 
@@ -56,7 +63,7 @@ export type Platform = z.infer<typeof Platform>;
 export const Provider = z.object({
   id: ProviderId,
   name: z.string(),
-  homepage: z.url(),
+  homepage: HttpUrl,
   platform: Platform,
   /** What the ticket link leads to. */
   booking: z.enum(["buy", "reserve", "door", "info"]),
@@ -73,7 +80,7 @@ export const Venue = z.object({
   address: z.string().optional(),
   postalCode: z.string().optional(),
   geo: z.object({ lat: z.number(), lon: z.number() }).optional(),
-  url: z.url().optional(),
+  url: HttpUrl.optional(),
 });
 export type Venue = z.infer<typeof Venue>;
 
@@ -329,7 +336,7 @@ export const Screening = z.object({
       note: z.string().optional(),
     })
     .optional(),
-  ticketUrl: z.url().optional(),
+  ticketUrl: HttpUrl.optional(),
 
   /** Upstream labels the parser does not understand yet. */
   unmappedLabels: z.array(z.string()),

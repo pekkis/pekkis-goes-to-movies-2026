@@ -4,7 +4,15 @@ import type { Kysely } from "kysely";
 import type { DB } from "../../db/types.ts";
 import { decodeCursor, encodeCursor, listScreenings } from "../../queries/screenings.ts";
 import { helsinkiToday } from "../../search/showtimes.ts";
-import { afterParam, bboxParam, dateParam, limitParam, parseBbox } from "../params.ts";
+import {
+  afterParam,
+  bboxParam,
+  dateParam,
+  limitParam,
+  MAX_ID,
+  MAX_TEXT,
+  parseBbox,
+} from "../params.ts";
 import { ErrorBody, ScreeningPage } from "../schemas.ts";
 
 const list = createRoute({
@@ -19,13 +27,22 @@ const list = createRoute({
       city: z
         .string()
         .min(1)
+        .max(MAX_TEXT)
         .optional()
         .openapi({ description: "Venue city, case-insensitive.", example: "Tampere" }),
-      venue: z.string().optional().openapi({ description: "Venue id." }),
-      film: z.string().optional().openapi({ description: "Film id (tmdb:…) or listing id." }),
+      venue: z.string().max(MAX_ID).optional().openapi({ description: "Venue id." }),
+      film: z
+        .string()
+        .max(MAX_ID)
+        .optional()
+        .openapi({ description: "Film id (tmdb:…) or listing id." }),
       after: afterParam,
       limit: limitParam(500, 2000),
-      cursor: z.string().optional().openapi({ description: "`nextCursor` of the previous page." }),
+      cursor: z
+        .string()
+        .max(MAX_ID)
+        .optional()
+        .openapi({ description: "`nextCursor` of the previous page." }),
     }),
   },
   responses: {

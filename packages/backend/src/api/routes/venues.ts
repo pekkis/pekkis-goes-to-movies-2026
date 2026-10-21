@@ -3,7 +3,7 @@ import { router } from "../hono.ts";
 import type { Kysely } from "kysely";
 import type { DB } from "../../db/types.ts";
 import { getVenue, listVenues } from "../../queries/venues.ts";
-import { bboxParam, idParam, parseBbox } from "../params.ts";
+import { bboxParam, idParam, MAX_TEXT, parseBbox } from "../params.ts";
 import { ErrorBody, Venue } from "../schemas.ts";
 
 const list = createRoute({
@@ -14,7 +14,7 @@ const list = createRoute({
   request: {
     query: z.object({
       bbox: bboxParam,
-      city: z.string().optional().openapi({ example: "Jyväskylä" }),
+      city: z.string().max(MAX_TEXT).optional().openapi({ example: "Jyväskylä" }),
     }),
   },
   responses: {

@@ -60,6 +60,7 @@ describe("film pages", () => {
     ["7", "tmdb:7"],
     ["blade-runner-2049-335984", "tmdb:335984"],
     ["lapin-sota", undefined],
+    [`x-${"9".repeat(300)}`, undefined],
   ])("filmIdOfSlug(%s) = %s", (slug, id) => {
     expect(filmIdOfSlug(slug)).toBe(id);
   });

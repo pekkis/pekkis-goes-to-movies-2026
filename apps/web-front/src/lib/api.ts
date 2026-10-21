@@ -1,4 +1,5 @@
 import type { AppType } from "@pgtm/backend";
+import type { ScreeningTag } from "@pgtm/model";
 import { hc, type InferResponseType } from "hono/client";
 
 /** Typed client for our API. Tests pass a fake `fetch`, so they never touch the network. */
@@ -112,7 +113,7 @@ export const filmOpenings = async (
   to: string,
   playing?: { from: string; to: string },
   /** Leave out films with a screening carrying this tag (within `playing`). */
-  excludeTag?: string,
+  excludeTag?: ScreeningTag,
 ): Promise<FilmOpening[]> => {
   const res = await api.v1.films.openings.$get({
     query: {
@@ -133,7 +134,7 @@ export const filmsPlaying = async (
   api: Api,
   from: string,
   to: string,
-  tag?: string,
+  tag?: ScreeningTag,
 ): Promise<FilmPlaying[]> => {
   const res = await api.v1.films.playing.$get({ query: { from, to, ...(tag && { tag }) } });
   if (!res.ok) {
