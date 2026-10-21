@@ -314,6 +314,14 @@ describe("field parsers", () => {
     });
   });
 
+  it("reads Cine Mäntsälä's film-and-coffee label as its series (2026-10-21)", () => {
+    const mantsala = MYCLOUDCINEMA_SITES.find((x) => x.provider === "cinemantsala")!;
+    expect(parseTitleExtension("Leffa & Kaffe-näytös!", mantsala.titleExtensions)).toMatchObject({
+      series: ["Leffa & Kaffe"],
+      unmapped: [],
+    });
+  });
+
   it("reads a concert label as event cinema, with or without the exclamation mark", () => {
     const labels = {
       "Cine Konsertti": { series: "Cine Konsertti", tags: ["event-cinema" as const], event: true },

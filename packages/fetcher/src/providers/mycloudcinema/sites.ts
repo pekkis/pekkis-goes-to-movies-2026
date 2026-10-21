@@ -61,6 +61,8 @@ const sites = z.array(MyCloudCinemaSite).parse([
       "Cine Konsertti": { series: "Cine Konsertti", tags: ["event-cinema"], event: true },
       // A film with wine: the bar is open; no age limit is stated (seen 2026-10-20).
       "Leffa & viini-näytös": { series: "Leffa & viini", licensed: true },
+      // A film with coffee (seen 2026-10-21).
+      "Leffa & Kaffe-näytös": { series: "Leffa & Kaffe" },
     },
     verifiedAt: "2026-10-13",
     notes:

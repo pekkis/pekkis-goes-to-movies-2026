@@ -132,6 +132,7 @@ describe("series in titles", () => {
     ],
     ["Muumipappa – Minikino", "Muumipappa", "Minikino"],
     ["LaatuSarja: The Testament of Ann Lee", "The Testament of Ann Lee", "LaatuSarja"],
+    ["Hopeatähti-kerho: Amélie", "Amélie", "Hopeatähti-kerho"],
   ])("%s", (raw, title, series) => {
     expect(splitTitlePrefix(raw, COMMON_TITLE_PREFIXES)).toEqual({
       title,

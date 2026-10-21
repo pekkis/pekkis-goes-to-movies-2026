@@ -13,7 +13,8 @@
   "hopeatahti": {
     "name": "Hopeatähti",
     "kind": "strand",
-    "note": "Savon Kinot's screenings for seniors."
+    "aliases": ["Hopeatähti-kerho", "Hopeatähti-sarja"],
+    "note": "Screenings for seniors at Savon Kinot and Kino Kuvakukko (Kuopio); Kuvakukko writes \"Hopeatähti-kerho: …\" (2026-10-21) and \"Hopeatähti-sarja: …\"."
   },
   "hopeacine": {
     "name": "HopeaCine",

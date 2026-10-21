@@ -458,5 +458,10 @@
     "tmdb": 1403476,
     "title": "PIKKULI OCH HIMMELSHINDEN",
     "note": "Pikkuli ja Tähtipeura in Swedish (Bio Savoy, Mariehamn). Kino Engel lists the same Swedish title, linked by runtime; Bio Savoy gives none, and TMDB has no Swedish title (2026-10-20)."
+  },
+  "kinoaurora:film:1149": {
+    "tmdb": 511,
+    "title": "Luvattu maa (Ziemia obiecana / The Promised Land)",
+    "note": "Andrzej Wajda's Ziemia obiecana (1975; Aurora gives the production year 1974, 179 min vs TMDB's 170). Cinema Sheryl's screening of the same film links to TMDB 511 by its IMDb id (2026-10-21)."
   }
 }
