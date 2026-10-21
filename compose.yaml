@@ -9,7 +9,7 @@ name: pgtm
 x-hardened: &hardened
   read_only: true
   tmpfs:
-    - /tmp:size=16m
+    - /tmp:size=16m,noexec,nosuid,nodev
   cap_drop: [ALL]
   security_opt:
     - no-new-privileges:true
@@ -24,8 +24,8 @@ services:
     # the capabilities for that. Data lives in the volume; the socket and /tmp in memory.
     read_only: true
     tmpfs:
-      - /tmp:size=16m
-      - /var/run/postgresql:size=1m
+      - /tmp:size=16m,noexec,nosuid,nodev
+      - /var/run/postgresql:size=1m,noexec,nosuid,nodev
     cap_drop: [ALL]
     cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
     security_opt:
