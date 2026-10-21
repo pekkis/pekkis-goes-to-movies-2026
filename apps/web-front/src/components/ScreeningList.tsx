@@ -1,5 +1,6 @@
 import type { Screening } from "../lib/api.ts";
 import { FilmName } from "./FilmName.tsx";
+import { safeHref } from "../lib/links.ts";
 import { fi, languageName } from "../lib/text.ts";
 import { formatTime } from "../lib/time.ts";
 import { venuePath } from "../lib/venues.ts";
@@ -33,6 +34,7 @@ const Availability = ({ value }: { value: string }) =>
 const ScreeningRow = ({ s }: { s: Screening }) => {
   const languages = languageLine(s);
   const status = useShowStatus(s.startsAt);
+  const ticketUrl = safeHref(s.ticketUrl);
   return (
     <li className={css.row} data-state={status.state}>
       <div>
@@ -53,10 +55,10 @@ const ScreeningRow = ({ s }: { s: Screening }) => {
           {languages && ` · ${languages}`}
         </div>
       </div>
-      {s.ticketUrl && s.availability !== "sold-out" && status.ticketsOpen && (
+      {ticketUrl && s.availability !== "sold-out" && status.ticketsOpen && (
         <a
           className={`${button({ tone: "ghost", size: "sm" })} ${css.tickets}`}
-          href={s.ticketUrl}
+          href={ticketUrl}
           rel="external noopener"
         >
           {fi.tickets}

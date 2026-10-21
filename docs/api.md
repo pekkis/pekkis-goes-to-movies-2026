@@ -52,6 +52,8 @@ pnpm api:down   # stops the API containers; Postgres keeps running
 - `date`: `YYYY-MM-DD`, defaulting to today in Helsinki.
 - `after`: `HH:MM` Helsinki time. Shows after midnight are kept.
 - `limit` / `cursor`: `/v1/screenings` returns pages of up to 500 items by default (`limit` ≤ 2000). Pass `nextCursor` back as `cursor` until it is `null`.
+- `tag` / `excludeTag`: one of the model's screening tags (`classic`, `senior`, `kids`, …); anything else is a `400`, not an empty answer.
+- **Lengths:** free text (`q`, `city`) is at most 100 characters; ids (`venue`, `film`, `{id}`, `cursor`) at most 200 (`MAX_TEXT`, `MAX_ID` in `src/api/params.ts`). The MCP tools take the same caps. Real values are far shorter; the caps keep huge strings away from the fuzzy search and the logs.
 
 **Errors** are JSON `{ "error": "…", "issues": [...] }`:
 

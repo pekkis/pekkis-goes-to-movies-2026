@@ -125,6 +125,18 @@ Showtimes say whether a show has started, starts soon or is later, and they keep
 
 They're declared with `access: "secret"` in `astro.config.ts`, which in Astro means "read at runtime". `public` values would be inlined at build time, and the built server would ignore the deployment's settings.
 
+## Security headers
+
+`pageHeaders()` (`src/lib/headers.ts`, run by the middleware) sets these on every response:
+
+- `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`;
+- `Permissions-Policy`: geolocation for our own "use my location" button only; camera, microphone and payment off;
+- `Content-Security-Policy-Report-Only` with the policy we are heading for (`CSP`): our own scripts, TMDB's images, OpenFreeMap's tiles, no framing. HSTS comes from nginx ([deploy.md](deploy.md)).
+
+The CSP is **report-only** for now: browsers log what it would block, and nothing breaks. On 2026-10-21 a production build was walked through in Chrome **[V]** (front page, search, map, a city page, a film page). The only violations were Astro's inline island scripts. To enforce it, turn on Astro's `security.csp` (script hashes) and check that inline styles (Vanilla Extract's dynamic values, MapLibre) still work.
+
+Outside links printed as `href` (ticket pages, the cinema's website) go through `safeHref()` (`src/lib/links.ts`): http(s) or nothing. The model already rejects other schemes; this is the second layer.
+
 ## Attribution
 
 Every page carries the following (`src/layouts/Base.astro`). A test checks the TMDB part.

@@ -20,6 +20,14 @@ describe("parseSearchParams", () => {
     expect(parseSearchParams(q(""), TODAY)).toEqual({ days: [TODAY], radiusKm: 25 });
   });
 
+  it("ignores a film or city name longer than the API takes", () => {
+    const long = "a".repeat(101);
+    expect(parseSearchParams(q(`elokuva=${long}&kaupunki=${long}`), TODAY)).toEqual({
+      days: [TODAY],
+      radiusKm: 25,
+    });
+  });
+
   it("keeps only offered days, a known radius, coordinates in Finland and a real film name", () => {
     const params = parseSearchParams(
       q(

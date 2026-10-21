@@ -244,6 +244,21 @@ describe("screenings", () => {
     expect((await get("/v1/screenings?limit=0")).status).toBe(400);
     expect((await get("/v1/screenings?cursor=bm9wZQ")).body).toEqual({ error: "invalid cursor" });
   });
+
+  it("rejects overlong text and ids, and unknown tags", async () => {
+    const long = "a".repeat(201);
+    expect((await get(`/v1/screenings?city=${long}`)).status).toBe(400);
+    expect((await get(`/v1/screenings?venue=${long}`)).status).toBe(400);
+    expect((await get(`/v1/screenings?film=${long}`)).status).toBe(400);
+    expect((await get(`/v1/screenings?cursor=${long}`)).status).toBe(400);
+    expect((await get(`/v1/venues?city=${long}`)).status).toBe(400);
+    expect((await get(`/v1/films/search?q=${long}`)).status).toBe(400);
+    expect((await get(`/v1/films/${long}`)).status).toBe(400);
+    expect((await get("/v1/films/playing?tag=klassikko")).status).toBe(400);
+    expect(
+      (await get("/v1/films/openings?from=2026-10-09&to=2026-10-12&excludeTag=x")).status,
+    ).toBe(400);
+  });
 });
 
 describe("films", () => {

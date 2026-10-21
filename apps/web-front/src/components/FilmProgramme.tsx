@@ -1,6 +1,7 @@
 import type { Screening } from "../lib/api.ts";
 import { groupByFilm } from "../lib/films.ts";
 import { FilmName } from "./FilmName.tsx";
+import { safeHref } from "../lib/links.ts";
 import { fi } from "../lib/text.ts";
 import { formatTime } from "../lib/time.ts";
 import { button } from "../styles/recipes/button.css.ts";
@@ -17,6 +18,7 @@ export const Showtime = ({ s }: { s: Screening }) => {
   const time = formatTime(s.startsAt);
   const details = [s.auditorium, languageLine(s)].filter(Boolean).join(" · ");
   const soldOut = s.availability === "sold-out";
+  const ticketUrl = safeHref(s.ticketUrl);
   const plainTime = (
     <time className={css.time} dateTime={s.startsAt}>
       {time}
@@ -24,10 +26,10 @@ export const Showtime = ({ s }: { s: Screening }) => {
   );
   return (
     <li className={css.show} data-state={status.state}>
-      {s.ticketUrl && !soldOut && status.ticketsOpen ? (
+      {ticketUrl && !soldOut && status.ticketsOpen ? (
         <a
           className={`${button({ tone: "ghost", size: "sm" })} ${css.ticket}`}
-          href={s.ticketUrl}
+          href={ticketUrl}
           rel="external noopener"
           aria-label={fi.ticketsAt(time)}
         >

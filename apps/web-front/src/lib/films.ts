@@ -40,6 +40,7 @@ export const filmPath = (film: { id: string; title: string }): string | undefine
 
 /** The film id a film page's slug names (`lapin-sota-1450460` -> `tmdb:1450460`). */
 export const filmIdOfSlug = (slug: string): string | undefined => {
-  const n = slug.match(/(?:^|-)(\d+)$/)?.[1];
+  // TMDB ids are short numbers; a longer run of digits is no film of ours.
+  const n = slug.match(/(?:^|-)(\d{1,10})$/)?.[1];
   return n ? `tmdb:${n}` : undefined;
 };
