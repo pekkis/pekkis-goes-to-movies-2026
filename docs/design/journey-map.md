@@ -10,7 +10,7 @@ How to read a map:
 - **Rows** show what the person does, thinks and feels at each stage, where they meet a service (touchpoints), what hurts (pain points), and what we can do about it (opportunities).
 - **The feeling** is scored 1–5 (1 frustrated, 5 happy) and drawn as a curve. It is drawn twice: once for the journey today, and once with our service.
 
-The diagrams are Mermaid `journey` charts. GitHub renders them in place; for slides, export them as images.
+The diagrams are Mermaid `journey` charts. GitHub renders them in place. For slides, `pnpm design:render` writes them as PNG images next to this file (`journey-a-today.png` and so on); rerun it after editing a diagram.
 
 ---
 
@@ -43,6 +43,7 @@ config:
     taskFontSize: 15
     sectionFontSize: 15
 ---
+%% image: journey-a-today
 journey
   title Journey A today: "Something tonight, near me" (Aino, Jyväskylä)
   section Trigger
@@ -71,6 +72,7 @@ config:
     taskFontSize: 15
     sectionFontSize: 15
 ---
+%% image: journey-a-with-us
 journey
   title Journey A with Pekkis goes to movies
   section Trigger
@@ -122,6 +124,7 @@ config:
     taskFontSize: 15
     sectionFontSize: 15
 ---
+%% image: journey-b-today
 journey
   title Journey B today: "Where can I see that film?" (Matti, Seinäjoki)
   section Trigger
@@ -149,6 +152,7 @@ config:
     taskFontSize: 15
     sectionFontSize: 15
 ---
+%% image: journey-b-with-us
 journey
   title Journey B with Pekkis goes to movies
   section Trigger

@@ -129,6 +129,7 @@ pnpm web:dev / web:build     # the website on :4321 (API_URL points it at the AP
 pnpm check                   # typecheck + lint (zero warnings) + fmt:check + web build + test
 pnpm test / typecheck / lint / fmt / fmt:check
 pnpm vendor:leffavuoro --sync   # sync the pekkis/kino fork with upstream, refresh vendor/leffavuoro
+pnpm design:render           # Mermaid diagrams of docs/design/journey-map.md -> PNGs beside it (for slides)
 ```
 
 - First run: `pnpm db:up && pnpm migrate && pnpm pull && pnpm ingest`.
@@ -161,7 +162,7 @@ Dockerfile, .dockerignore       API image (serve, migrate, ingest): tsdown bundl
 apps/web-front/Dockerfile       website image (Astro standalone server); its own Dockerfile.dockerignore
 .env, data/                     gitignored: secrets; raw/, normalized/, cache/ (tmdb, omdb, osm, geocode, token)
 docs/                           development, data-sources, data-model, database, api, cli
-vendor/leffavuoro/, scripts/    Leffavuoro reference copy (not built, linted or formatted) and its refresher
+vendor/leffavuoro/, scripts/    Leffavuoro reference copy (not built, linted or formatted); scripts: its refresher, data:push, design:render
 apps/fpgm/                      the teammate's Flutter app: own tooling, not in the pnpm workspace; do not edit unasked
 apps/web-front/                 @pgtm/web-front: the website (Astro SSR, React, Vanilla Extract); see docs/web.md
   src/pages/, src/layouts/      thin .astro routes and layout; logic lives in src/lib/
@@ -227,7 +228,8 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
 - **Libraries:**
   - `zod` v4, `ky`, `p-queue`;
   - `cheerio` (eTiketti HTML);
-  - `playwright` (Finnkino token only, the installed Chrome);
+  - `playwright` (Finnkino token, and `design:render` at the root; the installed Chrome);
+  - `mermaid` (root dev dependency: `design:render` draws design documents' diagrams offline);
   - `kysely` + `pg` (+ `kysely-codegen`);
   - `hono` + `@hono/zod-openapi` + `@scalar/hono-api-reference`;
   - `tsdown` (Docker bundle only);
