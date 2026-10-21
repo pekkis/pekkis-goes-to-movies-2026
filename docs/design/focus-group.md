@@ -19,7 +19,7 @@ So the focus group is made of hobbyists. Their needs are the sharpest, and their
 | How           | Discussion; people react to each other                         | Tasks while thinking aloud, observed   |
 | Watch out for | Groupthink, loud voices, talk of what people _would_ do        | Few opinions, no group dynamics        |
 
-We also want to see the website in use, so the session has a short **individual** hands-on part: each person on their own phone, writing down what confused them, before the group discusses it. That keeps the group from echoing its loudest member.
+We also want to see the website in use, so the session has a short **individual** hands-on part: each person on a laptop of their own, writing down what confused them, before the group discusses it. That keeps the group from echoing its loudest member.
 
 ## Participants
 
@@ -33,7 +33,7 @@ We also want to see the website in use, so the session has a short **individual*
 - **Roles:** a moderator (leads, stays neutral, never defends the product) and a note-taker (writes quotes word for word, with a participant code, not a name). A second note-taker if possible.
 - **Consent:** tell the participants what we record and why, where the notes are kept and that quotes are anonymised; ask before recording.
 - **Material:**
-  - the website on everyone's phone (`/fi/haku`, `/fi/elokuvat/…`);
+  - a laptop per participant (their own, or one we bring), with the website open (`/fi/haku`, `/fi/elokuvat/…`): more room for the search page's filters than a phone;
   - a laptop with the chat (the MCP connector) on a shared screen;
   - the journey map slides ([journey-a-slide.png](journey-a-slide.png), [journey-b-slide.png](journey-b-slide.png)), printed or on screen;
   - paper and pens for individual notes; sticky notes for the concept round.
@@ -73,7 +73,7 @@ Then show the journey maps (A and B):
 
 ### 4. Hands-on, alone (20 min)
 
-Everyone uses the website on their own phone, alone, for the tasks below, writing down anything that confused them or that they missed. The moderator and note-takers watch and note where people hesitate, but don't help.
+Everyone uses the website on a laptop, alone, for the tasks below, writing down anything that confused them or that they missed. Anyone who'd rather use their phone may: it's how journey A really happens, and the site is built mobile first. Note who used which device, so the findings can be read per device. The moderator and note-takers watch and note where people hesitate, but don't help.
 
 Tasks (pick the details from that week's programme):
 
