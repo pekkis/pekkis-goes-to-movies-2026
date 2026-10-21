@@ -129,7 +129,7 @@ pnpm web:dev / web:build     # the website on :4321 (API_URL points it at the AP
 pnpm check                   # typecheck + lint (zero warnings) + fmt:check + web build + test
 pnpm test / typecheck / lint / fmt / fmt:check
 pnpm vendor:leffavuoro --sync   # sync the pekkis/kino fork with upstream, refresh vendor/leffavuoro
-pnpm design:render           # Mermaid diagrams of docs/design/journey-map.md -> PNGs beside it (for slides)
+pnpm design:render           # docs/design/journey-map.md -> PNGs beside it: Mermaid diagrams and one slide per journey
 ```
 
 - First run: `pnpm db:up && pnpm migrate && pnpm pull && pnpm ingest`.

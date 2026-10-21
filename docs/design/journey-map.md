@@ -10,7 +10,7 @@ How to read a map:
 - **Rows** show what the person does, thinks and feels at each stage, where they meet a service (touchpoints), what hurts (pain points), and what we can do about it (opportunities).
 - **The feeling** is scored 1–5 (1 frustrated, 5 happy) and drawn as a curve. It is drawn twice: once for the journey today, and once with our service.
 
-The diagrams are Mermaid `journey` charts. GitHub renders them in place. For slides, `pnpm design:render` writes them as PNG images next to this file (`journey-a-today.png` and so on); rerun it after editing a diagram.
+The diagrams are Mermaid `journey` charts. GitHub renders them in place. For slides, `pnpm design:render` writes them as PNG images next to this file (`journey-a-today.png` and so on); rerun it after editing a diagram. It also draws each journey as one slide (`journey-a-slide.png`, `journey-b-slide.png`): the stages, both feeling curves on one chart, and the thoughts, pain points and opportunities, all read from the tables below.
 
 ---
 
