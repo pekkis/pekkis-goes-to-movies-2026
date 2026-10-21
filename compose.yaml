@@ -2,9 +2,34 @@
 # the API (profile "app"). Data persists in the named volume.
 name: pgtm
 
+# If one of our containers is ever taken over, this limits what it can do: no writes outside
+# a small /tmp, no Linux capabilities, no setuid escalation, bounded memory and processes.
+# Our images run as `node` and write nothing (checked with `docker diff`, 2026-10-21).
+x-hardened: &hardened
+  read_only: true
+  tmpfs:
+    - /tmp:size=16m
+  cap_drop: [ALL]
+  security_opt:
+    - no-new-privileges:true
+  mem_limit: 512m
+  pids_limit: 128
+
 services:
   postgres:
     image: postgres:18-alpine
+    # Its entrypoint starts as root, fixes ownership and drops to `postgres`: it keeps just
+    # the capabilities for that. Data lives in the volume; the socket and /tmp in memory.
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+      - /var/run/postgresql:size=1m
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 1g
+    pids_limit: 256
     environment:
       POSTGRES_USER: pgtm
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pgtm}
@@ -23,6 +48,7 @@ services:
 
   # One-shot: applies migrations, then exits. The API waits for it.
   migrate:
+    <<: *hardened
     profiles: [app]
     build: .
     image: pgtm-api
@@ -34,6 +60,7 @@ services:
         condition: service_healthy
 
   api:
+    <<: *hardened
     profiles: [app]
     build: .
     image: pgtm-api
@@ -54,6 +81,7 @@ services:
 
   # The website (Astro SSR). Reads the API over the Compose network.
   web:
+    <<: *hardened
     profiles: [app]
     build:
       context: .
@@ -75,6 +103,7 @@ services:
   # One-shot, on demand: `docker compose run --rm ingest` loads ./data/normalized (the
   # files `pnpm data:push` sends from the machine that pulls) into Postgres.
   ingest:
+    <<: *hardened
     profiles: [ingest]
     build: .
     image: pgtm-api

@@ -37,7 +37,10 @@ const Env = z.object({
 export type Env = z.infer<typeof Env>;
 
 export const loadEnv = (source: NodeJS.ProcessEnv = process.env): Env => {
-  const result = Env.safeParse(source);
+  // An empty value is unset: Compose passes `MCP_TOKEN: ${MCP_TOKEN:-}` as "" when the
+  // deployment has no token, which must mean "no MCP", not an invalid token.
+  const set = Object.fromEntries(Object.entries(source).filter(([, v]) => v !== ""));
+  const result = Env.safeParse(set);
   if (!result.success) {
     const problems = result.error.issues.map((i) => `  ${i.path.join(".")}: ${i.message}`);
     throw new Error(`Invalid environment (check .env):\n${problems.join("\n")}`);

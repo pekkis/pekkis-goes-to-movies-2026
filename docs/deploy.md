@@ -14,6 +14,8 @@ How the service runs on a server with Docker Compose behind nginx, and how the d
 
 Everything binds to localhost; nginx publishes it. The server never fetches showtimes: the pull runs at home (Finnkino needs a visible Chrome), and the files are shipped over.
 
+**Containers are locked down** (`x-hardened` in `compose.yaml`): a read-only filesystem with a small `/tmp` in memory, no Linux capabilities, `no-new-privileges`, and limits of 512 MB and 128 processes each. Our images run as `node` and write nothing. Postgres keeps only the capabilities its entrypoint needs to hand its files to the `postgres` user, and has 1 GB. On 2026-10-21 the whole stack ran this way in a separate Compose project with a fresh volume **[V]**: Postgres initialised and restarted, migrations ran, a full ingest ran, pages, the API and MCP answered, `docker diff` showed no writes, and each service used under 100 MB. If a container ever needs to write, give it a `tmpfs` or a volume for that path; don't drop `read_only`.
+
 ## First time on the server
 
 1. **Check out the repository** wherever your services live, e.g. `/srv/pgtm`.
@@ -63,6 +65,7 @@ server {
     # ssl_certificate / ssl_certificate_key: from certbot
 
     location / {
+        limit_req zone=pgtm_web burst=30 nodelay;
         proxy_pass http://127.0.0.1:4321;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -82,6 +85,10 @@ server {
 
     # MCP (Streamable HTTP): responses may stream as server-sent events.
     location /mcp/ {
+        # The token is in the path: keep it out of nginx's log (the API logs it redacted).
+        access_log off;
+        client_max_body_size 64k;
+        limit_req zone=pgtm_slow burst=10 nodelay;
         proxy_pass http://127.0.0.1:3579;
         proxy_http_version 1.1;
         proxy_set_header Connection "";
@@ -90,7 +97,16 @@ server {
         proxy_read_timeout 300s;
     }
 
-    location / { proxy_pass http://127.0.0.1:3579; }
+    # Fuzzy search costs the database the most.
+    location /v1/films/search {
+        limit_req zone=pgtm_slow burst=10 nodelay;
+        proxy_pass http://127.0.0.1:3579;
+    }
+
+    location / {
+        limit_req zone=pgtm_api burst=40 nodelay;
+        proxy_pass http://127.0.0.1:3579;
+    }
 }
 ```
 
@@ -113,6 +129,19 @@ Optionally, add HSTS in each `server { listen 443 … }` block above (no `includ
 ```nginx
 add_header Strict-Transport-Security "max-age=31536000" always;
 ```
+
+**Rate limits.** The `limit_req` lines above need their zones in the `http {}` block, for example as `/etc/nginx/conf.d/pgtm-limits.conf` **[A]** (not yet tried on the server):
+
+```nginx
+# Per client address. A page load is one request (assets come from the browser's cache or
+# arrive within the burst); the website's own API calls go over the Compose network, past nginx.
+limit_req_zone $binary_remote_addr zone=pgtm_web:10m  rate=5r/s;
+limit_req_zone $binary_remote_addr zone=pgtm_api:10m  rate=10r/s;
+limit_req_zone $binary_remote_addr zone=pgtm_slow:10m rate=2r/s;
+limit_req_status 429;
+```
+
+The limits are generous for people and apps and stop one address from hammering the database. If a proxy or CDN is ever put in front of nginx, `$binary_remote_addr` becomes the proxy's address: set `real_ip_header` first.
 
 **Check it after `nginx -t && systemctl reload nginx`:**
 
