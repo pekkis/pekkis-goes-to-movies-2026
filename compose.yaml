@@ -3,7 +3,8 @@
 name: pgtm
 
 # If one of our containers is ever taken over, this limits what it can do: no writes outside
-# a small /tmp, no Linux capabilities, no setuid escalation, bounded memory and processes.
+# a small /tmp, no Linux capabilities, no setuid escalation, bounded memory, processes and CPU
+# (one core's worth: Node runs our code on one thread anyway).
 # Our images run as `node` and write nothing (checked with `docker diff`, 2026-10-21).
 x-hardened: &hardened
   read_only: true
@@ -14,6 +15,7 @@ x-hardened: &hardened
     - no-new-privileges:true
   mem_limit: 512m
   pids_limit: 128
+  cpus: 1.0
 
 services:
   postgres:
@@ -30,6 +32,9 @@ services:
       - no-new-privileges:true
     mem_limit: 1g
     pids_limit: 256
+    # Parallel query workers may use more than one core. Docker refuses a value above the
+    # host's core count: fine on the server (8 cores) and any laptop.
+    cpus: 2.0
     environment:
       POSTGRES_USER: pgtm
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pgtm}
