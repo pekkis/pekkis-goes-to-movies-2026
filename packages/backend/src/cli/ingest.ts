@@ -54,7 +54,9 @@ try {
           ? " (incomplete batch: removals not inferred)"
           : result.removalsSkipped === "empty"
             ? " (empty batch: removals not inferred; check the source)"
-            : ""),
+            : result.removalsSkipped === "drop"
+              ? " (far fewer upcoming screenings than before: removals not inferred; check the source)"
+              : ""),
     );
   }
 } finally {

@@ -35,3 +35,39 @@ export const failureReport = (id: string, error: unknown, paint: Paint): string 
 export const summaryReport = (pulled: number, total: number, out: string, paint: Paint): string =>
   paint(pulled === total ? "green" : ["red", "bold"], `pulled ${pulled} of ${total} providers`) +
   ` into ${out}`;
+
+/** "12 s", "4 min 05 s". */
+const duration = (ms: number) => {
+  const seconds = Math.round(ms / 1000);
+  return seconds < 60
+    ? `${seconds} s`
+    : `${Math.floor(seconds / 60)} min ${String(seconds % 60).padStart(2, "0")} s`;
+};
+
+/** How long one provider took, after its line; slow ones in yellow. */
+export const tookReport = (ms: number, paint: Paint): string =>
+  ms >= 60_000 ? paint("yellow", `(${duration(ms)})`) : `(${duration(ms)})`;
+
+/**
+ * A running pull's progress: how many are done, and which providers are still being
+ * pulled and for how long, longest first. A stuck source shows by name.
+ */
+export const progressReport = (
+  done: number,
+  total: number,
+  running: ReadonlyMap<string, number>,
+  now: number,
+  paint: Paint,
+): string => {
+  const waiting = [...running]
+    .toSorted(([, a], [, b]) => a - b)
+    .map(([id, started]) => {
+      const ms = now - started;
+      const text = `${id} ${duration(ms)}`;
+      return ms >= 120_000 ? paint("yellow", text) : text;
+    });
+  return (
+    paint("cyan", `… ${done} of ${total} done`) +
+    (waiting.length ? `; running: ${waiting.join(", ")}` : "")
+  );
+};

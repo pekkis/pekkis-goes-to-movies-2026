@@ -1,8 +1,8 @@
 import { sql } from "kysely";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { createDb } from "../src/db/database.ts";
-import { ingestBatch, ingestFilms } from "../src/ingest/ingest.ts";
-import { batch, catalog, film, screening } from "./factory.ts";
+import { ingestBatch, ingestFilms, looksPartial } from "../src/ingest/ingest.ts";
+import { FETCHED_AT, batch, catalog, film, screening } from "./factory.ts";
 
 const db = createDb(process.env["TEST_DATABASE_URL"]!);
 
@@ -161,6 +161,34 @@ describe("ingestBatch", () => {
     // One screening left is a programme, not a silence: the other is removed.
     const one = batch([screening("1")], { fetchedAt: later(batch([]).fetchedAt, 2) });
     expect(await ingestBatch(db, one)).toMatchObject({ removed: 1, removalsSkipped: false });
+  });
+
+  it("infers no removals when most upcoming screenings vanish at once (a source answering in part)", async () => {
+    // Twelve future shows held; the next fetch brings only one (Cine Mäntsälä, 2026-10-20).
+    const shows = Array.from({ length: 12 }, (_, i) =>
+      screening(`p${i}`, { startsAt: later("2026-10-10T18:00:00+03:00", i) }),
+    );
+    await ingestBatch(db, batch(shows));
+    const partial = await ingestBatch(db, batch([shows[0]!], { fetchedAt: later(FETCHED_AT, 1) }));
+    expect(partial).toMatchObject({ removed: 0, removalsSkipped: "drop" });
+    const removed = await db
+      .selectFrom("screenings")
+      .select("id")
+      .where("removedAt", "is not", null)
+      .execute();
+    expect(removed).toEqual([]);
+  });
+
+  it.each([
+    [12, 1, true],
+    [12, 6, false],
+    // Under half but only 7 fewer: a small cinema's quiet week, not a broken source.
+    [12, 5, false],
+    [30, 14, true],
+    [8, 0, false],
+    [8, 1, false],
+  ])("looksPartial(held %i, incoming %i) = %s", (held, incoming, partial) => {
+    expect(looksPartial(held, incoming)).toBe(partial);
   });
 
   it("leaves venues the batch does not list alone (a partial --venue pull)", async () => {

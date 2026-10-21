@@ -46,6 +46,8 @@ Screenings are **never deleted**, so the data accumulates over time.
 - Past screenings and dates outside the fetched window are never marked removed. Only the batch's own venues are considered.
 - An **incomplete** batch (a data-missing warning, `isIncomplete` in the model) marks nothing removed: a failed payload must not look like a cancelled programme. `pnpm ingest` then prints "(incomplete batch: removals not inferred)".
 - An **empty** batch (no screenings and no warning) marks nothing removed either [V, test]: a whole programme vanishing in silence is almost always a parser that stopped matching (eTiketti's `data-dates` rows, 2026-10-15), not a cinema cancelling everything. `pnpm ingest` prints "(empty batch: removals not inferred; check the source)". A cinema that truly cancels all its shows stays listed until they pass.
+- A batch with **far fewer upcoming screenings** than the database holds for its venues and days (under half, and at least 10 fewer; `looksPartial`) marks nothing removed either [V, test]. That's a source answering in part, not a cinema cancelling: Cine Mäntsälä's API returned only today instead of the week on 2026-10-20. `pnpm ingest` prints "(far fewer upcoming screenings than before: removals not inferred; check the source)". Screenings a cinema really dropped are removed by the next full answer.
+- A provider whose fetch **fails** (an HTTP error, a network error, a maintenance page) writes no batch at all, so its previous batch is ingested again, unchanged, and nothing is removed (2026-10-21: six sources under maintenance at once).
 
 "Current programme" is `where removed_at is null and starts_at > now()`.
 

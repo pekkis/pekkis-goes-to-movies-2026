@@ -10,13 +10,16 @@ import { finishVenues, loadVenueOverrides } from "../providers/overrides.ts";
 import { deriveTags } from "../providers/labels.ts";
 import { resolveSeries } from "../series/registry.ts";
 import { paintFor } from "../lib/paint.ts";
-import { batchReport, failureReport, summaryReport } from "./report.ts";
+import { batchReport, failureReport, progressReport, summaryReport, tookReport } from "./report.ts";
 import PQueue from "p-queue";
 import { ADAPTERS, selectAdapters, type Adapter } from "../providers/registry.ts";
 
 // Each stream is coloured only when it is a terminal.
 const paintOut = paintFor(process.stdout);
 const paintErr = paintFor(process.stderr);
+
+/** How often a running pull says what it is still waiting for. */
+const PROGRESS_EVERY_MS = 30_000;
 
 /** Providers pulled at the same time (each on its own host, paced per host). */
 const CONCURRENCY = 6;
@@ -99,15 +102,28 @@ const pullOne = async (adapter: Adapter): Promise<{ ok: boolean; lines: string[]
 };
 
 const queue = new PQueue({ concurrency: CONCURRENCY });
+const total = selected?.length ?? 0;
+let done = 0;
+/** Providers being pulled now, with when they started: what a slow pull is waiting for. */
+const running = new Map<string, number>();
+const progress = setInterval(() => {
+  console.log(progressReport(done, total, running, Date.now(), paintOut));
+}, PROGRESS_EVERY_MS);
 const results = await Promise.all(
   (selected ?? []).map((adapter) =>
     queue.add(async () => {
+      const started = Date.now();
+      running.set(adapter.id, started);
       const result = await pullOne(adapter);
-      (result.ok ? console.log : console.error)(result.lines.join("\n"));
+      running.delete(adapter.id);
+      done++;
+      const lines = [`${result.lines[0]} ${tookReport(Date.now() - started, paintOut)}`];
+      (result.ok ? console.log : console.error)([...lines, ...result.lines.slice(1)].join("\n"));
       return result;
     }),
   ),
 );
+clearInterval(progress);
 const failures = results.filter((r) => !r.ok).length;
 console.log(summaryReport(results.length - failures, results.length, values.out, paintOut));
 
