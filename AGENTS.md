@@ -9,6 +9,8 @@ Instructions for AI agents (and humans) working in this repository. Rules first,
 - **Time and place first**: "what's playing in Tampere tonight after 6 pm?"
 - **Film first**: "where and when can I see film X?"
 
+**Audience: hobbyist to hobbyist.** It is made by moviegoing hobbyists for moviegoing hobbyists: people who go often, follow series and retrospectives, care about versions and formats, and travel for the right screening. We don't design for the average moviegoer; serving the hobbyist well serves everyone.
+
 It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-later** ([LICENSE](LICENSE)); the repository is public.
 
 ## Current state
@@ -30,7 +32,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
   - the public website in `apps/web-front`: Astro (SSR) + React + Vanilla Extract. A front page of new films, film pages (`/fi/elokuvat/{name}-{tmdb}`, from TMDB, with the day's screenings), city pages, venue pages, a venue map (MapLibre) and a search page (`/fi/haku`: days, place and film, narrowed by time of day, venue and film). Posters go through `Poster` and `lib/images.ts`, so their source can change in one place. See [docs/web.md](docs/web.md).
 
 - **Visual style: a grey mockup, on purpose.** There is no visual identity yet; it comes after user testing. See the rule below.
-- **Design happens here, user research outside:** mockups are built as code, and design documents live in [docs/design/](docs/design/) (customer journey maps: [journey-map.md](docs/design/journey-map.md)). User research (the questionnaire, now in Microsoft Forms) stays outside the repository until we decide otherwise.
+- **Design happens here, user research outside:** mockups are built as code, and design documents live in [docs/design/](docs/design/) (customer journey maps: [journey-map.md](docs/design/journey-map.md); the focus group's discussion guide: [focus-group.md](docs/design/focus-group.md)). User research (the questionnaire, now in Microsoft Forms) stays outside the repository until we decide otherwise.
 - **Backlog:** GitHub issues (`gh issue list`; labels `provider`, `tmdb`, `geo`, `backlog`).
 - **Prior work:** [Leffavuoro / Shady-Dev/kino](https://github.com/Shady-Dev/kino) (AGPL-3.0, about 230 cinemas). A code-only copy is in [vendor/leffavuoro/](vendor/leffavuoro/UPSTREAM.md). Read it first when adding a platform; its adapters may be ported (credit them in the site file's header), its `data/` may not be used.
 
