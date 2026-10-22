@@ -189,6 +189,8 @@ export const Film = z.object({
   directors: z
     .array(z.object({ tmdbId: z.number().int().positive(), name: z.string() }))
     .default([]),
+  /** The film series (TMDB collection) it belongs to: "Nälkäpeli", "Tremors Collection". */
+  collection: z.object({ tmdbId: z.number().int().positive(), name: z.string() }).optional(),
   overview: Localized,
   posterPath: z.string().startsWith("/").optional(),
   backdropPath: z.string().startsWith("/").optional(),

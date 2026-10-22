@@ -46,6 +46,7 @@ export const fi = {
   filmNotFound: "Elokuvaa ei löytynyt.",
   originalTitle: "Alkuperäinen nimi",
   directedBy: "Ohjaus",
+  filmSeries: "Elokuvasarja",
   finnishPremiere: "Ensi-ilta Suomessa",
   trailer: "Traileri (YouTube)",
   onTmdb: "Elokuva TMDB:ssä",

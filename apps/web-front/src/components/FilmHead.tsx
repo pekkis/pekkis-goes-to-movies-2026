@@ -33,6 +33,9 @@ export const FilmHead = ({ film }: { film: Film }) => {
               {`${fi.directedBy}: ${film.directors.map((d) => d.name).join(", ")}`}
             </p>
           )}
+          {film.collection && (
+            <p className={css.facts}>{`${fi.filmSeries}: ${film.collection.name}`}</p>
+          )}
           {film.finnishReleaseDate && (
             <p className={css.facts}>
               {`${fi.finnishPremiere}: ${formatDate(film.finnishReleaseDate)}`}

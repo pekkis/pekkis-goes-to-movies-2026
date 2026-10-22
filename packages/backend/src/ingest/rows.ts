@@ -80,6 +80,8 @@ export const filmRow = (f: Film): FilmRow => ({
   backdropPath: f.backdropPath ?? null,
   trailers: JSON.stringify(f.trailers),
   directors: JSON.stringify(f.directors),
+  collectionTmdbId: f.collection?.tmdbId ?? null,
+  collectionName: f.collection?.name ?? null,
   fetchedAt: f.fetchedAt,
 });
 

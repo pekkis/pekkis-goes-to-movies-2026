@@ -109,6 +109,12 @@ export const toFilm = (details: MovieDetails, fetchedAt: string): Film => {
     genres: details.genres.map((g) => g.name),
     countries: details.production_countries.map((c) => c.iso_3166_1),
     directors: directors(details),
+    ...(details.belongs_to_collection && {
+      collection: {
+        tmdbId: details.belongs_to_collection.id,
+        name: details.belongs_to_collection.name,
+      },
+    }),
     overview: localized(details, "overview"),
     ...(posterPath && { posterPath }),
     ...(details.backdrop_path && { backdropPath: details.backdrop_path }),

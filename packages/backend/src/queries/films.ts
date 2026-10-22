@@ -54,6 +54,10 @@ export const getFilm = async (db: Kysely<DB>, id: string): Promise<FilmOut | und
       genres: film.genres,
       countries: film.countries,
       directors: directorsOf(film.directors),
+      collection:
+        film.collectionTmdbId !== null && film.collectionName !== null
+          ? { tmdbId: film.collectionTmdbId, name: film.collectionName }
+          : null,
       overview: { fi: film.overviewFi, sv: film.overviewSv, en: film.overviewEn },
       backdropUrl: backdropUrl(film.backdropPath),
       trailers: trailersOf(film.trailers),
@@ -83,6 +87,7 @@ export const getFilm = async (db: Kysely<DB>, id: string): Promise<FilmOut | und
     genres: listing.genres,
     countries: listing.countries,
     directors: [],
+    collection: null,
     overview: { fi: null, sv: null, en: null },
     backdropUrl: null,
     trailers: [],

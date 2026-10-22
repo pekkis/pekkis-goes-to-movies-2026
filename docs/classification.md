@@ -79,7 +79,7 @@ Computed, never scraped:
 ## Roadmap
 
 - **Phase 1 (done):** this document; `LABELS`; raw labels; the series registry and resolution; the `series` table; fixes found by the survey (`jp` → `ja`, K-18 on bar screenings at eTiketti and Kinola, Kuvakukko's guest and free notes, last screenings at Pajakkakino and Kino Rio, Kaarre's "kiirehdi", `no-dialogue`).
-- **Phase 2:** one shared age-rating parser for every adapter (there are 41 rating tables); TMDB credits (directors **done** 2026-10-22: `Film.directors`, `films.directors`, the API and the film page), keywords, collections, external ids (IMDb, Wikidata); the Finnish certification as a fallback rating.
+- **Phase 2:** one shared age-rating parser for every adapter (there are 41 rating tables); TMDB credits (directors **done** 2026-10-22: `Film.directors`, `films.directors`, the API and the film page), collections (**done** 2026-10-22: `Film.collection`, shown as "Elokuvasarja"), keywords, external ids (IMDb, Wikidata); the Finnish certification as a fallback rating.
 - **Phase 3:** KAVI content descriptors (several cinemas show them as images we drop: Marita, Pajakkakino, Kino-Kuva, Matin-Tupa); event types; cinema genres mapped to TMDB genres for unmatched listings; Wikidata and Elonet.
 
 ## Open questions

@@ -84,6 +84,8 @@ export const MovieDetails = z.looseObject({
     ),
   }),
   images: z.looseObject({ posters: z.array(Image) }),
+  /** The film series it belongs to, if any (in the requested language when TMDB has it). */
+  belongs_to_collection: z.looseObject({ id: z.number().int(), name: z.string() }).nullish(),
   /** Only the crew's directors are read; optional so an older cached answer still parses. */
   credits: z
     .looseObject({

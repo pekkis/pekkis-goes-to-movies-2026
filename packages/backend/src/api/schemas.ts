@@ -124,6 +124,8 @@ export const Film = FilmSummary.extend({
   countries: z.array(z.string()),
   /** From TMDB credits; empty for an unmatched listing or when TMDB has none. */
   directors: z.array(z.object({ tmdbId: z.number().int(), name: z.string() })),
+  /** The film series (TMDB collection); null when none or for an unmatched listing. */
+  collection: z.object({ tmdbId: z.number().int(), name: z.string() }).nullable(),
   overview: z.object({ fi: nullableString, sv: nullableString, en: nullableString }),
   backdropUrl: nullableString,
   trailers: z.array(z.object({ site: z.string(), key: z.string(), name: z.string() })),

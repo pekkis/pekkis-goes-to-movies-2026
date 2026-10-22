@@ -121,6 +121,15 @@ describe("toFilm details", () => {
     ]);
   });
 
+  it("reads the film series (TMDB collection), and leaves it out when there is none", () => {
+    const inSeries = toFilm(
+      details({ id: 1, title: "X", belongs_to_collection: { id: 131635, name: "Nälkäpeli" } }),
+      FETCHED,
+    );
+    expect(inSeries.collection).toEqual({ tmdbId: 131635, name: "Nälkäpeli" });
+    expect(toFilm(details({ id: 1, title: "X" }), FETCHED)).not.toHaveProperty("collection");
+  });
+
   it("has no directors when TMDB's answer has no credits (an older cached answer)", () => {
     expect(toFilm(details({ id: 1, title: "X" }), FETCHED).directors).toEqual([]);
   });
