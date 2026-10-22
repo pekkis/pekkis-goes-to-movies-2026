@@ -40,6 +40,25 @@ export const formatShortDay = (date: string): string =>
     Temporal.PlainDate.from(date).toZonedDateTime({ timeZone: "UTC" }).epochMilliseconds,
   );
 
+/**
+ * Days, in order, as short as they read: "pe 23.10.", a run as "pe 23.10.–su 25.10.",
+ * anything else as a list "pe 23.10., su 25.10.".
+ */
+export const formatDayRange = (days: readonly string[]): string => {
+  const sorted = days.toSorted();
+  const consecutive = sorted.every(
+    (day, i) =>
+      i === 0 ||
+      Temporal.PlainDate.from(sorted[i - 1]!)
+        .add({ days: 1 })
+        .toString() === day,
+  );
+  if (sorted.length > 1 && consecutive) {
+    return `${formatShortDay(sorted[0]!)}–${formatShortDay(sorted.at(-1)!)}`;
+  }
+  return sorted.map(formatShortDay).join(", ");
+};
+
 const fullDate = new Intl.DateTimeFormat("fi-FI", {
   timeZone: "UTC",
   day: "numeric",

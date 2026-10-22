@@ -12,6 +12,8 @@ import {
   type Venue,
 } from "./api.ts";
 import { citiesOf, citySlug, type City } from "./cities.ts";
+import { fi } from "./text.ts";
+import { formatDayRange } from "./time.ts";
 
 /**
  * The search page (/fi/haku): a GET form picks the days, the place and maybe a film; the
@@ -189,4 +191,24 @@ export const loadSearchPage = async (
     distances,
     providers: providersOf(venues, screenings),
   };
+};
+
+/**
+ * The search page's title: what was searched for, so a tab, a bookmark or a shared link
+ * says it ("Haku: Lapin sota · Tampere, enintään 25 km · pe 23.10.–su 25.10.").
+ */
+export const searchPageTitle = (page: SearchPage): string => {
+  if (page.state === "start") {
+    return fi.searchTitle;
+  }
+  const film = page.films.length ? page.films.map((f) => f.title).join(", ") : page.params.film;
+  const place = page.place
+    ? fi.around(
+        page.place.kind === "city" ? page.place.name : fi.myLocation,
+        fi.km(page.params.radiusKm),
+      )
+    : undefined;
+  return fi.searchTitleFor(
+    [film, place, formatDayRange(page.params.days)].filter(Boolean).join(" · "),
+  );
 };

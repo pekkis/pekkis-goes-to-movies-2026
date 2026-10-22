@@ -3,7 +3,7 @@ import { LocateButton } from "../../components/LocateButton.tsx";
 import { SearchForm } from "../../components/SearchForm.tsx";
 import { SearchResults } from "../../components/SearchResults.tsx";
 import Base from "../../layouts/Base.astro";
-import { loadSearchPage } from "../../lib/search.ts";
+import { loadSearchPage, searchPageTitle } from "../../lib/search.ts";
 import { fi } from "../../lib/text.ts";
 import { programmeToday } from "@pgtm/model/time";
 import { sprinkles } from "../../styles/sprinkles.css.ts";
@@ -14,7 +14,7 @@ const page = await loadSearchPage(Astro.locals.api, Astro.url.searchParams, toda
 const placeName = page.place?.kind === "city" ? page.place.name : fi.myLocation;
 ---
 
-<Base title={fi.searchTitle}>
+<Base title={searchPageTitle(page)}>
   <h1>{fi.searchTitle}</h1>
   <p class={sprinkles({ marginBottom: "md" })}>{fi.searchIntro}</p>
   <SearchForm page={page}>

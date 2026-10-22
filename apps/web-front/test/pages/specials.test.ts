@@ -42,6 +42,7 @@ describe("special screenings page", () => {
     expect(html).toMatch(/<input type="checkbox" name="sarja" value="neulekino"/);
     expect(html).toContain("1 näytös, to 15.10. alkaen");
     expect(html).toContain("Valitse ainakin yksi laji tai sarja.");
+    expect(html).toContain("<title>Erikoisnäytökset | Pekkis goes to movies</title>");
     expect(html).not.toContain("<astro-island");
   });
 
@@ -51,6 +52,7 @@ describe("special screenings page", () => {
     expect(html).toContain("<astro-island");
     expect(html).toContain("torstaina 15.10.");
     // The choices first, the form folded away.
+    expect(html).toContain("<title>Erikoisnäytökset: Neulekino | Pekkis goes to movies</title>");
     expect(html).toContain("Valittu: Neulekino");
     expect(html).toContain("· Neulekino");
     expect(html).toMatch(/<details[^>]*><summary>Muuta valintoja<\/summary><form/);

@@ -35,6 +35,7 @@ describe("search page", () => {
     const { res, html } = await renderSearch();
     expect(res.status).toBe(200);
     expect(html).toContain("Hae elokuvaa");
+    expect(html).toContain("<title>Hae elokuvaa | Pekkis goes to movies</title>");
     expect(html).toMatch(/<form [^>]*action="\/fi\/haku" method="get"/);
     expect(html).toMatch(/<input type="checkbox" name="paiva" checked="" value="2026-10-13"/);
     expect(html).toContain("tänään ti 13.10.");
@@ -47,6 +48,10 @@ describe("search page", () => {
   it("renders the screenings around a city on the server, then narrows them in an island", async () => {
     const { html } = await renderSearch("?kaupunki=jyvaskyla&sade=10");
     expect(html).toContain("Jyväskylä, enintään 10 km");
+    // The title says what was searched for, for tabs, bookmarks and shared links.
+    expect(html).toContain(
+      "<title>Haku: Jyväskylä, enintään 10 km · ti 13.10. | Pekkis goes to movies</title>",
+    );
     expect(html).toContain("Unohdettu saari");
     expect(html).toContain('href="https://kino.example/liput/1"');
     expect(html).toContain("Kellonaika");

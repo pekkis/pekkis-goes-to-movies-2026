@@ -1,7 +1,7 @@
 import { ScreeningTag, TAG_GROUPS } from "@pgtm/model";
 import { addDays } from "@pgtm/model/time";
 import { kindScreenings, listSeries, type Api, type Screening, type Series } from "./api.ts";
-import { TAG_NAMES } from "./text.ts";
+import { fi, TAG_NAMES } from "./text.ts";
 
 const nameOrder = new Intl.Collator("fi", { sensitivity: "base", numeric: true });
 
@@ -93,3 +93,7 @@ export const loadKindsPage = async (
     more: shown.more,
   };
 };
+
+/** The page's title names the choices, so a shared link says what it shows. */
+export const kindsPageTitle = (page: KindsPage): string =>
+  page.state === "start" ? fi.specials : `${fi.specials}: ${page.chosenNames.join(", ")}`;

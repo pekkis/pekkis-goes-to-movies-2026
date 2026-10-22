@@ -50,6 +50,7 @@ describe("film page", () => {
     const html = await res.text();
     expect(res.status).toBe(200);
     expect(html).toContain("<h1>Unohdettu saari</h1>");
+    expect(html).toMatch(/<title>Unohdettu saari – [^<]+ \| Pekkis goes to movies<\/title>/);
     expect(html).toContain('src="https://image.tmdb.org/t/p/w342/saari.jpg"');
     expect(html).toContain("Kaksi ystävää ja saari.");
     expect(html).toContain("Ensi-ilta Suomessa: 2.10.2026");
@@ -84,6 +85,8 @@ describe("front page", () => {
     });
     const html = await res.text();
     expect(html).toContain("Uudet elokuvat");
+    // Only the front page's title is the site name alone.
+    expect(html).toContain("<title>Pekkis goes to movies</title>");
     // Coming premieres before the ones already started.
     expect(html.indexOf("Alkamassa viikon aikana")).toBeLessThan(
       html.indexOf("Alkaneet viikon aikana"),

@@ -2,7 +2,7 @@
 import { KindsForm } from "../../components/KindsForm.tsx";
 import { KindsProgramme } from "../../components/KindsProgramme.tsx";
 import Base from "../../layouts/Base.astro";
-import { loadKindsPage, MAX_SHOWN } from "../../lib/kinds.ts";
+import { kindsPageTitle, loadKindsPage, MAX_SHOWN } from "../../lib/kinds.ts";
 import { fi } from "../../lib/text.ts";
 import { programmeToday } from "@pgtm/model/time";
 import { sprinkles } from "../../styles/sprinkles.css.ts";
@@ -12,7 +12,7 @@ const today = programmeToday(Astro.locals.now);
 const page = await loadKindsPage(Astro.locals.api, Astro.url.searchParams, today);
 ---
 
-<Base title={fi.specials}>
+<Base title={kindsPageTitle(page)}>
   <h1>{fi.specials}</h1>
   <p class={sprinkles({ marginBottom: "md" })}>{fi.specialsIntro}</p>
   {

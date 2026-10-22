@@ -4,8 +4,10 @@ import type { ScreeningTag, TAG_GROUPS } from "@pgtm/model";
  * Finnish UI text, in one place so it can move to an i18n catalogue (Lingui) later.
  * Code stays English; this module is data.
  */
+const SITE_NAME = "Pekkis goes to movies";
+
 export const fi = {
-  siteName: "Pekkis goes to movies",
+  siteName: SITE_NAME,
   tagline: "Kaikkien Suomen elokuvateattereiden näytökset yhdessä paikassa.",
   cities: "Kaupungit",
   venues: "Elokuvateatterit",
@@ -85,6 +87,10 @@ export const fi = {
   // The search page (/fi/haku).
   search: "Hae",
   searchTitle: "Hae elokuvaa",
+  /** "Haku: Lapin sota · Tampere, enintään 25 km · pe 23.10.–su 25.10." */
+  searchTitleFor: (parts: string) => `Haku: ${parts}`,
+  /** Every page's <title> but the front page's names the site after it. */
+  pageTitle: (title: string) => (title === SITE_NAME ? title : `${title} | ${SITE_NAME}`),
   searchIntro:
     "Valitse päivät ja paikka, tai kirjoita elokuvan nimi. Rajaa sitten kellonajan, teatterin ja elokuvan mukaan.",
   days: "Päivät",

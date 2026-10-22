@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createApi } from "../../src/lib/api.ts";
-import { loadSearchPage, parseSearchParams } from "../../src/lib/search.ts";
+import { loadSearchPage, parseSearchParams, searchPageTitle } from "../../src/lib/search.ts";
 import { fakeFetch, screening, venue } from "../fixtures.ts";
 
 const TODAY = "2026-10-13";
@@ -125,5 +125,6 @@ describe("loadSearchPage", () => {
     expect(page.distances).toEqual({});
     const search = fake.requests.find((u) => u.pathname === "/v1/films/search");
     expect(search?.searchParams.get("q")).toBe("lapin sota");
+    expect(searchPageTitle(page)).toBe("Haku: Lapin sota · ti 13.10.");
   });
 });
