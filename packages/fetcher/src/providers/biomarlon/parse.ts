@@ -10,7 +10,7 @@ import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, eachStartTime, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { BioMarlonRawSnapshot } from "./fetch.ts";
 import type { BioMarlonSite } from "./sites.ts";
@@ -81,8 +81,12 @@ export const parseBioMarlon = (raw: BioMarlonRawSnapshot, site: BioMarlonSite): 
     const filmKey = slugify(title);
     const listingId = makeId(P, "film", filmKey);
 
-    for (const h of block.find("h4").toArray()) {
-      const line = text($(h).text());
+    // "pe 23.10. 16:00 ja 19:15": one row per start time.
+    const lines = block
+      .find("h4")
+      .toArray()
+      .flatMap((h) => eachStartTime(text($(h).text())));
+    for (const line of lines) {
       if (PRIVATE.test(line) || UNTIMED.test(line)) {
         continue;
       }

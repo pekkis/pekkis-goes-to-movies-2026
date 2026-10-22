@@ -8,7 +8,7 @@ import {
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion, type Version } from "../labels.ts";
-import { byStartThenId, slugify } from "../parsing.ts";
+import { byStartThenId, eachStartTime, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KirkkonummiRawSnapshot } from "./fetch.ts";
 import type { KirkkonummiSite } from "./sites.ts";
@@ -69,7 +69,12 @@ export const parseKirkkonummi = (
       continue;
     }
     if (LOOKS_LIKE_SHOW.test(value)) {
-      rows.push(...value.split(/\s+\/\s+/).map((show) => ({ heading, show })));
+      rows.push(
+        ...value
+          .split(/\s+\/\s+/)
+          .flatMap(eachStartTime)
+          .map((show) => ({ heading, show })),
+      );
       continue;
     }
     const { title, version } = splitVersion(`x (${value})`);

@@ -58,6 +58,11 @@ describe("finishVenues", () => {
       }),
     ]);
   });
+
+  it("doesn't ask for coordinates of a venue with no fixed place (a pop-up)", () => {
+    const out = finishVenues(batch([venue("popup", { noFixedPlace: true })]), {});
+    expect(out.warnings).toEqual([]);
+  });
 });
 
 describe("VenueOverrides", () => {

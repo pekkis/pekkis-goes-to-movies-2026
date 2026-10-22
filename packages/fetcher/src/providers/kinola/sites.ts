@@ -71,6 +71,7 @@ export const KINOLA_SITES: KinolaSite[] = defineSites(KinolaSite, [
         slug: "popup-helsinki",
         name: "Pop Up Kino Helsinki",
         city: "Helsinki",
+        noFixedPlace: true,
         kinolaName: "Pop Up Kino Helsinki",
       },
       {

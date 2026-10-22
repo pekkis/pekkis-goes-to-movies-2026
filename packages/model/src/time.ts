@@ -179,3 +179,22 @@ export const nearestDate = (
   }
   return undefined;
 };
+
+/**
+ * The day in the reference date's year, when that is before the reference date: for a row
+ * whose weekday fits last month's date rather than the year ahead that `nearestDate` picks
+ * ("SU 20.9." on 2026-10-22 is 2026-09-20, a Sunday). Undefined otherwise.
+ */
+export const pastDateThisYear = (
+  day: number,
+  month: number,
+  reference: string,
+): string | undefined => {
+  const ref = Temporal.PlainDate.from(reference);
+  try {
+    const date = Temporal.PlainDate.from({ year: ref.year, month, day }, { overflow: "reject" });
+    return Temporal.PlainDate.compare(date, ref) < 0 ? date.toString() : undefined;
+  } catch {
+    return undefined; // no such day that year (29.2.)
+  }
+};

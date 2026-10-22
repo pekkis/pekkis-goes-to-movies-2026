@@ -555,7 +555,7 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/vaakuna/`, 
 Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/kirkkonummi/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/kirkkonummi.py`, re-verified.
 
 - **One Elementor page:** each film is an `.elementor-heading-title` followed by `.elementor-icon-list-text` rows, read in document order (a row belongs to the last heading) **[V]**.
-  - "16.10. Perjantai klo18.00" / "18.10. Su klo18.00 / 21.10. Ke klo18.30": no year (inferred and checked against the weekday, full or short); two screenings may share a row.
+  - "16.10. Perjantai klo18.00" / "18.10. Su klo18.00 / 21.10. Ke klo18.30": no year (inferred and checked against the weekday, full or short); two screenings may share a row. Two times on one day are written "24.10. La klo17.00 ja klo18.00" (2026-10-22 [V]) and read as two screenings (`eachStartTime` in `providers/parsing.ts`).
   - Cast lists and notes are rows too; only rows shaped like a screening are read.
   - "Puhumme suomea" under a film marks its screenings dubbed into Finnish.
   - "Tulossa 23.10. alkaen" is an opening day, not a screening.
@@ -844,7 +844,7 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Le
 ## Pajakkakino (Kuhmo)
 
 - **Found** through elokuviin.com's list of cinemas (2026-10-15); not in Leffavuoro. The front page is an Instagram feed; the programme is one WordPress post per film, read through `/wp-json/wp/v2/posts` (one GET) [V].
-- **A film post** [V]: a facts line ("Draama, jännitys I 1h 57min I 2.10.2026 I AUDIO englanti TEKSTIT suomi": genres, runtime, release date, audio and subtitles), the age image (`ikaraja_12.png`, from the distributors' press service), then "ESITYKSET:" and one row per screening ("PE 16.10. KLO 15:30", also "SU 18.10 KLO 18:00" and "PE 9.10 KLO.16:30"). No year: the nearest date whose weekday fits.
+- **A film post** [V]: a facts line ("Draama, jännitys I 1h 57min I 2.10.2026 I AUDIO englanti TEKSTIT suomi": genres, runtime, release date, audio and subtitles), the age image (`ikaraja_12.png`, from the distributors' press service), then "ESITYKSET:" and one row per screening ("PE 16.10. KLO 15:30", also "SU 18.10 KLO 18:00" and "PE 9.10 KLO.16:30"). No year: the nearest date whose weekday fits. Old posts stay up with past rows: "SU 20.9." in late October is last month, not next September (whose weekday wouldn't fit), so it is skipped, not counted as unreadable (`pastDateThisYear` in `@pgtm/model/time`, 2026-10-22 [V]).
 - **Cancelled screenings** are struck through (`<del>`) with "PERUTTU!" below; they are skipped, so ingest marks them removed [V].
 - **"VIIMEINEN NÄYTÖS"** stands between rows (2026-10-16 [V]), so its place says little; the post's latest screening, in or out of the window, is tagged `last-screening`.
 - **Römppäviikot** (Kuhmo's film week, 2026-10-16) [V]: posts titled "RÖMPPÄVIIKOT: …" (series "Römppäviikot"; a closing "(ELOKUVA + LUKUPIIRI)" is dropped too) write rows more freely: "TO 29.10. KLO 16:30 & 18:30" (two screenings), "MA 26.10. KLO 18:00 elokuva alkaa" (a screening), "MA 26.10. KLO 16:30 alkaen lukupiiri, …" (a reading circle: skipped), "TI 27.10." and "SU 1.11 KLO ? ilmoitetaan myöhemmin" (no time yet: skipped). Any other note after a time is still `invalid-row`.
@@ -855,7 +855,7 @@ Probed 2026-10-15. Adapter: `packages/fetcher/src/providers/regina/`. Origin: Le
 
 - **Found** by the maintainer (biomarlon.fi), 2026-10-15; not in Leffavuoro.
 - **The front page** [V] is Elementor: one text block per film with the title in `h1` (linking to nytleffaan.fi, not used), one `h4` per screening ("pe 16.10. 19:00"; no year, the nearest date whose weekday fits) and a facts paragraph ("K-7/4 1 t 40 min 13 €": rating, runtime, price; "0 €" is free).
-- **Row variants** [V]: "Ensi-ilta pe 16.10. 15:30" is a premiere (`premiere` tag); a row without a time ("Ensi-ilta pe 23.10.", "Tulossa") is announced, not on; "(ke 21.10. 10:00 yksityisnäytös)" is private and skipped. "Suomea puhutaan!" below the facts marks a Finnish-dubbed print.
+- **Row variants** [V]: "Ensi-ilta pe 16.10. 15:30" is a premiere (`premiere` tag); a row without a time ("Ensi-ilta pe 23.10.", "Tulossa") is announced, not on; "(ke 21.10. 10:00 yksityisnäytös)" is private and skipped. "Suomea puhutaan!" below the facts marks a Finnish-dubbed print. Two times on one day, "pe 23.10. 16:00 ja 19:15" (2026-10-22 [V]), are two screenings (`eachStartTime`).
 - **Tickets** at the door: booking `door`, links to the front page. The programme is published on Mondays, 1.5 weeks ahead.
 - **First run:** 17 screenings of 5 films, no warnings; a local documentary (not on TMDB) stays unmatched.
 
@@ -1073,7 +1073,7 @@ Found on 2026-10-10. Adapter: `packages/fetcher/src/providers/kinola/`, cinemas 
 ---
 
 - **Rekolan Kino** (2026-10-20): a third venue in Kino Myyri's feed, first shows 30.10. Kinola gives its locality as "Helsinki", but it's in Vantaa: Rekolantie 43, 01400 (the maintainer), OSM node 506773443 "Rekolan Kino" **[V]**.
-- **Pop Up Kino Helsinki** (2026-10-15): Kino Myyri's feed also carries Pop Up Kino's screenings (popupkino.fi, Myyri's owner) under the venue "Pop Up Kino Helsinki". Pop Up Kino screens at changing places (KOM-teatteri in Hakaniemi in October 2026, next the Salvation Army hall), and the feed names none, so the venue has **no address or coordinates**: it shows in Helsinki's listings but not on the map, with a `venue-without-geo` warning each pull **[V]**.
+- **Pop Up Kino Helsinki** (2026-10-15): Kino Myyri's feed also carries Pop Up Kino's screenings (popupkino.fi, Myyri's owner) under the venue "Pop Up Kino Helsinki". Pop Up Kino screens at changing places (KOM-teatteri in Hakaniemi in October 2026, next the Salvation Army hall), and the feed names none, so the venue has **no address or coordinates**: it shows in Helsinki's listings but not on the map **[V]**. It is marked `noFixedPlace` in `kinola/sites.ts`, so the pull no longer warns about its missing coordinates (2026-10-22).
 
 ## Johku (storefront schedule JSON)
 

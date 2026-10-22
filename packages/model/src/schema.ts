@@ -81,6 +81,11 @@ export const Venue = z.object({
   postalCode: z.string().optional(),
   geo: z.object({ lat: z.number(), lon: z.number() }).optional(),
   url: HttpUrl.optional(),
+  /**
+   * Screens at changing places the source doesn't name (a pop-up cinema): no address or
+   * coordinates, on purpose. Absent for an ordinary venue.
+   */
+  noFixedPlace: z.literal(true).optional(),
 });
 export type Venue = z.infer<typeof Venue>;
 

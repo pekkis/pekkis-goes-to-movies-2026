@@ -11,6 +11,7 @@ import {
   isIsoDate,
   minutesUntil,
   nearestDate,
+  pastDateThisYear,
   parseLocalDateTime,
   toHelsinkiIso,
 } from "../src/time.ts";
@@ -144,6 +145,17 @@ describe("instants", () => {
     vi.setSystemTime(new Date("2026-10-13T09:00:00Z"));
     expect(currentInstant().toString()).toBe("2026-10-13T09:00:00Z");
     vi.useRealTimers();
+  });
+});
+
+describe("pastDateThisYear", () => {
+  it.each([
+    [20, 9, "2026-10-22", "2026-09-20"], // last month: an old post's screening
+    [22, 10, "2026-10-22", undefined], // today is not past
+    [24, 10, "2026-10-22", undefined], // still ahead
+    [29, 2, "2026-10-22", undefined], // no such day this year
+  ])("%d.%d. before %s is %s", (day, month, reference, expected) => {
+    expect(pastDateThisYear(day, month, reference)).toBe(expected);
   });
 });
 

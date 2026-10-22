@@ -73,3 +73,23 @@ export const byStartThenId = (a: Screening, b: Screening): number =>
 export const tally = <K>(counts: Map<K, number>, key: K): void => {
   counts.set(key, (counts.get(key) ?? 0) + 1);
 };
+
+/**
+ * A row with several start times on one day, as one row per time: "pe 23.10. 16:00 ja 19:15"
+ * -> ["pe 23.10. 16:00", "pe 23.10. 19:15"]; "24.10. La klo17.00 ja klo18.00" -> ["24.10. La
+ * klo 17.00", "24.10. La klo 18.00"] (both 2026-10-22). Times are joined by "ja", "&" or a
+ * comma; "klo" stays, as written, when the row had it. Any other row is returned as it is.
+ */
+export const eachStartTime = (row: string): string[] => {
+  const TIME = String.raw`(?:klo\s*)?\d{1,2}[.:]\d{2}`;
+  const m = row.match(
+    new RegExp(String.raw`^(.*?)\s+(${TIME}(?:\s*(?:ja|&|,)\s*${TIME})+)!?$`, "i"),
+  );
+  if (!m) {
+    return [row];
+  }
+  const klo = m[2]!.match(/^klo/i)?.[0];
+  return [...m[2]!.matchAll(/\d{1,2}[.:]\d{2}/g)].map(
+    (t) => `${m[1]} ${klo ? `${klo} ` : ""}${t[0]}`,
+  );
+};
