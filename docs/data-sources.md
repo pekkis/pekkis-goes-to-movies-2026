@@ -448,6 +448,7 @@ Probed 2026-10-14, two GETs. Adapter: `packages/fetcher/src/providers/tribe/`, s
   - Ritz puts the year ("Wholetrain (2006)") or an age limit ("Knitting Cinema! (K18)") in a trailing parenthesis; both are read off the title.
   - Ritz also writes some titles "English [Finnish]" ("Tell Everyone [Kerro kaikille]", "The Lapland War [Lapin Sota]", 2026-10-20 [V]): the bracketed part is the Finnish title, the English one is kept as `title.en` (site setting `bracketedFinnishTitle`).
   - Other parentheses stay: "Two Seasons, Two Strangers (Tabi to hibi)".
+  - A "Prefix: Title" whose prefix is a known label or a registry series is split off like on other platforms (`splitTitlePrefix`; site setting `titlePrefixes` for a site's own): "KirjastoKino: One Battle After Another" at Muhos becomes the film plus the Kirjastokino series (2026-10-22 [V]).
 - **Event series** ("Knitting Cinema!", "Ritz Horrorfest!") are listed as events of their own name; which film plays is not stated, so they stay unmatched.
 - **Tickets:** at the door at both ("sold at the door", "ovelta"); `ticketUrl` is the event's own page, copied.
 - **Not read:** images (a generic calendar picture at Muhos; posters come from TMDB) and synopses.

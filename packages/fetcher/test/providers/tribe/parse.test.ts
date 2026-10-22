@@ -1,6 +1,7 @@
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
 import { describe, expect, it } from "vitest";
 import { parseTribe } from "../../../src/providers/tribe/parse.ts";
+import { findSeries } from "../../../src/series/registry.ts";
 import type { TribeRawSnapshot } from "../../../src/providers/tribe/raw.ts";
 import { TRIBE_SITES } from "../../../src/providers/tribe/sites.ts";
 import { loadFixture } from "../../fixtures.ts";
@@ -129,5 +130,34 @@ describe("parseTribe: Tähti Kino, Muhos", () => {
       rating: "K-16",
       runtimeMinutes: 158,
     });
+  });
+
+  it('takes a series prefix off the title: "KirjastoKino: One Battle After Another" (2026-10-22)', () => {
+    // Trimmed from the live feed; "Kirjastokino" is in the series registry.
+    const kirjastokino = {
+      id: 45573,
+      title: "KirjastoKino: One Battle After Another",
+      start_date: "2026-10-28 17:00:00",
+      utc_start_date: "2026-10-28 15:00:00",
+      all_day: false,
+      categories: [{ id: 106, slug: "elokuvat" }],
+      cost: "",
+      cost_details: { values: [] },
+      url: "https://muhos.fi/tapahtuma/kirjastokino-one-battle-after-another/",
+      description: "",
+    };
+    const prefixed = parseTribe(
+      snapshot([{ events: [kirjastokino], total_pages: 1 }], { from: "2026-10-22", days: 7 }),
+      MUHOS,
+    );
+    expect(() => ProviderBatch.parse(prefixed)).not.toThrow();
+    expect(prefixed.warnings).toEqual([]);
+    expect(prefixed.listings[0]).toMatchObject({ title: { fi: "One Battle After Another" } });
+    // The parser emits the name as printed; the pull resolves it to the registry's id.
+    expect(prefixed.screenings[0]).toMatchObject({
+      series: ["KirjastoKino"],
+      labels: [{ source: "title.prefix", text: "KirjastoKino" }],
+    });
+    expect(findSeries("KirjastoKino")).toBe("kirjastokino");
   });
 });

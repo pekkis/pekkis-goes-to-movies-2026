@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Provider } from "@pgtm/model";
+import { LabelRule } from "../labels.ts";
 import { defineSites, SiteBase, SiteVenue } from "../sites.ts";
 
 /**
@@ -21,6 +22,8 @@ export const TribeSite = SiteBase.extend({
    * The bracketed part is the Finnish title, the rest the English one.
    */
   bracketedFinnishTitle: z.boolean().optional(),
+  /** Site-specific "Prefix: Title" rules, merged over COMMON_TITLE_PREFIXES. */
+  titlePrefixes: z.record(z.string(), LabelRule).optional(),
 });
 export type TribeSite = z.infer<typeof TribeSite>;
 

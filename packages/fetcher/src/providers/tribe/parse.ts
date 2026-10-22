@@ -4,6 +4,7 @@ import {
   type FinnishRating,
   type Lang,
   type ProviderBatch,
+  type RawLabel,
   type Screening,
   type Subtitles,
   type Warning,
@@ -12,7 +13,7 @@ import { dateWindow, helsinkiShowTime, toHelsinkiIso } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { normalizeLang } from "../../lib/lang.ts";
 import { own } from "../../lib/records.ts";
-import { splitVersion } from "../labels.ts";
+import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
 import { byStartThenId, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import { TribeEvent, TribePage, type TribeRawSnapshot } from "./raw.ts";
@@ -103,6 +104,7 @@ export const parseTribe = (raw: TribeRawSnapshot, site: TribeSite): ProviderBatc
   const warnings: Warning[] = [];
   const listings = new Map<string, FilmListing>();
   const screenings = new Map<string, Screening>();
+  const prefixRules = { ...COMMON_TITLE_PREFIXES, ...site.titlePrefixes };
 
   for (const payload of raw.pages) {
     const page = TribePage.safeParse(payload);
@@ -179,6 +181,9 @@ export const parseTribe = (raw: TribeRawSnapshot, site: TribeSite): ProviderBatc
       if (year) {
         rawTitle = year[1]!;
       }
+      // "KirjastoKino: One Battle After Another" (Tähti Kino, 2026-10-22): a label, then the film.
+      const { title: unprefixed, rule, label } = splitTitlePrefix(rawTitle, prefixRules);
+      rawTitle = unprefixed;
       // "Tell Everyone [Kerro kaikille]": the Finnish title in brackets, the English before.
       const bracketed = site.bracketedFinnishTitle
         ? rawTitle.match(/^(.+?)\s*\[([^\]]+)\]\s*$/)
@@ -200,7 +205,7 @@ export const parseTribe = (raw: TribeRawSnapshot, site: TribeSite): ProviderBatc
           ...(rating && { rating }),
           genres: [],
           countries: [],
-          kind: "film",
+          kind: rule?.event ? "event" : "film",
         });
       }
 
@@ -222,8 +227,9 @@ export const parseTribe = (raw: TribeRawSnapshot, site: TribeSite): ProviderBatc
         audio,
         ...(version.dubbed !== undefined && { dubbed: version.dubbed }),
         subtitles: facts.subtitles ?? { kind: "unknown" },
-        tags: [],
-        series: [],
+        tags: [...(rule?.tags ?? [])],
+        series: rule?.series ? [rule.series] : [],
+        ...(label && { labels: [{ source: "title.prefix", text: label }] satisfies RawLabel[] }),
         availability: "unknown",
         ...(price !== undefined && { price: { amountCents: price, currency: "EUR" as const } }),
         // The event's own page on the site: copied.
