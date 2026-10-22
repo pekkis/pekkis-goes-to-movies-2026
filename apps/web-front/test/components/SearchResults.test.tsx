@@ -58,8 +58,8 @@ describe("SearchResults", () => {
     const venues = within(facet("Elokuvateatterit")).getAllByRole("checkbox");
     expect(venues.map((v) => v.closest("label")!.textContent)).toEqual([
       "Finnkino3",
-      "Plevna · 0,4 km2",
-      "Atlas · 1,2 km1",
+      "Plevna, Tampere · 0,4 km2",
+      "Atlas, Tampere · 1,2 km1",
     ]);
   });
 
@@ -106,7 +106,7 @@ describe("SearchResults: long lists", () => {
       within(venues)
         .getAllByRole("checkbox")
         .map((c) => c.closest("label")!.textContent),
-    ).toEqual(["Kino 3 · Tampere1"]);
+    ).toEqual(["Kino 3, Tampere1"]);
   });
 });
 
@@ -139,10 +139,10 @@ describe("SearchResults: providers", () => {
     const venues = within(facet("Elokuvateatterit")).getAllByRole("checkbox");
     // Cinema Niagara, then Finnkino with its two venues; a lone venue gets no group row.
     expect(venues.map((v) => v.closest("label")!.textContent)).toEqual([
-      "Cinema Niagara · 0,2 km1",
+      "Cinema Niagara, Tampere · 0,2 km1",
       "Finnkino3",
-      "Plevna · 0,4 km2",
-      "Atlas · 1,2 km1",
+      "Plevna, Tampere · 0,4 km2",
+      "Atlas, Tampere · 1,2 km1",
     ]);
     fireEvent.click(option("Elokuvateatterit", "^Finnkino"));
     expect((option("Elokuvateatterit", "Plevna") as HTMLInputElement).checked).toBe(true);

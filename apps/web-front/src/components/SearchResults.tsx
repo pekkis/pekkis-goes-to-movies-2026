@@ -13,6 +13,7 @@ import {
 import { byTitle } from "../lib/films.ts";
 import type { Provider } from "../lib/search.ts";
 import { fi } from "../lib/text.ts";
+import { venueLabel } from "../lib/venues.ts";
 import { formatDay } from "../lib/time.ts";
 import { button } from "../styles/recipes/button.css.ts";
 import { ClockIsland } from "./clock.tsx";
@@ -196,8 +197,9 @@ const Results = ({
       )
       .map((v): Option => ({
         id: v.id,
-        label: v.name,
-        detail: v.km === undefined ? v.city : fi.km(v.km),
+        // The label names the town ("Maxim, Varkaus"); the detail is the distance, if any.
+        label: venueLabel(v),
+        ...(v.km !== undefined && { detail: fi.km(v.km) }),
         ...(v.provider && { group: { id: v.provider.id, label: v.provider.name } }),
       }));
   }, [screenings, distances, providers]);

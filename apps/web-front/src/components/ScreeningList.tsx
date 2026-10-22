@@ -3,7 +3,7 @@ import { FilmName } from "./FilmName.tsx";
 import { safeHref } from "../lib/links.ts";
 import { fi, languageName } from "../lib/text.ts";
 import { formatTime } from "../lib/time.ts";
-import { venuePath } from "../lib/venues.ts";
+import { venueLabel, venuePath } from "../lib/venues.ts";
 import { button } from "../styles/recipes/button.css.ts";
 import { useShowStatus } from "./clock.tsx";
 import * as css from "./ScreeningList.css.ts";
@@ -31,7 +31,15 @@ const Availability = ({ value }: { value: string }) =>
   ) : null;
 
 /** One screening: time with its live status, film, venue, languages and ticket link. */
-const ScreeningRow = ({ s, showSeries }: { s: Screening; showSeries: boolean }) => {
+const ScreeningRow = ({
+  s,
+  showSeries,
+  inCity,
+}: {
+  s: Screening;
+  showSeries: boolean;
+  inCity: boolean;
+}) => {
   const languages = languageLine(s);
   const status = useShowStatus(s.startsAt);
   const ticketUrl = safeHref(s.ticketUrl);
@@ -50,7 +58,7 @@ const ScreeningRow = ({ s, showSeries }: { s: Screening; showSeries: boolean }) 
           <Availability value={s.availability} />
         </div>
         <div className={css.meta}>
-          <a href={venuePath(s.venue)}>{s.venue.name}</a>
+          <a href={venuePath(s.venue)}>{inCity ? s.venue.name : venueLabel(s.venue)}</a>
           {s.auditorium && `, ${s.auditorium}`}
           {languages && ` · ${languages}`}
           {showSeries && s.series.length > 0 && ` · ${s.series.join(", ")}`}
@@ -76,13 +84,16 @@ const ScreeningRow = ({ s, showSeries }: { s: Screening; showSeries: boolean }) 
 export const ScreeningList = ({
   screenings,
   showSeries = false,
+  inCity = false,
 }: {
   screenings: readonly Screening[];
   showSeries?: boolean;
+  /** On a city's own page the venues' city goes without saying: names alone. */
+  inCity?: boolean;
 }) => (
   <ol role="list" className={css.list}>
     {screenings.map((s) => (
-      <ScreeningRow key={s.id} s={s} showSeries={showSeries} />
+      <ScreeningRow key={s.id} s={s} showSeries={showSeries} inCity={inCity} />
     ))}
   </ol>
 );
