@@ -33,7 +33,7 @@ export const createTmdbClient = (http: HttpClient, cache: JsonCache = noCache): 
   movie: async (id) => {
     const params = {
       language: "fi-FI",
-      append_to_response: "translations,alternative_titles,release_dates,videos,images",
+      append_to_response: "translations,alternative_titles,release_dates,videos,images,credits",
       include_image_language: "fi,en,null",
       include_video_language: "fi,en,null",
     };

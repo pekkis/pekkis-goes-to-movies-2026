@@ -28,6 +28,11 @@ export const FilmHead = ({ film }: { film: Film }) => {
             <p className={css.facts}>{`${fi.originalTitle}: ${film.originalTitle}`}</p>
           )}
           {facts.length > 0 && <p className={css.facts}>{facts.join(" · ")}</p>}
+          {film.directors.length > 0 && (
+            <p className={css.facts}>
+              {`${fi.directedBy}: ${film.directors.map((d) => d.name).join(", ")}`}
+            </p>
+          )}
           {film.finnishReleaseDate && (
             <p className={css.facts}>
               {`${fi.finnishPremiere}: ${formatDate(film.finnishReleaseDate)}`}

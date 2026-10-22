@@ -4,6 +4,7 @@ import {
   COMMON_TITLE_PREFIXES,
   deriveTags,
   withClassicTag,
+  withDomesticTag,
   findLabel,
   isPrivateBooking,
   labelEffects,
@@ -242,6 +243,22 @@ describe("isPrivateBooking", () => {
     ["Yksityisetsivä Pikkuli", false],
   ])("%s -> %s", (title, isPrivate) => {
     expect(isPrivateBooking(title)).toBe(isPrivate);
+  });
+});
+
+describe("withDomesticTag", () => {
+  it.each([
+    [["FI"], ["domestic"]],
+    [["SE", "FI"], ["domestic"]],
+    [["US"], []],
+    [[], []],
+    [undefined, []],
+  ])("a film from %o -> %o", (countries, tags) => {
+    expect(withDomesticTag({ tags: [] }, countries).tags).toEqual(tags);
+  });
+
+  it("adds the tag once", () => {
+    expect(withDomesticTag({ tags: ["domestic" as const] }, ["FI"]).tags).toEqual(["domestic"]);
   });
 });
 

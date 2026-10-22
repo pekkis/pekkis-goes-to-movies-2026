@@ -84,5 +84,11 @@ export const MovieDetails = z.looseObject({
     ),
   }),
   images: z.looseObject({ posters: z.array(Image) }),
+  /** Only the crew's directors are read; optional so an older cached answer still parses. */
+  credits: z
+    .looseObject({
+      crew: z.array(z.looseObject({ id: z.number().int(), name: z.string(), job: z.string() })),
+    })
+    .optional(),
 });
 export type MovieDetails = z.infer<typeof MovieDetails>;

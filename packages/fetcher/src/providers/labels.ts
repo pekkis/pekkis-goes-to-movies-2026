@@ -325,6 +325,18 @@ export const deriveTags = (batch: ProviderBatch): ProviderBatch => ({
  */
 export const CLASSIC_AGE_YEARS = 5;
 
+/**
+ * The screening tagged `domestic` when Finland is among its film's production countries (TMDB's,
+ * or the cinema's own for an unmatched listing); unchanged otherwise.
+ */
+export const withDomesticTag = <S extends { tags: ScreeningTag[] }>(
+  screening: S,
+  countries: readonly string[] | undefined,
+): S =>
+  countries?.includes("FI") && !screening.tags.includes("domestic")
+    ? { ...screening, tags: [...screening.tags, "domestic"] }
+    : screening;
+
 /** The screening tagged `classic` when its film's `year` is old enough; unchanged otherwise. */
 export const withClassicTag = <S extends { tags: ScreeningTag[] }>(
   screening: S,

@@ -45,6 +45,7 @@ export const fi = {
   noPoster: (title: string) => `${title} – ei julistetta`,
   filmNotFound: "Elokuvaa ei löytynyt.",
   originalTitle: "Alkuperäinen nimi",
+  directedBy: "Ohjaus",
   finnishPremiere: "Ensi-ilta Suomessa",
   trailer: "Traileri (YouTube)",
   onTmdb: "Elokuva TMDB:ssä",

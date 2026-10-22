@@ -39,6 +39,7 @@ export const film = (overrides: Partial<Film> = {}): Film => ({
   rating: "K-12",
   genres: ["Draama"],
   countries: ["FI"],
+  directors: [{ tmdbId: 7, name: "Testi Ohjaaja" }],
   overview: { en: "A film for tests." },
   posterPath: "/poster.jpg",
   trailers: [{ site: "YouTube", key: "abc", name: "Trailer" }],

@@ -347,6 +347,7 @@ describe("films", () => {
       titles: { fi: "Testielokuva", en: "Test Film" },
       overview: { en: "A film for tests." },
       trailers: [{ site: "YouTube", key: "abc", name: "Trailer" }],
+      directors: [{ tmdbId: 7, name: "Testi Ohjaaja" }],
     });
   });
 

@@ -79,6 +79,7 @@ export const filmRow = (f: Film): FilmRow => ({
   posterPath: f.posterPath ?? null,
   backdropPath: f.backdropPath ?? null,
   trailers: JSON.stringify(f.trailers),
+  directors: JSON.stringify(f.directors),
   fetchedAt: f.fetchedAt,
 });
 

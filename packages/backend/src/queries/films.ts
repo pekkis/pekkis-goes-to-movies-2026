@@ -22,6 +22,15 @@ const trailersOf = (value: unknown): FilmOut["trailers"] =>
       )
     : [];
 
+const directorsOf = (value: unknown): FilmOut["directors"] =>
+  Array.isArray(value)
+    ? value.flatMap((d) =>
+        d && typeof d === "object" && "tmdbId" in d && "name" in d
+          ? [{ tmdbId: Number(d.tmdbId), name: String(d.name) }]
+          : [],
+      )
+    : [];
+
 /** A TMDB film (`tmdb:…`) or an unmatched cinema listing, with everything we know. */
 export const getFilm = async (db: Kysely<DB>, id: string): Promise<FilmOut | undefined> => {
   const film = await filmDetails(db, id);
@@ -44,6 +53,7 @@ export const getFilm = async (db: Kysely<DB>, id: string): Promise<FilmOut | und
       finnishReleaseDate: film.finnishReleaseDate,
       genres: film.genres,
       countries: film.countries,
+      directors: directorsOf(film.directors),
       overview: { fi: film.overviewFi, sv: film.overviewSv, en: film.overviewEn },
       backdropUrl: backdropUrl(film.backdropPath),
       trailers: trailersOf(film.trailers),
@@ -72,6 +82,7 @@ export const getFilm = async (db: Kysely<DB>, id: string): Promise<FilmOut | und
     finnishReleaseDate: null,
     genres: listing.genres,
     countries: listing.countries,
+    directors: [],
     overview: { fi: null, sv: null, en: null },
     backdropUrl: null,
     trailers: [],

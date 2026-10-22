@@ -98,6 +98,32 @@ describe("toFilm details", () => {
     expect(film).not.toHaveProperty("rating");
     expect(film.finnishReleaseDate).toBe("2026-01-01");
   });
+
+  it("reads the directors from the crew, each once, in TMDB's order", () => {
+    const film = toFilm(
+      details({
+        id: 1,
+        title: "X",
+        credits: {
+          crew: [
+            { id: 11, name: "Ohjaaja Yksi", job: "Director" },
+            { id: 12, name: "Käsikirjoittaja", job: "Screenplay" },
+            { id: 13, name: "Ohjaaja Kaksi", job: "Director" },
+            { id: 11, name: "Ohjaaja Yksi", job: "Director" },
+          ],
+        },
+      }),
+      FETCHED,
+    );
+    expect(film.directors).toEqual([
+      { tmdbId: 11, name: "Ohjaaja Yksi" },
+      { tmdbId: 13, name: "Ohjaaja Kaksi" },
+    ]);
+  });
+
+  it("has no directors when TMDB's answer has no credits (an older cached answer)", () => {
+    expect(toFilm(details({ id: 1, title: "X" }), FETCHED).directors).toEqual([]);
+  });
 });
 
 it("builds image URLs", () => {
