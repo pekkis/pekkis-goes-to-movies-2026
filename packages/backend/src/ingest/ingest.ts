@@ -80,6 +80,14 @@ export type BatchResult = {
  * Cine Mäntsälä's API returned only today instead of the week on 2026-10-20.
  */
 export const DROP_SHARE = 0.5;
+
+/**
+ * Screenings starting this soon after the pull are never marked removed: sources drop a
+ * show once its online sales close, just before it starts (Finnkino left out a 12:10 show
+ * from a 12:05 answer, 2026-10-22). A cancellation this late is rare, and missing it
+ * costs nothing.
+ */
+export const REMOVAL_MARGIN_MINUTES = 30;
 export const DROP_MIN = 10;
 
 /** Whether `incoming` upcoming screenings, against `held`, look like a partial answer. */
@@ -90,8 +98,9 @@ export const looksPartial = (held: number, incoming: number): boolean =>
  * Upserts one provider's batch in a transaction. Screenings keep history:
  * - new ones get first_seen_at = last_seen_at = batch.fetchedAt
  * - seen again: fields updated, last_seen_at bumped, removed_at cleared
- * - missing from the batch, at one of its venues, inside its date window and still in
- *   the future: removed_at = batch.fetchedAt. Past screenings are never touched, and
+ * - missing from the batch, at one of its venues, inside its date window and starting
+ *   more than REMOVAL_MARGIN_MINUTES after the pull: removed_at = batch.fetchedAt. Past
+ *   and about-to-start screenings are never touched (sources drop those), and
  *   venues the batch does not list (a partial `--venue` pull) are left alone.
  *   Nothing is marked removed from an incomplete batch, or from an empty one: a source
  *   whose whole programme vanishes without a warning is far more often a parser that
@@ -101,6 +110,8 @@ export const looksPartial = (held: number, incoming: number): boolean =>
 export const ingestBatch = (db: Kysely<DB>, batch: ProviderBatch): Promise<BatchResult> =>
   db.transaction().execute(async (trx) => {
     const seenAt = batch.fetchedAt;
+    // Removals consider only screenings starting after this: see REMOVAL_MARGIN_MINUTES.
+    const cutoff = new Date(Date.parse(seenAt) + REMOVAL_MARGIN_MINUTES * 60_000);
     // What we hold for this batch's venues and days still to come, before writing anything.
     const upcoming = () =>
       trx
@@ -109,7 +120,7 @@ export const ingestBatch = (db: Kysely<DB>, batch: ProviderBatch): Promise<Batch
         .where(sql<boolean>`venue_id = any(${batch.venues.map((v) => v.id)}::text[])`)
         .where("businessDate", ">=", batch.window.from)
         .where("businessDate", "<=", batch.window.to)
-        .where("startsAt", ">", new Date(seenAt))
+        .where("startsAt", ">", cutoff)
         .where("removedAt", "is", null);
     const held = batch.venues.length
       ? Number(
@@ -121,7 +132,7 @@ export const ingestBatch = (db: Kysely<DB>, batch: ProviderBatch): Promise<Batch
         )
       : 0;
     const incoming = batch.screenings.filter(
-      (s) => Date.parse(s.startsAt) > Date.parse(seenAt),
+      (s) => Date.parse(s.startsAt) > cutoff.getTime(),
     ).length;
     await upsert(trx, "providers", [providerRow(batch.provider)]);
     await upsert(trx, "venues", batch.venues.map(venueRow));
@@ -177,7 +188,7 @@ export const ingestBatch = (db: Kysely<DB>, batch: ProviderBatch): Promise<Batch
       .where(sql<boolean>`venue_id = any(${batch.venues.map((v) => v.id)}::text[])`)
       .where("businessDate", ">=", batch.window.from)
       .where("businessDate", "<=", batch.window.to)
-      .where("startsAt", ">", new Date(seenAt))
+      .where("startsAt", ">", cutoff)
       .where("removedAt", "is", null)
       .where(sql<boolean>`not (id = any(${batch.screenings.map((s) => s.id)}::text[]))`)
       .executeTakeFirst();
