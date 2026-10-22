@@ -102,6 +102,23 @@ describe("ingestBatch", () => {
     expect(back.removedAt).toBeNull();
   });
 
+  it("leaves a show about to start alone: sources drop it once sales close (2026-10-22)", async () => {
+    // Fetched at 15:00 Helsinki time: 15:10 is about to start, 21:00 is later in the day.
+    const soon = screening("soon", { startsAt: "2026-10-09T15:10:00+03:00" });
+    const evening = screening("evening", { startsAt: "2026-10-09T21:00:00+03:00" });
+    const other = screening("other", { startsAt: "2026-10-09T19:00:00+03:00" });
+    await ingestBatch(db, batch([soon, evening, other]));
+
+    const result = await ingestBatch(db, batch([other]));
+    expect(result.removed).toBe(1);
+    const removed = await db
+      .selectFrom("screenings")
+      .select("sourceId")
+      .where("removedAt", "is not", null)
+      .execute();
+    expect(removed.map((r) => r.sourceId)).toEqual(["evening"]);
+  });
+
   it("never removes past screenings or days outside the fetched window", async () => {
     const past = screening("past", {
       startsAt: "2026-10-09T10:00:00+03:00",
