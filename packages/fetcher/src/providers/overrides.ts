@@ -34,7 +34,10 @@ export const loadVenueOverrides = async (
   path: URL | string = VENUE_OVERRIDES_PATH,
 ): Promise<VenueOverrides> => VenueOverrides.parse(JSON.parse(await readFile(path, "utf8")));
 
-/** Pure: patches the batch's venues and warns about venues still without coordinates. */
+/**
+ * Pure: patches the batch's venues and warns about venues still without coordinates, except
+ * those with no fixed place (a pop-up whose source never says where).
+ */
 export const finishVenues = (batch: ProviderBatch, overrides: VenueOverrides): ProviderBatch => {
   const venues = batch.venues.map((venue) => {
     const o = overrides[venue.id];
@@ -49,7 +52,7 @@ export const finishVenues = (batch: ProviderBatch, overrides: VenueOverrides): P
     };
   });
   const missing = venues
-    .filter((v) => !v.geo)
+    .filter((v) => !v.geo && !v.noFixedPlace)
     .map((v) => ({
       code: "venue-without-geo",
       message: `${v.name} (${v.city}) has no coordinates; see pnpm venues:locate`,

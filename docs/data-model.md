@@ -31,11 +31,12 @@ Goal: a precise, typed model that improves on the data model of Leffavuoro (Shad
 
 - **Ids have the form `{provider}:{kind}:{sourceId}`.** They are unique across entity types too: BioRex film 1509 and showtime 1509 cannot be confused.
 - **Times:** `startsAt` and `endsAt` are Helsinki wall-clock times with an offset (`2026-10-09T20:00:00+03:00`). `businessDate` is the cinema's business day, so a show after midnight belongs to the previous day. `fetchedAt` is UTC.
-- **Languages** are lowercase ISO 639-1 codes (plus `zxx` for no dialogue). An empty `audio` means the language is unknown. `dubbed: true | false` tells a dubbed version from the original; the field is absent when unknown.
+- **Languages** are lowercase ISO 639-1 codes (plus `zxx` for no dialogue). An empty `audio` means the language is unknown; several languages mean a film spoken in all of them ("EN & FI"), not several versions. `dubbed: true | false` tells a dubbed version from the original; the field is absent when unknown.
 - **Subtitles** are a discriminated union: `none`, `languages`, `unknown-language` (Leffavuoro's "XX-S") or `unknown`.
 - **"Unknown" is expressed by omitting the field, never with an empty string or `false`.** For example, `licensed` (alcohol service) is absent when we do not know. The TS option `exactOptionalPropertyTypes` enforces this.
 - **Age limits:** the film's classification is `FilmListing.rating` (and `Film.rating` from TMDB). Limits set by the screen or the screening are `Auditorium.ageLimit` and `Screening.ageLimit`; for example, BioRex's REX screens are K-18.
 - **Availability:** `available`, `few-left`, `sold-out`, `not-bookable` or `unknown`. `ticketUrl` is set only while the screening is on sale.
+- **`Venue.noFixedPlace`:** a pop-up that screens at changing places its source doesn't name (Pop Up Kino Helsinki). It has no address or coordinates on purpose, and the pull doesn't warn about them.
 - **Outside links are http(s) only** (`HttpUrl`): `ticketUrl`, `Venue.url` and `Provider.homepage` end up as `href`s on our site, and `z.url()` alone accepts `javascript:` and `data:`. A cinema's compromised page could otherwise put a script on our site. A screening with any other scheme fails validation and becomes an `invalid-*` warning (so its batch infers no removals).
 - **`unmappedLabels`:** source labels the parser does not recognize (e.g. `version_hfr` or `title_extension:4DX`). They are never dropped silently, and never put into `series`.
 - **`labels`:** every label the source printed, verbatim, as `{ source, text }` (`etiketti.tag`, `title.prefix`, …), whether understood or not. Kept for reclassifying history; not in the API.

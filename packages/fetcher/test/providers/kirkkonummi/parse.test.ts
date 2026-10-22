@@ -51,6 +51,16 @@ describe("parseKirkkonummi", () => {
     expect(batch.listings.map((l) => l.title.fi)).not.toContain("LAPIN SOTA");
   });
 
+  it('reads two times on one row: "24.10. La klo17.00 ja klo18.00" (2026-10-22)', () => {
+    const both = HTML.replaceAll("15.10. Torstai klo18.30", "15.10. To klo17.00 ja klo18.30");
+    const result = parseKirkkonummi(snapshot({ html: both }), SITE);
+    expect(result.warnings).toEqual([]);
+    const on15th = result.screenings
+      .filter((s) => s.businessDate === "2026-10-15")
+      .map((s) => s.startsAt.slice(11, 16));
+    expect(on15th).toEqual(expect.arrayContaining(["17:00", "18:30"]));
+  });
+
   it("places nothing when the weekday does not fit the date", () => {
     const wrong = HTML.replaceAll("15.10. Torstai klo18.30", "15.10. Perjantai klo18.30");
     const result = parseKirkkonummi(snapshot({ html: wrong }), SITE);

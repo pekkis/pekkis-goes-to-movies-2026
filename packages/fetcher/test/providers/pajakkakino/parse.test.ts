@@ -106,6 +106,13 @@ describe("parsePajakkakino", () => {
       expect(late(result)).toEqual(["2026-10-19T16:30:00+03:00", "2026-10-19T18:30:00+03:00"]);
     });
 
+    it('skips an old post\'s past screening: "SU 20.9." in late October (2026-10-22)', () => {
+      // 4.9.2026 was a Friday, five weeks before the reference day; next year's is a Saturday.
+      const result = variant("PE 4.9. KLO 18:00");
+      expect(result.warnings).toEqual([]);
+      expect(result.screenings.filter((s) => s.businessDate.endsWith("-09-04"))).toEqual([]);
+    });
+
     it("keeps a row whose note says the film starts", () => {
       const result = variant("MA 19.10. KLO 18:00 elokuva alkaa");
       expect(result.warnings).toEqual([]);

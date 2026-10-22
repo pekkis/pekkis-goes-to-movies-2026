@@ -64,6 +64,16 @@ describe("parseBioMarlon", () => {
     expect(shows("PIRJO I SVERIGE")[0]?.dubbed).toBeUndefined();
   });
 
+  it('reads two times on one row: "pe 23.10. 16:00 ja 19:15" (2026-10-22)', () => {
+    const both = HTML.replace("to 15.10. 17:00", "to 15.10. 17:00 ja 20:30");
+    const result = parseBioMarlon(snapshot({ html: both }), SITE);
+    expect(result.warnings).toEqual([]);
+    const on15th = result.screenings
+      .filter((s) => s.businessDate === "2026-10-15")
+      .map((s) => s.startsAt.slice(11, 16));
+    expect(on15th).toEqual(expect.arrayContaining(["17:00", "20:30"]));
+  });
+
   it("warns about a row whose weekday fits no date", () => {
     const broken = HTML.replace("to 15.10. 17:00", "ke 15.10. 17:00");
     const result = parseBioMarlon(snapshot({ html: broken }), SITE);

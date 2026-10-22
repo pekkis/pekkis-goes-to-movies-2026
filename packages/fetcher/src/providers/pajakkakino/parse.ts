@@ -9,7 +9,7 @@ import {
   type Subtitles,
   type Warning,
 } from "@pgtm/model";
-import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
+import { dateWindow, helsinkiShowTime, nearestDate, pastDateThisYear } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { z } from "zod";
 import { normalizeLang } from "../../lib/lang.ts";
@@ -55,12 +55,16 @@ type ShowTime = NonNullable<ReturnType<typeof helsinkiShowTime>>;
 const rowStarts = (line: string, from: string): ShowTime[] | "skip" | "unreadable" => {
   const m = line.match(ROW);
   const date = m ? nearestDate(Number(m[2]), Number(m[3]), from) : undefined;
-  if (
-    !m ||
-    !date ||
-    WEEKDAYS[Temporal.PlainDate.from(date).dayOfWeek - 1] !== m[1]!.toUpperCase()
-  ) {
+  const fits = (d: string) =>
+    WEEKDAYS[Temporal.PlainDate.from(d).dayOfWeek - 1] === m![1]!.toUpperCase();
+  if (!m || !date) {
     return "unreadable";
+  }
+  if (!fits(date)) {
+    // An old post's past screening: "SU 20.9." in late October is last month, not next
+    // September (2026-10-22). Its weekday fits this year's date, before today.
+    const past = pastDateThisYear(Number(m[2]), Number(m[3]), from);
+    return past && fits(past) ? "skip" : "unreadable";
   }
   const rest = (m[4] ?? "").trim();
   if (!rest || TIME_LATER.test(rest)) {

@@ -40,6 +40,11 @@ export const SiteVenue = z.object({
   geo: FinnishGeo.optional(),
   /** Required with `geo`: where the coordinate came from (see GeoSource). */
   geoSource: GeoSource.optional(),
+  /**
+   * A pop-up that screens at changing places its source doesn't name: it has no address or
+   * coordinates on purpose, so the pull doesn't ask for them.
+   */
+  noFixedPlace: z.literal(true).optional(),
 });
 export type SiteVenue = z.infer<typeof SiteVenue>;
 
@@ -77,6 +82,7 @@ export const toVenue = (provider: string, v: SiteVenue, sourceId: string): Venue
   ...(v.address && { address: v.address }),
   ...(v.postalCode && { postalCode: v.postalCode }),
   ...(v.geo && { geo: v.geo }),
+  ...(v.noFixedPlace && { noFixedPlace: true as const }),
 });
 
 /** Validates a site list: schema, unique providers, unique venue slugs per site, geo sources. */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeLang } from "../../src/lib/lang.ts";
+import { normalizeLang, normalizeLangs } from "../../src/lib/lang.ts";
 
 it.each([
   ["FI", "fi"],
@@ -29,5 +29,21 @@ describe("lookup tables", () => {
     expect(normalizeLang("constructor")).toBeUndefined();
     expect(normalizeLang("toString")).toBeUndefined();
     expect(normalizeLang("__proto__")).toBeUndefined();
+  });
+});
+
+describe("normalizeLangs", () => {
+  it.each([
+    ["EN & FI", ["en", "fi"]],
+    ["fi", ["fi"]],
+    ["englanti, suomi", ["en", "fi"]],
+    ["suomi ja ruotsi", ["fi", "sv"]],
+    ["English and Finnish", ["en", "fi"]],
+    ["EN & EN", ["en"]],
+    ["EN & Klingon", undefined],
+    ["FI/SV", undefined],
+    ["", undefined],
+  ])("%j -> %j", (input, expected) => {
+    expect(normalizeLangs(input)).toEqual(expected);
   });
 });
