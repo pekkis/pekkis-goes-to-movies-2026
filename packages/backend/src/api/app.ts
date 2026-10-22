@@ -10,6 +10,7 @@ import { router } from "./hono.ts";
 import { filmRoutes } from "./routes/films.ts";
 import { metaRoutes } from "./routes/meta.ts";
 import { screeningRoutes } from "./routes/screenings.ts";
+import { seriesRoutes } from "./routes/series.ts";
 import { venueRoutes } from "./routes/venues.ts";
 
 export type AppOptions = {
@@ -48,7 +49,8 @@ export const createApp = ({ db, corsOrigins = "*", log = false, mcpToken }: AppO
     .route("/", metaRoutes(db))
     .route("/", venueRoutes(db))
     .route("/", screeningRoutes(db))
-    .route("/", filmRoutes(db));
+    .route("/", filmRoutes(db))
+    .route("/", seriesRoutes(db));
 
   if (mcpToken) {
     // Stateless (no session id generator): a fresh server and transport per request.

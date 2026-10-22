@@ -5,6 +5,7 @@ import type { Screening } from "../api/schemas.ts";
 import type { DB } from "../db/types.ts";
 import { filmsPlaying, getFilm, searchFilmSummaries } from "../queries/films.ts";
 import { listScreenings } from "../queries/screenings.ts";
+import { listSeries } from "../queries/series.ts";
 import { listVenues } from "../queries/venues.ts";
 import { MAX_ID, MAX_TEXT } from "../api/params.ts";
 import { helsinkiToday } from "../search/showtimes.ts";
@@ -13,7 +14,7 @@ import { ScreeningTag } from "@pgtm/model";
 import { addDays, daysBetween } from "@pgtm/model/time";
 
 /**
- * MCP server for chatbots: the same read-only data as the HTTP API, as five tools a model
+ * MCP server for chatbots: the same read-only data as the HTTP API, as six tools a model
  * can call. Results are compact JSON with the cinemas' own ticket links. Critics' scores
  * only when asked for (`include_ratings`): some people don't want verdicts beforehand.
  */
@@ -28,7 +29,9 @@ const INSTRUCTIONS =
   "the night (a 00:30 show belongs to the evening before). Use find_film to turn a film " +
   "name into an id, film_info for what a film is (synopsis, directors, film series), " +
   "whats_on for screenings by place, days, time, film and kind (classic, domestic, kids…), " +
-  "films_playing for films over a span of days by director, film series or kind, and " +
+  "films_playing for films over a span of days by director, film series or kind, " +
+  "find_series for the cinemas' own series, festivals and clubs (a knitting screening, a " +
+  "director retrospective) and their ids for whats_on and films_playing, and " +
   "list_venues for cinemas. Always give the user the ticket_url of a screening they are " +
   "interested in. " +
   "Do not mention critics' scores unless the user asks for them. " +
@@ -176,6 +179,7 @@ export const createMcpServer = (db: Kysely<DB>): McpServer => {
           .describe("Only shows starting before this time (05:00 counts as day start)"),
         film_id: z.string().max(MAX_ID).optional().describe("From find_film, e.g. 'tmdb:1368337'"),
         venue_id: z.string().max(MAX_ID).optional().describe("From list_venues"),
+        series_id: z.string().max(MAX_ID).optional().describe("From find_series"),
         include_ratings: z.boolean().default(false).describe("Add critics' scores"),
         limit: z.number().int().min(1).max(MAX_RESULTS).default(40),
       },
@@ -202,6 +206,7 @@ export const createMcpServer = (db: Kysely<DB>): McpServer => {
             }),
             ...(args.film_id && { filmId: args.film_id }),
             ...(args.venue_id && { venueId: args.venue_id }),
+            ...(args.series_id && { seriesId: args.series_id }),
             ...(args.after && { after: args.after }),
             limit: 2000,
           }),
@@ -302,6 +307,7 @@ export const createMcpServer = (db: Kysely<DB>): McpServer => {
           .max(MAX_TEXT)
           .optional()
           .describe("Part of a film series' name, e.g. 'Niskavuori'"),
+        series_id: z.string().max(MAX_ID).optional().describe("From find_series"),
         tag: tag.optional(),
       },
       annotations: { readOnlyHint: true, openWorldHint: false },
@@ -316,6 +322,7 @@ export const createMcpServer = (db: Kysely<DB>): McpServer => {
       const films = await filmsPlaying(db, from, to, args.tag, {
         ...(args.director && { directorName: args.director }),
         ...(args.film_series && { collectionName: args.film_series }),
+        ...(args.series_id && { seriesId: args.series_id }),
       });
       return json({
         from,
@@ -330,6 +337,52 @@ export const createMcpServer = (db: Kysely<DB>): McpServer => {
         ...(films.length === 0 && {
           note: "Only films matched to TMDB are listed; try find_film, or a longer span.",
         }),
+      });
+    },
+  );
+
+  server.registerTool(
+    "find_series",
+    {
+      title: "Find a series",
+      description:
+        "Series with screenings in the coming weeks: cinemas' own strands (knitting " +
+        "screenings, a director retrospective, Kahvikino), festivals, film clubs and " +
+        "distributors' series. Without a query, the biggest ones. Returns ids for whats_on " +
+        "and films_playing.",
+      inputSchema: {
+        query: z
+          .string()
+          .min(2)
+          .max(MAX_TEXT)
+          .optional()
+          .describe("Part of the name, e.g. 'neule', 'suleiman', 'kahvi'"),
+        from: z.iso.date().optional().describe("YYYY-MM-DD; default today in Helsinki"),
+        to: z.iso
+          .date()
+          .optional()
+          .describe(`YYYY-MM-DD; default 27 days after from, at most ${MAX_SPAN} days`),
+      },
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    async (args) => {
+      const from = args.from ?? (await helsinkiToday(db));
+      const to = args.to ?? addDays(from, 27);
+      const span = daysBetween(from, to);
+      if (span < 0 || span > MAX_SPAN) {
+        return json({ error: `from must not be after to, at most ${MAX_SPAN} days` });
+      }
+      const series = await listSeries(db, from, to, args.query);
+      return json({
+        from,
+        to,
+        series: series.slice(0, MAX_RESULTS).map((x) => ({
+          id: x.id,
+          name: x.name,
+          kind: x.kind,
+          screenings: x.screenings,
+          first_day: x.firstDay,
+        })),
       });
     },
   );

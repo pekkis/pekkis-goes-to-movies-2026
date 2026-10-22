@@ -44,13 +44,15 @@ beforeAll(async () => {
       auditoriumId: undefined,
       startsAt: "2026-10-10T19:00:00+03:00",
     }),
-    // The next day, a domestic screening.
+    // The next day, a domestic knitting screening.
     screening("5", {
       startsAt: "2026-10-11T18:00:00+03:00",
       businessDate: "2026-10-11",
       tags: ["domestic"],
+      series: ["neulekino"],
     }),
   ]);
+  b.series = [{ id: "neulekino", name: "Neulekino", kind: "strand" }];
   b.venues.push({
     id: "testchain:venue:2",
     provider: "testchain",
@@ -79,13 +81,14 @@ describe("MCP endpoint", () => {
     expect(res.headers.get("allow")).toBe("POST");
   });
 
-  it("offers five read-only tools", async () => {
+  it("offers six read-only tools", async () => {
     const client = await connect();
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name).toSorted()).toEqual([
       "film_info",
       "films_playing",
       "find_film",
+      "find_series",
       "list_venues",
       "whats_on",
     ]);
@@ -197,6 +200,39 @@ describe("tools", () => {
     expect((await call(client, "films_playing", { ...span, director: "nobody" })).count).toBe(0);
     const domestic = await call(client, "films_playing", { ...span, tag: "domestic" });
     expect(domestic.films[0]).toMatchObject({ first_day: "2026-10-11" });
+    await client.close();
+  });
+
+  it("find_series, then whats_on and films_playing by the series", async () => {
+    const client = await connect();
+    const found = await call(client, "find_series", {
+      query: "neule",
+      from: "2026-10-10",
+      to: "2026-10-11",
+    });
+    expect(found.series).toEqual([
+      {
+        id: "neulekino",
+        name: "Neulekino",
+        kind: "strand",
+        screenings: 1,
+        first_day: "2026-10-11",
+      },
+    ]);
+    const shows = await call(client, "whats_on", {
+      date: "2026-10-10",
+      days: 2,
+      series_id: "neulekino",
+    });
+    expect(shows.screenings).toEqual([
+      expect.objectContaining({ date: "2026-10-11", series: ["Neulekino"] }),
+    ]);
+    const films = await call(client, "films_playing", {
+      from: "2026-10-10",
+      to: "2026-10-11",
+      series_id: "neulekino",
+    });
+    expect(films.films).toEqual([expect.objectContaining({ first_day: "2026-10-11" })]);
     await client.close();
   });
 

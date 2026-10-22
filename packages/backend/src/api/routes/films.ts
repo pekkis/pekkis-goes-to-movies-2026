@@ -12,6 +12,7 @@ import {
   dateParam,
   idParam,
   limitParam,
+  MAX_ID,
   MAX_TEXT,
   parseBbox,
   tagParam,
@@ -97,6 +98,10 @@ const playingRoute = createRoute({
       director: z.coerce.number().int().positive().optional().openapi({
         description: "Only films by this director (TMDB person id, from a film's `directors`).",
         example: 2020204,
+      }),
+      series: z.string().max(MAX_ID).optional().openapi({
+        description: "Only screenings in this series (id from /v1/series).",
+        example: "kinoregina/elia-suleiman",
       }),
       collection: z.coerce.number().int().positive().optional().openapi({
         description:
@@ -190,6 +195,7 @@ export const filmRoutes = (db: Kysely<DB>) =>
         await filmsPlaying(db, from, to, q.tag, {
           ...(q.director && { directorId: q.director }),
           ...(q.collection && { collectionId: q.collection }),
+          ...(q.series && { seriesId: q.series }),
         }),
         200,
       );

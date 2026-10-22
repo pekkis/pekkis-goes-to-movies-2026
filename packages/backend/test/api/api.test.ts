@@ -99,6 +99,7 @@ describe("meta", () => {
       "/v1/films/{id}/screenings",
       "/v1/health",
       "/v1/screenings",
+      "/v1/series",
       "/v1/venues",
       "/v1/venues/{id}",
     ]);
@@ -185,6 +186,26 @@ describe("screenings", () => {
     const two = body.items.find((s: { id: string }) => s.id === "testchain:show:2");
     expect(two.series).toEqual(["KUVIn aluesarja", "Vanha sarja"]);
     expect(body.items[0].series).toEqual([]);
+  });
+
+  it("lists series with their screenings, and filters screenings and films by one", async () => {
+    const { body } = await get("/v1/series?from=2026-10-10&to=2026-10-11&q=kuvi");
+    expect(body).toEqual([
+      {
+        id: "kuvi-aluesarja",
+        name: "KUVIn aluesarja",
+        kind: "distributor-series",
+        screenings: 1,
+        firstDay: "2026-10-10",
+      },
+    ]);
+    expect((await get("/v1/series?q=x")).status).toBe(400);
+    const shows = await get("/v1/screenings?date=2026-10-10&series=kuvi-aluesarja");
+    expect(shows.body.items.map((s: { id: string }) => s.id)).toEqual(["testchain:show:2"]);
+    const films = await get(
+      "/v1/films/playing?from=2026-10-10&to=2026-10-11&series=kuvi-aluesarja",
+    );
+    expect(films.body).toHaveLength(1);
   });
 
   it("shows unmatched listings as such", async () => {

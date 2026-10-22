@@ -4,6 +4,7 @@ import type { Film, FilmOpening, FilmPlaying, FilmSummary, SearchHit } from "../
 import type { DB } from "../db/types.ts";
 import { filmDetails, listingDetails, searchFilms } from "../search/showtimes.ts";
 import { backdropUrl, posterUrl, yearOf } from "./common.ts";
+import { likeText } from "./series.ts";
 
 type FilmOut = z.infer<typeof Film>;
 
@@ -190,10 +191,9 @@ export type FilmFilters = {
   collectionId?: number;
   /** Part of a film series' name, case-insensitive ("niskavuori"). */
   collectionName?: string;
+  /** Only screenings in this series (a registry or cinema series id, from listSeries). */
+  seriesId?: string;
 };
-
-/** `%` and `_` in a user's text are literal in ILIKE. */
-const likeText = (text: string) => `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
 
 /**
  * TMDB films with a screening (not removed) between `from` and `to`, optionally only
@@ -216,7 +216,10 @@ export const filmsPlaying = async (
   if (tag) {
     query = query.where(sql<boolean>`${tag} = any(tags)`);
   }
-  const { directorId, directorName, collectionId, collectionName } = filters;
+  const { directorId, directorName, collectionId, collectionName, seriesId } = filters;
+  if (seriesId) {
+    query = query.where(sql<boolean>`${seriesId} = any(series)`);
+  }
   if (directorId !== undefined || directorName || collectionId !== undefined || collectionName) {
     query = query.where((eb) =>
       eb.exists(

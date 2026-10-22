@@ -151,6 +151,18 @@ export const FilmPlaying = z
   })
   .openapi("FilmPlaying");
 
+export const Series = z
+  .object({
+    id: z.string().openapi({ example: "kinoregina/elia-suleiman" }),
+    name: z.string().openapi({ example: "ELIA SULEIMAN" }),
+    /** strand, festival, club, theme-week, distributor-series, … */
+    kind: z.string().openapi({ example: "strand" }),
+    /** Screenings between the days asked for. */
+    screenings: z.number().int(),
+    firstDay: z.string().openapi({ example: "2026-10-23" }),
+  })
+  .openapi("Series");
+
 export const SearchHit = z
   .object({ score: z.number().openapi({ example: 0.83 }), film: FilmSummary })
   .openapi("SearchHit");

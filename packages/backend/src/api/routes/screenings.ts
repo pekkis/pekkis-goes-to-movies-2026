@@ -36,6 +36,11 @@ const list = createRoute({
         .max(MAX_ID)
         .optional()
         .openapi({ description: "Film id (tmdb:…) or listing id." }),
+      series: z
+        .string()
+        .max(MAX_ID)
+        .optional()
+        .openapi({ description: "Series id, from /v1/series.", example: "kirjastokino" }),
       after: afterParam,
       limit: limitParam(500, 2000),
       cursor: z
@@ -68,6 +73,7 @@ export const screeningRoutes = (db: Kysely<DB>) =>
       city: q.city,
       venueId: q.venue,
       filmId: q.film,
+      seriesId: q.series,
       after: q.after,
       limit: q.limit,
       cursor,

@@ -17,6 +17,8 @@ export type ScreeningFilter = {
   venueId?: string | undefined;
   /** A TMDB film id (`tmdb:…`) or a listing id. */
   filmId?: string | undefined;
+  /** A series id (registry or a cinema's own strand), from listSeries. */
+  seriesId?: string | undefined;
   /** "HH:MM", Helsinki time on `date`; later shows (also after midnight) are kept. */
   after?: string | undefined;
   limit: number;
@@ -120,6 +122,9 @@ export const listScreenings = async (
   const city = f.city?.toLowerCase();
   if (city) {
     q = q.where((eb) => eb(eb.fn("lower", ["v.city"]), "=", city));
+  }
+  if (f.seriesId) {
+    q = q.where(sql<boolean>`${f.seriesId} = any(s.series)`);
   }
   if (f.venueId) {
     q = q.where("s.venueId", "=", f.venueId);
