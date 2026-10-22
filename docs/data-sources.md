@@ -22,7 +22,7 @@ Every response is wrapped as `{"data": [...], "resultCode": 0}` **[V]**.
 
 - `show_time` and `show_time_end` are UTC. `business_date` looks like `"2026-10-09T00:00:00.000Z"`; only the date part is used.
 - **Languages:**
-  - `audio_lang`: `EN`, `FI`, `SE` (= Swedish), `IT`, `DE`.
+  - `audio_lang`: `EN`, `FI`, `SE` (= Swedish), `IT`, `DE`; a film spoken in two languages is `EN & FI` (Yön lapsi, 2026-10-22 [V]), read as `audio: ["en", "fi"]` (`normalizeLangs` in `lib/lang.ts`: all parts known, or the label stays unmapped).
   - `movie_audio_style_id`: 1 = original language, 2 = dubbed.
 - **`subtitle_lang`:** `"Suomi & Ruotsi -"` (Finnish & Swedish), `"SE"` or `"-"` (= no subtitles).
 - **`title_extension`:** `null`, `FI DUB`, `SWE DUB`, `ORIG`, `FI`, `ATMOS` or `FI ATMOS`. The language labels repeat what the language fields already say; the only new information is `ATMOS`.

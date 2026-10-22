@@ -1,4 +1,4 @@
-import { normalizeLang } from "../../lib/lang.ts";
+import { normalizeLang, normalizeLangs } from "../../lib/lang.ts";
 import { dateWindow, toHelsinkiIso } from "@pgtm/model/time";
 import {
   makeId,
@@ -227,7 +227,8 @@ const parseScreening = (
     formats.add("luxe");
   }
 
-  const audio = s.audio_lang ? normalizeLang(s.audio_lang) : undefined;
+  // "EN & FI": a film spoken in both (Yön lapsi, 2026-10-22), not two versions.
+  const audio = s.audio_lang ? normalizeLangs(s.audio_lang) : undefined;
   if (s.audio_lang && !audio) {
     unmapped.push(`audio_lang:${s.audio_lang}`);
   }
@@ -264,7 +265,7 @@ const parseScreening = (
       dimension: s.version_3d ? "3d" : "2d",
       formats: [...formats],
     },
-    audio: audio ? [audio] : [],
+    audio: audio ?? [],
     ...(s.movie_audio_style_id === 1 && { dubbed: false }),
     ...(s.movie_audio_style_id === 2 && { dubbed: true }),
     subtitles,

@@ -210,6 +210,20 @@ describe("MyCloudCinema robustness", () => {
       "version_hfr",
     ]);
   });
+
+  it('reads a film spoken in two languages: "EN & FI" (Yön lapsi, 2026-10-22)', () => {
+    const showtimes = loadFixture("mycloudcinema", "biorex-showtimes.json") as Record<
+      string,
+      { data: Record<string, unknown>[] }
+    >;
+    const row = showtimes["1"]!.data[0]!;
+    row["audio_lang"] = "EN & FI";
+    const batch = parseBiorex(snapshot({ showtimes: { "1": showtimes["1"] } }));
+
+    const show = screening(batch, String(row["show_time_id"]));
+    expect(show.audio).toEqual(["en", "fi"]);
+    expect(show.unmappedLabels).not.toContainEqual(expect.stringContaining("audio_lang"));
+  });
 });
 
 describe("fetch windows", () => {

@@ -163,3 +163,14 @@ export const normalizeLang = (input: string): Lang | undefined => {
   }
   return undefined;
 };
+
+/**
+ * A list of spoken languages, as one field writes it: "EN & FI" -> ["en", "fi"] (BioRex,
+ * Yön lapsi, 2026-10-22); also joined by a comma, "ja" or "and". All or nothing: undefined
+ * if any part is unknown. Not "/": in cinema codes "FI/SV" usually describes subtitles.
+ */
+export const normalizeLangs = (input: string): Lang[] | undefined => {
+  const parts = input.split(/\s*(?:&|,|\bja\b|\band\b)\s*/i).filter((p) => p.trim() !== "");
+  const langs = parts.map(normalizeLang);
+  return langs.length > 0 && langs.every((l) => l !== undefined) ? [...new Set(langs)] : undefined;
+};
