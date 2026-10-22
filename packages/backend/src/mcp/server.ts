@@ -206,7 +206,7 @@ export const createMcpServer = (db: Kysely<DB>): McpServer => {
             }),
             ...(args.film_id && { filmId: args.film_id }),
             ...(args.venue_id && { venueId: args.venue_id }),
-            ...(args.series_id && { seriesId: args.series_id }),
+            ...(args.series_id && { seriesIds: [args.series_id] }),
             ...(args.after && { after: args.after }),
             limit: 2000,
           }),

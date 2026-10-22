@@ -14,6 +14,11 @@ import {
   parseBbox,
 } from "../params.ts";
 import { ErrorBody, ScreeningPage } from "../schemas.ts";
+import { ScreeningTag } from "@pgtm/model";
+import { daysBetween } from "@pgtm/model/time";
+
+/** The longest span one request covers. */
+const MAX_SPAN_DAYS = 31;
 
 const list = createRoute({
   method: "get",
@@ -36,11 +41,42 @@ const list = createRoute({
         .max(MAX_ID)
         .optional()
         .openapi({ description: "Film id (tmdb:…) or listing id." }),
-      series: z
+      to: z.iso
+        .date()
+        .optional()
+        .openapi({
+          description: `The last business date, for a span of days (at most ${MAX_SPAN_DAYS} after date).`,
+          example: "2026-11-18",
+        }),
+      tags: z
         .string()
         .max(MAX_ID)
         .optional()
-        .openapi({ description: "Series id, from /v1/series.", example: "kirjastokino" }),
+        .transform((v) => (v ? v.split(",").map((t) => t.trim()) : []))
+        .pipe(z.array(z.enum(ScreeningTag.options)))
+        .openapi({
+          type: "string",
+          description: "Comma-separated screening tags; with series, any of them matches.",
+          example: "classic,domestic",
+        }),
+      series: z
+        .string()
+        .max(MAX_ID * 4)
+        .optional()
+        .transform((v) =>
+          v
+            ? v
+                .split(",")
+                .map((t) => t.trim())
+                .filter(Boolean)
+            : [],
+        )
+        .openapi({
+          type: "string",
+          description:
+            "Comma-separated series ids, from /v1/series; with tags, any of them matches.",
+          example: "neulekino,kirjastokino",
+        }),
       after: afterParam,
       limit: limitParam(500, 2000),
       cursor: z
@@ -67,13 +103,21 @@ export const screeningRoutes = (db: Kysely<DB>) =>
       return c.json({ error: "invalid cursor" }, 400);
     }
     const date = q.date ?? (await helsinkiToday(db));
+    if (q.to !== undefined) {
+      const span = daysBetween(date, q.to);
+      if (span < 0 || span > MAX_SPAN_DAYS) {
+        return c.json({ error: `to must be from date up to ${MAX_SPAN_DAYS} days after it` }, 400);
+      }
+    }
     const page = await listScreenings(db, {
       date,
       bbox: q.bbox ? parseBbox(q.bbox) : undefined,
       city: q.city,
       venueId: q.venue,
       filmId: q.film,
-      seriesId: q.series,
+      to: q.to,
+      tags: q.tags,
+      seriesIds: q.series,
       after: q.after,
       limit: q.limit,
       cursor,

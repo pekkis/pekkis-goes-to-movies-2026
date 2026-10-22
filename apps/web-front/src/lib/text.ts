@@ -1,3 +1,5 @@
+import type { ScreeningTag, TAG_GROUPS } from "@pgtm/model";
+
 /**
  * Finnish UI text, in one place so it can move to an i18n catalogue (Lingui) later.
  * Code stays English; this module is data.
@@ -46,6 +48,21 @@ export const fi = {
   filmNotFound: "Elokuvaa ei löytynyt.",
   originalTitle: "Alkuperäinen nimi",
   directedBy: "Ohjaus",
+  specials: "Erikoisnäytökset",
+  specialsIntro:
+    "Valitse näytösten lajit ja sarjat, niin näet niiden näytökset neljän viikon ajalta. Osoitteen voi jakaa.",
+  specialsStart: "Valitse ainakin yksi laji tai sarja.",
+  kindsOfScreening: "Näytösten lajit",
+  changeChoices: "Muuta valintoja",
+  chosen: (names: string) => `Valittu: ${names}`,
+  seriesHeading: "Sarjat, festivaalit ja kerhot",
+  noSeries: "Ei sarjoja tulossa.",
+  noKindScreenings: "Ei näytöksiä valituista neljän viikon aikana.",
+  kindsMore: (n: number) =>
+    `Näytetään ${n} ensimmäistä näytöstä. Rajaa valintoja nähdäksesi loput.`,
+  /** "3 näytöstä, pe 23.10. alkaen" */
+  seriesUpcoming: (n: number, firstDay: string) =>
+    `${n === 1 ? "1 näytös" : `${n} näytöstä`}, ${firstDay} alkaen`,
   filmSeries: "Elokuvasarja",
   finnishPremiere: "Ensi-ilta Suomessa",
   trailer: "Traileri (YouTube)",
@@ -105,6 +122,36 @@ export const fi = {
   noMatches: "Valinnoilla ei löytynyt näytöksiä. Poista jokin rajaus.",
   around: (place: string, km: string) => `${place}, enintään ${km}`,
 } as const;
+
+/** Every screening tag's name; the type makes a new tag in the model need one here. */
+export const TAG_NAMES: Record<ScreeningTag, string> = {
+  premiere: "Ensi-illat",
+  preview: "Ennakkonäytökset",
+  "last-screening": "Viimeiset näytökset",
+  classic: "Uusintaesitykset",
+  "event-cinema": "Tapahtumat (ooppera, baletti, konsertit)",
+  domestic: "Kotimaiset elokuvat",
+  senior: "Seniorinäytökset",
+  kids: "Lastennäytökset",
+  baby: "Vauvanäytökset",
+  discount: "Alennusnäytökset",
+  free: "Ilmaiset näytökset",
+  guest: "Vieraat ja keskustelut",
+  "no-dialogue": "Ilman puhetta",
+  accessible: "Esteettömät näytökset",
+  captions: "Ruututekstitys",
+  "audio-description": "Kuvailutulkkaus",
+};
+
+/** The model's tag groups, named. */
+export const TAG_GROUP_NAMES: Record<keyof typeof TAG_GROUPS, string> = {
+  occasion: "Tilaisuus",
+  origin: "Alkuperä",
+  audience: "Yleisö",
+  extras: "Lisäksi",
+  accessibility: "Saavutettavuus",
+  price: "Hinta",
+};
 
 const languageNames = new Intl.DisplayNames(["fi"], { type: "language" });
 

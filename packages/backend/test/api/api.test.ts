@@ -202,6 +202,15 @@ describe("screenings", () => {
     expect((await get("/v1/series?q=x")).status).toBe(400);
     const shows = await get("/v1/screenings?date=2026-10-10&series=kuvi-aluesarja");
     expect(shows.body.items.map((s: { id: string }) => s.id)).toEqual(["testchain:show:2"]);
+    // A span of days, and any of several kinds.
+    const span = await get(
+      "/v1/screenings?date=2026-10-09&to=2026-10-11&series=kuvi-aluesarja,neulekino&tags=baby",
+    );
+    expect(span.status).toBe(200);
+    expect(span.body.items.map((s: { id: string }) => s.id)).toEqual(["testchain:show:2"]);
+    expect((await get("/v1/screenings?date=2026-10-10&tags=knitting")).status).toBe(400);
+    expect((await get("/v1/screenings?date=2026-10-10&to=2026-10-09")).status).toBe(400);
+    expect((await get("/v1/screenings?date=2026-10-10&to=2026-12-31")).status).toBe(400);
     const films = await get(
       "/v1/films/playing?from=2026-10-10&to=2026-10-11&series=kuvi-aluesarja",
     );

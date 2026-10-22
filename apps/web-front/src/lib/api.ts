@@ -17,6 +17,8 @@ export type FilmSummary = InferResponseType<
   200
 >[number]["film"];
 
+export type Series = InferResponseType<Api["v1"]["series"]["$get"], 200>[number];
+
 export class ApiError extends Error {
   readonly status: number;
   constructor(status: number, path: string) {
@@ -141,4 +143,43 @@ export const filmsPlaying = async (
     throw new ApiError(res.status, "/v1/films/playing");
   }
   return res.json();
+};
+
+/** Series with screenings between two days, most screenings first. */
+export const listSeries = async (api: Api, from: string, to: string): Promise<Series[]> => {
+  const res = await api.v1.series.$get({ query: { from, to } });
+  if (!res.ok) {
+    throw new ApiError(res.status, "/v1/series");
+  }
+  return res.json();
+};
+
+/**
+ * The first `limit` screenings between two days with any of the given tags or in any of
+ * the given series, in time order; `more` when there are others after them.
+ */
+export const kindScreenings = async (
+  api: Api,
+  {
+    from,
+    to,
+    tags,
+    series,
+    limit,
+  }: { from: string; to: string; tags: string[]; series: string[]; limit: number },
+): Promise<{ items: Screening[]; more: boolean }> => {
+  const res = await api.v1.screenings.$get({
+    query: {
+      date: from,
+      to,
+      limit: String(limit),
+      ...(tags.length > 0 && { tags: tags.join(",") }),
+      ...(series.length > 0 && { series: series.join(",") }),
+    },
+  });
+  if (!res.ok) {
+    throw new ApiError(res.status, "/v1/screenings");
+  }
+  const page = await res.json();
+  return { items: page.items, more: page.nextCursor !== null };
 };
