@@ -8,11 +8,19 @@ type Named = { name: string; city: string };
  * Unique across every venue on 2026-10-13 (names alone are not: "Studio 123", "Maxim").
  * Derived from the current name: if a cinema is renamed, add a redirect for the old slug.
  */
-export const venueSlug = ({ name, city }: Named): string => {
-  const slug = citySlug(name);
-  const place = citySlug(city);
-  return new RegExp(`(^|-)${place}($|-)`).test(slug) ? slug : `${slug}-${place}`;
-};
+const namesCity = ({ name, city }: Named): boolean =>
+  new RegExp(`(^|-)${citySlug(city)}($|-)`).test(citySlug(name));
+
+export const venueSlug = (venue: Named): string =>
+  namesCity(venue) ? citySlug(venue.name) : `${citySlug(venue.name)}-${citySlug(venue.city)}`;
+
+/**
+ * A venue as people should read it outside its own city's page: "Maxim, Varkaus", since
+ * names repeat ("Maxim", "Studio 123"); "BioRex Tripla" or "Plevna Tampere" as they are
+ * when the name already says the city.
+ */
+export const venueLabel = (venue: Named): string =>
+  namesCity(venue) ? venue.name : `${venue.name}, ${venue.city}`;
 
 export const venuePath = (venue: Named): string => `/fi/elokuvateatterit/${venueSlug(venue)}`;
 

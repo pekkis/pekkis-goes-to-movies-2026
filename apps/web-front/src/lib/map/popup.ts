@@ -15,7 +15,8 @@ export const popupContent = (venue: VenueProps, doc: Document = document): HTMLE
   name.textContent = venue.name;
 
   const address = doc.createElement("span");
-  address.textContent = venue.address || venue.city;
+  // The town too: names repeat ("Maxim" is in several towns), streets more so.
+  address.textContent = venue.address ? `${venue.address}, ${venue.city}` : venue.city;
 
   const link = doc.createElement("a");
   link.href = venue.path;

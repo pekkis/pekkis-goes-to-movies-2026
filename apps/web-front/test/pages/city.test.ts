@@ -36,6 +36,8 @@ describe("city page", () => {
     expect(html).toContain("tiistaina 13.10.");
     expect(html).toContain("Unohdettu saari");
     expect(html).toContain('href="https://kino.example/liput/1"');
+    // On the city's own page, venue names go without the town.
+    expect(html).toMatch(/<a href="\/fi\/elokuvateatterit\/kino-testi-jyvaskyla">Kino Testi<\/a>/);
     expect(html).toMatch(/<meta name="robots" content="noindex, nofollow">/);
     // One island keeps show states current; its HTML is already rendered on the server.
     expect(html.match(/<astro-island/g)).toHaveLength(1);

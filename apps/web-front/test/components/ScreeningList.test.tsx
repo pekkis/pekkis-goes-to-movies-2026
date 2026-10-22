@@ -21,7 +21,8 @@ describe("ScreeningList", () => {
     expect(screen.getByRole("link", { name: "Liput" }).getAttribute("href")).toBe(
       "https://kino.example/liput/1",
     );
-    expect(screen.getByRole("link", { name: "Kino Testi" }).getAttribute("href")).toBe(
+    // Outside its city's own page, a venue names its town: names repeat across Finland.
+    expect(screen.getByRole("link", { name: "Kino Testi, Jyväskylä" }).getAttribute("href")).toBe(
       "/fi/elokuvateatterit/kino-testi-jyvaskyla",
     );
     expect(screen.getByText(/, Sali 2/)).toBeTruthy();

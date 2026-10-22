@@ -13,10 +13,10 @@ const CityDay = ({ screenings }: { screenings: Screening[] }) => {
       {collapsed.length > 0 && (
         <details className={css.started}>
           <summary>{fi.showStarted(collapsed.length)}</summary>
-          <ScreeningList screenings={collapsed} />
+          <ScreeningList screenings={collapsed} inCity />
         </details>
       )}
-      <ScreeningList screenings={shown} />
+      <ScreeningList screenings={shown} inCity />
     </>
   );
 };

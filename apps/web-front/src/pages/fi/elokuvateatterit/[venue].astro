@@ -8,7 +8,7 @@ import { safeHref } from "../../../lib/links.ts";
 import { loadVenuePage } from "../../../lib/pages.ts";
 import { fi } from "../../../lib/text.ts";
 import { formatDay } from "../../../lib/time.ts";
-import { osmUrl } from "../../../lib/venues.ts";
+import { osmUrl, venueLabel } from "../../../lib/venues.ts";
 import { sprinkles } from "../../../styles/sprinkles.css.ts";
 
 const page = await loadVenuePage(
@@ -26,7 +26,7 @@ const address = [venue?.address, [venue?.postalCode, venue?.city].filter(Boolean
 
 {
   page && venue ? (
-    <Base title={`${venue.name} – ${formatDay(page.date)}`} description={`${venue.name}, ${venue.city}: ${fi.films(groupByFilm(page.screenings).length)} ${formatDay(page.date)}.`}>
+    <Base title={`${venueLabel(venue)} – ${formatDay(page.date)}`} description={`${venue.name}, ${venue.city}: ${fi.films(groupByFilm(page.screenings).length)} ${formatDay(page.date)}.`}>
       <h1>{venue.name}</h1>
       <p class={sprinkles({ marginBottom: "md" })}>
         {address}

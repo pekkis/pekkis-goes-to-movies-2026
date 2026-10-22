@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { osmUrl, resolveVenue, venuePath, venueSlug } from "../../src/lib/venues.ts";
+import { osmUrl, resolveVenue, venueLabel, venuePath, venueSlug } from "../../src/lib/venues.ts";
+
+describe("venueLabel", () => {
+  it.each([
+    ["Maxim", "Varkaus", "Maxim, Varkaus"],
+    ["Maxim", "Helsinki", "Maxim, Helsinki"],
+    ["Plevna Tampere", "Tampere", "Plevna Tampere"],
+    ["BioRex Jyväskylä", "Jyväskylä", "BioRex Jyväskylä"],
+    ["Kino Myyri", "Vantaa", "Kino Myyri, Vantaa"],
+  ])("%s in %s -> %s", (name, city, label) => {
+    expect(venueLabel({ name, city })).toBe(label);
+  });
+});
 
 describe("venueSlug", () => {
   it.each([
