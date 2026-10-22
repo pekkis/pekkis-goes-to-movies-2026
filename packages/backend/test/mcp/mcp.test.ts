@@ -44,6 +44,12 @@ beforeAll(async () => {
       auditoriumId: undefined,
       startsAt: "2026-10-10T19:00:00+03:00",
     }),
+    // The next day, a domestic screening.
+    screening("5", {
+      startsAt: "2026-10-11T18:00:00+03:00",
+      businessDate: "2026-10-11",
+      tags: ["domestic"],
+    }),
   ]);
   b.venues.push({
     id: "testchain:venue:2",
@@ -73,10 +79,16 @@ describe("MCP endpoint", () => {
     expect(res.headers.get("allow")).toBe("POST");
   });
 
-  it("offers three read-only tools", async () => {
+  it("offers five read-only tools", async () => {
     const client = await connect();
     const { tools } = await client.listTools();
-    expect(tools.map((t) => t.name).toSorted()).toEqual(["find_film", "list_venues", "whats_on"]);
+    expect(tools.map((t) => t.name).toSorted()).toEqual([
+      "film_info",
+      "films_playing",
+      "find_film",
+      "list_venues",
+      "whats_on",
+    ]);
     expect(tools.every((t) => t.annotations?.readOnlyHint)).toBe(true);
     expect(client.getInstructions()).toContain("not endorsed or certified by TMDB");
     await client.close();
@@ -144,10 +156,58 @@ describe("tools", () => {
     await client.close();
   });
 
+  it("whats_on: several days, and one kind of screening", async () => {
+    const client = await connect();
+    const weekend = await call(client, "whats_on", { date: "2026-10-10", days: 2 });
+    expect(weekend).toMatchObject({ date: "2026-10-10", to: "2026-10-11", count: 5 });
+    const domestic = await call(client, "whats_on", {
+      date: "2026-10-10",
+      days: 2,
+      tag: "domestic",
+    });
+    expect(domestic.screenings.map((s: { date: string }) => s.date)).toEqual(["2026-10-11"]);
+    await client.close();
+  });
+
+  it("film_info: what a film is, critics' scores only on request", async () => {
+    const client = await connect();
+    const info = await call(client, "film_info", { film_id: "tmdb:100" });
+    expect(info).toMatchObject({
+      id: "tmdb:100",
+      title: "Testielokuva",
+      directors: ["Testi Ohjaaja"],
+      film_series: { name: "Testisarja", collection_id: 8 },
+      synopsis: "A film for tests.",
+      trailer_url: "https://www.youtube.com/watch?v=abc",
+    });
+    expect(info).not.toHaveProperty("ratings");
+    expect((await call(client, "film_info", { film_id: "tmdb:1" })).error).toMatch(/find_film/);
+    await client.close();
+  });
+
+  it("films_playing: by a director's name, a film series' name or a kind", async () => {
+    const client = await connect();
+    const span = { from: "2026-10-10", to: "2026-10-11" };
+    const byDirector = await call(client, "films_playing", { ...span, director: "ohjaaja" });
+    expect(byDirector.films).toEqual([
+      expect.objectContaining({ id: "tmdb:100", first_day: "2026-10-10" }),
+    ]);
+    const bySeries = await call(client, "films_playing", { ...span, film_series: "testisarja" });
+    expect(bySeries.count).toBe(1);
+    expect((await call(client, "films_playing", { ...span, director: "nobody" })).count).toBe(0);
+    const domestic = await call(client, "films_playing", { ...span, tag: "domestic" });
+    expect(domestic.films[0]).toMatchObject({ first_day: "2026-10-11" });
+    await client.close();
+  });
+
   it("find_film and list_venues", async () => {
     const client = await connect();
     const found = await call(client, "find_film", { query: "testielokuv" });
-    expect(found.films[0]).toMatchObject({ id: "tmdb:100", title: "Testielokuva" });
+    expect(found.films[0]).toMatchObject({
+      id: "tmdb:100",
+      title: "Testielokuva",
+      directors: ["Testi Ohjaaja"],
+    });
     const venues = await call(client, "list_venues", { city: "Helsinki" });
     expect(venues.venues.map((v: { name: string }) => v.name)).toEqual(["Pääkino"]);
     await client.close();

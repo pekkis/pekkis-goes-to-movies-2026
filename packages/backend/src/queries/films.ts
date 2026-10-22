@@ -180,15 +180,32 @@ export const filmOpenings = async (
   });
 };
 
+/** Narrowing for `filmsPlaying`: whose films, which series. */
+export type FilmFilters = {
+  /** A director's TMDB person id. */
+  directorId?: number;
+  /** Part of a director's name, case-insensitive ("bergholm"). */
+  directorName?: string;
+  /** A film series' TMDB collection id. */
+  collectionId?: number;
+  /** Part of a film series' name, case-insensitive ("niskavuori"). */
+  collectionName?: string;
+};
+
+/** `%` and `_` in a user's text are literal in ILIKE. */
+const likeText = (text: string) => `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+
 /**
  * TMDB films with a screening (not removed) between `from` and `to`, optionally only
- * screenings carrying `tag` ("classic"), each with its first such day, earliest first.
+ * screenings carrying `tag` ("classic") and only films matching `filters` (a director, a
+ * film series), each with its first such day, earliest first.
  */
 export const filmsPlaying = async (
   db: Kysely<DB>,
   from: string,
   to: string,
   tag?: string,
+  filters: FilmFilters = {},
 ): Promise<z.infer<typeof FilmPlaying>[]> => {
   let query = db
     .selectFrom("screenings")
@@ -198,6 +215,31 @@ export const filmsPlaying = async (
     .where(sql<boolean>`business_date between ${from}::date and ${to}::date`);
   if (tag) {
     query = query.where(sql<boolean>`${tag} = any(tags)`);
+  }
+  const { directorId, directorName, collectionId, collectionName } = filters;
+  if (directorId !== undefined || directorName || collectionId !== undefined || collectionName) {
+    query = query.where((eb) =>
+      eb.exists(
+        eb
+          .selectFrom("films as f")
+          .select(sql`1`.as("one"))
+          .whereRef("f.id", "=", "screenings.filmId")
+          .$if(directorId !== undefined, (q) =>
+            q.where(
+              sql<boolean>`f.directors @> ${JSON.stringify([{ tmdbId: directorId }])}::jsonb`,
+            ),
+          )
+          .$if(Boolean(directorName), (q) =>
+            q.where(
+              sql<boolean>`exists (select 1 from jsonb_array_elements(f.directors) d where d->>'name' ilike ${likeText(directorName!)})`,
+            ),
+          )
+          .$if(collectionId !== undefined, (q) => q.where("f.collectionTmdbId", "=", collectionId!))
+          .$if(Boolean(collectionName), (q) =>
+            q.where("f.collectionName", "ilike", likeText(collectionName!)),
+          ),
+      ),
+    );
   }
   const rows = await query.groupBy("filmId").orderBy("nextShowing").execute();
   const films = await Promise.all(rows.map((r) => getFilm(db, r.filmId!)));

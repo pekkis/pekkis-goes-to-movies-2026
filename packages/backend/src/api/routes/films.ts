@@ -94,6 +94,15 @@ const playingRoute = createRoute({
         example: "2026-10-26",
       }),
       tag: tagParam("Only screenings carrying this tag, e.g. classic."),
+      director: z.coerce.number().int().positive().optional().openapi({
+        description: "Only films by this director (TMDB person id, from a film's `directors`).",
+        example: 2020204,
+      }),
+      collection: z.coerce.number().int().positive().optional().openapi({
+        description:
+          "Only films of this film series (TMDB collection id, from a film's `collection`).",
+        example: 403193,
+      }),
     }),
   },
   responses: {
@@ -177,7 +186,13 @@ export const filmRoutes = (db: Kysely<DB>) =>
           400,
         );
       }
-      return c.json(await filmsPlaying(db, from, to, q.tag), 200);
+      return c.json(
+        await filmsPlaying(db, from, to, q.tag, {
+          ...(q.director && { directorId: q.director }),
+          ...(q.collection && { collectionId: q.collection }),
+        }),
+        200,
+      );
     })
     .openapi(one, async (c) => {
       const film = await getFilm(db, c.req.valid("param").id);

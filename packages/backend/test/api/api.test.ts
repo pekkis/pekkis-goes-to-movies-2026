@@ -316,6 +316,14 @@ describe("films", () => {
     expect(all.body).toEqual([
       { film: expect.objectContaining({ id: "tmdb:100" }), nextShowing: "2026-10-10" },
     ]);
+    const byDirector = await get("/v1/films/playing?from=2026-10-10&to=2026-10-11&director=7");
+    expect(byDirector.body.map((f: { film: { id: string } }) => f.film.id)).toEqual(["tmdb:100"]);
+    const bySeries = await get("/v1/films/playing?from=2026-10-10&to=2026-10-11&collection=8");
+    expect(bySeries.body).toHaveLength(1);
+    expect((await get("/v1/films/playing?from=2026-10-10&to=2026-10-11&director=9")).body).toEqual(
+      [],
+    );
+    expect((await get("/v1/films/playing?director=abc")).status).toBe(400);
     const classics = await get("/v1/films/playing?from=2026-10-10&to=2026-10-11&tag=classic");
     expect(classics.body.map((p: { nextShowing: string }) => p.nextShowing)).toEqual([
       "2026-10-11",
