@@ -31,7 +31,7 @@ const Availability = ({ value }: { value: string }) =>
   ) : null;
 
 /** One screening: time with its live status, film, venue, languages and ticket link. */
-const ScreeningRow = ({ s }: { s: Screening }) => {
+const ScreeningRow = ({ s, showSeries }: { s: Screening; showSeries: boolean }) => {
   const languages = languageLine(s);
   const status = useShowStatus(s.startsAt);
   const ticketUrl = safeHref(s.ticketUrl);
@@ -53,6 +53,7 @@ const ScreeningRow = ({ s }: { s: Screening }) => {
           <a href={venuePath(s.venue)}>{s.venue.name}</a>
           {s.auditorium && `, ${s.auditorium}`}
           {languages && ` · ${languages}`}
+          {showSeries && s.series.length > 0 && ` · ${s.series.join(", ")}`}
         </div>
       </div>
       {ticketUrl && s.availability !== "sold-out" && status.ticketsOpen && (
@@ -68,11 +69,20 @@ const ScreeningRow = ({ s }: { s: Screening }) => {
   );
 };
 
-/** A day's screenings in time order, each with its live status. Live inside a `<ClockIsland>`. */
-export const ScreeningList = ({ screenings }: { screenings: readonly Screening[] }) => (
+/**
+ * A day's screenings in time order, each with its live status. Live inside a `<ClockIsland>`.
+ * `showSeries` adds each screening's series ("Neulekino") where several kinds are listed.
+ */
+export const ScreeningList = ({
+  screenings,
+  showSeries = false,
+}: {
+  screenings: readonly Screening[];
+  showSeries?: boolean;
+}) => (
   <ol role="list" className={css.list}>
     {screenings.map((s) => (
-      <ScreeningRow key={s.id} s={s} />
+      <ScreeningRow key={s.id} s={s} showSeries={showSeries} />
     ))}
   </ol>
 );

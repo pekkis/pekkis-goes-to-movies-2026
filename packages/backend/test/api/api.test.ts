@@ -99,6 +99,7 @@ describe("meta", () => {
       "/v1/films/{id}/screenings",
       "/v1/health",
       "/v1/screenings",
+      "/v1/series",
       "/v1/venues",
       "/v1/venues/{id}",
     ]);
@@ -185,6 +186,35 @@ describe("screenings", () => {
     const two = body.items.find((s: { id: string }) => s.id === "testchain:show:2");
     expect(two.series).toEqual(["KUVIn aluesarja", "Vanha sarja"]);
     expect(body.items[0].series).toEqual([]);
+  });
+
+  it("lists series with their screenings, and filters screenings and films by one", async () => {
+    const { body } = await get("/v1/series?from=2026-10-10&to=2026-10-11&q=kuvi");
+    expect(body).toEqual([
+      {
+        id: "kuvi-aluesarja",
+        name: "KUVIn aluesarja",
+        kind: "distributor-series",
+        screenings: 1,
+        firstDay: "2026-10-10",
+      },
+    ]);
+    expect((await get("/v1/series?q=x")).status).toBe(400);
+    const shows = await get("/v1/screenings?date=2026-10-10&series=kuvi-aluesarja");
+    expect(shows.body.items.map((s: { id: string }) => s.id)).toEqual(["testchain:show:2"]);
+    // A span of days, and any of several kinds.
+    const span = await get(
+      "/v1/screenings?date=2026-10-09&to=2026-10-11&series=kuvi-aluesarja,neulekino&tags=baby",
+    );
+    expect(span.status).toBe(200);
+    expect(span.body.items.map((s: { id: string }) => s.id)).toEqual(["testchain:show:2"]);
+    expect((await get("/v1/screenings?date=2026-10-10&tags=knitting")).status).toBe(400);
+    expect((await get("/v1/screenings?date=2026-10-10&to=2026-10-09")).status).toBe(400);
+    expect((await get("/v1/screenings?date=2026-10-10&to=2026-12-31")).status).toBe(400);
+    const films = await get(
+      "/v1/films/playing?from=2026-10-10&to=2026-10-11&series=kuvi-aluesarja",
+    );
+    expect(films.body).toHaveLength(1);
   });
 
   it("shows unmatched listings as such", async () => {
@@ -316,6 +346,14 @@ describe("films", () => {
     expect(all.body).toEqual([
       { film: expect.objectContaining({ id: "tmdb:100" }), nextShowing: "2026-10-10" },
     ]);
+    const byDirector = await get("/v1/films/playing?from=2026-10-10&to=2026-10-11&director=7");
+    expect(byDirector.body.map((f: { film: { id: string } }) => f.film.id)).toEqual(["tmdb:100"]);
+    const bySeries = await get("/v1/films/playing?from=2026-10-10&to=2026-10-11&collection=8");
+    expect(bySeries.body).toHaveLength(1);
+    expect((await get("/v1/films/playing?from=2026-10-10&to=2026-10-11&director=9")).body).toEqual(
+      [],
+    );
+    expect((await get("/v1/films/playing?director=abc")).status).toBe(400);
     const classics = await get("/v1/films/playing?from=2026-10-10&to=2026-10-11&tag=classic");
     expect(classics.body.map((p: { nextShowing: string }) => p.nextShowing)).toEqual([
       "2026-10-11",
@@ -347,6 +385,8 @@ describe("films", () => {
       titles: { fi: "Testielokuva", en: "Test Film" },
       overview: { en: "A film for tests." },
       trailers: [{ site: "YouTube", key: "abc", name: "Trailer" }],
+      directors: [{ tmdbId: 7, name: "Testi Ohjaaja" }],
+      collection: { tmdbId: 8, name: "Testisarja" },
     });
   });
 

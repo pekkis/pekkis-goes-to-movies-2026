@@ -72,14 +72,14 @@ A series is something a screening belongs to beyond the film: a strand, festival
 Computed, never scraped:
 
 - `no-dialogue`: the screening's only audio is `zxx` (implemented).
-- domestic: FI among production countries (to do).
+- `domestic`: Finland is among the film's production countries (`withDomesticTag` in `labels.ts`), TMDB's for a matched film or the cinema's own for an unmatched listing. Derived with `classic` when matching writes the batches; tag group `origin`. On 2026-10-22 [V], Yön lapsi (FI, LT, FR, GB) is domestic. Add-only like `classic`.
 - `classic`: the film was released at least 5 years ago (`CLASSIC_AGE_YEARS`, `withClassicTag` in `labels.ts`; 5 is the maintainer's choice of 2026-10-20, after trying 20). The website calls these re-runs, "Uusintaesitykset". It's derived when matching writes the batches (`buildCatalog`), from TMDB's release year, or the cinema's own year for an unmatched listing. It joins the cinemas' own classic labels (Finnkino's "Klassikko"). On 2026-10-20 [V], with 5 years: 38 films in the coming week (30 with 20 years). The front page lists them as re-runs and keeps them out of the new films. The tag is only ever added: lowering the age takes effect on `pnpm match && pnpm ingest`, raising it only on a fresh `pnpm pull`.
 - new release: Finnish release date within a few weeks (to do).
 
 ## Roadmap
 
 - **Phase 1 (done):** this document; `LABELS`; raw labels; the series registry and resolution; the `series` table; fixes found by the survey (`jp` → `ja`, K-18 on bar screenings at eTiketti and Kinola, Kuvakukko's guest and free notes, last screenings at Pajakkakino and Kino Rio, Kaarre's "kiirehdi", `no-dialogue`).
-- **Phase 2:** one shared age-rating parser for every adapter (there are 41 rating tables); TMDB credits (directors), keywords, collections, external ids (IMDb, Wikidata); the Finnish certification as a fallback rating.
+- **Phase 2:** one shared age-rating parser for every adapter (there are 41 rating tables); TMDB credits (directors **done** 2026-10-22: `Film.directors`, `films.directors`, the API and the film page), collections (**done** 2026-10-22: `Film.collection`, shown as "Elokuvasarja"), keywords, external ids (IMDb, Wikidata); the Finnish certification as a fallback rating.
 - **Phase 3:** KAVI content descriptors (several cinemas show them as images we drop: Marita, Pajakkakino, Kino-Kuva, Matin-Tupa); event types; cinema genres mapped to TMDB genres for unmatched listings; Wikidata and Elonet.
 
 ## Open questions

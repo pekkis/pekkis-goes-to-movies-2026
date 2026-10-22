@@ -53,6 +53,8 @@ describe("film page", () => {
     expect(html).toContain('src="https://image.tmdb.org/t/p/w342/saari.jpg"');
     expect(html).toContain("Kaksi ystävää ja saari.");
     expect(html).toContain("Ensi-ilta Suomessa: 2.10.2026");
+    expect(html).toContain("Ohjaus: Testi Ohjaaja");
+    expect(html).toContain("Elokuvasarja: Saarisarja");
     expect(html).toContain('href="https://www.youtube.com/watch?v=abc123"');
     expect(html).toMatch(/aria-current="date"[^>]*>ti 13\.10\. \(1\)/);
     expect(html).toContain('href="https://kino.example/liput/1"');

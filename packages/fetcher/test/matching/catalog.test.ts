@@ -97,4 +97,62 @@ describe("buildCatalog", () => {
       ["3", null, ["classic"]],
     ]);
   });
+
+  it("tags screenings of films made in Finland as domestic", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "pgtm-catalog-"));
+    const finnish: TmdbClient = {
+      ...noSearch,
+      movie: async (id) =>
+        details({
+          id,
+          title: id === 964849 ? "Yön lapsi" : "New",
+          release_date: "2026-07-01",
+          production_countries: id === 964849 ? [{ iso_3166_1: "FI" }, { iso_3166_1: "LT" }] : [],
+        }),
+    };
+    const batch = {
+      provider: {
+        id: "kino",
+        name: "Kino",
+        homepage: "https://kino.example",
+        platform: "custom",
+        booking: "door",
+      },
+      fetchedAt: "2026-10-20T06:00:00.000Z",
+      window: { from: "2026-10-20", to: "2026-10-26" },
+      venues: [
+        { id: "kino:venue:1", provider: "kino", sourceId: "1", name: "Kino", city: "Kuopio" },
+      ],
+      auditoriums: [],
+      listings: [
+        listing("yon-lapsi", "Yön lapsi"),
+        listing("new", "New"),
+        // Not on TMDB: the cinema's own countries decide.
+        listing("local", "Paikallinen dokumentti", { countries: ["FI"] }),
+      ],
+      screenings: [
+        screening("1", "kino:film:yon-lapsi"),
+        screening("2", "kino:film:new"),
+        screening("3", "kino:film:local"),
+      ],
+      warnings: [],
+    } satisfies ProviderBatch;
+    await writeFile(join(dir, "kino.json"), JSON.stringify(batch));
+    await buildCatalog(
+      dir,
+      finnish,
+      {
+        "kino:film:yon-lapsi": { tmdb: 964849, title: "Yön lapsi" },
+        "kino:film:new": { tmdb: 999, title: "New" },
+        "kino:film:local": { tmdb: null, title: "Paikallinen dokumentti" },
+      },
+      NOW,
+    );
+    const written = ProviderBatch.parse(JSON.parse(await readFile(join(dir, "kino.json"), "utf8")));
+    expect(written.screenings.map((s) => [s.sourceId, s.tags])).toEqual([
+      ["1", ["domestic"]],
+      ["2", []],
+      ["3", ["domestic"]],
+    ]);
+  });
 });

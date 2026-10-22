@@ -122,6 +122,10 @@ export const Film = FilmSummary.extend({
   finnishReleaseDate: nullableString,
   genres: z.array(z.string()),
   countries: z.array(z.string()),
+  /** From TMDB credits; empty for an unmatched listing or when TMDB has none. */
+  directors: z.array(z.object({ tmdbId: z.number().int(), name: z.string() })),
+  /** The film series (TMDB collection); null when none or for an unmatched listing. */
+  collection: z.object({ tmdbId: z.number().int(), name: z.string() }).nullable(),
   overview: z.object({ fi: nullableString, sv: nullableString, en: nullableString }),
   backdropUrl: nullableString,
   trailers: z.array(z.object({ site: z.string(), key: z.string(), name: z.string() })),
@@ -146,6 +150,18 @@ export const FilmPlaying = z
     nextShowing: z.string().openapi({ example: "2026-10-21" }),
   })
   .openapi("FilmPlaying");
+
+export const Series = z
+  .object({
+    id: z.string().openapi({ example: "kinoregina/elia-suleiman" }),
+    name: z.string().openapi({ example: "ELIA SULEIMAN" }),
+    /** strand, festival, club, theme-week, distributor-series, … */
+    kind: z.string().openapi({ example: "strand" }),
+    /** Screenings between the days asked for. */
+    screenings: z.number().int(),
+    firstDay: z.string().openapi({ example: "2026-10-23" }),
+  })
+  .openapi("Series");
 
 export const SearchHit = z
   .object({ score: z.number().openapi({ example: 0.83 }), film: FilmSummary })

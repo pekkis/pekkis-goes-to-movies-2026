@@ -83,6 +83,15 @@ export const tmdbRating = (details: MovieDetails): Rating[] => {
   ];
 };
 
+/** The crew's directors, in TMDB's order, each once ("Director" may repeat per department). */
+const directors = (details: MovieDetails): Film["directors"] => [
+  ...new Map(
+    (details.credits?.crew ?? [])
+      .filter((c) => c.job === "Director")
+      .map((c) => [c.id, { tmdbId: c.id, name: c.name }] as const),
+  ).values(),
+];
+
 /** Pure: TMDB details -> Film. */
 export const toFilm = (details: MovieDetails, fetchedAt: string): Film => {
   const posterPath = pickPoster(details);
@@ -99,6 +108,13 @@ export const toFilm = (details: MovieDetails, fetchedAt: string): Film => {
     ...(details.runtime && details.runtime > 0 && { runtimeMinutes: details.runtime }),
     genres: details.genres.map((g) => g.name),
     countries: details.production_countries.map((c) => c.iso_3166_1),
+    directors: directors(details),
+    ...(details.belongs_to_collection && {
+      collection: {
+        tmdbId: details.belongs_to_collection.id,
+        name: details.belongs_to_collection.name,
+      },
+    }),
     overview: localized(details, "overview"),
     ...(posterPath && { posterPath }),
     ...(details.backdrop_path && { backdropPath: details.backdrop_path }),

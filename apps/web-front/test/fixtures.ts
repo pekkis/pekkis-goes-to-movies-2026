@@ -82,6 +82,8 @@ export const film = (over: Partial<Film> = {}): Film => ({
   finnishReleaseDate: "2026-10-02",
   genres: ["Animaatio", "Seikkailu"],
   countries: ["US"],
+  directors: [{ tmdbId: 42, name: "Testi Ohjaaja" }],
+  collection: { tmdbId: 43, name: "Saarisarja" },
   overview: { fi: "Kaksi ystävää ja saari.", sv: null, en: null },
   backdropUrl: null,
   trailers: [{ site: "YouTube", key: "abc123", name: "Traileri" }],

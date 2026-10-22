@@ -4,6 +4,7 @@ import type { Film, FilmOpening, FilmPlaying, FilmSummary, SearchHit } from "../
 import type { DB } from "../db/types.ts";
 import { filmDetails, listingDetails, searchFilms } from "../search/showtimes.ts";
 import { backdropUrl, posterUrl, yearOf } from "./common.ts";
+import { likeText } from "./series.ts";
 
 type FilmOut = z.infer<typeof Film>;
 
@@ -18,6 +19,15 @@ const trailersOf = (value: unknown): FilmOut["trailers"] =>
                 name: String(("name" in t && t.name) || ""),
               },
             ]
+          : [],
+      )
+    : [];
+
+const directorsOf = (value: unknown): FilmOut["directors"] =>
+  Array.isArray(value)
+    ? value.flatMap((d) =>
+        d && typeof d === "object" && "tmdbId" in d && "name" in d
+          ? [{ tmdbId: Number(d.tmdbId), name: String(d.name) }]
           : [],
       )
     : [];
@@ -44,6 +54,11 @@ export const getFilm = async (db: Kysely<DB>, id: string): Promise<FilmOut | und
       finnishReleaseDate: film.finnishReleaseDate,
       genres: film.genres,
       countries: film.countries,
+      directors: directorsOf(film.directors),
+      collection:
+        film.collectionTmdbId !== null && film.collectionName !== null
+          ? { tmdbId: film.collectionTmdbId, name: film.collectionName }
+          : null,
       overview: { fi: film.overviewFi, sv: film.overviewSv, en: film.overviewEn },
       backdropUrl: backdropUrl(film.backdropPath),
       trailers: trailersOf(film.trailers),
@@ -72,6 +87,8 @@ export const getFilm = async (db: Kysely<DB>, id: string): Promise<FilmOut | und
     finnishReleaseDate: null,
     genres: listing.genres,
     countries: listing.countries,
+    directors: [],
+    collection: null,
     overview: { fi: null, sv: null, en: null },
     backdropUrl: null,
     trailers: [],
@@ -164,15 +181,31 @@ export const filmOpenings = async (
   });
 };
 
+/** Narrowing for `filmsPlaying`: whose films, which series. */
+export type FilmFilters = {
+  /** A director's TMDB person id. */
+  directorId?: number;
+  /** Part of a director's name, case-insensitive ("bergholm"). */
+  directorName?: string;
+  /** A film series' TMDB collection id. */
+  collectionId?: number;
+  /** Part of a film series' name, case-insensitive ("niskavuori"). */
+  collectionName?: string;
+  /** Only screenings in this series (a registry or cinema series id, from listSeries). */
+  seriesId?: string;
+};
+
 /**
  * TMDB films with a screening (not removed) between `from` and `to`, optionally only
- * screenings carrying `tag` ("classic"), each with its first such day, earliest first.
+ * screenings carrying `tag` ("classic") and only films matching `filters` (a director, a
+ * film series), each with its first such day, earliest first.
  */
 export const filmsPlaying = async (
   db: Kysely<DB>,
   from: string,
   to: string,
   tag?: string,
+  filters: FilmFilters = {},
 ): Promise<z.infer<typeof FilmPlaying>[]> => {
   let query = db
     .selectFrom("screenings")
@@ -182,6 +215,34 @@ export const filmsPlaying = async (
     .where(sql<boolean>`business_date between ${from}::date and ${to}::date`);
   if (tag) {
     query = query.where(sql<boolean>`${tag} = any(tags)`);
+  }
+  const { directorId, directorName, collectionId, collectionName, seriesId } = filters;
+  if (seriesId) {
+    query = query.where(sql<boolean>`${seriesId} = any(series)`);
+  }
+  if (directorId !== undefined || directorName || collectionId !== undefined || collectionName) {
+    query = query.where((eb) =>
+      eb.exists(
+        eb
+          .selectFrom("films as f")
+          .select(sql`1`.as("one"))
+          .whereRef("f.id", "=", "screenings.filmId")
+          .$if(directorId !== undefined, (q) =>
+            q.where(
+              sql<boolean>`f.directors @> ${JSON.stringify([{ tmdbId: directorId }])}::jsonb`,
+            ),
+          )
+          .$if(Boolean(directorName), (q) =>
+            q.where(
+              sql<boolean>`exists (select 1 from jsonb_array_elements(f.directors) d where d->>'name' ilike ${likeText(directorName!)})`,
+            ),
+          )
+          .$if(collectionId !== undefined, (q) => q.where("f.collectionTmdbId", "=", collectionId!))
+          .$if(Boolean(collectionName), (q) =>
+            q.where("f.collectionName", "ilike", likeText(collectionName!)),
+          ),
+      ),
+    );
   }
   const rows = await query.groupBy("filmId").orderBy("nextShowing").execute();
   const films = await Promise.all(rows.map((r) => getFilm(db, r.filmId!)));

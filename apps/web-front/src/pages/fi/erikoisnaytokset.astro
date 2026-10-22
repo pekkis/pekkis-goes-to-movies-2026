@@ -1,0 +1,36 @@
+---
+import { KindsForm } from "../../components/KindsForm.tsx";
+import { KindsProgramme } from "../../components/KindsProgramme.tsx";
+import Base from "../../layouts/Base.astro";
+import { loadKindsPage, MAX_SHOWN } from "../../lib/kinds.ts";
+import { fi } from "../../lib/text.ts";
+import { programmeToday } from "@pgtm/model/time";
+import { sprinkles } from "../../styles/sprinkles.css.ts";
+
+// The programme day: until 05.00, last night's shows are still "today".
+const today = programmeToday(Astro.locals.now);
+const page = await loadKindsPage(Astro.locals.api, Astro.url.searchParams, today);
+---
+
+<Base title={fi.specials}>
+  <h1>{fi.specials}</h1>
+  <p class={sprinkles({ marginBottom: "md" })}>{fi.specialsIntro}</p>
+  {
+    page.state === "start" ? (
+      <>
+        <KindsForm page={page} />
+        <p>{fi.specialsStart}</p>
+      </>
+    ) : (
+      <>
+        <p class={sprinkles({ marginBottom: "sm" })}><strong>{fi.chosen(page.chosenNames.join(", "))}</strong></p>
+        <details class={sprinkles({ marginBottom: "md" })}>
+          <summary>{fi.changeChoices}</summary>
+          <KindsForm page={page} />
+        </details>
+        {page.more && <p class={sprinkles({ marginBottom: "md" })}>{fi.kindsMore(MAX_SHOWN)}</p>}
+        <KindsProgramme client:idle days={page.days} now={Astro.locals.now.toString()} />
+      </>
+    )
+  }
+</Base>

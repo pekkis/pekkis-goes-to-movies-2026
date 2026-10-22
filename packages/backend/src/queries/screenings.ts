@@ -11,12 +11,20 @@ type ScreeningOut = z.infer<typeof Screening>;
 export type ScreeningFilter = {
   /** Business date, YYYY-MM-DD. */
   date: string;
+  /** The last business date, for a span of days; `date` alone when absent. */
+  to?: string | undefined;
   bbox?: Bbox | undefined;
   /** Venue city, case-insensitive (as in listVenues). */
   city?: string | undefined;
   venueId?: string | undefined;
   /** A TMDB film id (`tmdb:…`) or a listing id. */
   filmId?: string | undefined;
+  /**
+   * Kinds of screening: those with any of these tags, or in any of these series (ids from
+   * listSeries). A knitting screening is a series; a classic is a tag.
+   */
+  tags?: readonly string[] | undefined;
+  seriesIds?: readonly string[] | undefined;
   /** "HH:MM", Helsinki time on `date`; later shows (also after midnight) are kept. */
   after?: string | undefined;
   limit: number;
@@ -107,7 +115,8 @@ export const listScreenings = async (
           .whereRef("r.filmId", "=", "s.filmId"),
       ).as("ratings"),
     )
-    .where("s.businessDate", "=", f.date)
+    .where("s.businessDate", ">=", f.date)
+    .where("s.businessDate", "<=", f.to ?? f.date)
     .where("s.removedAt", "is", null);
 
   if (f.bbox) {
@@ -120,6 +129,13 @@ export const listScreenings = async (
   const city = f.city?.toLowerCase();
   if (city) {
     q = q.where((eb) => eb(eb.fn("lower", ["v.city"]), "=", city));
+  }
+  const tags = f.tags ?? [];
+  const seriesIds = f.seriesIds ?? [];
+  if (tags.length > 0 || seriesIds.length > 0) {
+    q = q.where(
+      sql<boolean>`(s.tags && ${sql.val(tags)}::text[] or s.series && ${sql.val(seriesIds)}::text[])`,
+    );
   }
   if (f.venueId) {
     q = q.where("s.venueId", "=", f.venueId);

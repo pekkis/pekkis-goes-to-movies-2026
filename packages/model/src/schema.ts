@@ -185,6 +185,12 @@ export const Film = z.object({
   genres: z.array(z.string()),
   /** ISO 3166-1 alpha-2. */
   countries: z.array(z.string().regex(/^[A-Z]{2}$/)),
+  /** The directors (TMDB credits), with their TMDB person ids; empty when TMDB has none. */
+  directors: z
+    .array(z.object({ tmdbId: z.number().int().positive(), name: z.string() }))
+    .default([]),
+  /** The film series (TMDB collection) it belongs to: "Nälkäpeli", "Tremors Collection". */
+  collection: z.object({ tmdbId: z.number().int().positive(), name: z.string() }).optional(),
   overview: Localized,
   posterPath: z.string().startsWith("/").optional(),
   backdropPath: z.string().startsWith("/").optional(),
@@ -234,6 +240,7 @@ export const ScreeningTag = z.enum([
   "last-screening",
   "classic",
   "event-cinema",
+  "domestic",
   "senior",
   "kids",
   "baby",
@@ -253,6 +260,7 @@ export type ScreeningTag = z.infer<typeof ScreeningTag>;
  */
 export const TAG_GROUPS = {
   occasion: ["premiere", "preview", "last-screening", "classic", "event-cinema"],
+  origin: ["domestic"],
   audience: ["senior", "kids", "baby"],
   extras: ["guest", "no-dialogue"],
   accessibility: ["accessible", "captions", "audio-description"],

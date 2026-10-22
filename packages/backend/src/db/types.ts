@@ -69,8 +69,11 @@ export interface FilmRatings {
 
 export interface Films {
   backdropPath: string | null;
+  collectionName: string | null;
+  collectionTmdbId: number | null;
   countries: Generated<string[]>;
   createdAt: Generated<Timestamp>;
+  directors: Generated<Json>;
   fetchedAt: Timestamp;
   finnishReleaseDate: string | null;
   genres: Generated<string[]>;
