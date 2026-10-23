@@ -52,6 +52,35 @@ describe("venue page", () => {
     expect(html).toContain('href="https://kino.example/liput/1"');
     expect(html).toContain("1 elokuva");
     expect(html.match(/<astro-island/g)).toHaveLength(1);
+    // When its programme was last read; no notice while its source answers.
+    expect(html).toContain("Näytökset päivitetty 13.10. klo 08.00");
+    expect(html).not.toContain("ei vastannut");
+  });
+
+  it("says when the cinema's site did not answer at the latest pull", async () => {
+    const down = createApi(
+      "http://api",
+      fakeFetch({
+        "/v1/venues": [
+          venue({
+            lastCheck: {
+              status: "failed",
+              checkedAt: "2026-10-14T05:00:00.000Z",
+              message: "Request failed with status code 503",
+            },
+          }),
+        ],
+        "/v1/screenings": { date: "2026-10-13", items: [screening()], nextCursor: null },
+      }).impl,
+    );
+    const res = await container.renderToResponse(VenuePage, {
+      params: { venue: "kino-testi-jyvaskyla" },
+      request: new Request("http://web/fi/elokuvateatterit/kino-testi-jyvaskyla"),
+      locals: { api: down, now: NOON_INSTANT },
+    });
+    const html = await res.text();
+    expect(html).toContain("Näytökset päivitetty 13.10. klo 08.00");
+    expect(html).toContain("Teatterin sivu ei vastannut viimeisimmässä haussa (14.10. klo 08.00)");
   });
 
   it("answers 404 for an unknown venue", async () => {

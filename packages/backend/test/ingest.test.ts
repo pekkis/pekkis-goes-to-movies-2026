@@ -1,7 +1,7 @@
 import { sql } from "kysely";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { createDb } from "../src/db/database.ts";
-import { ingestBatch, ingestFilms, looksPartial } from "../src/ingest/ingest.ts";
+import { ingestBatch, ingestFilms, ingestPullStatus, looksPartial } from "../src/ingest/ingest.ts";
 import { FETCHED_AT, batch, catalog, film, screening } from "./factory.ts";
 
 const db = createDb(process.env["TEST_DATABASE_URL"]!);
@@ -222,6 +222,63 @@ describe("ingestBatch", () => {
     await ingestBatch(db, b);
     const listing = await db.selectFrom("filmListings").selectAll().executeTakeFirstOrThrow();
     expect(listing).toMatchObject({ filmId: null, match: null, kind: "film" });
+  });
+});
+
+describe("venue checks", () => {
+  const checks = () =>
+    db
+      .selectFrom("venueChecks")
+      .select(["venueId", "status", "screenings", "message"])
+      .orderBy("venueId")
+      .orderBy("checkedAt")
+      .execute();
+
+  it("logs each venue of a batch once: ok with screenings, empty without", async () => {
+    const b = batch([screening("1")]);
+    b.venues.push({ ...b.venues[0]!, id: "testchain:venue:9", sourceId: "9", name: "Tyhjä" });
+    await ingestBatch(db, b);
+    await ingestBatch(db, b); // the same files ingested again add nothing
+    expect(await checks()).toEqual([
+      { venueId: "testchain:venue:1", status: "ok", screenings: 1, message: null },
+      { venueId: "testchain:venue:9", status: "empty", screenings: 0, message: null },
+    ]);
+  });
+
+  it("logs an incomplete batch as partial, with its warnings", async () => {
+    await ingestBatch(
+      db,
+      batch([screening("1")], {
+        warnings: [{ code: "invalid-row", message: "4 screening rows not understood" }],
+      }),
+    );
+    expect(await checks()).toEqual([
+      {
+        venueId: "testchain:venue:1",
+        status: "partial",
+        screenings: 1,
+        message: "4 screening rows not understood",
+      },
+    ]);
+  });
+
+  it("logs a failed pull's venues from pull-status, once", async () => {
+    await ingestBatch(db, batch([screening("1")]));
+    const failed = {
+      provider: "testchain",
+      attemptedAt: later(FETCHED_AT, 24),
+      status: "failed" as const,
+      error: "Request failed with status code 503",
+      durationMs: 900,
+    };
+    expect(await ingestPullStatus(db, [failed])).toBe(1);
+    expect(await ingestPullStatus(db, [failed])).toBe(0);
+    // An ok line logs nothing: its batch logs itself.
+    expect(await ingestPullStatus(db, [{ ...failed, status: "ok" }])).toBe(0);
+    expect((await checks()).map((c) => [c.status, c.message])).toEqual([
+      ["ok", null],
+      ["failed", "Request failed with status code 503"],
+    ]);
   });
 });
 

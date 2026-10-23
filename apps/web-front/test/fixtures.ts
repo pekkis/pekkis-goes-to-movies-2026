@@ -18,6 +18,9 @@ export const venue = (over: Partial<Venue> = {}): Venue =>
     geo: { lat: 62.24, lon: 25.75 },
     url: null,
     provider,
+    // Read by this morning's pull (08.00 in Helsinki).
+    updatedAt: "2026-10-13T05:00:00.000Z",
+    lastCheck: { status: "ok", checkedAt: "2026-10-13T05:00:00.000Z", message: null },
     ...over,
   }) as Venue;
 

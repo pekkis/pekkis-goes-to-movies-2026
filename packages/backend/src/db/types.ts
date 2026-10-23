@@ -152,6 +152,15 @@ export interface Series {
   updatedAt: Generated<Timestamp>;
 }
 
+export interface VenueChecks {
+  checkedAt: Timestamp;
+  message: string | null;
+  providerId: string;
+  screenings: Generated<number>;
+  status: string;
+  venueId: string;
+}
+
 export interface Venues {
   address: string | null;
   city: string;
@@ -176,5 +185,6 @@ export interface DB {
   providers: Providers;
   screenings: Screenings;
   series: Series;
+  venueChecks: VenueChecks;
   venues: Venues;
 }

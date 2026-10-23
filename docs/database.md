@@ -23,16 +23,17 @@ For a nicer shell on the host, `pgcli postgres://pgtm:pgtm@localhost:5432/pgtm` 
 
 ## Tables
 
-| Table           | Holds                                                                                                                                                                                                                                      |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `providers`     | chains/cinemas and their ticketing platform                                                                                                                                                                                                |
-| `venues`        | cinemas: city, address, coordinates                                                                                                                                                                                                        |
-| `auditoriums`   | screens: features, own age limit                                                                                                                                                                                                           |
-| `films`         | canonical films from TMDB: `title_fi/sv/en`, `overview_fi/sv/en`, poster, trailers (`jsonb`), Finnish rating                                                                                                                               |
-| `film_ratings`  | One score per film and source (`rotten-tomatoes`, `metacritic`, `imdb`, `tmdb`): `score` 0–100, `display` as the source shows it, `votes`. Primary key `(film_id, source)`. A snapshot: ingest replaces a film's ratings with the latest.  |
-| `film_listings` | each provider's own film record, `film_id` → `films` (NULL when unmatched), `kind` film/event, `imdb_id` when the source gives one                                                                                                         |
-| `series`        | the series screenings belong to: `id` (registry id or `{provider}/{slug}`), display `name`, `kind` (strand, festival, retrospective, club, distributor-series, theme-week). Upserted from each batch, so a renamed registry entry updates. |
-| `screenings`    | showtimes, with history columns (below); `series` holds `series` ids (rows from before migration 0005 hold names; the API shows either), `labels` (jsonb) the raw labels                                                                   |
+| Table           | Holds                                                                                                                                                                                                                                                                                                |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `providers`     | chains/cinemas and their ticketing platform                                                                                                                                                                                                                                                          |
+| `venues`        | cinemas: city, address, coordinates                                                                                                                                                                                                                                                                  |
+| `auditoriums`   | screens: features, own age limit                                                                                                                                                                                                                                                                     |
+| `films`         | canonical films from TMDB: `title_fi/sv/en`, `overview_fi/sv/en`, poster, trailers (`jsonb`), Finnish rating                                                                                                                                                                                         |
+| `film_ratings`  | One score per film and source (`rotten-tomatoes`, `metacritic`, `imdb`, `tmdb`): `score` 0–100, `display` as the source shows it, `votes`. Primary key `(film_id, source)`. A snapshot: ingest replaces a film's ratings with the latest.                                                            |
+| `film_listings` | each provider's own film record, `film_id` → `films` (NULL when unmatched), `kind` film/event, `imdb_id` when the source gives one                                                                                                                                                                   |
+| `series`        | the series screenings belong to: `id` (registry id or `{provider}/{slug}`), display `name`, `kind` (strand, festival, retrospective, club, distributor-series, theme-week). Upserted from each batch, so a renamed registry entry updates.                                                           |
+| `screenings`    | showtimes, with history columns (below); `series` holds `series` ids (rows from before migration 0005 hold names; the API shows either), `labels` (jsonb) the raw labels                                                                                                                             |
+| `venue_checks`  | each venue's state after each pull: `status` ok (screenings), empty (fetched, nothing on), partial (some rows unreadable) or failed (the source did not answer), `screenings` found, `message` (warnings or the error); key `(venue_id, checked_at)`, so ingesting the same files again adds nothing |
 
 Model shapes are flattened: `presentation` → `projection`, `dimension`, `formats`; `subtitles` → `subtitles_kind` + `subtitles_languages`; `price` → `price_amount_cents`, `price_currency`, `price_note`; `geo` → `lat`, `lon`. Lists are `text[]`. Enum-like values are `text`, validated by Zod at ingest (Postgres enums are painful to change). An absent ("unknown") model field is `NULL`.
 
@@ -52,6 +53,15 @@ Screenings are **never deleted**, so the data accumulates over time.
 "Current programme" is `where removed_at is null and starts_at > now()`.
 
 Ingest is idempotent: running it twice on the same files inserts and removes nothing.
+
+## Venue checks
+
+Every pull leaves a trace per venue, so a cinema that stays down is noticed, and a venue page can say how fresh its programme is (2026-10-23):
+
+- **ok, empty, partial** come from the batches: ingest logs each batch venue at the batch's `fetchedAt` (`logVenueChecks`).
+- **failed** comes from `pull-status.jsonl` next to the batches: a failed provider writes no batch, so the pull records each provider's outcome there (`PullStatus` in the model), and ingest logs each of the provider's known venues failed at the attempt's time, with the error (`ingestPullStatus`). The file is JSON Lines, not `.json`, so an older ingest that reads every `.json` as a batch passes it by; a `--provider` pull replaces only its own providers' lines.
+- **A venue's last successful pull** is its newest check that isn't failed (`Venue.updatedAt` in the API); its latest check is `Venue.lastCheck`, and its history is `GET /v1/venues/{id}/checks`.
+- On 2026-10-23 [V]: 140 venues ok, 17 empty, Bio Savoy failed (503) with its last good pull on 21.10.
 
 ## Migrations
 

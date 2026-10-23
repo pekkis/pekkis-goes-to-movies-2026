@@ -2,9 +2,9 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { router } from "../hono.ts";
 import type { Kysely } from "kysely";
 import type { DB } from "../../db/types.ts";
-import { getVenue, listVenues } from "../../queries/venues.ts";
-import { bboxParam, idParam, MAX_TEXT, parseBbox } from "../params.ts";
-import { ErrorBody, Venue } from "../schemas.ts";
+import { getVenue, listVenues, venueChecks } from "../../queries/venues.ts";
+import { bboxParam, idParam, limitParam, MAX_TEXT, parseBbox } from "../params.ts";
+import { ErrorBody, Venue, VenueCheck } from "../schemas.ts";
 
 const list = createRoute({
   method: "get",
@@ -35,6 +35,25 @@ const one = createRoute({
   },
 });
 
+const checks = createRoute({
+  method: "get",
+  path: "/v1/venues/{id}/checks",
+  tags: ["venues"],
+  summary:
+    "A venue's pull history: when its programme was read (ok, empty, partial) or not (failed)",
+  request: {
+    params: idParam("kinoaurora:venue:jyvaskyla"),
+    query: z.object({ limit: limitParam(30, 500) }),
+  },
+  responses: {
+    200: {
+      description: "Checks, newest first",
+      content: { "application/json": { schema: z.array(VenueCheck) } },
+    },
+    404: { description: "No such venue", content: { "application/json": { schema: ErrorBody } } },
+  },
+});
+
 export const venueRoutes = (db: Kysely<DB>) =>
   router()
     .openapi(list, async (c) => {
@@ -44,4 +63,11 @@ export const venueRoutes = (db: Kysely<DB>) =>
     .openapi(one, async (c) => {
       const venue = await getVenue(db, c.req.valid("param").id);
       return venue ? c.json(venue, 200) : c.json({ error: "venue not found" }, 404);
+    })
+    .openapi(checks, async (c) => {
+      const { id } = c.req.valid("param");
+      if (!(await getVenue(db, id))) {
+        return c.json({ error: "venue not found" }, 404);
+      }
+      return c.json(await venueChecks(db, id, c.req.valid("query").limit), 200);
     });

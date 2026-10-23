@@ -2,7 +2,7 @@ import { sql } from "kysely";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../../src/api/app.ts";
 import { createDb } from "../../src/db/database.ts";
-import { ingestBatch, ingestFilms } from "../../src/ingest/ingest.ts";
+import { ingestBatch, ingestFilms, ingestPullStatus } from "../../src/ingest/ingest.ts";
 import { helsinkiToday } from "../../src/search/showtimes.ts";
 import { batch, catalog, film, screening } from "../factory.ts";
 
@@ -102,6 +102,7 @@ describe("meta", () => {
       "/v1/series",
       "/v1/venues",
       "/v1/venues/{id}",
+      "/v1/venues/{id}/checks",
     ]);
     expect(body.info.description).toMatch(/OpenStreetMap/);
   });
@@ -144,6 +145,35 @@ describe("venues", () => {
   it("returns one venue, or 404", async () => {
     expect((await get(`/v1/venues/${HELSINKI.id}`)).body).toMatchObject({ city: "Helsinki" });
     expect((await get("/v1/venues/nope:venue:1")).status).toBe(404);
+  });
+
+  it("says when each venue's programme was last read, and keeps its pull history", async () => {
+    const venue = (await get("/v1/venues/testchain:venue:1")).body;
+    expect(venue.updatedAt).toBe("2026-10-09T12:00:00.000Z");
+    expect(venue.lastCheck).toEqual({
+      status: "ok",
+      checkedAt: "2026-10-09T12:00:00.000Z",
+      message: null,
+    });
+    // The source fails the next day: the programme is as old as the last good pull.
+    await ingestPullStatus(db, [
+      {
+        provider: "testchain",
+        attemptedAt: "2026-10-10T05:00:00.000Z",
+        status: "failed",
+        error: "Request failed with status code 503",
+        durationMs: 800,
+      },
+    ]);
+    const after = (await get("/v1/venues/testchain:venue:1")).body;
+    expect(after.updatedAt).toBe("2026-10-09T12:00:00.000Z");
+    expect(after.lastCheck).toMatchObject({
+      status: "failed",
+      checkedAt: "2026-10-10T05:00:00.000Z",
+    });
+    const history = await get("/v1/venues/testchain:venue:1/checks");
+    expect(history.body.map((c: { status: string }) => c.status)).toEqual(["failed", "ok"]);
+    expect((await get("/v1/venues/nope:venue:1/checks")).status).toBe(404);
   });
 });
 

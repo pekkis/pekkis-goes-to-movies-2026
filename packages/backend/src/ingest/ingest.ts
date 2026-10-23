@@ -1,4 +1,4 @@
-import { isIncomplete, type FilmCatalog, type ProviderBatch } from "@pgtm/model";
+import { isIncomplete, type FilmCatalog, type ProviderBatch, type PullStatus } from "@pgtm/model";
 import { sql, type Kysely, type Transaction } from "kysely";
 import type { DB } from "../db/types.ts";
 import {
@@ -107,6 +107,83 @@ export const looksPartial = (held: number, incoming: number): boolean =>
  *   silently stopped matching than a cinema cancelling everything.
  * Films must be ingested first (listings and screenings refer to them).
  */
+/**
+ * A batch's venues, as checked at its fetch: ok with screenings, empty without, partial
+ * when some rows could not be read. Logged once: ingesting the same batch again adds
+ * nothing (the key is venue and time).
+ */
+const logVenueChecks = async (trx: Transaction<DB>, batch: ProviderBatch): Promise<void> => {
+  if (batch.venues.length === 0) {
+    return;
+  }
+  const incomplete = isIncomplete(batch);
+  const counts = new Map<string, number>();
+  for (const s of batch.screenings) {
+    counts.set(s.venueId, (counts.get(s.venueId) ?? 0) + 1);
+  }
+  const message = incomplete
+    ? batch.warnings
+        .map((w) => w.message)
+        .join("; ")
+        .slice(0, 500)
+    : null;
+  await trx
+    .insertInto("venueChecks")
+    .values(
+      batch.venues.map((v) => {
+        const screenings = counts.get(v.id) ?? 0;
+        return {
+          venueId: v.id,
+          checkedAt: batch.fetchedAt,
+          providerId: batch.provider.id,
+          status: incomplete ? "partial" : screenings > 0 ? "ok" : "empty",
+          screenings,
+          message,
+        };
+      }),
+    )
+    .onConflict((oc) => oc.columns(["venueId", "checkedAt"]).doNothing())
+    .execute();
+};
+
+/**
+ * The pull's failures, from `pull-status.jsonl`: a failed provider wrote no batch, so each
+ * of its venues we know is logged failed at the attempt's time, with the error. Returns
+ * how many venue checks were new.
+ */
+export const ingestPullStatus = async (
+  db: Kysely<DB>,
+  statuses: readonly PullStatus[],
+): Promise<number> => {
+  let logged = 0;
+  for (const status of statuses.filter((s) => s.status === "failed")) {
+    const venues = await db
+      .selectFrom("venues")
+      .select("id")
+      .where("providerId", "=", status.provider)
+      .execute();
+    if (venues.length === 0) {
+      continue;
+    }
+    const result = await db
+      .insertInto("venueChecks")
+      .values(
+        venues.map((v) => ({
+          venueId: v.id,
+          checkedAt: status.attemptedAt,
+          providerId: status.provider,
+          status: "failed",
+          screenings: 0,
+          message: status.error ?? null,
+        })),
+      )
+      .onConflict((oc) => oc.columns(["venueId", "checkedAt"]).doNothing())
+      .executeTakeFirst();
+    logged += Number(result.numInsertedOrUpdatedRows ?? 0);
+  }
+  return logged;
+};
+
 export const ingestBatch = (db: Kysely<DB>, batch: ProviderBatch): Promise<BatchResult> =>
   db.transaction().execute(async (trx) => {
     const seenAt = batch.fetchedAt;
@@ -167,6 +244,8 @@ export const ingestBatch = (db: Kysely<DB>, batch: ProviderBatch): Promise<Batch
         }
       }
     }
+
+    await logVenueChecks(trx, batch);
 
     // Part of the source failed to parse: absence proves nothing this time.
     if (isIncomplete(batch)) {
