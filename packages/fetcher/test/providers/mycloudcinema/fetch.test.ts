@@ -135,7 +135,8 @@ describe("fetchMyCloudCinema: a week cut off at its end", () => {
       { cinema_id: 1, date: "2026-10-23", number_of_days: 7 },
       { cinema_id: 1, date: "2026-10-26", number_of_days: 4 },
     ]);
-    expect(daysWithShows(raw.showtimes["1"]!).size).toBe(7);
+    // The snapshot types each cinema loosely; the fetch stores a list of answers.
+    expect(daysWithShows(raw.showtimes["1"] as unknown[]).size).toBe(7);
   });
 
   it("costs one request when the programme really ends early", async () => {
