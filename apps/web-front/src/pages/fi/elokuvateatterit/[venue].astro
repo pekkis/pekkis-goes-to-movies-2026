@@ -7,7 +7,7 @@ import { groupByFilm } from "../../../lib/films.ts";
 import { safeHref } from "../../../lib/links.ts";
 import { loadVenuePage } from "../../../lib/pages.ts";
 import { fi } from "../../../lib/text.ts";
-import { formatDay } from "../../../lib/time.ts";
+import { formatDay, formatMoment } from "../../../lib/time.ts";
 import { osmUrl, venueLabel } from "../../../lib/venues.ts";
 import { sprinkles } from "../../../styles/sprinkles.css.ts";
 
@@ -37,6 +37,12 @@ const address = [venue?.address, [venue?.postalCode, venue?.city].filter(Boolean
       <p class={sprinkles({ marginBottom: "md" })}>
         {formatDay(page.date)} · {fi.films(groupByFilm(page.screenings).length)}
       </p>
+      <p class={sprinkles({ marginBottom: "md" })}>
+        {venue.updatedAt ? fi.updatedAt(formatMoment(venue.updatedAt)) : fi.neverUpdated}
+      </p>
+      {venue.lastCheck?.status === "failed" && (
+        <p role="status" class={sprinkles({ marginBottom: "md" })}><strong>{fi.sourceDown(formatMoment(venue.lastCheck.checkedAt))}</strong></p>
+      )}
       <DateNav date={page.date} />
       {
         page.screenings.length ? (

@@ -1,11 +1,17 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { loadEnv, requireTmdbKey } from "../lib/env.ts";
 import { DATA_DIR } from "../lib/paths.ts";
 import { helsinkiToday, isIsoDate } from "@pgtm/model/time";
 import { runMatching } from "../matching/run.ts";
-import { ProviderBatch } from "@pgtm/model";
+import {
+  mergePullStatus,
+  parsePullStatus,
+  PULL_STATUS_FILE,
+  ProviderBatch,
+  type PullStatus,
+} from "@pgtm/model";
 import { finishVenues, loadVenueOverrides } from "../providers/overrides.ts";
 import { deriveTags } from "../providers/labels.ts";
 import { resolveSeries } from "../series/registry.ts";
@@ -81,7 +87,9 @@ const overrides = await loadVenueOverrides();
  * Pulls one adapter and returns its report. Adapters run concurrently (different hosts;
  * each adapter still paces its own host), so output is collected and printed as a block.
  */
-const pullOne = async (adapter: Adapter): Promise<{ ok: boolean; lines: string[] }> => {
+const pullOne = async (
+  adapter: Adapter,
+): Promise<{ ok: boolean; lines: string[]; error?: string }> => {
   try {
     const pulled = await adapter.pull(
       { env, out: values.out },
@@ -97,11 +105,18 @@ const pullOne = async (adapter: Adapter): Promise<{ ok: boolean; lines: string[]
 
     return { ok: true, lines: batchReport(adapter.id, batch, paintOut) };
   } catch (error) {
-    return { ok: false, lines: [failureReport(adapter.id, error, paintErr)] };
+    const message = error instanceof Error ? error.message : String(error);
+    return {
+      ok: false,
+      lines: [failureReport(adapter.id, error, paintErr)],
+      error: message.slice(0, 500),
+    };
   }
 };
 
 const queue = new PQueue({ concurrency: CONCURRENCY });
+/** Each provider's outcome, for pull-status.jsonl: ingest logs it per venue. */
+const statuses: PullStatus[] = [];
 const total = selected?.length ?? 0;
 let done = 0;
 /** Providers being pulled now, with when they started: what a slow pull is waiting for. */
@@ -115,6 +130,13 @@ const results = await Promise.all(
       const started = Date.now();
       running.set(adapter.id, started);
       const result = await pullOne(adapter);
+      statuses.push({
+        provider: adapter.id,
+        attemptedAt: new Date(started).toISOString(),
+        status: result.ok ? "ok" : "failed",
+        ...(result.error && { error: result.error }),
+        durationMs: Date.now() - started,
+      });
       running.delete(adapter.id);
       done++;
       const lines = [`${result.lines[0]} ${tookReport(Date.now() - started, paintOut)}`];
@@ -124,6 +146,16 @@ const results = await Promise.all(
   ),
 );
 clearInterval(progress);
+// Merged with the previous pulls' lines: a `--provider` pull updates only its own.
+const statusPath = join(values.out, "normalized", PULL_STATUS_FILE);
+const previous = await readFile(statusPath, "utf8").then(parsePullStatus, () => []);
+await mkdir(join(values.out, "normalized"), { recursive: true });
+await writeFile(
+  statusPath,
+  mergePullStatus(previous, statuses)
+    .map((s) => JSON.stringify(s))
+    .join("\n") + "\n",
+);
 const failures = results.filter((r) => !r.ok).length;
 console.log(summaryReport(results.length - failures, results.length, values.out, paintOut));
 

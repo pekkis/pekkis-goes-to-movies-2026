@@ -1,9 +1,9 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
-import { FilmCatalog, ProviderBatch } from "@pgtm/model";
+import { FilmCatalog, parsePullStatus, PULL_STATUS_FILE, ProviderBatch } from "@pgtm/model";
 import { createDb } from "../db/database.ts";
-import { ingestBatch, ingestFilms } from "../ingest/ingest.ts";
+import { ingestBatch, ingestFilms, ingestPullStatus } from "../ingest/ingest.ts";
 import { loadEnv } from "../lib/env.ts";
 import { NORMALIZED_DIR } from "../lib/paths.ts";
 
@@ -58,6 +58,12 @@ try {
               ? " (far fewer upcoming screenings than before: removals not inferred; check the source)"
               : ""),
     );
+  }
+  // The pull's failures: logged per venue after the batches, so new venues exist already.
+  const statusText = await readFile(join(values.dir, PULL_STATUS_FILE), "utf8").catch(() => "");
+  const failed = await ingestPullStatus(db, parsePullStatus(statusText));
+  if (failed > 0) {
+    console.log(`venue checks: ${failed} failed (from ${PULL_STATUS_FILE})`);
   }
 } finally {
   await db.destroy();

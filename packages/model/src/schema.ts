@@ -219,6 +219,50 @@ export const Unmatched = z.object({
 });
 export type Unmatched = z.infer<typeof Unmatched>;
 
+/**
+ * One provider's outcome in a pull, a line of `pull-status.jsonl` next to the batches: a
+ * failed pull writes no batch, so this is how ingest learns a source was down. Each pull
+ * replaces its own providers' lines and keeps the others. JSON Lines, not `.json`, so an
+ * ingest that reads every `.json` file as a batch passes it by.
+ */
+export const PULL_STATUS_FILE = "pull-status.jsonl";
+
+export const PullStatus = z.object({
+  provider: ProviderId,
+  /** When the pull of this provider started. */
+  attemptedAt: z.iso.datetime(),
+  status: z.enum(["ok", "failed"]),
+  /** Why it failed, briefly: "Request failed with status code 503 …". */
+  error: z.string().max(500).optional(),
+  durationMs: z.number().int().nonnegative(),
+});
+export type PullStatus = z.infer<typeof PullStatus>;
+
+/** The newest line per provider: the fresh ones replace the old ones for the same provider. */
+export const mergePullStatus = (
+  old: readonly PullStatus[],
+  fresh: readonly PullStatus[],
+): PullStatus[] => {
+  const pulled = new Set(fresh.map((s) => s.provider));
+  return [...old.filter((s) => !pulled.has(s.provider)), ...fresh].toSorted((a, b) =>
+    a.provider.localeCompare(b.provider),
+  );
+};
+
+/** `pull-status.jsonl` read leniently: unreadable lines are skipped, not fatal. */
+export const parsePullStatus = (text: string): PullStatus[] =>
+  text.split("\n").flatMap((line) => {
+    if (!line.trim()) {
+      return [];
+    }
+    try {
+      const parsed = PullStatus.safeParse(JSON.parse(line));
+      return parsed.success ? [parsed.data] : [];
+    } catch {
+      return [];
+    }
+  });
+
 export const FilmCatalog = z.object({
   generatedAt: z.iso.datetime(),
   films: z.array(Film),

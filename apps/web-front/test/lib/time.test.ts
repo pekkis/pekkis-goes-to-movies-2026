@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDay, formatDayRange, formatTime } from "../../src/lib/time.ts";
+import { formatDay, formatDayRange, formatMoment, formatTime } from "../../src/lib/time.ts";
 
 // Date arithmetic (addDays, isIsoDate, …) is shared: tested in packages/model/test/time.test.ts.
 
@@ -21,6 +21,16 @@ describe("formatDayRange", () => {
     [["2026-10-23", "2026-10-25"], "pe 23.10., su 25.10."],
   ])("%j -> %s", (days, text) => {
     expect(formatDayRange(days)).toBe(text);
+  });
+});
+
+describe("formatMoment", () => {
+  it.each([
+    ["2026-10-23T05:59:12.000Z", "23.10. klo 08.59"],
+    // After midnight in Helsinki, still the evening before in UTC.
+    ["2026-10-23T21:30:00.000Z", "24.10. klo 00.30"],
+  ])("%s -> %s", (iso, text) => {
+    expect(formatMoment(iso)).toBe(text);
   });
 });
 

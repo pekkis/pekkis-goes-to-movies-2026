@@ -20,6 +20,12 @@ export const fi = {
   venuesByCity: "Elokuvateatterit kaupungeittain",
   venuePage: "Teatterin sivu →",
   cinemaWebsite: "Teatterin sivut",
+  /** "Näytökset päivitetty 23.10. klo 08.59" */
+  updatedAt: (when: string) => `Näytökset päivitetty ${when}`,
+  /** The source failed at the latest pull: the programme shown may be out of date. */
+  sourceDown: (when: string) =>
+    `Teatterin sivu ei vastannut viimeisimmässä haussa (${when}). Näytökset voivat olla vanhentuneita; tarkista teatterin omilta sivuilta.`,
+  neverUpdated: "Näytöksiä ei ole vielä haettu.",
   minutes: (n: number) => `${n} min`,
   ticketsAt: (time: string) => `Liput, klo ${time}`,
   whatsOn: (city: string) => `Elokuvat ${city}`,
