@@ -17,6 +17,18 @@ const weekday = new Intl.DateTimeFormat("fi-FI", {
   month: "numeric",
 });
 
+const dayMonth = new Intl.DateTimeFormat("fi-FI", {
+  timeZone: HELSINKI,
+  day: "numeric",
+  month: "numeric",
+});
+
+/** An instant as Helsinki date and time: "2026-10-23T05:59:12Z" -> "23.10. klo 08.59". */
+export const formatMoment = (iso: string): string => {
+  const ms = Temporal.Instant.from(iso).epochMilliseconds;
+  return `${dayMonth.format(ms)} klo ${clock.format(ms)}`;
+};
+
 /** "2026-10-13T18:00:00+03:00" -> "18.00", in Helsinki whatever the server's zone. */
 export const formatTime = (iso: string): string =>
   clock.format(Temporal.Instant.from(iso).epochMilliseconds);

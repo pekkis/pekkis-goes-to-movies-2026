@@ -162,7 +162,7 @@ package.json, pnpm-workspace.yaml, tsconfig.base.json   workspace root; .oxlintr
 compose.yaml, docker/           Postgres 18 (+ pgtm_test via docker/postgres/init); profile "app": migrate, api, web; profile "ingest": ingest
 Dockerfile, .dockerignore       API image (serve, migrate, ingest): tsdown bundle + `pnpm deploy --prod` node_modules
 apps/web-front/Dockerfile       website image (Astro standalone server); its own Dockerfile.dockerignore
-.env, data/                     gitignored: secrets; raw/, normalized/, cache/ (tmdb, omdb, osm, geocode, token)
+.env, data/                     gitignored: secrets; raw/, normalized/ (batches + pull-status.jsonl: each provider's last pull outcome), cache/ (tmdb, omdb, osm, geocode, token)
 docs/                           development, data-sources, data-model, database, api, cli
 vendor/leffavuoro/, scripts/    Leffavuoro reference copy (not built, linted or formatted); scripts: its refresher, data:push, design:render
 apps/fpgm/                      the teammate's Flutter app: own tooling, not in the pnpm workspace; do not edit unasked

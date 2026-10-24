@@ -404,6 +404,9 @@ export const createMcpServer = (db: Kysely<DB>): McpServer => {
           city: v.city,
           ...(v.address && { address: v.address }),
           ...(v.url && { website: v.url }),
+          ...(v.updatedAt && { programme_updated_at: v.updatedAt }),
+          // Its source did not answer at the latest pull: the programme may be stale.
+          ...(v.lastCheck?.status === "failed" && { source_down: true }),
         })),
       });
     },

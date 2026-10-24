@@ -33,8 +33,28 @@ export const Venue = z
     geo: Geo.nullable(),
     url: nullableString,
     provider: Provider,
+    /** The last pull that read this venue's programme (ok, empty or partial); null if none. */
+    updatedAt: nullableString.openapi({ example: "2026-10-23T05:59:12.000Z" }),
+    /** The latest pull's outcome for this venue; `failed` means its source did not answer. */
+    lastCheck: z
+      .object({
+        status: z.enum(["ok", "empty", "partial", "failed"]),
+        checkedAt: z.string(),
+        message: nullableString,
+      })
+      .nullable(),
   })
   .openapi("Venue");
+
+export const VenueCheck = z
+  .object({
+    checkedAt: z.string(),
+    status: z.enum(["ok", "empty", "partial", "failed"]),
+    /** Screenings the pull found for the venue (in its window). */
+    screenings: z.number().int(),
+    message: nullableString,
+  })
+  .openapi("VenueCheck");
 
 export const VenueRef = z
   .object({ id: z.string(), name: z.string(), city: z.string(), geo: Geo.nullable() })
