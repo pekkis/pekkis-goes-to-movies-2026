@@ -160,25 +160,7 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
       },
     ],
   },
-  {
-    provider: "kinomarilyn",
-    name: "Kino Marilyn",
-    homepage: "https://kinomarilyn.fi",
-    programmePath: "/esitysajat/",
-    verifiedAt: "2026-10-10",
-    venues: [
-      {
-        slug: "loviisa",
-        locationId: "1",
-        name: "Kino Marilyn",
-        city: "Loviisa",
-        address: "Kuningattarenkatu 17",
-        postalCode: "07900",
-        geo: { lat: 60.458467, lon: 26.225406 },
-        geoSource: "osm:node/2104773059",
-      },
-    ],
-  },
+  // Kino Marilyn (Loviisa) moved to eTiketti by 2026-10-24: see etiketti/sites.ts.
   {
     provider: "kinoolympia",
     name: "Kino Olympia",

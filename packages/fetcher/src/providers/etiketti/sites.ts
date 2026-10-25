@@ -535,6 +535,27 @@ export const ETIKETTI_SITES: EtikettiSite[] = defineSites(EtikettiSite, [
     ],
   },
   {
+    // Moved from Nexxo by 2026-10-24: its Nexxo API answered 404 and /esitysajat/ was gone,
+    // while the front page ran on eTiketti. Same provider id and venue slug, so the venue
+    // keeps its history.
+    provider: "kinomarilyn",
+    name: "Kino Marilyn",
+    homepage: "https://kinomarilyn.fi",
+    verifiedAt: "2026-10-25",
+    venues: [
+      {
+        slug: "loviisa",
+        name: "Kino Marilyn",
+        city: "Loviisa",
+        place: "KINO MARILYN",
+        address: "Kuningattarenkatu 17",
+        postalCode: "07900",
+        geo: { lat: 60.458467, lon: 26.225406 },
+        geoSource: "osm:node/2104773059",
+      },
+    ],
+  },
+  {
     provider: "haapamaenelokuvat",
     name: "Haapamäen Elokuvat",
     homepage: "https://haapamaenelokuvat.fi",

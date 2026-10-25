@@ -215,7 +215,7 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
 
 ## Tools
 
-- **Node 26, managed by pnpm:** `devEngines.runtime` in `package.json` pins it, and pnpm downloads it for every script (`pnpm pull`, `pnpm test`, …), whatever `node` your shell has. Docker uses `node:26-alpine`.
+- **Node 26, managed by pnpm:** `devEngines.runtime` in `package.json` pins it, and pnpm downloads it for every script (`pnpm pull`, `pnpm test`, …), whatever `node` your shell has. Docker uses the same Node, pinned by version and digest (`node:26.12.1-alpine3.24@sha256:…`); Postgres too. Bump them with `devEngines`; Dependabot opens PRs for newer images (`.github/dependabot.yml`), and nothing updates without a merge.
 - **pnpm 12**, configured in `pnpm-workspace.yaml`:
   - `minimumReleaseAge` 1 day
   - `trustPolicy: no-downgrade`

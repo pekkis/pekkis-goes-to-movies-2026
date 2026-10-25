@@ -5,7 +5,7 @@ import {
   type Screening,
   type Warning,
 } from "@pgtm/model";
-import { addDays, dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
+import { addDays, dateWindow, daysBetween, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
 import { byStartThenId, slugify, toCents } from "../parsing.ts";
@@ -15,11 +15,12 @@ import type { KinoHuoviSite } from "./sites.ts";
 
 const WEEKDAYS = ["MA", "TI", "KE", "TO", "PE", "LA", "SU"];
 /**
- * One group of screenings: a date or a range, its weekdays, one time.
- * "12.10. MA klo 18.00", "23.-27.10. PE, LA, SU, MA ja TI klo 18.00".
+ * One group of screenings: a date or a range, its weekdays, one or more times.
+ * "12.10. MA klo 18.00", "23.-27.10. PE, LA, SU, MA ja TI klo 18.00",
+ * "3.11. TI klo 15.00 ja klo 18.00" (2026-10-25).
  */
 const GROUP =
-  /(\d{1,2})\.(?:\s*-\s*(\d{1,2})\.)?\s*(\d{1,2})\.\s+((?:MA|TI|KE|TO|PE|LA|SU)(?:\s*(?:,|\bja\b)\s*(?:MA|TI|KE|TO|PE|LA|SU))*)\s+klo\s*(\d{1,2})[.:](\d{2})/gi;
+  /(\d{1,2})\.(?:\s*-\s*(\d{1,2})\.)?\s*(\d{1,2})\.\s+((?:MA|TI|KE|TO|PE|LA|SU)(?:\s*(?:,|\bja\b)\s*(?:MA|TI|KE|TO|PE|LA|SU))*)\s+klo\s*(\d{1,2}[.:]\d{2}(?:\s*(?:,|\bja\b)\s*(?:klo\s*)?\d{1,2}[.:]\d{2})*)/gi;
 /** "Kestoaika n. 2t 35min." */
 const DURATION = /Kestoaika\s+(?:n\.\s*)?(?:(\d+)\s*t)?\s*(\d+)\s*min/i;
 /** "Liput 12€." and nothing else on the line. */
@@ -76,27 +77,37 @@ export const parseKinoHuovi = (raw: KinoHuoviRawSnapshot, site: KinoHuoviSite): 
       // A range across a month end ("30.-2.11.") starts in the month before.
       const firstMonth = last < first ? (month === 1 ? 12 : month - 1) : month;
       const start = nearestDate(first, firstMonth, raw.from);
-      const dates = start
-        ? Array.from({ length: Math.max(0, weekdays.length) }, (_v, k) => addDays(start, k))
-        : [];
-      const span = start && g[2] ? dates.at(-1)?.slice(8, 10) : undefined;
-      // The weekdays prove the days: one per date, in order, or the group is not placed.
+      const end = start && g[2] ? nearestDate(last, month, raw.from) : start;
+      const length = start && end ? daysBetween(start, end) + 1 : 0;
+      const weekdayOf = (d: string) => WEEKDAYS[Temporal.PlainDate.from(d).dayOfWeek - 1];
+      // The days of the range whose weekday is listed: "24.-27.10. SU, MA ja TI" is the
+      // 25th, 26th and 27th (2026-10-25: the range began on a Saturday without a show).
+      const dates =
+        length > 0 && length <= 14
+          ? Array.from({ length }, (_v, k) => addDays(start!, k)).filter((d) =>
+              weekdays.includes(weekdayOf(d)!),
+            )
+          : [];
+      // The weekdays prove the days: each listed weekday is exactly one day, in order.
       const fits =
         dates.length > 0 &&
-        (!g[2] || Number(span) === last) &&
+        dates.length === weekdays.length &&
         (g[2] ? true : weekdays.length === 1) &&
-        dates.every((d, k) => WEEKDAYS[Temporal.PlainDate.from(d).dayOfWeek - 1] === weekdays[k]);
+        dates.every((d, k) => weekdayOf(d) === weekdays[k]);
       if (!fits) {
         unreadable += 1;
         continue;
       }
-      for (const date of dates) {
+      const times = [...g[5]!.matchAll(/(\d{1,2})[.:](\d{2})/g)].map((t) => ({
+        hour: Number(t[1]),
+        minute: Number(t[2]),
+      }));
+      for (const [date, time] of dates.flatMap((d) => times.map((t) => [d, t] as const))) {
         const shown = helsinkiShowTime({
           year: Number(date.slice(0, 4)),
           month: Number(date.slice(5, 7)),
           day: Number(date.slice(8, 10)),
-          hour: Number(g[5]),
-          minute: Number(g[6]),
+          ...time,
         });
         if (!shown) {
           unreadable += 1;

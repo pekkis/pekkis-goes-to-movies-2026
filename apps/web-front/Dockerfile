@@ -1,7 +1,9 @@
 # Website image: Astro's standalone Node server (dist/server/entry.mjs) with its client assets.
 # Build from the repo root: `docker compose --profile app build web`.
 
-FROM node:26-alpine AS build
+# The base image is pinned by version and digest: an update is a deliberate change, made
+# together with devEngines in package.json (Dependabot opens the PRs; .github/dependabot.yml).
+FROM node:26.12.1-alpine3.24@sha256:40cd011b55415bc894e45b02fdd5a5dfde056921b7d23a64c74f80497af48797 AS build
 # pnpm pinned to the repo's packageManager; installed with npm outside the project.
 RUN npm install --global pnpm@12.10.1
 WORKDIR /repo
@@ -22,7 +24,7 @@ RUN pnpm --filter @pgtm/web-front build \
  && pnpm --filter @pgtm/web-front deploy --prod --legacy /out \
  && cp -r apps/web-front/dist /out/dist
 
-FROM node:26-alpine AS runtime
+FROM node:26.12.1-alpine3.24@sha256:40cd011b55415bc894e45b02fdd5a5dfde056921b7d23a64c74f80497af48797 AS runtime
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=4321
 WORKDIR /app
 COPY --from=build --chown=node:node /out/package.json ./

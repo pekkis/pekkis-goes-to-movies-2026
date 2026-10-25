@@ -51,8 +51,29 @@ describe("parseKinoHuovi", () => {
     });
   });
 
-  it("places nothing when the weekdays do not fit the range", () => {
-    const wrong = HTML.replace("PE, LA, SU, MA ja TI", "PE, LA, SU ja MA");
+  it("reads only the listed weekdays of a range (2026-10-25)", () => {
+    // "24.-27.10. SU, MA ja TI": the range starts on a Saturday without a show.
+    const html = HTML.replace("23.-27.10. PE, LA, SU, MA ja TI", "24.-27.10. SU, MA ja TI");
+    const result = parseKinoHuovi(snapshot({ html }), SITE);
+    expect(result.warnings).toEqual([]);
+    const lapin = result.listings.find((l) => l.title.fi === "LAPIN SOTA")!;
+    expect(
+      result.screenings.filter((s) => s.listingId === lapin.id).map((s) => s.businessDate),
+    ).toEqual(["2026-10-25", "2026-10-26", "2026-10-27"]);
+  });
+
+  it('reads several times in one group: "3.11. TI klo 15.00 ja klo 18.00" (2026-10-25)', () => {
+    const html = HTML.replace("12.10. MA klo 18.00", "13.10. TI klo 15.00 ja klo 18.00");
+    const result = parseKinoHuovi(snapshot({ html }), SITE);
+    expect(result.warnings).toEqual([]);
+    expect(
+      result.screenings.filter((s) => s.businessDate === "2026-10-13").map((s) => s.startsAt),
+    ).toEqual(["2026-10-13T15:00:00+03:00", "2026-10-13T18:00:00+03:00"]);
+  });
+
+  it("places nothing when a listed weekday is not in the range", () => {
+    // 23.-27.10. is Friday to Tuesday: no Wednesday in it.
+    const wrong = HTML.replace("PE, LA, SU, MA ja TI", "PE, LA, SU, MA ja KE");
     const result = parseKinoHuovi(snapshot({ html: wrong }), SITE);
     expect(result.warnings.map((w) => w.code)).toEqual(["invalid-row"]);
     expect(isIncomplete(result)).toBe(true);
