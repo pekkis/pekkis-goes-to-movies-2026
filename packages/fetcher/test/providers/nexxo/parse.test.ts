@@ -9,11 +9,35 @@ import {
   toIso,
 } from "../../../src/providers/nexxo/parse.ts";
 import type { NexxoRawSnapshot } from "../../../src/providers/nexxo/raw.ts";
-import { NEXXO_SITES, type NexxoSite } from "../../../src/providers/nexxo/sites.ts";
+import { NEXXO_SITES, NexxoSite } from "../../../src/providers/nexxo/sites.ts";
 import { loadFixture } from "../../fixtures.ts";
 
+/**
+ * Kino Marilyn's config while it ran on Nexxo (until 2026-10-24, now on eTiketti): its
+ * fixture is still a good sample of a Nexxo answer.
+ */
+const KINOMARILYN_ON_NEXXO = NexxoSite.parse({
+  provider: "kinomarilyn",
+  name: "Kino Marilyn",
+  homepage: "https://kinomarilyn.fi",
+  programmePath: "/esitysajat/",
+  verifiedAt: "2026-10-10",
+  venues: [
+    {
+      slug: "loviisa",
+      locationId: "1",
+      name: "Kino Marilyn",
+      city: "Loviisa",
+      address: "Kuningattarenkatu 17",
+      postalCode: "07900",
+      geo: { lat: 60.458467, lon: 26.225406 },
+      geoSource: "osm:node/2104773059",
+    },
+  ],
+});
+
 const site = (provider: string): NexxoSite => {
-  const found = NEXXO_SITES.find((s) => s.provider === provider);
+  const found = [...NEXXO_SITES, KINOMARILYN_ON_NEXXO].find((s) => s.provider === provider);
   if (!found) {
     throw new Error(`No site ${provider}`);
   }

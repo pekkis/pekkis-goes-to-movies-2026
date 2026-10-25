@@ -42,7 +42,7 @@ pnpm pull && pnpm data:push
 
 `data:push` (`scripts/push-data.ts`):
 
-1. rsyncs `data/normalized/` to `{DEPLOY_TARGET}/data/normalized/` over SSH;
+1. creates `{DEPLOY_TARGET}/data/normalized/` if it's missing (a fresh checkout has none), then rsyncs `data/normalized/` there over SSH;
 2. runs `docker compose --profile ingest run --rm ingest` on the server.
 
 Set `DEPLOY_TARGET=user@host:/srv/pgtm` in your home `.env`; it needs SSH access and Docker rights on the server. Ingest is idempotent and keeps history, as locally. Your local `pnpm ingest` still works for the local database.

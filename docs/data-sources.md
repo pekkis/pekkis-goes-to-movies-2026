@@ -244,7 +244,7 @@ Profiled on 2026-10-10 over 214 shows on 10 locations. Adapter: `packages/fetche
 - **Bio Säde** (Mänttä): biosade.fi's own API is empty; its page reads kinohirvi.fi's API, location 4 (`apiBase`).
 - **Kino Metso** (KSEK's touring cinema): location 2 on kinoaurora.fi, where each **room is a town** (`roomIds` per venue; Riihivuori, room 21, is folded into Muurame as KSEK's site does). Laukaa (24) and Viitasaari (10) were not in Leffavuoro's list; the `unclaimed-room` warning found them. Toivakka (23, the library hall) and Hankasalmi (19, Monitoimitalo) appeared only once `movieid=0` was sent.
 - **Bio-Salo** (Salo), **Bio Stara** (Paimio) and **Bio Jukola** (Somero): one tenant on biosalo.fi, location 1 (rooms Bio-Salo 1–3), location 2 (Bio Stara 1–2) and location 4 (Bio Jukola, found 2026-10-16 from biojukola.fi's widgets); location 3 is empty, and so is Kinoset's location 4, which directories give for Bio Jukola. biostara.fi's widgets read biosalo.fi's API (`apiBase`). Each links to its own front page. Both were thought to publish nothing until `movieid=0`.
-- **Kino Marilyn** (Loviisa): location 1 also books Loviisa's Kulttuurikeskus (room 2), which shows films too (a Lions Club screening) besides concerts; concerts are events by their show type, so the room is read.
+- **Kino Marilyn** (Loviisa) was on Nexxo until 2026-10-24, then moved to **eTiketti** (see that section). Its Nexxo fixture still serves the parser tests. On Nexxo, location 1 also booked Loviisa's Kulttuurikeskus (room 2).
 - No seat counts (`availability: "unknown"`) and no per-show booking links in the API. **Ticket links point to the venue's programme page** (`programmePath?location=N`, or the venue's own `page`), which differs per site. Each was opened by hand on 2026-10-10 and shows the plugin's showlist.
 
 ### Adding a Nexxo cinema
@@ -690,7 +690,7 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/kinohuovi/`
 - **A Duda front page:** one `.postArticle` card per film; the `.postDescription` text holds everything **[V]**:
   - groups of screenings: "12.10. MA klo 18.00" or a range with its weekdays, "23.-27.10. PE, LA, SU, MA ja TI klo 18.00", several groups per card;
   - "Dub." (dubbed into Finnish), "Kestoaika n. 2t 35min." (runtime), "Liput 15€." (a bare amount is published).
-- **A range expands only when its weekdays prove its dates,** one weekday per date in order, ending on the range's last day. Otherwise the group is not placed and warns. There is no year: it is inferred, and the weekdays check it.
+- **A range gives the days within it whose weekday is listed,** and each listed weekday must be exactly one of them, in order; otherwise the group is not placed and warns. "24.-27.10. SU, MA ja TI" is the 25th to 27th: the range began on a Saturday without a show (2026-10-25 [V]; until then the parser wanted one weekday per date and dropped the card). A group may have several times, "3.11. TI klo 15.00 ja klo 18.00" (two screenings). There is no year: it is inferred from the nearest date whose weekday fits.
 - **The card's link is a recycled alias** (Kerro kaikille at `/kero kaikille`, Lapin sota at `/kopio-seuraavasta-…`), so the film is its title and screenings link the front page.
 - **No rating** is printed. Tickets at the door.
 - **Coordinates:** OSM way 1154064070 "Kino-Huovi" (Harjavallankatu 33, 29200 Harjavalta).
@@ -991,7 +991,7 @@ Set up on 2026-10-10. Code: `packages/fetcher/src/ratings/omdb.ts`, run by `pnpm
 
 ## eTiketti (server-rendered HTML)
 
-Profiled on 2026-10-10 against all 21 sites (listing + 2 film pages each). Adapter: `packages/fetcher/src/providers/etiketti/`, sites in `sites.ts`. Origin: Leffavuoro's `scripts/providers/etiketti.py`, re-verified.
+Profiled on 2026-10-10 against all 21 sites (listing + 2 film pages each). **Kino Marilyn** (Loviisa) joined on 2026-10-25, moved from Nexxo: its Nexxo API answered 404 and the front page ran on eTiketti [V]. The same provider id and venue slug keep the venue's history. Adapter: `packages/fetcher/src/providers/etiketti/`, sites in `sites.ts`. Origin: Leffavuoro's `scripts/providers/etiketti.py`, re-verified.
 
 ### Pages [V]
 

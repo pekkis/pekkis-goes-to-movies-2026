@@ -468,5 +468,10 @@
     "tmdb": 194,
     "title": "Hopeatähti-kerho: Amélie",
     "note": "Jean-Pierre Jeunet's Le Fabuleux Destin d'Amélie Poulain (2001), TMDB's Finnish title Amélie; not the 2025 animation of a similar name. Kuvakukko gives no year or runtime. Confirmed by the maintainer (2026-10-21)."
+  },
+  "kinomarilyn:film:11": {
+    "tmdb": 1450460,
+    "title": "Lapin sota - Loviisan Lions Clubin erikoisnäytös",
+    "note": "The Lions Club of Loviisa's special screening of Lapin sota (2026), TMDB 1450460, which Kino Marilyn shows that week; the suffix names the occasion, not another film."
   }
 }

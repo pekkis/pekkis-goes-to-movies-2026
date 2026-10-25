@@ -22,5 +22,7 @@ const run = (cmd: string, args: string[]) => {
   execFileSync(cmd, args, { stdio: "inherit" });
 };
 
+// rsync creates only the last folder: a fresh checkout has no data/ yet (2026-10-24).
+run("ssh", [host, `mkdir -p '${path}/data/normalized'`]);
 run("rsync", ["-az", "--delete", "data/normalized/", `${host}:${path}/data/normalized/`]);
 run("ssh", [host, `cd '${path}' && docker compose --profile ingest run --rm ingest`]);
