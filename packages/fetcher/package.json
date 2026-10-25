@@ -17,7 +17,7 @@
     "@pgtm/model": "workspace:*",
     "cheerio": "^1.2.0",
     "ky": "^2.1.0",
-    "p-queue": "^9.3.3",
+    "p-queue": "^10.0.0",
     "playwright": "^1.64.0",
     "zod": "^4.6.5"
   },
