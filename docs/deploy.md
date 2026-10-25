@@ -4,13 +4,13 @@ How the service runs on a server with Docker Compose behind nginx, and how the d
 
 ## The pieces
 
-| Service    | Image              | Listens on                    | What it does                                                           |
-| ---------- | ------------------ | ----------------------------- | ---------------------------------------------------------------------- |
-| `postgres` | postgres:18-alpine | `127.0.0.1:${PG_PORT:-5432}`  | the database (volume `pgtm_postgres`)                                  |
-| `migrate`  | pgtm-api           | –                             | one-shot: applies migrations on every `up`                             |
-| `api`      | pgtm-api           | `127.0.0.1:${API_PORT:-3000}` | HTTP API, `/docs`, and MCP at `/mcp/{MCP_TOKEN}` when the token is set |
-| `web`      | pgtm-web           | `127.0.0.1:${WEB_PORT:-4321}` | the website (Astro SSR), reading the API over the Compose network      |
-| `ingest`   | pgtm-api           | –                             | on demand: loads `./data/normalized` into Postgres                     |
+| Service    | Image                                       | Listens on                    | What it does                                                           |
+| ---------- | ------------------------------------------- | ----------------------------- | ---------------------------------------------------------------------- |
+| `postgres` | postgres:18.6-alpine3.24 (pinned by digest) | `127.0.0.1:${PG_PORT:-5432}`  | the database (volume `pgtm_postgres`)                                  |
+| `migrate`  | pgtm-api                                    | –                             | one-shot: applies migrations on every `up`                             |
+| `api`      | pgtm-api                                    | `127.0.0.1:${API_PORT:-3000}` | HTTP API, `/docs`, and MCP at `/mcp/{MCP_TOKEN}` when the token is set |
+| `web`      | pgtm-web                                    | `127.0.0.1:${WEB_PORT:-4321}` | the website (Astro SSR), reading the API over the Compose network      |
+| `ingest`   | pgtm-api                                    | –                             | on demand: loads `./data/normalized` into Postgres                     |
 
 Everything binds to localhost; nginx publishes it. The server never fetches showtimes: the pull runs at home (Finnkino needs a visible Chrome), and the files are shipped over.
 
