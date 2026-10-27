@@ -11,7 +11,7 @@ import { load } from "cheerio";
 import { normalizeLang } from "../../lib/lang.ts";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { MaritaRawSnapshot } from "./fetch.ts";
 import type { MaritaSite } from "./sites.ts";
@@ -29,8 +29,6 @@ const RATINGS: Record<string, FinnishRating> = {
   "16": "K-16",
   "18": "K-18",
 };
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the front page + site config -> normalized batch. */
 export const parseMarita = (raw: MaritaRawSnapshot, site: MaritaSite): ProviderBatch => {
@@ -51,11 +49,11 @@ export const parseMarita = (raw: MaritaRawSnapshot, site: MaritaSite): ProviderB
   for (const el of $("#show-times .movie-info").toArray()) {
     const block = $(el);
     const link = block.find("h3 a").first();
-    const rawTitle = text(link.text());
+    const rawTitle = plainText(link.text());
     const href = link.attr("href") ?? "";
     const slug = href.match(/\/elokuva\/([^/?#]+)\/?$/)?.[1];
-    const d = text(block.find(".movie-info-times-date").text()).match(DATE);
-    const t = text(block.find(".movie-info-times-time").text()).match(TIME);
+    const d = plainText(block.find(".movie-info-times-date").text()).match(DATE);
+    const t = plainText(block.find(".movie-info-times-time").text()).match(TIME);
     const start =
       d &&
       t &&
@@ -81,12 +79,12 @@ export const parseMarita = (raw: MaritaRawSnapshot, site: MaritaSite): ProviderB
       unmapped.push(`rating:${ageImage.split("/").at(-1)}`);
     }
     // "Kieli: Suomi": the print's spoken language (the site states no subtitles).
-    const spoken = text(block.find(".movie-info-language").text()).replace(/^Kieli:\s*/i, "");
+    const spoken = plainText(block.find(".movie-info-language").text()).replace(/^Kieli:\s*/i, "");
     const language = spoken ? normalizeLang(spoken) : undefined;
     if (spoken && !language) {
       unmapped.push(`audio:${spoken}`);
     }
-    const price = toCents(text(block.find(".movie-info-price").text()).match(PRICE)?.[1], {
+    const price = toCents(plainText(block.find(".movie-info-price").text()).match(PRICE)?.[1], {
       zeroIsFree: false,
     });
 

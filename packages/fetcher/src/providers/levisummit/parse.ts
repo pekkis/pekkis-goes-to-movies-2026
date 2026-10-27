@@ -8,7 +8,7 @@ import {
 import { dateWindow, helsinkiShowTime } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { LeviSummitRawSnapshot } from "./fetch.ts";
 import type { LeviSummitSite } from "./sites.ts";
@@ -19,8 +19,6 @@ const DAY = /(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
 /** "To klo 14:00": the weekday must be the section's. */
 const SHOWTIME = /^(ma|ti|ke|to|pe|la|su)\s+klo\s+(\d{1,2})[.:](\d{2})$/i;
 const PRICE = /^(\d{1,3}(?:[.,]\d{1,2})?)\s*€$/;
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the cinema page + site config -> normalized batch. */
 export const parseLeviSummit = (
@@ -42,7 +40,7 @@ export const parseLeviSummit = (
   }
   let unreadable = 0;
   for (const section of $(".levi-summit-cinema-show-day-container").toArray()) {
-    const day = text($(section).find("h3").first().text()).match(DAY);
+    const day = plainText($(section).find("h3").first().text()).match(DAY);
     const cards = $(section).find(".levi-summit-cinema-show-day__single").toArray();
     if (!day) {
       unreadable += cards.length;
@@ -55,9 +53,9 @@ export const parseLeviSummit = (
     });
     for (const el of cards) {
       const card = $(el);
-      const rawTitle = text(card.find("h4").first().text());
+      const rawTitle = plainText(card.find("h4").first().text());
       const href = card.find(".title-showtime a").attr("href") ?? "";
-      const m = text(card.find(".movie-showtime").text()).match(SHOWTIME);
+      const m = plainText(card.find(".movie-showtime").text()).match(SHOWTIME);
       const start =
         m &&
         WEEKDAYS[date.dayOfWeek - 1] === m[1]!.toLowerCase() &&
@@ -75,9 +73,12 @@ export const parseLeviSummit = (
       if (start.businessDate < window.from || start.businessDate > window.to) {
         continue;
       }
-      const price = toCents(text(card.find(".movie-tickets").first().text()).match(PRICE)?.[1], {
-        zeroIsFree: false,
-      });
+      const price = toCents(
+        plainText(card.find(".movie-tickets").first().text()).match(PRICE)?.[1],
+        {
+          zeroIsFree: false,
+        },
+      );
       const { title: unprefixed, rule } = splitTitlePrefix(rawTitle, prefixRules);
       const { title, version } = splitVersion(unprefixed);
       const filmKey = slugify(title);

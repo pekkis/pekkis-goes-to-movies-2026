@@ -16,7 +16,7 @@ import {
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KurikanKinoRawSnapshot } from "./fetch.ts";
 import type { KurikanKinoSite } from "./sites.ts";
@@ -32,8 +32,6 @@ const RATINGS: Record<string, FinnishRating> = {
   "16": "K-16",
   "18": "K-18",
 };
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the front page + site config -> normalized batch. */
 export const parseKurikanKino = (
@@ -67,7 +65,7 @@ export const parseKurikanKino = (
     const name = card.find(".elokuva-nimi").first().clone();
     const ageClass = name.find(".ikaraja").attr("class") ?? "";
     name.find(".ikaraja").remove();
-    const rawTitle = text(name.text());
+    const rawTitle = plainText(name.text());
     if (!rawTitle) {
       unreadable += times.length;
       continue;
@@ -81,9 +79,9 @@ export const parseKurikanKino = (
     const [hours, minutes] = card
       .find(".kesto strong")
       .toArray()
-      .map((s) => Number(text($(s).text())));
+      .map((s) => Number(plainText($(s).text())));
     const runtime = hours !== undefined && minutes !== undefined ? hours * 60 + minutes : undefined;
-    const price = toCents(text(card.find(".hinta").first().text()).match(PRICE)?.[1], {
+    const price = toCents(plainText(card.find(".hinta").first().text()).match(PRICE)?.[1], {
       zeroIsFree: false,
     });
 
@@ -100,7 +98,7 @@ export const parseKurikanKino = (
 
     for (const t of times) {
       const stamp = Number($(t).attr("esitysaika"));
-      const shown = text($(t).text()).match(SHOWN);
+      const shown = plainText($(t).text()).match(SHOWN);
       if (!Number.isInteger(stamp) || stamp <= 0 || !shown) {
         unreadable += 1;
         continue;

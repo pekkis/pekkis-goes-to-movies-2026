@@ -14,7 +14,7 @@ import { load } from "cheerio";
 import { normalizeLang } from "../../lib/lang.ts";
 import { own } from "../../lib/records.ts";
 import { splitVersion } from "../labels.ts";
-import { byStartThenId, slugify } from "../parsing.ts";
+import { byStartThenId, plainText, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { IsohannuRawSnapshot } from "./fetch.ts";
 import type { IsohannuSite } from "./sites.ts";
@@ -32,8 +32,6 @@ const RATINGS: Record<string, FinnishRating> = {
 const DAY = /(\d{1,2})\.(\d{1,2})\.(\d{4})\s*$/;
 const TIME = /^(\d{1,2})[:.](\d{2})$/;
 const FILM_ID = /[?&]id=(\d+)/;
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 type Row = {
   filmId: string;
@@ -57,27 +55,27 @@ const rowsOf = (html: string, site: IsohannuSite) => {
   let skipped = 0;
   const notScreenings = new Set(site.notScreenings.map((t) => t.toLowerCase()));
   $("#showtable h3.showtable-title").each((_index, heading) => {
-    const d = text($(heading).text()).match(DAY);
+    const d = plainText($(heading).text()).match(DAY);
     const containers = $(heading).nextUntil("h3.showtable-title", ".showtable-container");
     if (!d) {
       unreadable += containers.find(".showtable-row").length || 1;
       return;
     }
     containers.each((_c, container) => {
-      const hall = text($(container).find(".showtable-hall").first().text());
+      const hall = plainText($(container).find(".showtable-hall").first().text());
       $(container)
         .find(".showtable-row")
         .each((_r, el) => {
           const row = $(el);
           const name = row.find(".showtable-name").first();
           // The title is the text before the nested ticket link.
-          const title = text(
+          const title = plainText(
             name
               .contents()
               .filter((_i, node) => node.type === "text")
               .text(),
           );
-          const time = text(row.find(".showtable-time").text()).match(TIME);
+          const time = plainText(row.find(".showtable-time").text()).match(TIME);
           const filmId = row.closest("a").attr("href")?.match(FILM_ID)?.[1];
           const start =
             time &&
@@ -146,7 +144,7 @@ const detailsOf = (html: string): Details => {
   const $ = load(html);
   const fields = new Map<string, string>();
   for (const part of ($("#kuvaus").html() ?? "").split(/<hr\b[^>]*>/i)) {
-    const line = text(load(part, null, false).text());
+    const line = plainText(load(part, null, false).text());
     const m = line.match(/^([^:]{2,30}):\s*(.+)$/);
     if (m) {
       fields.set(m[1]!.toLowerCase(), m[2]!);

@@ -11,7 +11,7 @@ import { dateWindow, helsinkiShowTime } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { normalizeLang } from "../../lib/lang.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify } from "../parsing.ts";
+import { byStartThenId, plainText, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { EngelRawSnapshot } from "./fetch.ts";
 import type { EngelSite } from "./sites.ts";
@@ -21,8 +21,6 @@ const DAY_ID = /^rsj_(\d{4})-(\d{2})-(\d{2})$/;
 /** "Ke 14.10." beside the time: checked against the block's date. */
 const SHOWN_DAY = /(\d{1,2})\.(\d{1,2})\./;
 const TIME = /klo\s*(\d{1,2})[:.](\d{2})/i;
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** "1h 34 min", "95 min" */
 const DURATION = /^(?:(\d+)\s*h)?\s*(\d+)\s*min$/i;
@@ -44,9 +42,9 @@ const detailsOf = (html: string): Details => {
   const $ = load(html);
   const fields = new Map<string, string>();
   $("label").each((_index, el) => {
-    const value = text($(el).next("span").text());
+    const value = plainText($(el).next("span").text());
     if (value) {
-      fields.set(text($(el).text()).toUpperCase(), value);
+      fields.set(plainText($(el).text()).toUpperCase(), value);
     }
   });
   const unmapped: string[] = [];
@@ -148,8 +146,8 @@ export const parseEngel = (raw: EngelRawSnapshot, site: EngelSite): ProviderBatc
       .find(".rs-johku-schedule")
       .each((_r, el) => {
         const row = $(el);
-        const rawTitle = text(row.find(".movie-name").text());
-        const when = text(row.find(".movie-date-time").text());
+        const rawTitle = plainText(row.find(".movie-name").text());
+        const when = plainText(row.find(".movie-date-time").text());
         const time = when.match(TIME);
         if (!/\bklo\b/i.test(when)) {
           // "Coming soon": the opening day without a time ("Pe 30.10. Lue lisää").

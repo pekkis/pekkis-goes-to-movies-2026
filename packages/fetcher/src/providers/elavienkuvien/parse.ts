@@ -10,7 +10,7 @@ import { dateWindow, helsinkiShowTime } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId } from "../parsing.ts";
+import { byStartThenId, plainText } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { ElavienkuvienRawSnapshot } from "./fetch.ts";
 import type { ElavienkuvienSite } from "./sites.ts";
@@ -30,8 +30,6 @@ const RATINGS: Record<string, FinnishRating> = {
 };
 /** A film's path on the site: "ohjelmisto/tony/". */
 const FILM_PATH = /^\/?(ohjelmisto\/[^/?#]+\/)$/;
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** The film pages the listing links, from its film lifts only (not the sub-navigation). */
 export const filmPaths = (listing: string): string[] => {
@@ -79,9 +77,9 @@ export const parseElavienkuvien = (
     }
     const $ = load(html);
     const slug = path.split("/")[1]!;
-    const rawTitle = text($("h2").first().text());
+    const rawTitle = plainText($("h2").first().text());
     const facts = $("p.movielength");
-    const duration = text(facts.text()).match(DURATION);
+    const duration = plainText(facts.text()).match(DURATION);
     const runtime = duration ? Number(duration[1] ?? 0) * 60 + Number(duration[2]) : 0;
     const ageImage = facts.find("img").attr("src") ?? "";
     const age = ageImage.match(AGE)?.[1];
@@ -96,7 +94,7 @@ export const parseElavienkuvien = (
 
     for (const line of ($(".screenings p").html() ?? "").split(/<br\s*\/?>/i)) {
       const row = load(line, null, false);
-      const rowText = text(row.root().text());
+      const rowText = plainText(row.root().text());
       if (!rowText || !/\bklo\b/i.test(rowText)) {
         continue; // "ke 16.12.2026": an opening day without a time
       }

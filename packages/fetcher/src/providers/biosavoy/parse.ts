@@ -9,15 +9,13 @@ import {
 import { dateWindow, toHelsinkiIso } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify } from "../parsing.ts";
+import { byStartThenId, plainText, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { BioSavoyRawSnapshot } from "./fetch.ts";
 import type { BioSavoySite } from "./sites.ts";
 
 /** "Filmvisningar - Sal 1": the hall is the block's. */
 const BLOCK = /^Filmvisningar\s*[-–]\s*(.+)$/i;
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the front page + site config -> normalized batch. */
 export const parseBioSavoy = (raw: BioSavoyRawSnapshot, site: BioSavoySite): ProviderBatch => {
@@ -35,7 +33,7 @@ export const parseBioSavoy = (raw: BioSavoyRawSnapshot, site: BioSavoySite): Pro
   const blocks = $("h2.block-title")
     .toArray()
     .flatMap((h) => {
-      const hall = text($(h).text()).match(BLOCK)?.[1];
+      const hall = plainText($(h).text()).match(BLOCK)?.[1];
       return hall
         ? [{ hall, rows: $(h).nextAll(".block-content").first().find("a[href^='/film/']") }]
         : [];
@@ -55,7 +53,10 @@ export const parseBioSavoy = (raw: BioSavoyRawSnapshot, site: BioSavoySite): Pro
       const slug = href.match(/^\/film\/([^/?#]+)/)?.[1];
       const iso = row.find("[content]").attr("content");
       // The text after the clock and the dash: "18:00 - BORTGLÖMDA ÖN".
-      const rawTitle = text(row.clone().children().remove().end().text()).replace(/^[-–]\s*/, "");
+      const rawTitle = plainText(row.clone().children().remove().end().text()).replace(
+        /^[-–]\s*/,
+        "",
+      );
       let startsAt: string | undefined;
       try {
         startsAt = iso ? toHelsinkiIso(iso) : undefined;

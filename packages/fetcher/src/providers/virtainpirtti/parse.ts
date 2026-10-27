@@ -12,7 +12,7 @@ import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify } from "../parsing.ts";
+import { byStartThenId, plainText, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { VirtainPirttiRawSnapshot } from "./fetch.ts";
 import type { VirtainPirttiSite } from "./sites.ts";
@@ -35,9 +35,6 @@ const RATINGS: Record<string, FinnishRating> = {
   K18: "K-18",
 };
 
-const text = (value: string | undefined) =>
-  (value ?? "").replace(/​/g, "").replace(/\s+/g, " ").trim();
-
 /** Pure: the programme page + site config -> normalized batch. */
 export const parseVirtainPirtti = (
   raw: VirtainPirttiRawSnapshot,
@@ -58,7 +55,7 @@ export const parseVirtainPirtti = (
     .map((el) =>
       ($(el).html() ?? "")
         .split(/<br\s*\/?>/i)
-        .map((chunk) => text(load(chunk, null, false).text()))
+        .map((chunk) => plainText(load(chunk, null, false).text()))
         .filter(Boolean),
     )
     .filter((lines) => lines.some((l) => ROWISH.test(l)));

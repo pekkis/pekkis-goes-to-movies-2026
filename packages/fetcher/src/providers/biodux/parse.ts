@@ -12,7 +12,7 @@ import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify } from "../parsing.ts";
+import { byStartThenId, plainText, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { BioDuxRawSnapshot } from "./fetch.ts";
 import type { BioDuxSite } from "./sites.ts";
@@ -57,8 +57,6 @@ const SUBTITLE_LANGS: [RegExp, Lang][] = [
   [/\bsuom\.? tekstit\b/i, "fi"],
 ];
 
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
-
 type Film = {
   title: string;
   runtime?: number;
@@ -80,7 +78,7 @@ export const parseBioDux = (raw: BioDuxRawSnapshot, site: BioDuxSite): ProviderB
   $("script, style, figure, img").remove();
   const lines = ($("body").html() ?? "")
     .split(/<br\s*\/?>|<\/?(?:p|h\d|div|button|li|section)\b[^>]*>/i)
-    .map((chunk) => text(load(chunk, null, false).text()))
+    .map((chunk) => plainText(load(chunk, null, false).text()))
     .filter(Boolean);
   if (!lines.some((l) => AGE.test(l))) {
     warnings.push({ code: "invalid-response", message: "No films on the front page" });
@@ -195,7 +193,7 @@ export const parseBioDux = (raw: BioDuxRawSnapshot, site: BioDuxSite): ProviderB
         unreadable += 1;
         return;
       }
-      const note = text(row[7]).toLowerCase();
+      const note = plainText(row[7]).toLowerCase();
       const audio = note ? own(ROW_AUDIO, note) : undefined;
       film.rows.push({
         date,

@@ -8,7 +8,7 @@ import {
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify } from "../parsing.ts";
+import { byStartThenId, plainText, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { SuojaRawSnapshot } from "./fetch.ts";
 import type { SuojaSite } from "./sites.ts";
@@ -16,8 +16,6 @@ import type { SuojaSite } from "./sites.ts";
 const WEEKDAYS = ["ma", "ti", "ke", "to", "pe", "la", "su"];
 /** "pe 16.10. klo 19:00". */
 const SHOWN = /^(ma|ti|ke|to|pe|la|su)\s+(\d{1,2})\.(\d{1,2})\.?\s+klo\s+(\d{1,2})[.:](\d{2})$/i;
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the front page + site config -> normalized batch. */
 export const parseSuoja = (raw: SuojaRawSnapshot, site: SuojaSite): ProviderBatch => {
@@ -39,7 +37,7 @@ export const parseSuoja = (raw: SuojaRawSnapshot, site: SuojaSite): ProviderBatc
   for (const el of films) {
     const block = $(el).find(".desktop-mode").first();
     const heading = block.find("h2 a").first();
-    const rawTitle = text(heading.text());
+    const rawTitle = plainText(heading.text());
     const slug = (heading.attr("href") ?? "").match(/\/elokuva\/([^/?#]+)/)?.[1];
     const links = block.find(".showtime-list a").toArray();
     if (!rawTitle) {
@@ -53,7 +51,7 @@ export const parseSuoja = (raw: SuojaRawSnapshot, site: SuojaSite): ProviderBatc
     for (const a of links) {
       const href = $(a).attr("href") ?? "";
       const showId = href.match(/^\/naytos\/(\d+)$/)?.[1];
-      const m = text($(a).text()).match(SHOWN);
+      const m = plainText($(a).text()).match(SHOWN);
       const date = m ? nearestDate(Number(m[2]), Number(m[3]), raw.from) : undefined;
       const fits =
         date && WEEKDAYS[Temporal.PlainDate.from(date).dayOfWeek - 1] === m![1]!.toLowerCase();

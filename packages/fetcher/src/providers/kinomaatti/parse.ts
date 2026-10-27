@@ -10,7 +10,7 @@ import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KinomaattiRawSnapshot } from "./fetch.ts";
 import type { KinomaattiSite } from "./sites.ts";
@@ -29,8 +29,6 @@ const RATINGS: Record<string, FinnishRating> = {
   "16": "K-16",
   "18": "K-18",
 };
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the timetable page + site config -> normalized batch. */
 export const parseKinomaatti = (
@@ -59,10 +57,10 @@ export const parseKinomaatti = (
     const slug = href.match(/\/elokuva\/([^/?#]+)\/?$/)?.[1];
     const heading = link.find("h3").first().clone();
     const ageStyle = heading.find(".age").attr("style") ?? "";
-    const format = text(heading.find(".tyyppi").text());
+    const format = plainText(heading.find(".tyyppi").text());
     heading.find(".age, .tyyppi").remove();
-    const rawTitle = text(heading.text());
-    const m = text(row.find(".tulossa-esitysaika").text()).match(SHOWN);
+    const rawTitle = plainText(heading.text());
+    const m = plainText(row.find(".tulossa-esitysaika").text()).match(SHOWN);
     const date = m ? nearestDate(Number(m[2]), Number(m[3]), raw.from) : undefined;
     const fits =
       date &&
@@ -95,7 +93,7 @@ export const parseKinomaatti = (
     if (format && !dimension) {
       unmapped.push(`format:${format}`);
     }
-    const price = toCents(text(row.find(".tulossa-hinta").text()).match(PRICE)?.[1], {
+    const price = toCents(plainText(row.find(".tulossa-hinta").text()).match(PRICE)?.[1], {
       zeroIsFree: false,
     });
 

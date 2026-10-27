@@ -12,7 +12,7 @@ import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KinoKuvaRawSnapshot } from "./fetch.ts";
 import type { KinoKuvaSite } from "./sites.ts";
@@ -41,8 +41,6 @@ const RATINGS: Record<string, FinnishRating> = {
   K18: "K-18",
 };
 
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
-
 /** Pure: the front page + site config -> normalized batch. */
 export const parseKinoKuva = (raw: KinoKuvaRawSnapshot, site: KinoKuvaSite): ProviderBatch => {
   const P = site.provider;
@@ -62,12 +60,12 @@ export const parseKinoKuva = (raw: KinoKuvaRawSnapshot, site: KinoKuvaSite): Pro
   let unreadable = 0;
   for (const el of films) {
     const head = $(el);
-    const rawTitle = text(head.find("h1").first().text());
-    const facts = text(head.text());
+    const rawTitle = plainText(head.find("h1").first().text());
+    const facts = plainText(head.text());
     const details = head.closest("table").find("td.elokuva_tiedot pre").first();
     const lines = (details.html() ?? "")
       .split(/<br\s*\/?>/i)
-      .map((chunk) => text(load(chunk, null, false).text()))
+      .map((chunk) => plainText(load(chunk, null, false).text()))
       .filter(Boolean);
 
     const unmapped: string[] = [];

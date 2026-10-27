@@ -20,7 +20,7 @@ import {
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { byStartThenId, slugify } from "../parsing.ts";
+import { byStartThenId, plainText, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KuvakukkoRawSnapshot } from "./fetch.ts";
 import type { KuvakukkoSite } from "./sites.ts";
@@ -49,9 +49,6 @@ const RATINGS: Record<string, FinnishRating> = {
 
 /** A link to a page, not to an uploaded image. */
 const IMAGE = /\.(?:jpe?g|png|gif|webp)$/i;
-
-const text = (value: string | undefined) =>
-  (value ?? "").replace(/ /g, " ").replace(/\s+/g, " ").trim();
 
 type Note = { text: string; rule: LabelRule };
 
@@ -93,7 +90,7 @@ const readRows = (html: string, site: KuvakukkoSite, from: string) => {
   const headings = $("h2").toArray();
   for (const venue of site.venues) {
     const heading = headings.find((h) => {
-      const title = text($(h).text()).toLowerCase();
+      const title = plainText($(h).text()).toLowerCase();
       return title.includes(venue.heading) && title.includes("esitysaikataulu");
     });
     if (!heading) {
@@ -114,7 +111,7 @@ const readRows = (html: string, site: KuvakukkoSite, from: string) => {
     let date: string | undefined;
     for (const line of lines) {
       const fragment = load(line, null, false);
-      const lineText = text(fragment.text());
+      const lineText = plainText(fragment.text());
       const day = lineText.match(DAY);
       if (day && WEEKDAYS.includes(day[1]!.toLowerCase())) {
         date = nearestDate(Number(day[2]), Number(day[3]), from);
@@ -138,12 +135,13 @@ const readRows = (html: string, site: KuvakukkoSite, from: string) => {
       // unlinked rows are the whole rest of the line.
       const link = fragment("a")
         .toArray()
-        .find((a) => text(fragment(a).text()));
+        .find((a) => plainText(fragment(a).text()));
       const { title: rawTitle, note: titleNote } = splitNote(
-        link ? text(fragment(link).text()) : text(row[3]),
+        link ? plainText(fragment(link).text()) : plainText(row[3]),
         site.titleNotes,
       );
-      const note = titleNote ?? (link ? splitNote(text(row[3]), site.titleNotes).note : undefined);
+      const note =
+        titleNote ?? (link ? splitNote(plainText(row[3]), site.titleNotes).note : undefined);
       const href = link ? fragment(link).attr("href") : undefined;
       const start =
         date &&
@@ -229,12 +227,12 @@ const languages = (value: string, unmapped: string[], role: string) => {
  */
 const detailsOf = (html: string, site: KuvakukkoSite): Details => {
   const $ = load(html);
-  const heading = comparable(text($("h1").first().text()), site);
+  const heading = comparable(plainText($("h1").first().text()), site);
   const unmapped: string[] = [];
   const candidates = ($("body").html() ?? "")
     .split(/<br\s*\/?>|<\/?(?:p|li|div|h\d)\b[^>]*>/i)
     .map((chunk) =>
-      text(load(chunk, null, false).text())
+      plainText(load(chunk, null, false).text())
         .split("•")
         .map((s) => s.trim()),
     )

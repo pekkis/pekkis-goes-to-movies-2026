@@ -8,7 +8,7 @@ import {
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion, type Version } from "../labels.ts";
-import { byStartThenId, eachStartTime, slugify } from "../parsing.ts";
+import { byStartThenId, eachStartTime, plainText, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KirkkonummiRawSnapshot } from "./fetch.ts";
 import type { KirkkonummiSite } from "./sites.ts";
@@ -28,8 +28,6 @@ const FULL = [
 const SHOW = /^(\d{1,2})\.(\d{1,2})\.?\s+([a-zäö]+)\s+klo\s*(\d{1,2})[.:](\d{2})!?$/i;
 /** Only rows that look like a screening are read; cast lists and notes are not. */
 const LOOKS_LIKE_SHOW = /^\d{1,2}\.\d{1,2}\.?\s+[a-zäö]+\s+klo/i;
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 const weekdayIndex = (word: string) => {
   const w = word.toLowerCase();
@@ -63,7 +61,7 @@ export const parseKirkkonummi = (
   const notes = new Map<string, Version>();
   let heading = "";
   for (const el of nodes) {
-    const value = text($(el).text());
+    const value = plainText($(el).text());
     if ($(el).hasClass("elementor-heading-title")) {
       heading = value;
       continue;

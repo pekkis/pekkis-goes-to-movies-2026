@@ -13,7 +13,7 @@ import { load } from "cheerio";
 import { normalizeLang } from "../../lib/lang.ts";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId } from "../parsing.ts";
+import { byStartThenId, plainText } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { ReginaRawSnapshot } from "./fetch.ts";
 import type { ReginaSite } from "./sites.ts";
@@ -42,8 +42,6 @@ const PRINTS: Record<string, "digital" | "35mm" | "70mm" | "16mm"> = {
   digitaalinen: "digital",
 };
 
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
-
 type Row = { filmId: string; title: string; start: string; ticketUrl?: string };
 
 const rowsOf = (html: string) => {
@@ -54,7 +52,7 @@ const rowsOf = (html: string) => {
     const movie = $(el);
     const link = movie.find("a.title").first();
     const filmId = link.attr("href")?.match(FILM_ID)?.[1];
-    const start = text(movie.find(".add-to-calendar .start").text());
+    const start = plainText(movie.find(".add-to-calendar .start").text());
     if (!filmId) {
       return; // an event without a film page (Leffavuoro skips these too)
     }
@@ -63,7 +61,7 @@ const rowsOf = (html: string) => {
       return;
     }
     const ticketUrl = movie.find("a.add-to-cart").attr("href");
-    rows.push({ filmId, title: text(link.text()), start, ...(ticketUrl && { ticketUrl }) });
+    rows.push({ filmId, title: plainText(link.text()), start, ...(ticketUrl && { ticketUrl }) });
   });
   return { rows, unreadable, found: $("div.day-header").length > 0 || rows.length > 0 };
 };
@@ -102,13 +100,13 @@ const detailsOf = (html: string): Details => {
   const fields = new Map<string, ReturnType<typeof $>>();
   $(".movie-details b span").each((_index, el) => {
     const value = $(el).closest("div").next("div");
-    fields.set(text($(el).text()).toLowerCase(), value);
+    fields.set(plainText($(el).text()).toLowerCase(), value);
   });
-  const field = (name: string) => text(fields.get(name)?.text());
+  const field = (name: string) => plainText(fields.get(name)?.text());
   const unmapped: string[] = [];
   const runtime = Number(field("kesto").match(/^(\d{2,3})\s*min/)?.[1] ?? 0);
   const year = Number(
-    text($("#main-content h1").first().text()).match(/\((\d{4})\)\s*$/)?.[1] ?? 0,
+    plainText($("#main-content h1").first().text()).match(/\((\d{4})\)\s*$/)?.[1] ?? 0,
   );
   // "Espanja/Portugali/Ranska", "Yhdysvallat".
   const countries = field("maa")
@@ -141,7 +139,7 @@ const detailsOf = (html: string): Details => {
         .get("teemat")!
         .find("a")
         .toArray()
-        .map((a) => text($(a).text()))
+        .map((a) => plainText($(a).text()))
         .filter(Boolean)
     : [];
   const print = field("kopiotieto").toLowerCase();

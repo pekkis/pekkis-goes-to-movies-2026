@@ -10,7 +10,7 @@ import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, eachStartTime, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, eachStartTime, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { BioMarlonRawSnapshot } from "./fetch.ts";
 import type { BioMarlonSite } from "./sites.ts";
@@ -36,8 +36,6 @@ const RATINGS: Record<string, FinnishRating> = {
   "18": "K-18",
 };
 
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
-
 /** Pure: the front page + site config -> normalized batch. */
 export const parseBioMarlon = (raw: BioMarlonRawSnapshot, site: BioMarlonSite): ProviderBatch => {
   const P = site.provider;
@@ -59,11 +57,11 @@ export const parseBioMarlon = (raw: BioMarlonRawSnapshot, site: BioMarlonSite): 
   let unreadable = 0;
   for (const el of blocks) {
     const block = $(el);
-    const rawTitle = text(block.find("h1").first().text());
+    const rawTitle = plainText(block.find("h1").first().text());
     const paragraphs = block
       .find("p")
       .toArray()
-      .map((p) => text($(p).text()));
+      .map((p) => plainText($(p).text()));
     const facts = paragraphs[0] ?? "";
     const unmapped: string[] = [];
     const age = facts.match(AGE);
@@ -85,7 +83,7 @@ export const parseBioMarlon = (raw: BioMarlonRawSnapshot, site: BioMarlonSite): 
     const lines = block
       .find("h4")
       .toArray()
-      .flatMap((h) => eachStartTime(text($(h).text())));
+      .flatMap((h) => eachStartTime(plainText($(h).text())));
     for (const line of lines) {
       if (PRIVATE.test(line) || UNTIMED.test(line)) {
         continue;

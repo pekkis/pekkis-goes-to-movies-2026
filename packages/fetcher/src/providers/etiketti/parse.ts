@@ -22,7 +22,14 @@ import {
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { availabilityFromSeats, byStartThenId, slugify, tally, toCents } from "../parsing.ts";
+import {
+  availabilityFromSeats,
+  byStartThenId,
+  plainText,
+  slugify,
+  tally,
+  toCents,
+} from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import { findSeries } from "../../series/registry.ts";
 import { ExtractedFilm, ExtractedShow, type EtikettiRawSnapshot } from "./raw.ts";
@@ -53,10 +60,8 @@ export const isEmptyProgramme = (listingHtml: string): boolean =>
 
 // --- Film page extraction (pure HTML -> ExtractedFilm / ExtractedShow) ----------------
 
-const text = (s: string) => s.replace(/\s+/g, " ").trim();
-
 /** Text of a fragment of HTML, entities decoded. */
-const fragmentText = (html: string) => text(load(`<div>${html}</div>`)("div").text());
+const fragmentText = (html: string) => plainText(load(`<div>${html}</div>`)("div").text());
 
 /** The bits of a parsed DOM node we walk (cheerio does not re-export domhandler's types). */
 type DomNode = { type: string; name?: string; data?: string; nextSibling: DomNode | null };
@@ -74,7 +79,7 @@ const labelValue = ($: CheerioAPI, label: DomNode): string => {
       value += node.data ?? "";
     }
   }
-  return text(value);
+  return plainText(value);
 };
 
 const DETAILS = /Lippu|Vapaat paikat|Paikkoja vapaana/i;
@@ -86,20 +91,20 @@ export const extractFilmPage = (
   const $ = load(html);
   const facts: Record<string, string> = {};
   $("span.label").each((_, el) => {
-    const key = text($(el).text()).replace(/:$/, "");
+    const key = plainText($(el).text()).replace(/:$/, "");
     const value = labelValue($, el as unknown as DomNode);
     if (key && value && !(key in facts)) {
       facts[key] = value;
     }
   });
   const genres = $("span.movie-genre")
-    .map((_, el) => text($(el).text()))
+    .map((_, el) => plainText($(el).text()))
     .get()
     .filter(Boolean);
 
   const film = {
     sourceId: path.match(FILM_PATH)?.[1] ?? "",
-    title: text($("h1").first().text()),
+    title: plainText($("h1").first().text()),
     age: $("img[src*='ikarajat/']")
       .attr("src")
       ?.match(/fi-(s|\d+)\.svg/i)?.[1]
@@ -134,7 +139,7 @@ export const extractFilmPage = (
         ? fragmentText(($(details).html() ?? "").split(/<br\s*\/?>/i)[0] ?? "")
         : "";
       const place = firstLine && !DETAILS.test(firstLine) ? firstLine : undefined;
-      const rowText = text(row.text());
+      const rowText = plainText(row.text());
       const price = (row.find(".show-price").text() || rowText).match(
         /(\d+(?:[.,]\d{1,2})?)\s*€/,
       )?.[1];
@@ -150,7 +155,7 @@ export const extractFilmPage = (
         ...(seats && { seatsFree: Number(seats[1]), seatsTotal: Number(seats[2]) }),
         tags: row
           .find(".tag")
-          .map((_index, tag) => text($(tag).text()))
+          .map((_index, tag) => plainText($(tag).text()))
           .get()
           .filter(Boolean),
         licensedIcon: row.find("img[src*='anniskelu']").length > 0,
@@ -232,7 +237,10 @@ export const resolvePlace = (
     const placeless = venues.filter((v) => !v.place);
     return placeless.length === 1 ? { venue: placeless[0]! } : undefined;
   }
-  const parts = place.split("|").map(text).filter(Boolean);
+  const parts = place
+    .split("|")
+    .map((part) => plainText(part))
+    .filter(Boolean);
   for (const venue of venues) {
     if (!venue.place) {
       continue;

@@ -9,7 +9,7 @@ import {
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, toCents } from "../parsing.ts";
+import { byStartThenId, plainText, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { MatinTupaRawSnapshot } from "./fetch.ts";
 import type { MatinTupaSite } from "./sites.ts";
@@ -34,8 +34,6 @@ const RATINGS: Record<string, FinnishRating> = {
   "18": "K-18",
 };
 
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
-
 /** Pure: the programme page + site config -> normalized batch. */
 export const parseMatinTupa = (raw: MatinTupaRawSnapshot, site: MatinTupaSite): ProviderBatch => {
   const P = site.provider;
@@ -54,7 +52,7 @@ export const parseMatinTupa = (raw: MatinTupaRawSnapshot, site: MatinTupaSite): 
   }
   let unreadable = 0;
   for (const a of links) {
-    const rawTitle = text($(a).text());
+    const rawTitle = plainText($(a).text());
     const href = $(a).attr("href") ?? "";
     const slug = href.match(/\/elokuvat\/([^/?#]+)\/?$/)?.[1];
     const block = $(a).closest("div.col-sm-6");
@@ -64,7 +62,7 @@ export const parseMatinTupa = (raw: MatinTupaRawSnapshot, site: MatinTupaSite): 
     // The block as lines: labels, screening rows and the notes after them.
     const lines = (block.html() ?? "")
       .split(/<br\s*\/?>|<\/?(?:p|div|h\d)\b[^>]*>/i)
-      .map((chunk) => text(load(chunk, null, false).text()))
+      .map((chunk) => plainText(load(chunk, null, false).text()))
       .filter(Boolean);
     const runtimeMatch = lines.map((l) => l.match(DURATION)).find(Boolean);
     const runtime = runtimeMatch ? Number(runtimeMatch[1] ?? 0) * 60 + Number(runtimeMatch[2]) : 0;

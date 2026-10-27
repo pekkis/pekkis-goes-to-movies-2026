@@ -18,7 +18,7 @@ import {
   splitVersion,
   type LabelRule,
 } from "../labels.ts";
-import { byStartThenId, slugify } from "../parsing.ts";
+import { byStartThenId, plainText, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { TapiolaRawSnapshot } from "./fetch.ts";
 import type { TapiolaSite } from "./sites.ts";
@@ -38,8 +38,6 @@ const DURATION = /^(?:(\d+)\s*h)?\s*(\d+)\s*min$/i;
 /** "Original version": the spoken language is not named. */
 const ORIGINAL_VERSION = "OV";
 
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
-
 type Row = {
   url: string;
   /** The title as the list prints it, version markers included. */
@@ -57,8 +55,8 @@ const rowsOf = (html: string, site: TapiolaSite) => {
   $("div.movie-list div.movie-list-movie").each((_index, el) => {
     const block = $(el);
     const href = block.find("a").first().attr("href") ?? "";
-    const title = text(block.find(".title").text());
-    const date = text(block.find(".date").text());
+    const title = plainText(block.find(".title").text());
+    const date = plainText(block.find(".date").text());
     if (!date) {
       // A "coming soon" block: the same markup, no time yet.
       return;
@@ -116,7 +114,7 @@ const detailsOf = (html: string): Details => {
       .first()
       .html()
       ?.split(/<\/?br\s*\/?>/i);
-    return text(load(lines?.slice(1).join(" ") ?? "").text());
+    return plainText(load(lines?.slice(1).join(" ") ?? "").text());
   };
   const unmapped: string[] = [];
   const age = $(".info-icons .info-icon")

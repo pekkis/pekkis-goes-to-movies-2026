@@ -10,7 +10,7 @@ import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { AlataloRawSnapshot } from "./fetch.ts";
 import type { AlataloSite } from "./sites.ts";
@@ -32,8 +32,6 @@ const RATINGS: Record<string, FinnishRating> = {
   "16": "K-16",
   "18": "K-18",
 };
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 type Row = {
   time: [number, number];
@@ -67,7 +65,7 @@ export const parseAlatalo = (raw: AlataloRawSnapshot, site: AlataloSite): Provid
   $("script, style").remove();
   const lines = ($("body").html() ?? raw.html)
     .split(/<br\s*\/?>|<\/?(?:p|div|li|h\d|tr|td|span|table|tbody|ul|ol)\b[^>]*>/i)
-    .map((chunk) => text(load(chunk, null, false).text()))
+    .map((chunk) => plainText(load(chunk, null, false).text()))
     .filter(Boolean);
   const priceText = lines.join(" ");
   const price = site.pricePattern
@@ -136,7 +134,7 @@ export const parseAlatalo = (raw: AlataloRawSnapshot, site: AlataloSite): Provid
     const row = line.match(ROW);
     if (row) {
       // Unmarked rows stay open: a bare marker below may close several of one film.
-      if (MARKER.test(text(row[3])) || open.some((r) => !r.title)) {
+      if (MARKER.test(plainText(row[3])) || open.some((r) => !r.title)) {
         close();
       }
       datesUsed = true;
@@ -145,7 +143,7 @@ export const parseAlatalo = (raw: AlataloRawSnapshot, site: AlataloSite): Provid
         unclaimed.set(town, (unclaimed.get(town) ?? 0) + 1);
         return;
       }
-      const { title, marker } = splitMarker(text(row[3]));
+      const { title, marker } = splitMarker(plainText(row[3]));
       const r: Row = {
         time: [Number(row[1]), Number(row[2])],
         title,
@@ -175,7 +173,7 @@ export const parseAlatalo = (raw: AlataloRawSnapshot, site: AlataloSite): Provid
       close();
     } else if (marker || !last.title) {
       // A continuation: the row's title runs onto this line.
-      last.title = text(`${last.title} ${title}`);
+      last.title = plainText(`${last.title} ${title}`);
       if (marker) {
         last.marker = marker;
       }

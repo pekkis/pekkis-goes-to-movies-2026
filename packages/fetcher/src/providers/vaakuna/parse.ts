@@ -10,7 +10,7 @@ import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { VaakunaRawSnapshot } from "./fetch.ts";
 import type { VaakunaSite } from "./sites.ts";
@@ -38,8 +38,6 @@ const RATINGS: Record<string, FinnishRating> = {
   "18": "K-18",
 };
 
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
-
 /** Pure: the front page + site config -> normalized batch. */
 export const parseVaakuna = (raw: VaakunaRawSnapshot, site: VaakunaSite): ProviderBatch => {
   const P = site.provider;
@@ -59,7 +57,7 @@ export const parseVaakuna = (raw: VaakunaRawSnapshot, site: VaakunaSite): Provid
   let unreadable = 0;
   for (const el of cards) {
     const card = $(el);
-    const rawTitle = text(card.find("h2").first().text());
+    const rawTitle = plainText(card.find("h2").first().text());
     const link = card.find("a.MovieCard__PosterLink").attr("href") ?? "";
     // The film page's name is the film's id: ".../elokuvat/the-odyssey.html".
     const filmId = link.match(/\/elokuvat\/([^/]+)\.html$/)?.[1] ?? slugify(rawTitle);
@@ -69,7 +67,7 @@ export const parseVaakuna = (raw: VaakunaRawSnapshot, site: VaakunaSite): Provid
     const facts = card
       .find("li")
       .toArray()
-      .map((li) => ({ text: text($(li).text()), icon: $(li).find("img").attr("src") }));
+      .map((li) => ({ text: plainText($(li).text()), icon: $(li).find("img").attr("src") }));
     const ageIcon = facts.find((f) => /^Ikäraja/i.test(f.text))?.icon;
     const age = ageIcon?.match(AGE_ICON)?.[1];
     const rating = age ? own(RATINGS, age.toUpperCase()) : undefined;
@@ -84,7 +82,7 @@ export const parseVaakuna = (raw: VaakunaRawSnapshot, site: VaakunaSite): Provid
     const listingId = makeId(P, "film", filmId);
 
     for (const td of card.find("td").toArray()) {
-      const row = text($(td).text());
+      const row = plainText($(td).text());
       if (!/\bklo\b/i.test(row)) {
         continue; // "Ensi-ilta 30.10.2026": an opening day, no screening time yet
       }

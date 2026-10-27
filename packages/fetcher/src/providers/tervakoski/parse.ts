@@ -15,7 +15,7 @@ import {
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { TervakoskiRawSnapshot } from "./fetch.ts";
 import type { TervakoskiSite } from "./sites.ts";
@@ -40,8 +40,6 @@ const RATINGS: Record<string, FinnishRating> = {
   K18: "K-18",
 };
 
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
-
 /** Pure: the programme page + site config -> normalized batch. */
 export const parseTervakoski = (
   raw: TervakoskiRawSnapshot,
@@ -59,7 +57,7 @@ export const parseTervakoski = (
   const $ = load(raw.html);
   // The programme runs from the first day heading to the next separator.
   const blocks = $("p, hr").toArray();
-  const first = blocks.findIndex((el) => $(el).is("p") && DAY.test(text($(el).text())));
+  const first = blocks.findIndex((el) => $(el).is("p") && DAY.test(plainText($(el).text())));
   const last = blocks.findIndex((el, i) => i > first && $(el).is("hr"));
   if (first < 0) {
     warnings.push({ code: "invalid-response", message: "No day headings on the programme page" });
@@ -67,7 +65,7 @@ export const parseTervakoski = (
   let date: string | undefined;
   let unreadable = 0;
   for (const el of first < 0 ? [] : blocks.slice(first, last < 0 ? undefined : last)) {
-    const line = text($(el).text());
+    const line = plainText($(el).text());
     const day = line.match(DAY);
     if (day) {
       const iso = nearestDate(Number(day[2]), Number(day[3]), raw.from);

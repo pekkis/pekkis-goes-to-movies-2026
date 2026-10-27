@@ -22,7 +22,7 @@ import {
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { byStartThenId } from "../parsing.ts";
+import { byStartThenId, plainText } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { PajakkakinoRawSnapshot } from "./fetch.ts";
 import type { PajakkakinoSite } from "./sites.ts";
@@ -109,8 +109,6 @@ const RATINGS: Record<string, FinnishRating> = {
   "18": "K-18",
 };
 
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
-
 /** Pure: the posts + site config -> normalized batch. */
 export const parsePajakkakino = (
   raw: PajakkakinoRawSnapshot,
@@ -140,7 +138,7 @@ export const parsePajakkakino = (
     const html = post.content.rendered.replace(/<del\b[^>]*>/gi, `$&${STRUCK}`);
     const lines = html
       .split(/<br\s*\/?>|<\/?(?:p|li|h\d|div|span|strong)\b[^>]*>/i)
-      .map((chunk) => text(load(chunk, null, false).text()))
+      .map((chunk) => plainText(load(chunk, null, false).text()))
       .filter(Boolean);
     const at = lines.findIndex((l) => /^ESITYKSET:?$/i.test(l));
     if (at < 0) {
@@ -167,7 +165,7 @@ export const parsePajakkakino = (
       ? { kind: "languages", languages: [subtitleLang] }
       : { kind: "unknown" };
 
-    const rawTitle = text(load(post.title.rendered, null, false).text());
+    const rawTitle = plainText(load(post.title.rendered, null, false).text());
     // A strand prefix and a closing note can both be there: "RÖMPPÄVIIKOT: RAKKAUTTA JA
     // VIRTAHEPOJA (ELOKUVA + LUKUPIIRI)".
     const outer = splitTitlePrefix(rawTitle, prefixRules);

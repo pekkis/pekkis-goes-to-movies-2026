@@ -18,7 +18,7 @@ import {
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KinoRioRawSnapshot } from "./fetch.ts";
 import type { KinoRioSite } from "./sites.ts";
@@ -39,8 +39,6 @@ const RATINGS: Record<string, FinnishRating> = {
   K16: "K-16",
   K18: "K-18",
 };
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the front page + site config -> normalized batch. */
 export const parseKinoRio = (raw: KinoRioRawSnapshot, site: KinoRioSite): ProviderBatch => {
@@ -65,14 +63,14 @@ export const parseKinoRio = (raw: KinoRioRawSnapshot, site: KinoRioSite): Provid
   for (const $ of blocks) {
     const rawTitle = $("p strong")
       .toArray()
-      .map((el) => text($(el).text()))
+      .map((el) => plainText($(el).text()))
       .find((t) => t && !/^Lue lisää$/i.test(t) && !DUBBED.test(t));
     const lines = $("li")
       .toArray()
-      .map((el) => text($(el).text()));
+      .map((el) => plainText($(el).text()));
     const notes = $("p")
       .toArray()
-      .map((el) => text($(el).text()));
+      .map((el) => plainText($(el).text()));
     const facts = lines.join(" ");
     const duration = facts.match(RUNTIME);
     const runtime = duration ? Number(duration[1]) * 60 + Number(duration[2]) : 0;

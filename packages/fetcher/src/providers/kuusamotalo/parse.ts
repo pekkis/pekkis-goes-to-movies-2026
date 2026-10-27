@@ -17,7 +17,7 @@ import {
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { byStartThenId, toCents } from "../parsing.ts";
+import { byStartThenId, plainText, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KuusamotaloRawSnapshot } from "./fetch.ts";
 import type { KuusamotaloSite } from "./sites.ts";
@@ -44,8 +44,6 @@ const RATINGS: Record<string, FinnishRating> = {
   "K-16": "K-16",
   "K-18": "K-18",
 };
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the posts + site config -> normalized batch. */
 export const parseKuusamotalo = (
@@ -76,7 +74,7 @@ export const parseKuusamotalo = (
     // The post's text, one entry per line or paragraph.
     const lines = post.content.rendered
       .split(/<br\s*\/?>|<\/?(?:p|li|h\d)\b[^>]*>/i)
-      .map((chunk) => text(load(chunk, null, false).text()))
+      .map((chunk) => plainText(load(chunk, null, false).text()))
       .filter(Boolean);
     const at = lines.findIndex((l) => /^Esitysajat:?$/i.test(l));
     if (at < 0) {
@@ -90,7 +88,7 @@ export const parseKuusamotalo = (
     const price = toCents(before.map((l) => l.match(PRICE)?.[1]).find(Boolean), {
       zeroIsFree: false,
     });
-    const rawTitle = text(load(post.title.rendered, null, false).text());
+    const rawTitle = plainText(load(post.title.rendered, null, false).text());
     const { title: unprefixed, rule } = splitTitlePrefix(rawTitle, prefixRules);
     const { title, version } = splitVersion(unprefixed);
     const listingId = makeId(P, "film", String(post.id));

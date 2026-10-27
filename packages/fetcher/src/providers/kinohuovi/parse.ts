@@ -8,7 +8,7 @@ import {
 import { addDays, dateWindow, daysBetween, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KinoHuoviRawSnapshot } from "./fetch.ts";
 import type { KinoHuoviSite } from "./sites.ts";
@@ -25,8 +25,6 @@ const GROUP =
 const DURATION = /Kestoaika\s+(?:n\.\s*)?(?:(\d+)\s*t)?\s*(\d+)\s*min/i;
 /** "Liput 12€." and nothing else on the line. */
 const PRICE = /Liput\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*€\.?(?:\s|$)/i;
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the front page + site config -> normalized batch. */
 export const parseKinoHuovi = (raw: KinoHuoviRawSnapshot, site: KinoHuoviSite): ProviderBatch => {
@@ -47,8 +45,8 @@ export const parseKinoHuovi = (raw: KinoHuoviRawSnapshot, site: KinoHuoviSite): 
   let unreadable = 0;
   for (const el of cards) {
     const card = $(el);
-    const rawTitle = text(card.find(".postTitle h3").first().text());
-    const body = text(card.find(".postDescription").text());
+    const rawTitle = plainText(card.find(".postTitle h3").first().text());
+    const body = plainText(card.find(".postDescription").text());
     if (!rawTitle) {
       continue;
     }

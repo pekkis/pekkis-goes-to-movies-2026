@@ -16,7 +16,7 @@ import {
   splitVersion,
   type Version,
 } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { BioPallasRawSnapshot } from "./fetch.ts";
 import type { BioPallasSite } from "./sites.ts";
@@ -34,9 +34,6 @@ const RATINGS: Record<string, FinnishRating> = {
   K16: "K-16",
   K18: "K-18",
 };
-
-const text = (value: string | undefined) =>
-  (value ?? "").replace(/​/g, "").replace(/\s+/g, " ").trim();
 
 /** Pure: the front page + site config -> normalized batch. */
 export const parseBioPallas = (raw: BioPallasRawSnapshot, site: BioPallasSite): ProviderBatch => {
@@ -57,7 +54,7 @@ export const parseBioPallas = (raw: BioPallasRawSnapshot, site: BioPallasSite): 
       $(b)
         .find("p, h1, h2, h3, h4, h5, h6, li")
         .toArray()
-        .map((p) => text($(p).text()))
+        .map((p) => plainText($(p).text()))
         .filter(Boolean),
     );
   if (blocks.length === 0) {

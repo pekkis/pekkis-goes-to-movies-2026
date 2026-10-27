@@ -18,7 +18,7 @@ import {
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KaarreRawSnapshot } from "./fetch.ts";
 import type { KaarreSite } from "./sites.ts";
@@ -40,8 +40,6 @@ const RATINGS: Record<string, FinnishRating> = {
   K16: "K-16",
   K18: "K-18",
 };
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the cinema page + site config -> normalized batch. */
 export const parseKaarre = (raw: KaarreRawSnapshot, site: KaarreSite): ProviderBatch => {
@@ -66,10 +64,10 @@ export const parseKaarre = (raw: KaarreRawSnapshot, site: KaarreSite): ProviderB
   let unreadable = 0;
   for (const el of paragraphs) {
     const p = $(el);
-    const rawTitle = text(p.find("strong").first().text());
+    const rawTitle = plainText(p.find("strong").first().text());
     const lines = (p.html() ?? "")
       .split(/<br\s*\/?>/i)
-      .map((chunk) => text(load(chunk, null, false).text()))
+      .map((chunk) => plainText(load(chunk, null, false).text()))
       .filter(Boolean);
     const rows = lines.filter((l) => ROWISH.test(l));
     if (rows.length === 0) {
