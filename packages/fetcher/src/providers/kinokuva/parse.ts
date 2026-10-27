@@ -1,7 +1,6 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type ScreeningTag,
@@ -10,9 +9,8 @@ import {
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KinoKuvaRawSnapshot } from "./fetch.ts";
 import type { KinoKuvaSite } from "./sites.ts";
@@ -33,15 +31,6 @@ const SUBTITLES = /\b(suomen|ruotsin|englannin)kielinen\s+tekst?i?tys/i;
 const SUBTITLE_LANGS = { suomen: "fi", ruotsin: "sv", englannin: "en" } as const;
 /** "Puolan elokuvaviikot:": a strand heading above the rows. */
 const STRAND = /^([^:]{3,60}):$/;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  K7: "K-7",
-  K12: "K-12",
-  K16: "K-16",
-  K18: "K-18",
-};
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the front page + site config -> normalized batch. */
 export const parseKinoKuva = (raw: KinoKuvaRawSnapshot, site: KinoKuvaSite): ProviderBatch => {
@@ -62,17 +51,17 @@ export const parseKinoKuva = (raw: KinoKuvaRawSnapshot, site: KinoKuvaSite): Pro
   let unreadable = 0;
   for (const el of films) {
     const head = $(el);
-    const rawTitle = text(head.find("h1").first().text());
-    const facts = text(head.text());
+    const rawTitle = plainText(head.find("h1").first().text());
+    const facts = plainText(head.text());
     const details = head.closest("table").find("td.elokuva_tiedot pre").first();
     const lines = (details.html() ?? "")
       .split(/<br\s*\/?>/i)
-      .map((chunk) => text(load(chunk, null, false).text()))
+      .map((chunk) => plainText(load(chunk, null, false).text()))
       .filter(Boolean);
 
     const unmapped: string[] = [];
     const age = facts.match(AGE)?.[1]?.toUpperCase();
-    const rating = age ? own(RATINGS, age) : undefined;
+    const rating = age ? finnishRating(age) : undefined;
     if (age && !rating) {
       unmapped.push(`rating:${age}`);
     }

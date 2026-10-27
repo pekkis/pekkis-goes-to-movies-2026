@@ -9,7 +9,7 @@ import {
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { MatinTupaRawSnapshot } from "./fetch.ts";
 import type { MatinTupaSite } from "./sites.ts";
@@ -25,16 +25,6 @@ const PRICE = /^Liput:\s*(\d{1,3}(?:[.,]\d{1,2})?)\s*€$/i;
 const AGE = /Sallittu\s+(?:yli\s+(7|12|16|18)-vuotiaille|kaikenikäisille)/i;
 /** The rating image: ".../ikaraja_sallittu-wpcf_30x30.png", "ikaraja_12-…". */
 const AGE_IMAGE = /ikaraja_(sallittu|s|7|12|16|18)\b/i;
-const RATINGS: Record<string, FinnishRating> = {
-  sallittu: "S",
-  s: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the programme page + site config -> normalized batch. */
 export const parseMatinTupa = (raw: MatinTupaRawSnapshot, site: MatinTupaSite): ProviderBatch => {
@@ -54,7 +44,7 @@ export const parseMatinTupa = (raw: MatinTupaRawSnapshot, site: MatinTupaSite): 
   }
   let unreadable = 0;
   for (const a of links) {
-    const rawTitle = text($(a).text());
+    const rawTitle = plainText($(a).text());
     const href = $(a).attr("href") ?? "";
     const slug = href.match(/\/elokuvat\/([^/?#]+)\/?$/)?.[1];
     const block = $(a).closest("div.col-sm-6");
@@ -64,7 +54,7 @@ export const parseMatinTupa = (raw: MatinTupaRawSnapshot, site: MatinTupaSite): 
     // The block as lines: labels, screening rows and the notes after them.
     const lines = (block.html() ?? "")
       .split(/<br\s*\/?>|<\/?(?:p|div|h\d)\b[^>]*>/i)
-      .map((chunk) => text(load(chunk, null, false).text()))
+      .map((chunk) => plainText(load(chunk, null, false).text()))
       .filter(Boolean);
     const runtimeMatch = lines.map((l) => l.match(DURATION)).find(Boolean);
     const runtime = runtimeMatch ? Number(runtimeMatch[1] ?? 0) * 60 + Number(runtimeMatch[2]) : 0;
@@ -85,10 +75,10 @@ export const parseMatinTupa = (raw: MatinTupaRawSnapshot, site: MatinTupaSite): 
       .find(Boolean);
     const sentence = notes.match(AGE);
     const rating: FinnishRating | undefined = imageAge
-      ? RATINGS[imageAge]
+      ? finnishRating(imageAge)
       : sentence
         ? sentence[1]
-          ? RATINGS[sentence[1]]
+          ? finnishRating(sentence[1])
           : "S"
         : undefined;
     // "Puhumme suomea." in the notes: dubbed into Finnish.

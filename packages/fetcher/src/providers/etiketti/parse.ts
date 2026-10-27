@@ -2,7 +2,6 @@ import {
   makeId,
   type Auditorium,
   type FilmListing,
-  type FinnishRating,
   type Lang,
   type ProviderBatch,
   type RawLabel,
@@ -22,12 +21,19 @@ import {
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { availabilityFromSeats, byStartThenId, slugify, tally, toCents } from "../parsing.ts";
+import {
+  availabilityFromSeats,
+  byStartThenId,
+  finnishRating,
+  plainText,
+  slugify,
+  tally,
+  toCents,
+} from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import { findSeries } from "../../series/registry.ts";
 import { ExtractedFilm, ExtractedShow, type EtikettiRawSnapshot } from "./raw.ts";
 import { baseOf, type EtikettiSite, type EtikettiVenue } from "./sites.ts";
-import { own } from "../../lib/records.ts";
 
 // --- Listing ------------------------------------------------------------------------
 
@@ -53,10 +59,8 @@ export const isEmptyProgramme = (listingHtml: string): boolean =>
 
 // --- Film page extraction (pure HTML -> ExtractedFilm / ExtractedShow) ----------------
 
-const text = (s: string) => s.replace(/\s+/g, " ").trim();
-
 /** Text of a fragment of HTML, entities decoded. */
-const fragmentText = (html: string) => text(load(`<div>${html}</div>`)("div").text());
+const fragmentText = (html: string) => plainText(load(`<div>${html}</div>`)("div").text());
 
 /** The bits of a parsed DOM node we walk (cheerio does not re-export domhandler's types). */
 type DomNode = { type: string; name?: string; data?: string; nextSibling: DomNode | null };
@@ -74,7 +78,7 @@ const labelValue = ($: CheerioAPI, label: DomNode): string => {
       value += node.data ?? "";
     }
   }
-  return text(value);
+  return plainText(value);
 };
 
 const DETAILS = /Lippu|Vapaat paikat|Paikkoja vapaana/i;
@@ -86,20 +90,20 @@ export const extractFilmPage = (
   const $ = load(html);
   const facts: Record<string, string> = {};
   $("span.label").each((_, el) => {
-    const key = text($(el).text()).replace(/:$/, "");
+    const key = plainText($(el).text()).replace(/:$/, "");
     const value = labelValue($, el as unknown as DomNode);
     if (key && value && !(key in facts)) {
       facts[key] = value;
     }
   });
   const genres = $("span.movie-genre")
-    .map((_, el) => text($(el).text()))
+    .map((_, el) => plainText($(el).text()))
     .get()
     .filter(Boolean);
 
   const film = {
     sourceId: path.match(FILM_PATH)?.[1] ?? "",
-    title: text($("h1").first().text()),
+    title: plainText($("h1").first().text()),
     age: $("img[src*='ikarajat/']")
       .attr("src")
       ?.match(/fi-(s|\d+)\.svg/i)?.[1]
@@ -134,7 +138,7 @@ export const extractFilmPage = (
         ? fragmentText(($(details).html() ?? "").split(/<br\s*\/?>/i)[0] ?? "")
         : "";
       const place = firstLine && !DETAILS.test(firstLine) ? firstLine : undefined;
-      const rowText = text(row.text());
+      const rowText = plainText(row.text());
       const price = (row.find(".show-price").text() || rowText).match(
         /(\d+(?:[.,]\d{1,2})?)\s*€/,
       )?.[1];
@@ -150,7 +154,7 @@ export const extractFilmPage = (
         ...(seats && { seatsFree: Number(seats[1]), seatsTotal: Number(seats[2]) }),
         tags: row
           .find(".tag")
-          .map((_index, tag) => text($(tag).text()))
+          .map((_index, tag) => plainText($(tag).text()))
           .get()
           .filter(Boolean),
         licensedIcon: row.find("img[src*='anniskelu']").length > 0,
@@ -162,14 +166,6 @@ export const extractFilmPage = (
 };
 
 // --- Mapping to the model ---------------------------------------------------------------
-
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
 
 const norm = (s: string) => s.normalize("NFC").toLowerCase().replace(/\s+/g, " ").trim();
 
@@ -232,7 +228,10 @@ export const resolvePlace = (
     const placeless = venues.filter((v) => !v.place);
     return placeless.length === 1 ? { venue: placeless[0]! } : undefined;
   }
-  const parts = place.split("|").map(text).filter(Boolean);
+  const parts = place
+    .split("|")
+    .map((part) => plainText(part))
+    .filter(Boolean);
   for (const venue of venues) {
     if (!venue.place) {
       continue;
@@ -306,7 +305,7 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
     }
     const audio = version.audio ? [version.audio] : languageFact.audio;
     const year = facts["Valmistumisvuosi"]?.match(/^\d{4}$/)?.[0];
-    const rating = f.age ? own(RATINGS, f.age) : undefined;
+    const rating = f.age ? finnishRating(f.age) : undefined;
     if (f.age && !rating) {
       unmapped.push(`age:${f.age}`);
     }

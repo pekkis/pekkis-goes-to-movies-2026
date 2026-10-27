@@ -2,7 +2,6 @@ import {
   makeId,
   type Auditorium,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type ScreeningTag,
@@ -12,19 +11,17 @@ import {
 import { dateWindow, helsinkiShowTime, parseLocalDateTime } from "@pgtm/model/time";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
 import { codes, parseAudio, parseSubtitles, UNKNOWN_CODE } from "../language-codes.ts";
-import { availabilityFromSeats, byStartThenId, slugify, tally, toCents } from "../parsing.ts";
+import {
+  availabilityFromSeats,
+  byStartThenId,
+  finnishRating,
+  slugify,
+  tally,
+  toCents,
+} from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import { JohkuEntry, ScheduleResponse, type JohkuRawSnapshot } from "./raw.ts";
 import type { JohkuSite } from "./sites.ts";
-import { own } from "../../lib/records.ts";
-
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "K-7": "K-7",
-  "K-12": "K-12",
-  "K-16": "K-16",
-  "K-18": "K-18",
-};
 
 const num = (v: string | number | null | undefined): number | undefined => {
   const n = typeof v === "number" ? v : v === null || v === undefined || v === "" ? NaN : Number(v);
@@ -139,7 +136,7 @@ export const parseJohku = (raw: JohkuRawSnapshot, site: JohkuSite): ProviderBatc
       ) {
         unmapped.push(`subtitles:${e.maccsboxsubtitles}`);
       }
-      const rating = blank(e.agelimit) ? undefined : own(RATINGS, e.agelimit!.trim());
+      const rating = blank(e.agelimit) ? undefined : finnishRating(e.agelimit!.trim());
       if (!blank(e.agelimit) && !rating) {
         unmapped.push(`agelimit:${e.agelimit}`);
       }

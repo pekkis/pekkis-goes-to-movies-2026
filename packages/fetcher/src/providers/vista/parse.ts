@@ -2,7 +2,6 @@ import {
   makeId,
   type Auditorium,
   type FilmListing,
-  type FinnishRating,
   type Lang,
   type ProviderBatch,
   type Screening,
@@ -12,21 +11,12 @@ import {
 import { dateWindow, toHelsinkiIso } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { normalizeLang } from "../../lib/lang.ts";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { availabilityFromSeats, byStartThenId, slugify, tally } from "../parsing.ts";
+import { availabilityFromSeats, byStartThenId, finnishRating, slugify, tally } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import { ScheduleResponse, VistaShow, type VistaRawSnapshot } from "./raw.ts";
 import type { VistaSite } from "./sites.ts";
 
-const RATINGS: Record<string, FinnishRating> = {
-  SALLITTU: "S",
-  S: "S",
-  "K-7": "K-7",
-  "K-12": "K-12",
-  "K-16": "K-16",
-  "K-18": "K-18",
-};
 /** Stated as not known. */
 const UNKNOWN_RATINGS = new Set(["EI TIEDOSSA", "(NONE)"]);
 
@@ -188,7 +178,7 @@ export const parseVista = (raw: VistaRawSnapshot, site: VistaSite): ProviderBatc
           ? undefined
           : s.ProductionYear;
       const ratingText = s.Rating?.trim().toUpperCase() ?? "";
-      const rating = own(RATINGS, ratingKey(ratingText));
+      const rating = finnishRating(ratingKey(ratingText));
       if (ratingText && !rating && !UNKNOWN_RATINGS.has(ratingText)) {
         unmapped.push(`rating:${s.Rating}`);
       }

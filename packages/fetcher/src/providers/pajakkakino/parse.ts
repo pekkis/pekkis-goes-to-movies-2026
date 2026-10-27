@@ -1,7 +1,6 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type Lang,
   type ProviderBatch,
   type RawLabel,
@@ -13,7 +12,6 @@ import { dateWindow, helsinkiShowTime, nearestDate, pastDateThisYear } from "@pg
 import { load } from "cheerio";
 import { z } from "zod";
 import { normalizeLang } from "../../lib/lang.ts";
-import { own } from "../../lib/records.ts";
 import {
   COMMON_TITLE_PREFIXES,
   findLabel,
@@ -22,7 +20,7 @@ import {
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { byStartThenId } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { PajakkakinoRawSnapshot } from "./fetch.ts";
 import type { PajakkakinoSite } from "./sites.ts";
@@ -101,15 +99,6 @@ const RUNTIME = /^(?:(\d+)\s*h)?\s*(\d+)\s*min$/i;
 const AUDIO = /\bAUDIO\s+([a-zäö]+)/i;
 const SUBTITLES = /\bTEKSTIT\s+([a-zäö]+)/i;
 const AGE_IMAGE = /ikaraja_(s|7|12|16|18)\.png/i;
-const RATINGS: Record<string, FinnishRating> = {
-  s: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the posts + site config -> normalized batch. */
 export const parsePajakkakino = (
@@ -140,7 +129,7 @@ export const parsePajakkakino = (
     const html = post.content.rendered.replace(/<del\b[^>]*>/gi, `$&${STRUCK}`);
     const lines = html
       .split(/<br\s*\/?>|<\/?(?:p|li|h\d|div|span|strong)\b[^>]*>/i)
-      .map((chunk) => text(load(chunk, null, false).text()))
+      .map((chunk) => plainText(load(chunk, null, false).text()))
       .filter(Boolean);
     const at = lines.findIndex((l) => /^ESITYKSET:?$/i.test(l));
     if (at < 0) {
@@ -149,7 +138,7 @@ export const parsePajakkakino = (
     const facts = lines.slice(0, at);
     const unmapped: string[] = [];
     const age = post.content.rendered.match(AGE_IMAGE)?.[1]?.toLowerCase();
-    const rating = age ? own(RATINGS, age) : undefined;
+    const rating = age ? finnishRating(age) : undefined;
     const duration = facts.map((l) => l.match(RUNTIME)).find(Boolean);
     const runtime = duration ? Number(duration[1] ?? 0) * 60 + Number(duration[2]) : 0;
     const factLine = facts.join(" ");
@@ -167,7 +156,7 @@ export const parsePajakkakino = (
       ? { kind: "languages", languages: [subtitleLang] }
       : { kind: "unknown" };
 
-    const rawTitle = text(load(post.title.rendered, null, false).text());
+    const rawTitle = plainText(load(post.title.rendered, null, false).text());
     // A strand prefix and a closing note can both be there: "RÖMPPÄVIIKOT: RAKKAUTTA JA
     // VIRTAHEPOJA (ELOKUVA + LUKUPIIRI)".
     const outer = splitTitlePrefix(rawTitle, prefixRules);

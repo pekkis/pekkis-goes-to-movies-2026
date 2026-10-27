@@ -1,7 +1,6 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type RawLabel,
   type Screening,
@@ -9,7 +8,6 @@ import {
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import {
   COMMON_TITLE_PREFIXES,
   findLabel,
@@ -18,7 +16,7 @@ import {
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KinoRioRawSnapshot } from "./fetch.ts";
 import type { KinoRioSite } from "./sites.ts";
@@ -32,15 +30,6 @@ const RUNTIME = /Kesto:\s*(\d+)\s*h\s*(\d+)\s*min/i;
 const AGE = /Ikäraja:\s*(S|K-?\d{1,2})\b/i;
 const PRICE = /Liput\s*:\s*(\d{1,3}(?:[.,]\d{1,2})?)\s*€/i;
 const DUBBED = /^puhuttu suomeksi$/i;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  K7: "K-7",
-  K12: "K-12",
-  K16: "K-16",
-  K18: "K-18",
-};
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the front page + site config -> normalized batch. */
 export const parseKinoRio = (raw: KinoRioRawSnapshot, site: KinoRioSite): ProviderBatch => {
@@ -65,19 +54,19 @@ export const parseKinoRio = (raw: KinoRioRawSnapshot, site: KinoRioSite): Provid
   for (const $ of blocks) {
     const rawTitle = $("p strong")
       .toArray()
-      .map((el) => text($(el).text()))
+      .map((el) => plainText($(el).text()))
       .find((t) => t && !/^Lue lisää$/i.test(t) && !DUBBED.test(t));
     const lines = $("li")
       .toArray()
-      .map((el) => text($(el).text()));
+      .map((el) => plainText($(el).text()));
     const notes = $("p")
       .toArray()
-      .map((el) => text($(el).text()));
+      .map((el) => plainText($(el).text()));
     const facts = lines.join(" ");
     const duration = facts.match(RUNTIME);
     const runtime = duration ? Number(duration[1]) * 60 + Number(duration[2]) : 0;
     const age = facts.match(AGE)?.[1]?.toUpperCase().replace("-", "");
-    const rating = age ? own(RATINGS, age) : undefined;
+    const rating = age ? finnishRating(age) : undefined;
     const unmapped = age && !rating ? [`rating:${age}`] : [];
     const price = toCents(facts.match(PRICE)?.[1], { zeroIsFree: false });
     const dubbed = notes.some((n) => DUBBED.test(n));

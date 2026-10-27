@@ -2,16 +2,14 @@ import {
   makeId,
   type Auditorium,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { JuliaRawSnapshot } from "./fetch.ts";
 import type { JuliaSite } from "./sites.ts";
@@ -20,16 +18,6 @@ import type { JuliaSite } from "./sites.ts";
 const ROW = /^(\d{1,2})\.(\d{1,2})\.(\d{2})\s+klo\s+(\d{1,2})[:.](\d{2})(?:,\s*(\d+)\.\s*sali)?$/i;
 /** "1t 28min", "95min", "2t 55min + väliaika" (an intermission besides) */
 const DURATION = /^(?:(\d+)\s*t)?\s*(\d+)\s*min\b/i;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  SALLITTU: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the programme page + site config -> normalized batch. */
 export const parseJulia = (raw: JuliaRawSnapshot, site: JuliaSite): ProviderBatch => {
@@ -51,7 +39,7 @@ export const parseJulia = (raw: JuliaRawSnapshot, site: JuliaSite): ProviderBatc
   let unreadable = 0;
   for (const el of films) {
     const film = $(el);
-    const rawTitle = text(film.find("h2").first().text());
+    const rawTitle = plainText(film.find("h2").first().text());
     const link = film.find("a").first().attr("href") ?? site.homepage;
     const times = film.find("div[id^=b]").first();
     // The film's own id is on its screening list ("b1843"); a film without one has no rows.
@@ -62,7 +50,7 @@ export const parseJulia = (raw: JuliaRawSnapshot, site: JuliaSite): ProviderBatc
     // "<strong>Ikäraja:</strong> S<br>": the label, then the text up to the next break.
     const facts = new Map<string, string>();
     for (const part of (film.html() ?? "").split(/<br\s*\/?>/i)) {
-      const m = text(load(part, null, false).text()).match(
+      const m = plainText(load(part, null, false).text()).match(
         /^(Ikäraja|Kesto|Genre|Hinta):\s*(.+)$/i,
       );
       if (m) {
@@ -71,7 +59,7 @@ export const parseJulia = (raw: JuliaRawSnapshot, site: JuliaSite): ProviderBatc
     }
     const unmapped: string[] = [];
     const age = facts.get("ikäraja")?.toUpperCase();
-    const rating = age ? own(RATINGS, age.replace(/^K-?/, "")) : undefined;
+    const rating = age ? finnishRating(age.replace(/^K-?/, "")) : undefined;
     if (age && !rating) {
       unmapped.push(`rating:${age}`);
     }
@@ -89,7 +77,7 @@ export const parseJulia = (raw: JuliaRawSnapshot, site: JuliaSite): ProviderBatc
       genres.some((g) => site.eventGenres.some((e) => e.toLowerCase() === g.toLowerCase()));
 
     for (const line of (times.html() ?? "").split(/<br\s*\/?>/i)) {
-      const row = text(load(line, null, false).text());
+      const row = plainText(load(line, null, false).text());
       if (!row) {
         continue;
       }

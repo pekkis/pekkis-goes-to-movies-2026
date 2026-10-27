@@ -1,7 +1,6 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Subtitles,
@@ -11,7 +10,7 @@ import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { HaminaRawSnapshot } from "./fetch.ts";
 import type { HaminaSite } from "./sites.ts";
@@ -24,13 +23,6 @@ const ROW =
 const DURATION = /^(?:(\d+)\s*[ht])?\s*(\d+)\s*min$/i;
 /** One plain amount: "11€". A range or "alkaen" settles nothing. */
 const PRICE = /^(\d{1,3}(?:[.,]\d{1,2})?)\s*€$/;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
 
 const lines = (html: string | null) =>
   (html ?? "").split(/<br\s*\/?>/i).map((part) => plainText(load(part, null, false).text()));
@@ -69,7 +61,7 @@ export const parseHamina = (raw: HaminaRawSnapshot, site: HaminaSite): ProviderB
     }
     const unmapped: string[] = [];
     const age = fields.get("ikäraja")?.toUpperCase();
-    const rating = age ? own(RATINGS, age) : undefined;
+    const rating = age ? finnishRating(age) : undefined;
     if (age && !rating) {
       unmapped.push(`rating:${age}`);
     }

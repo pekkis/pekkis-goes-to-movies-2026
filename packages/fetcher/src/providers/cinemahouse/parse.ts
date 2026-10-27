@@ -9,25 +9,21 @@ import {
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { availabilityFromSeats, byStartThenId, slugify, toCents } from "../parsing.ts";
+import {
+  availabilityFromSeats,
+  byStartThenId,
+  finnishRating,
+  plainText,
+  slugify,
+  toCents,
+} from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { CinemahouseRawSnapshot } from "./fetch.ts";
 import type { CinemahouseSite } from "./sites.ts";
 
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
-
 /** "14.10. 12:00 · Sali 2": day, month, time, and the hall after the separator. */
 const META = /^(\d{1,2})\.(\d{1,2})\.\s*(\d{1,2})[:.](\d{2})\s*(?:·\s*(.+))?$/;
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 type Tile = {
   slug: string;
@@ -65,19 +61,19 @@ export const parseCinemahouse = (
   const tiles = new Map<string, Tile>();
   $("article.cr-movie-tile").each((_index, el) => {
     const tile = $(el);
-    const title = text(tile.find(".cr-movie-tile__title").text());
+    const title = plainText(tile.find(".cr-movie-tile__title").text());
     const link = tile.find("a.cr-movie-tile__link").attr("href") ?? "";
-    const age = text(tile.find(".cr-badge--age").text()).toUpperCase();
+    const age = plainText(tile.find(".cr-badge--age").text()).toUpperCase();
     const runtime = Number(
-      text(tile.find(".cr-badge--runtime").text()).match(/^(\d+)\s*min$/)?.[1],
+      plainText(tile.find(".cr-badge--runtime").text()).match(/^(\d+)\s*min$/)?.[1],
     );
-    const rating = own(RATINGS, age);
+    const rating = finnishRating(age);
     tiles.set(title, {
       slug: link.match(/\/elokuvat\/([^/]+)\/?$/)?.[1] ?? slugify(title),
       link,
       ...(rating && { rating }),
       ...(runtime > 0 && { runtime }),
-      genres: text(tile.find(".cr-movie-tile__meta").text())
+      genres: plainText(tile.find(".cr-movie-tile__meta").text())
         .split(",")
         .map((g) => g.trim())
         .filter(Boolean)
@@ -87,8 +83,8 @@ export const parseCinemahouse = (
 
   $("div.cr-screening-row").each((_index, el) => {
     const row = $(el);
-    const rawTitle = text(row.find(".cr-screening-title").text());
-    const meta = text(row.find(".cr-screening-meta").text());
+    const rawTitle = plainText(row.find(".cr-screening-title").text());
+    const meta = plainText(row.find(".cr-screening-meta").text());
     const m = meta.match(META);
     const date = m && nearestDate(Number(m[1]), Number(m[2]), raw.from);
     const start =
@@ -112,7 +108,7 @@ export const parseCinemahouse = (
     const cta = row.find("a.cr-screening-cta");
     const screeningId = cta.attr("data-screening-id");
     const href = cta.attr("href");
-    const hall = text(m[5]);
+    const hall = plainText(m[5]);
     const tile = tiles.get(rawTitle);
     const unmapped: string[] = [];
     if (!tile) {
@@ -141,8 +137,8 @@ export const parseCinemahouse = (
       auditoriums.set(auditoriumId, { id: auditoriumId, venueId, name: hall, features: [] });
     }
 
-    const seats = text(row.find(".cr-screening-seats").text()).match(/(\d+)\s*\/\s*(\d+)/);
-    const price = toCents(text(row.find(".cr-screening-price").text()).replace(/\s*€$/, ""), {
+    const seats = plainText(row.find(".cr-screening-seats").text()).match(/(\d+)\s*\/\s*(\d+)/);
+    const price = toCents(plainText(row.find(".cr-screening-price").text()).replace(/\s*€$/, ""), {
       zeroIsFree: false,
     });
     // The plugin's own screening id; film, minute and hall when a row has none.

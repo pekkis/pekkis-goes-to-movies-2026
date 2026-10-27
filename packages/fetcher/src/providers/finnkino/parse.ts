@@ -32,7 +32,7 @@ import {
   type Text,
 } from "./raw.ts";
 import { own } from "../../lib/records.ts";
-import { byStartThenId } from "../parsing.ts";
+import { byStartThenId, finnishRating } from "../parsing.ts";
 
 export const PROVIDER: Provider = {
   id: "finnkino",
@@ -69,18 +69,10 @@ export const parseLanguageAttribute = (
   return { role: match[2] === "A" ? "audio" : "subtitles", languages: languages as Lang[] };
 };
 
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
-
 /** "16 VA" -> "K-16" (letters describe content); "Tulossa" (pending) -> undefined. */
 export const parseRating = (classification: string | undefined): FinnishRating | undefined => {
   const age = classification?.trim().match(/^(S|7|12|16|18)\b/)?.[1];
-  return age ? own(RATINGS, age) : undefined;
+  return age ? finnishRating(age) : undefined;
 };
 
 const FORMATS: Record<string, Feature> = {

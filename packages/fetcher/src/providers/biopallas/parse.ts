@@ -1,14 +1,12 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import {
   COMMON_TITLE_PREFIXES,
   isPrivateBooking,
@@ -16,7 +14,7 @@ import {
   splitVersion,
   type Version,
 } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { BioPallasRawSnapshot } from "./fetch.ts";
 import type { BioPallasSite } from "./sites.ts";
@@ -27,16 +25,6 @@ const DATE = /^(Ma|Ti|Ke|To|Pe|La|Su)(?:\/[A-Za-zåäö]+)?\s+(\d{1,2})\.(\d{1,2
 const TIME = /^Klo\s+(\d{1,2})[.:](\d{2})$/i;
 /** "1h 52min -K12-", "1h 33min -K-16-", "1h 26min -S-" */
 const FACTS = /^(?:(\d+)\s*h)?\s*(\d+)\s*min\s*-?(S|K-?\d{1,2})?-?$/i;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  K7: "K-7",
-  K12: "K-12",
-  K16: "K-16",
-  K18: "K-18",
-};
-
-const text = (value: string | undefined) =>
-  (value ?? "").replace(/​/g, "").replace(/\s+/g, " ").trim();
 
 /** Pure: the front page + site config -> normalized batch. */
 export const parseBioPallas = (raw: BioPallasRawSnapshot, site: BioPallasSite): ProviderBatch => {
@@ -57,7 +45,7 @@ export const parseBioPallas = (raw: BioPallasRawSnapshot, site: BioPallasSite): 
       $(b)
         .find("p, h1, h2, h3, h4, h5, h6, li")
         .toArray()
-        .map((p) => text($(p).text()))
+        .map((p) => plainText($(p).text()))
         .filter(Boolean),
     );
   if (blocks.length === 0) {
@@ -107,7 +95,7 @@ export const parseBioPallas = (raw: BioPallasRawSnapshot, site: BioPallasSite): 
       unmapped.push(`version:${versionLine}`);
     }
     const age = facts?.[3]?.toUpperCase().replace("-", "");
-    const rating = age ? own(RATINGS, age) : undefined;
+    const rating = age ? finnishRating(age) : undefined;
     if (age && !rating) {
       unmapped.push(`rating:${age}`);
     }

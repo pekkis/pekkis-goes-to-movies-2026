@@ -9,7 +9,7 @@ import { dateWindow, helsinkiShowTime, toHelsinkiIso } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { z } from "zod";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { MyCalendarRawSnapshot } from "./fetch.ts";
 import type { MyCalendarSite } from "./sites.ts";
@@ -26,8 +26,6 @@ const Occurrence = z.looseObject({
 
 const LOCAL = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/;
 
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
-
 /** Pure: the occurrences + the price page + site config -> normalized batch. */
 export const parseMyCalendar = (
   raw: MyCalendarRawSnapshot,
@@ -43,7 +41,7 @@ export const parseMyCalendar = (
   const screenings = new Map<string, Screening>();
 
   // The cinema's one price, when its page states it.
-  const infoText = raw.info ? text(load(raw.info).text()) : "";
+  const infoText = raw.info ? plainText(load(raw.info).text()) : "";
   const price = site.pricePattern
     ? toCents(infoText.match(new RegExp(site.pricePattern, "i"))?.[1], { zeroIsFree: false })
     : undefined;
@@ -94,7 +92,7 @@ export const parseMyCalendar = (
     if (start.businessDate < window.from || start.businessDate > window.to) {
       continue;
     }
-    const { title: unprefixed, rule } = splitTitlePrefix(text(e.event_title), prefixRules);
+    const { title: unprefixed, rule } = splitTitlePrefix(plainText(e.event_title), prefixRules);
     const { title, version } = splitVersion(unprefixed);
     const filmKey = slugify(title);
     const listingId = makeId(P, "film", filmKey);

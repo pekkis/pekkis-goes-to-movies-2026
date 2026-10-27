@@ -1,7 +1,6 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type RawLabel,
@@ -9,7 +8,6 @@ import {
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import {
   COMMON_TITLE_PREFIXES,
   findLabel,
@@ -18,7 +16,7 @@ import {
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KaarreRawSnapshot } from "./fetch.ts";
 import type { KaarreSite } from "./sites.ts";
@@ -33,15 +31,6 @@ const AGE = /Ikäraja\s+(-S-|S\b|K-?\d{1,2}\b)/i;
 const PRICE = /liput\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*€/i;
 const RUNTIME = /kesto\s+(\d+)\s*h\s*(\d+)\s*min/i;
 const DUBBED = /\bdub\.?\s+suomeksi\b/i;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  K7: "K-7",
-  K12: "K-12",
-  K16: "K-16",
-  K18: "K-18",
-};
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the cinema page + site config -> normalized batch. */
 export const parseKaarre = (raw: KaarreRawSnapshot, site: KaarreSite): ProviderBatch => {
@@ -66,10 +55,10 @@ export const parseKaarre = (raw: KaarreRawSnapshot, site: KaarreSite): ProviderB
   let unreadable = 0;
   for (const el of paragraphs) {
     const p = $(el);
-    const rawTitle = text(p.find("strong").first().text());
+    const rawTitle = plainText(p.find("strong").first().text());
     const lines = (p.html() ?? "")
       .split(/<br\s*\/?>/i)
-      .map((chunk) => text(load(chunk, null, false).text()))
+      .map((chunk) => plainText(load(chunk, null, false).text()))
       .filter(Boolean);
     const rows = lines.filter((l) => ROWISH.test(l));
     if (rows.length === 0) {
@@ -81,7 +70,7 @@ export const parseKaarre = (raw: KaarreRawSnapshot, site: KaarreSite): ProviderB
     }
     const facts = lines.join(" ");
     const age = facts.match(AGE)?.[1]?.toUpperCase().replace(/^-S-$/, "S").replace("-", "");
-    const rating = age ? own(RATINGS, age) : undefined;
+    const rating = age ? finnishRating(age) : undefined;
     const unmapped = age && !rating ? [`rating:${age}`] : [];
     const duration = facts.match(RUNTIME);
     const runtime = duration ? Number(duration[1]) * 60 + Number(duration[2]) : 0;

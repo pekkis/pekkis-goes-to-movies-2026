@@ -1,16 +1,14 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KisaKinoRawSnapshot } from "./fetch.ts";
 import type { KisaKinoSite } from "./sites.ts";
@@ -24,15 +22,6 @@ const RUNTIME = /^Kesto\s+(\d{1,2})\s*h\s*(\d{1,2})\s*min$/i;
 const PRICE = /^Lipun hinta:\s*(\d{1,3}(?:[.,]\d{1,2})?)\s*€$/i;
 /** The age image: "k16.png", "s.png". */
 const AGE_IMAGE = /\/(?:k)?(s|7|12|16|18)\.png$/i;
-const RATINGS: Record<string, FinnishRating> = {
-  s: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** The film pages the front page links, in order, once each. */
 export const filmUrls = (front: string, site: KisaKinoSite): string[] => {
@@ -65,12 +54,12 @@ export const parseKisaKino = (raw: KisaKinoRawSnapshot, site: KisaKinoSite): Pro
       continue;
     }
     const $ = load(page);
-    const rawTitle = text($("h1.sivuotsikko").first().text());
+    const rawTitle = plainText($("h1.sivuotsikko").first().text());
     const slug = url.match(/\/elokuvat\/([^/?#]+)\/?$/)?.[1];
     const sidebar = $("#sidebar").first();
     const lines = (sidebar.html() ?? "")
       .split(/<br\s*\/?>|<\/?p\b[^>]*>|<hr\s*\/?>/i)
-      .map((chunk) => text(load(chunk, null, false).text()))
+      .map((chunk) => plainText(load(chunk, null, false).text()))
       .filter(Boolean);
     if (!rawTitle || !slug || lines.length === 0) {
       warnings.push({ code: "invalid-film-page", message: `Film page not understood: ${url}` });
@@ -79,7 +68,7 @@ export const parseKisaKino = (raw: KisaKinoRawSnapshot, site: KisaKinoSite): Pro
     const unmapped: string[] = [];
     const ageImage = sidebar.find("img[src*='/images/']").attr("src") ?? "";
     const age = ageImage.match(AGE_IMAGE)?.[1]?.toLowerCase();
-    const rating = age ? own(RATINGS, age) : undefined;
+    const rating = age ? finnishRating(age) : undefined;
     if (ageImage && !rating) {
       unmapped.push(`rating:${ageImage.split("/").at(-1)}`);
     }

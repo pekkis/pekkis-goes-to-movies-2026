@@ -12,7 +12,7 @@ import {
 import { dateWindow, helsinkiShowTime, parseLocalDateTime } from "@pgtm/model/time";
 import { findLabel, LABELS, splitTitlePrefix as splitPrefix, splitVersion } from "../labels.ts";
 import { codes, parseAudio, parseSubtitles, UNKNOWN_CODE } from "../language-codes.ts";
-import { byStartThenId, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import { RawShow, ShowsResponse, type NexxoRawSnapshot } from "./raw.ts";
 import {
@@ -24,14 +24,6 @@ import {
   type TitlePrefixRule,
 } from "./sites.ts";
 
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
-
 /**
  * "12" / "s" / "K16" -> rating; "7/4" (K-7, from 4 with an adult; plugin 25.051) too;
  * "Tapahtuma K18" -> an age limit on the screening.
@@ -42,10 +34,10 @@ export const parseAge = (
   const value = (raw ?? "").trim().toUpperCase();
   const strict = value.match(/^(?:K-?)?(S|7|12|16|18)(?:\/\d{1,2})?$/)?.[1];
   if (strict) {
-    return { rating: RATINGS[strict]! };
+    return { rating: finnishRating(strict)! };
   }
   const loose = value.match(/\bK-?(7|12|16|18)\b/)?.[1];
-  return loose ? { ageLimit: RATINGS[loose]! } : {};
+  return loose ? { ageLimit: finnishRating(loose)! } : {};
 };
 
 /** "2026-10-10 15:00:00" (Helsinki) -> ISO with offset. */

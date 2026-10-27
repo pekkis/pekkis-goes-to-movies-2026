@@ -8,9 +8,8 @@ import {
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { NavettaRawSnapshot } from "./fetch.ts";
 import type { NavettaSite } from "./sites.ts";
@@ -21,22 +20,13 @@ const SHOW =
   /^(.*?)\s*\b(ma|ti|ke|to|pe|la|su)\s+(\d{1,2})\.(\d{1,2})\.?\s+klo\s+(\d{1,2})[:.](\d{2})$/i;
 /** The film block's facts: "K7, 87 min, liput 10 €", "Kesto 1 h 27 min, K12, liput 10 €". */
 const FACTS = /\bliput\s+\d/i;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  K7: "K-7",
-  K12: "K-12",
-  K16: "K-16",
-  K18: "K-18",
-};
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 type Facts = { rating?: FinnishRating; runtime?: number; price?: number; unmapped: string[] };
 
 const factsOf = (line: string): Facts => {
   const unmapped: string[] = [];
   const age = line.match(/\b(S|K-?\d{1,2})\b/)?.[1]?.replace("-", "");
-  const rating = age ? own(RATINGS, age) : undefined;
+  const rating = age ? finnishRating(age) : undefined;
   if (age && !rating) {
     unmapped.push(`rating:${age}`);
   }
@@ -68,7 +58,7 @@ export const parseNavetta = (raw: NavettaRawSnapshot, site: NavettaSite): Provid
   const $ = load(raw.html);
   // Paragraphs and figures in order; a figure marks the paragraph before it as a title.
   const nodes = $("p, figure").toArray();
-  const start = nodes.findIndex((n) => text($(n).text()) === site.heading);
+  const start = nodes.findIndex((n) => plainText($(n).text()) === site.heading);
   if (start < 0) {
     warnings.push({ code: "invalid-response", message: `No "${site.heading}" on the page` });
   }
@@ -85,7 +75,7 @@ export const parseNavetta = (raw: NavettaRawSnapshot, site: NavettaSite): Provid
     }
     const lines = ($(node).html() ?? "")
       .split(/<br\s*\/?>/i)
-      .map((part) => text(load(part, null, false).text()))
+      .map((part) => plainText(load(part, null, false).text()))
       .filter(Boolean);
     for (const line of lines) {
       const m = line.match(SHOW);

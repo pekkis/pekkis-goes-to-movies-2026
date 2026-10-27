@@ -12,21 +12,11 @@ import {
 import { dateWindow, helsinkiShowTime, toHelsinkiIso } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { normalizeLang } from "../../lib/lang.ts";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import { TribeEvent, TribePage, type TribeRawSnapshot } from "./raw.ts";
 import type { TribeSite } from "./sites.ts";
-
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  SALLITTU: "S",
-  K7: "K-7",
-  K12: "K-12",
-  K16: "K-16",
-  K18: "K-18",
-};
 
 /** "2026-10-18 13:00:00" */
 const LOCAL = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/;
@@ -35,10 +25,7 @@ const YEAR = /^(.+?)\s*\((\d{4})\)$/;
 /** A trailing "(K18)": the age limit. */
 const AGE = /^(.+?)\s*\((S|K-?\d{1,2})\)$/i;
 
-const text = (value: string | undefined) =>
-  (value ?? "").replace(/ /g, " ").replace(/\s+/g, " ").trim();
-
-const ratingOf = (value: string) => own(RATINGS, value.toUpperCase().replace(/[\s-]/g, ""));
+const ratingOf = (value: string) => finnishRating(value.toUpperCase().replace(/[\s-]/g, ""));
 
 const languages = (value: string, unmapped: string[], role: string): Lang[] | undefined => {
   const names = value
@@ -69,7 +56,7 @@ type Facts = {
 const factsOf = (description: string): Facts => {
   const lines = description
     .split(/<br\s*\/?>|<\/?(?:p|div|h\d)\b[^>]*>/i)
-    .flatMap((chunk) => text(load(chunk, null, false).text()).split(" | "))
+    .flatMap((chunk) => plainText(load(chunk, null, false).text()).split(" | "))
     .map((line) => line.trim());
   const facts: Facts = { unmapped: [] };
   for (const line of lines) {
@@ -166,7 +153,7 @@ export const parseTribe = (raw: TribeRawSnapshot, site: TribeSite): ProviderBatc
       }
 
       const facts = factsOf(e.description ?? "");
-      let rawTitle = text(load(e.title, null, false).text());
+      let rawTitle = plainText(load(e.title, null, false).text());
       for (const suffix of site.titleSuffixes) {
         if (rawTitle.toLowerCase().endsWith(suffix.toLowerCase())) {
           rawTitle = rawTitle.slice(0, -suffix.length).trim();

@@ -1,16 +1,14 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KinoYlariRawSnapshot } from "./fetch.ts";
 import type { KinoYlariSite } from "./sites.ts";
@@ -21,15 +19,6 @@ const ROW =
   /^(ma|ti|ke|to|pe|la|su)\s+(\d{1,2})\.(\d{1,2})\.?\s+klo\s+(\d{1,2})[.:](\d{2})\s+(.+)$/i;
 /** The rating after the title; "K?" is not rated yet. */
 const AGE = /\b(S|K\d{1,2}|K\?)\s*(.*)$/;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  K7: "K-7",
-  K12: "K-12",
-  K16: "K-16",
-  K18: "K-18",
-};
-
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** Pure: the cinema page + site config -> normalized batch. */
 export const parseKinoYlari = (raw: KinoYlariRawSnapshot, site: KinoYlariSite): ProviderBatch => {
@@ -45,26 +34,26 @@ export const parseKinoYlari = (raw: KinoYlariRawSnapshot, site: KinoYlariSite): 
   const $ = load(raw.html);
   const heading = $("h2")
     .toArray()
-    .find((el) => /^Ohjelmisto$/i.test(text($(el).text())));
+    .find((el) => /^Ohjelmisto$/i.test(plainText($(el).text())));
   if (!heading) {
     warnings.push({ code: "invalid-response", message: "No Ohjelmisto heading on the page" });
   }
   const rows = heading ? $(heading).next("div").find("div").toArray() : [];
   let unreadable = 0;
   for (const el of rows) {
-    const line = text($(el).text());
+    const line = plainText($(el).text());
     const m = line.match(ROW);
     if (!m) {
       continue; // spacers, links, notes
     }
-    const bold = text($(el).find("strong").first().text());
+    const bold = plainText($(el).find("strong").first().text());
     // A bold line that is itself a showtime announces the row below it.
     if (!bold || ROW.test(bold)) {
       continue;
     }
-    const after = text(line.slice(line.indexOf(bold) + bold.length));
+    const after = plainText(line.slice(line.indexOf(bold) + bold.length));
     const age = after.match(AGE)?.[1]?.toUpperCase();
-    const rating = age && age !== "K?" ? own(RATINGS, age) : undefined;
+    const rating = age && age !== "K?" ? finnishRating(age) : undefined;
     const unmapped = age && age !== "K?" && !rating ? [`rating:${age}`] : [];
     const date = nearestDate(Number(m[2]), Number(m[3]), raw.from);
     const fits =

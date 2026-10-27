@@ -1,7 +1,6 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Subtitles,
@@ -11,7 +10,7 @@ import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { LieksaRawSnapshot } from "./fetch.ts";
 import type { LieksaSite } from "./sites.ts";
@@ -27,19 +26,6 @@ const NOTES: Record<string, { subtitles?: Subtitles }> = {
 };
 /** The rating icon: "graphics/rating-icon-12.svg", "rating-icon-s.svg". */
 const AGE_ICON = /rating-icon-(s|7|12|16|18)\.svg$/i;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
-
-const text = (value: string | undefined) =>
-  (value ?? "")
-    .replace(/[  ]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
 
 /** Pure: the page + site config -> normalized batch. */
 export const parseLieksa = (raw: LieksaRawSnapshot, site: LieksaSite): ProviderBatch => {
@@ -61,14 +47,14 @@ export const parseLieksa = (raw: LieksaRawSnapshot, site: LieksaSite): ProviderB
   let unreadable = 0;
   for (const el of section.find("article.entry").toArray()) {
     const article = $(el);
-    const rawTitle = text(article.find("h3").first().text());
+    const rawTitle = plainText(article.find("h3").first().text());
     if (!rawTitle) {
       continue;
     }
     const cells = article
       .find(".side-row-cell")
       .toArray()
-      .map((c) => ({ text: text($(c).text()), icon: $(c).find("img").attr("src") ?? "" }));
+      .map((c) => ({ text: plainText($(c).text()), icon: $(c).find("img").attr("src") ?? "" }));
     const price = toCents(
       cells
         .map((c) => c.text.match(/^Liput:\s*(\d{1,3}(?:[.,]\d{1,2})?)\s*€$/i)?.[1])
@@ -80,7 +66,7 @@ export const parseLieksa = (raw: LieksaRawSnapshot, site: LieksaSite): ProviderB
     );
     const icon = cells.map((c) => c.icon).find((src) => /rating-icon/.test(src)) ?? "";
     const age = icon.match(AGE_ICON)?.[1];
-    const rating = age ? own(RATINGS, age.toUpperCase()) : undefined;
+    const rating = age ? finnishRating(age.toUpperCase()) : undefined;
     const iconUnmapped = icon && !rating ? [`rating:${icon.split("/").at(-1)}`] : [];
 
     const { title: unprefixed, rule } = splitTitlePrefix(rawTitle, prefixRules);
@@ -89,7 +75,7 @@ export const parseLieksa = (raw: LieksaRawSnapshot, site: LieksaSite): ProviderB
     const listingId = makeId(P, "film", filmKey);
 
     for (const li of article.find(".showtimes li").toArray()) {
-      const row = text($(li).text());
+      const row = plainText($(li).text());
       if (!row) {
         continue;
       }
