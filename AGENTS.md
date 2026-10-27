@@ -45,7 +45,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 **Process**
 
 - **Git:** `main` is protected (no direct pushes, force pushes or deletion, for everyone). Work on a branch, open a PR with `gh pr create`; no approval needed. **Commit only when the maintainer asks.**
-- **`pnpm check` must pass** (typecheck, lint with **zero warnings**, format, the website build, tests) before you say you are done or open a PR.
+- **`pnpm check` must pass** (typecheck, lint with **zero warnings**, format, the website build, tests) before you say you are done or open a PR. CI runs it on every PR and on `main` (`.github/workflows/check.yml`, with Postgres as a service), as the required status check for merging.
 - **Keep docs true:** update this file and `docs/` in the same change that makes them stale. Mark in docs what was verified first-hand ([V]) and what was assumed or read elsewhere ([A]).
 - **Issues are public:** English, no secrets, no personal data.
 
@@ -215,7 +215,7 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
 
 ## Tools
 
-- **Node 26, managed by pnpm:** `devEngines.runtime` in `package.json` pins it, and pnpm downloads it for every script (`pnpm pull`, `pnpm test`, …), whatever `node` your shell has. Docker uses the same Node, pinned by version and digest (`node:26.12.1-alpine3.24@sha256:…`); Postgres too. Bump them with `devEngines`; Dependabot opens PRs for newer images (`.github/dependabot.yml`), and nothing updates without a merge.
+- **Node 26, managed by pnpm:** `devEngines.runtime` in `package.json` pins it, and pnpm downloads it for every script (`pnpm pull`, `pnpm test`, …), whatever `node` your shell has. Docker uses the same Node, pinned by version and digest (`node:26.12.1-alpine3.24@sha256:…`); Postgres too. Bump them with `devEngines`; Dependabot opens PRs for newer images and GitHub Actions (`.github/dependabot.yml`; the workflow's Postgres image is kept in step with `compose.yaml` by hand), and nothing updates without a merge.
 - **pnpm 12**, configured in `pnpm-workspace.yaml`:
   - `minimumReleaseAge` 1 day
   - `trustPolicy: no-downgrade`
