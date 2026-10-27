@@ -160,6 +160,7 @@ describe("the shared label table", () => {
     ["Loppuunmyyty", { availability: "sold-out" }],
     ["Puhuttu suomeksi", { audio: "fi", dubbed: true }],
     ["Ei tekstitystä", { subtitles: "none" }],
+    ["Englanninkielinen tekstitys", { subtitles: "en" }],
     ["Ei puhetta", { audio: "zxx", tags: ["no-dialogue"] }],
     ["Tekijävierailu", { tags: ["guest"] }],
     ["vapaa pääsy", { tags: ["free"] }],
