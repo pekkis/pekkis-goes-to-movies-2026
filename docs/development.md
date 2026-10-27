@@ -126,6 +126,7 @@ Every provider's line ends with how long it took (yellow from a minute). Every 3
   - Files run serially.
   - Model objects come from `test/factory.ts`.
   - API routes are tested in-process with `app.request()`.
+- **CI** (`.github/workflows/check.yml`) runs `pnpm check` on every pull request and on pushes to `main`, as the required status check for merging. Postgres runs as a service container, with the same image and digest as `compose.yaml`; when Dependabot bumps one, bump the other in the same PR. The workflow has read-only permissions, and its actions are pinned by commit. No secrets: the tests need no network or API keys. [V] 2026-10-27
 - **If `pgtm_test` is missing** (a Postgres volume created before the init script existed): `pnpm db:psql -c "create database pgtm_test"`, then `pnpm migrate --test`.
 
 ## Recipes

@@ -1,4 +1,4 @@
-# Dependabot opens a PR when a pinned base image has a newer release; nothing updates
+# Dependabot opens a PR when a pinned base image or GitHub Action has a newer release; nothing updates
 # without a merge. JavaScript packages are upgraded by hand (pnpm, with its own
 # minimumReleaseAge), so npm is not listed here.
 version: 2
@@ -13,6 +13,13 @@ updates:
     cooldown:
       default-days: 3
   - package-ecosystem: docker-compose
+    directory: "/"
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3
+  # The workflows' actions, pinned by commit (.github/workflows/).
+  - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: weekly
