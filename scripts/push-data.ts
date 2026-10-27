@@ -22,7 +22,25 @@ const run = (cmd: string, args: string[]) => {
   execFileSync(cmd, args, { stdio: "inherit" });
 };
 
+// One SSH connection for all three steps: the server's ufw limits new connections (six per
+// 30 s), and a second push in a row would hit that (2026-10-27).
+const shared = [
+  "-o",
+  "ControlMaster=auto",
+  "-o",
+  "ControlPath=~/.ssh/cm-%C",
+  "-o",
+  "ControlPersist=60",
+];
+
 // rsync creates only the last folder: a fresh checkout has no data/ yet (2026-10-24).
-run("ssh", [host, `mkdir -p '${path}/data/normalized'`]);
-run("rsync", ["-az", "--delete", "data/normalized/", `${host}:${path}/data/normalized/`]);
-run("ssh", [host, `cd '${path}' && docker compose --profile ingest run --rm ingest`]);
+run("ssh", [...shared, host, `mkdir -p '${path}/data/normalized'`]);
+run("rsync", [
+  "-az",
+  "--delete",
+  "-e",
+  ["ssh", ...shared].join(" "),
+  "data/normalized/",
+  `${host}:${path}/data/normalized/`,
+]);
+run("ssh", [...shared, host, `cd '${path}' && docker compose --profile ingest run --rm ingest`]);

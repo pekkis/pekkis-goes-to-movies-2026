@@ -543,5 +543,55 @@
     "tmdb": 9426,
     "title": "Kärpänen",
     "note": "The Fly (1986, David Cronenberg): 96 min at Finnkino and on TMDB (the 1958 film is shorter); confirmed by the maintainer."
+  },
+  "kinoakseli:film:late-lammas-elokuva-hamarapuuhissa": {
+    "tmdb": 1477104,
+    "title": "Late Lammas -elokuva: Hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as biorex:film:1548; the Finnish title of the one in cinemas in October 2026."
+  },
+  "kinokirkkonummi:film:late-lammas-elokuva-hamarapuuhissa": {
+    "tmdb": 1477104,
+    "title": "Late Lammas - elokuva Hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as biorex:film:1548; the Finnish title of the one in cinemas in October 2026."
+  },
+  "kinovaakuna:film:late-lammas-elokuva-hamarahommissa": {
+    "tmdb": 1477104,
+    "title": "Late Lammas-elokuva: Hämärähommissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as biorex:film:1548; the Finnish title of the one in cinemas in October 2026."
+  },
+  "kinovirta:film:606": {
+    "tmdb": 1477104,
+    "title": "Late Lammas: Hämärä Puuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as biorex:film:1548; the Finnish title of the one in cinemas in October 2026."
+  },
+  "finnkino:film:HO00000602": {
+    "tmdb": 58,
+    "title": "Pirates of the Caribbean: Dead Man's Chest",
+    "note": "Exact title, 151 min at Finnkino and on TMDB (2006, Gore Verbinski); a re-release, hence the year mismatch."
+  },
+  "savonkinot:film:123": {
+    "tmdb": 60409,
+    "title": "Zombie ja kummitusjuna",
+    "note": "Mika Kaurismäki's film (1991): exact title, 88 min (TMDB 90); a re-release."
+  },
+  "biopallas:film:metsasota-ja-rauha": {
+    "tmdb": 1787721,
+    "title": "Metsäsota ja rauha",
+    "note": "Exact title, Jari Kokko's documentary: 88 min at Bio Pallas, 87 on TMDB; TMDB has no release date yet."
+  },
+  "elokuvateatteristar:film:3232": {
+    "tmdb": 985,
+    "title": "Eraserhead - 1977 (Night Visions)",
+    "note": "David Lynch's Eraserhead (1977): the year is in the title, 89 min at Star and on TMDB."
+  },
+  "kinoregina:film:194350": {
+    "tmdb": 66027,
+    "title": "WOMEN IN LOVE - RAKASTAVAISIA",
+    "note": "Ken Russell's Women in Love: Regina gives 1969, UK, 131 min, as on TMDB."
+  },
+  "kuvakukko:film:shallow-grave-murhaleikki": {
+    "tmdb": 9905,
+    "title": "Shallow Grave – murhaleikki",
+    "note": "Danny Boyle's Shallow Grave (1994), released in Finland as Murhaleikki; the other films so named on TMDB are obscure."
   }
 }
