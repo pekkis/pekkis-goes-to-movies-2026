@@ -593,5 +593,25 @@
     "tmdb": 9905,
     "title": "Shallow Grave – murhaleikki",
     "note": "Danny Boyle's Shallow Grave (1994), released in Finland as Murhaleikki; the other films so named on TMDB are obscure."
+  },
+  "cinemaniagara:film:95": {
+    "tmdb": 43349,
+    "title": "Helvetin portti",
+    "note": "Teinosuke Kinugasa's Jigokumon (Gate of Hell, Japan 1953), in Niagara's autumn 2026 KUVI series; confirmed by the maintainer."
+  },
+  "kinovaakuna:film:jarki-ja-tunne": {
+    "tmdb": 1503762,
+    "title": "Järki ja tunne",
+    "note": "Sense and Sensibility (2026, Georgia Oakley): the maintainer checked Vaakuna's page. Vaakuna says 117 min, TMDB 132."
+  },
+  "kinokilta:film:2eb5b5fa-a849-4378-98dc-e6e5dbe208be": {
+    "tmdb": 1843,
+    "title": "DIG! XX",
+    "note": "The 2024 twentieth-anniversary recut (140 min) of Ondi Timoner's Dig! (2004); TMDB has no entry for the recut, so it links to the original (the maintainer's call)."
+  },
+  "kuvakukko:film:berliinin-sankari": {
+    "tmdb": 1248217,
+    "title": "Berliinin sankari",
+    "note": "Der Held vom Bahnhof Friedrichstraße (Berlin Hero, Germany 2025); confirmed by the maintainer."
   }
 }
