@@ -49,6 +49,16 @@ describe("parseBioDux", () => {
     });
   });
 
+  it("keeps a title whose first letter sits outside a span (2026-10-26)", () => {
+    const html = HTML.replace(
+      "<p>Matka Piemonteen - Resan",
+      '<p>M<span class="wysiwyg-font-size-18">atka Piemonteen</span> - Resan',
+    );
+    const result = parseBioDux(snapshot({ html }), SITE);
+    expect(result.warnings).toEqual([]);
+    expect(result.listings.map((l) => l.title.fi)).toContain("Matka Piemonteen");
+  });
+
   it("reads the languages: English with subtitles, and dubs per row", () => {
     expect(shows("Forgotten Island")[0]).toMatchObject({
       audio: ["en"],

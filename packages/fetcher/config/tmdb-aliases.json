@@ -473,5 +473,75 @@
     "tmdb": 1450460,
     "title": "Lapin sota - Loviisan Lions Clubin erikoisnäytös",
     "note": "The Lions Club of Loviisa's special screening of Lapin sota (2026), TMDB 1450460, which Kino Marilyn shows that week; the suffix names the occasion, not another film."
+  },
+  "kinosampo:film:880": {
+    "tmdb": 1477104,
+    "title": "Late Lammas -elokuva: Hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as biorex:film:1548; verified on TMDB (Steve Cox, Matthew Walker; 81 min)."
+  },
+  "kinotoijala:film:880": {
+    "tmdb": 1477104,
+    "title": "Late Lammas -elokuva: Hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as biorex:film:1548; verified on TMDB (Steve Cox, Matthew Walker; 81 min)."
+  },
+  "kinotervakoski:film:late-lammas-hamarapuuhissa": {
+    "tmdb": 1477104,
+    "title": "Late Lammas hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as biorex:film:1548; verified on TMDB (Steve Cox, Matthew Walker; 81 min)."
+  },
+  "kinoregina:film:146603": {
+    "tmdb": 653,
+    "title": "NOSFERATU",
+    "note": "F. W. Murnau's Nosferatu (1922), shown as a cine-concert with live music by Timo Kaukolampi on 2026-10-30 (Regina's programme). The 2024 and 2025 remakes are other films; Regina's runtime differs because of the live score."
+  },
+  "kinoregina:film:1201403": {
+    "tmdb": 9674,
+    "title": "RINGU 0: BĀSUDEI",
+    "note": "Ring 0: Birthday (Norio Tsuruta, 2000); TMDB's original title is リング０ バースデイ. Bāsudei is the Japanese loanword for birthday, so the romanisation doesn't match TMDB's English title."
+  },
+  "kinoylari:film:practical-magic-lumotut-sisaret": {
+    "tmdb": 1302904,
+    "title": "Practical Magic: Lumotut sisaret",
+    "note": "Practical Magic 2 (Susanne Bier, 2026), not the 1998 original: Kino Yläri shows new releases, not classics, and its posters (Facebook) show the sequel. Verified by the maintainer, 2026-10-26."
+  },
+  "kuvakukko:film:obsession": {
+    "tmdb": 1339713,
+    "title": "Obsession",
+    "note": "Curry Barker's Obsession (TMDB dates it 2026-05-13, the release; the film is from 2025), shown in the Hyvät Kuvat film club on 2026-10-29. Not 1436161, an 18-minute 2025 short by Audrey Collins."
+  },
+  "kinoelo:film:880": {
+    "tmdb": 1477104,
+    "title": "Late Lammas -elokuva: Hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as biorex:film:1548; verified on TMDB (Steve Cox, Matthew Walker; 81 min)."
+  },
+  "kinomania:film:880": {
+    "tmdb": 1477104,
+    "title": "Late Lammas -elokuva: Hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as biorex:film:1548; verified on TMDB (Steve Cox, Matthew Walker; 81 min)."
+  },
+  "biodux:film:late-lammas": {
+    "tmdb": 1477104,
+    "title": "Late Lammas - Fåret Shaun",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as biorex:film:1548; Bio Dux gives no subtitle, but it is the one in cinemas in October 2026."
+  },
+  "cinemaniagara:film:133": {
+    "tmdb": 539,
+    "title": "Psycho",
+    "note": "Alfred Hitchcock's Psycho (1960); 109 min at Niagara and on TMDB, confirmed by the maintainer."
+  },
+  "cinemaniagara:film:125": {
+    "tmdb": 511,
+    "title": "Luvattu maa",
+    "note": "Andrzej Wajda's Ziemia obiecana (1975): Niagara gives 1975 and 179 min, so not Bastarden (2023)."
+  },
+  "finnkino:film:HO00000596": {
+    "tmdb": 274,
+    "title": "Uhrilampaat",
+    "note": "The Silence of the Lambs (1991, Jonathan Demme); Finnkino's English title, 118 min (TMDB 119); confirmed by the maintainer."
+  },
+  "finnkino:film:HO00000601": {
+    "tmdb": 9426,
+    "title": "Kärpänen",
+    "note": "The Fly (1986, David Cronenberg): 96 min at Finnkino and on TMDB (the 1958 film is shorter); confirmed by the maintainer."
   }
 }

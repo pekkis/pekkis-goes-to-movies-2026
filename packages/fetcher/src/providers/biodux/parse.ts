@@ -79,7 +79,7 @@ export const parseBioDux = (raw: BioDuxRawSnapshot, site: BioDuxSite): ProviderB
   const $ = load(raw.html);
   $("script, style, figure, img").remove();
   const lines = ($("body").html() ?? "")
-    .split(/<br\s*\/?>|<\/?(?:p|h\d|div|button|span|li|section)\b[^>]*>/i)
+    .split(/<br\s*\/?>|<\/?(?:p|h\d|div|button|li|section)\b[^>]*>/i)
     .map((chunk) => text(load(chunk, null, false).text()))
     .filter(Boolean);
   if (!lines.some((l) => AGE.test(l))) {

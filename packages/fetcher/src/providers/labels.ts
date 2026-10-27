@@ -89,6 +89,8 @@ export const LABELS: Record<string, LabelRule> = {
   "Puhuttu ruotsiksi": { audio: "sv", dubbed: true },
   "Puhuttu englanniksi": { audio: "en" },
   "Ei tekstitystä": { subtitles: "none" },
+  // Kino Pirtti (2026-10-26).
+  "Englanninkielinen tekstitys": { subtitles: "en" },
   "Ei puhetta": { audio: "zxx", tags: ["no-dialogue"] },
   // Accessibility: subtitles describing sound too, for the hard of hearing
   "Kuvaileva tekstitys": { tags: ["captions"] },
