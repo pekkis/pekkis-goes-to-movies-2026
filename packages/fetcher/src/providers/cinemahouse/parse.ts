@@ -9,20 +9,18 @@ import {
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { availabilityFromSeats, byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
+import {
+  availabilityFromSeats,
+  byStartThenId,
+  finnishRating,
+  plainText,
+  slugify,
+  toCents,
+} from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { CinemahouseRawSnapshot } from "./fetch.ts";
 import type { CinemahouseSite } from "./sites.ts";
-
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
 
 /** "14.10. 12:00 · Sali 2": day, month, time, and the hall after the separator. */
 const META = /^(\d{1,2})\.(\d{1,2})\.\s*(\d{1,2})[:.](\d{2})\s*(?:·\s*(.+))?$/;
@@ -69,7 +67,7 @@ export const parseCinemahouse = (
     const runtime = Number(
       plainText(tile.find(".cr-badge--runtime").text()).match(/^(\d+)\s*min$/)?.[1],
     );
-    const rating = own(RATINGS, age);
+    const rating = finnishRating(age);
     tiles.set(title, {
       slug: link.match(/\/elokuvat\/([^/]+)\/?$/)?.[1] ?? slugify(title),
       link,

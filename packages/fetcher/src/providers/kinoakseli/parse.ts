@@ -1,16 +1,14 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KinoAkseliRawSnapshot } from "./fetch.ts";
 import type { KinoAkseliSite } from "./sites.ts";
@@ -23,13 +21,6 @@ const SHOW =
 const AGE = /Ikäraja\s*:\s*(S|7|12|16|18)(?!\d)/gi;
 const PRICE = /Liput\s*:\s*(\d{1,3}(?:[.,]\d{1,2})?)\s*€/gi;
 const DURATION = /Kesto\s*:\s*(\d{2,3})\s*min/gi;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
 
 /** The last match in a stretch of text: the facts nearest the heading that follows. */
 const last = (re: RegExp, value: string) => [...value.matchAll(re)].at(-1)?.[1];
@@ -75,7 +66,7 @@ export const parseKinoAkseli = (
       return; // the month's-offer card repeats a film with no screenings
     }
     const age = last(AGE, before);
-    const rating = age ? own(RATINGS, age.toUpperCase()) : undefined;
+    const rating = age ? finnishRating(age.toUpperCase()) : undefined;
     const price = toCents(last(PRICE, before), { zeroIsFree: false });
     const runtime = Number(last(DURATION, before) ?? 0);
 

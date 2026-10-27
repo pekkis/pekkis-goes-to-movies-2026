@@ -20,24 +20,16 @@ import type { MyCloudCinemaSite } from "./sites.ts";
 import { providerOf } from "../sites.ts";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, isPrivateBooking, type LabelRule } from "../labels.ts";
-import { byStartThenId } from "../parsing.ts";
+import { byStartThenId, finnishRating } from "../parsing.ts";
 
 /** The pattern the cinema's own programme page links to: `{ticketBase}/#/book/{id}`. */
 export const ticketUrl = (site: Pick<MyCloudCinemaSite, "ticketBase">, showTimeId: number) =>
   `${site.ticketBase}/#/book/${showTimeId}`;
 
-const RATINGS: Record<string, FinnishRating> = {
-  s: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
-
 /** "rating_fi_12.svg" -> "K-12" */
 export const parseRating = (icon: string | null | undefined): FinnishRating | undefined => {
   const match = icon?.match(/^rating_fi_(s|\d+)\.svg$/i);
-  return match?.[1] ? RATINGS[match[1].toLowerCase()] : undefined;
+  return match?.[1] ? finnishRating(match[1]) : undefined;
 };
 
 /**
@@ -137,7 +129,7 @@ export const parseScreenName = (
     features.push("imax");
   }
   const age = name.match(/\(K-(18|16|12|7)\)/)?.[1];
-  const ageLimit = age ? own(RATINGS, age) : undefined;
+  const ageLimit = age ? finnishRating(age) : undefined;
   return ageLimit ? { features, ageLimit } : { features };
 };
 

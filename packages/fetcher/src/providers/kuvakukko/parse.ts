@@ -12,7 +12,6 @@ import {
 import { dateWindow, helsinkiShowTime, nearestDate, type ShowTime } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { normalizeLang } from "../../lib/lang.ts";
-import { own } from "../../lib/records.ts";
 import {
   COMMON_TITLE_PREFIXES,
   labelEffects,
@@ -20,7 +19,7 @@ import {
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { byStartThenId, plainText, slugify } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KuvakukkoRawSnapshot } from "./fetch.ts";
 import type { KuvakukkoSite } from "./sites.ts";
@@ -39,13 +38,6 @@ const WEEKDAYS = [
 const DAY = /^([a-zäö]+)\s+(\d{1,2})\.(\d{1,2})\.?$/i;
 /** "Klo 13: …", "Klo 17.30: …" */
 const ROW = /^klo\s*(\d{1,2})(?:[.:](\d{2}))?\s*:\s*(.*)$/i;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "K-7": "K-7",
-  "K-12": "K-12",
-  "K-16": "K-16",
-  "K-18": "K-18",
-};
 
 /** A link to a page, not to an uploaded image. */
 const IMAGE = /\.(?:jpe?g|png|gif|webp)$/i;
@@ -252,7 +244,7 @@ const detailsOf = (html: string, site: KuvakukkoSite): Details => {
     if (runtime) {
       details.runtime = Number(runtime[1]);
     } else if (age) {
-      const rating = own(RATINGS, age[1] ? `K-${Number(age[1])}` : "S");
+      const rating = finnishRating(age[1] ? `K-${Number(age[1])}` : "S");
       if (rating) {
         details.rating = rating;
       } else {

@@ -2,16 +2,14 @@ import {
   makeId,
   type Auditorium,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, plainText, slugify } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { JuliaRawSnapshot } from "./fetch.ts";
 import type { JuliaSite } from "./sites.ts";
@@ -20,14 +18,6 @@ import type { JuliaSite } from "./sites.ts";
 const ROW = /^(\d{1,2})\.(\d{1,2})\.(\d{2})\s+klo\s+(\d{1,2})[:.](\d{2})(?:,\s*(\d+)\.\s*sali)?$/i;
 /** "1t 28min", "95min", "2t 55min + väliaika" (an intermission besides) */
 const DURATION = /^(?:(\d+)\s*t)?\s*(\d+)\s*min\b/i;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  SALLITTU: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
 
 /** Pure: the programme page + site config -> normalized batch. */
 export const parseJulia = (raw: JuliaRawSnapshot, site: JuliaSite): ProviderBatch => {
@@ -69,7 +59,7 @@ export const parseJulia = (raw: JuliaRawSnapshot, site: JuliaSite): ProviderBatc
     }
     const unmapped: string[] = [];
     const age = facts.get("ikäraja")?.toUpperCase();
-    const rating = age ? own(RATINGS, age.replace(/^K-?/, "")) : undefined;
+    const rating = age ? finnishRating(age.replace(/^K-?/, "")) : undefined;
     if (age && !rating) {
       unmapped.push(`rating:${age}`);
     }

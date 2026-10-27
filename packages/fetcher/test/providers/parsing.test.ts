@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   availabilityFromSeats,
   eachStartTime,
+  finnishRating,
   plainText,
   slugify,
   toCents,
@@ -53,6 +54,30 @@ describe("slugify", () => {
     expect(slugify("Late Lammas Hä­mä­rä­puu­his­sa")).toBe("late-lammas-hamarapuuhissa");
     expect(slugify("Zero​width﻿")).toBe("zerowidth");
   });
+});
+
+describe("finnishRating", () => {
+  it.each([
+    ["S", "S"],
+    ["s", "S"],
+    ["Sallittu", "S"],
+    ["-S-", "S"],
+    ["7", "K-7"],
+    ["K7", "K-7"],
+    ["K-12", "K-12"],
+    ["k-16", "K-16"],
+    [" K 18 ", "K-18"],
+    ["-K-16-", "K-16"],
+  ])("finnishRating(%j) = %j", (value, expected) => {
+    expect(finnishRating(value)).toBe(expected);
+  });
+
+  it.each(["", "K?", "K-6", "6", "0", "L", "1", "07", "EI TIEDOSSA", "constructor", undefined])(
+    "finnishRating(%j) is unknown",
+    (value) => {
+      expect(finnishRating(value)).toBeUndefined();
+    },
+  );
 });
 
 describe("plainText", () => {

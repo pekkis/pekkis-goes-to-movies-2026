@@ -18,18 +18,10 @@ import {
   splitVersion,
   type LabelRule,
 } from "../labels.ts";
-import { byStartThenId, plainText, slugify } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { TapiolaRawSnapshot } from "./fetch.ts";
 import type { TapiolaSite } from "./sites.ts";
-
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "K-7": "K-7",
-  "K-12": "K-12",
-  "K-16": "K-16",
-  "K-18": "K-18",
-};
 
 /** "keskiviikko 14.10.2026 – Klo 15:00" */
 const DATE = /(\d{1,2})\.(\d{1,2})\.(\d{4})\s*[–-]\s*klo\s*(\d{1,2})[:.](\d{2})/i;
@@ -120,7 +112,7 @@ const detailsOf = (html: string): Details => {
   const age = $(".info-icons .info-icon")
     .toArray()
     .flatMap((el) => ($(el).attr("class") ?? "").match(/\bage-limit-(\S+)/)?.[1] ?? [])[0];
-  const rating = age ? own(RATINGS, age.toUpperCase()) : undefined;
+  const rating = age ? finnishRating(age.toUpperCase()) : undefined;
   if (age && !rating) {
     unmapped.push(`rating:${age}`);
   }

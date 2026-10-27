@@ -1,4 +1,5 @@
-import type { Availability, Screening } from "@pgtm/model";
+import type { Availability, FinnishRating, Screening } from "@pgtm/model";
+import { own } from "../lib/records.ts";
 
 /**
  * Small helpers shared by the provider parsers, so that the same fact means the same
@@ -66,6 +67,25 @@ const INVISIBLE = /[­​-‍⁠﻿]/g;
 /** Text as a reader sees it: invisible characters removed, whitespace collapsed, trimmed. */
 export const plainText = (value: string | undefined): string =>
   (value ?? "").replace(INVISIBLE, "").replace(/\s+/g, " ").trim();
+
+const RATINGS: Record<string, FinnishRating> = {
+  S: "S",
+  SALLITTU: "S",
+  K7: "K-7",
+  K12: "K-12",
+  K16: "K-16",
+  K18: "K-18",
+};
+
+/**
+ * A Finnish age rating however a cinema spells it: "S", "Sallittu", "-S-", "7", "K7", "K-7",
+ * "k 12" (case, spaces and hyphens ignored). Anything else is undefined: a source's own codes
+ * (TMB's 1–4, Kinola's Estonian "L") stay in that parser.
+ */
+export const finnishRating = (value: string | undefined): FinnishRating | undefined => {
+  const key = (value ?? "").toUpperCase().replace(/[\s-]/g, "");
+  return own(RATINGS, /^\d+$/.test(key) ? `K${key}` : key);
+};
 
 /** "Feeniks-sali (Teatteri)" -> "feeniks-sali-teatteri", "Sali Ä" -> "sali-a": for ids. */
 export const slugify = (name: string): string =>

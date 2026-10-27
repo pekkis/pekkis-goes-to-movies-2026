@@ -2,7 +2,6 @@ import {
   makeId,
   type Auditorium,
   type FilmListing,
-  type FinnishRating,
   type Lang,
   type ProviderBatch,
   type RawLabel,
@@ -25,6 +24,7 @@ import {
 import {
   availabilityFromSeats,
   byStartThenId,
+  finnishRating,
   plainText,
   slugify,
   tally,
@@ -34,7 +34,6 @@ import { providerOf, toVenue } from "../sites.ts";
 import { findSeries } from "../../series/registry.ts";
 import { ExtractedFilm, ExtractedShow, type EtikettiRawSnapshot } from "./raw.ts";
 import { baseOf, type EtikettiSite, type EtikettiVenue } from "./sites.ts";
-import { own } from "../../lib/records.ts";
 
 // --- Listing ------------------------------------------------------------------------
 
@@ -167,14 +166,6 @@ export const extractFilmPage = (
 };
 
 // --- Mapping to the model ---------------------------------------------------------------
-
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
 
 const norm = (s: string) => s.normalize("NFC").toLowerCase().replace(/\s+/g, " ").trim();
 
@@ -314,7 +305,7 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
     }
     const audio = version.audio ? [version.audio] : languageFact.audio;
     const year = facts["Valmistumisvuosi"]?.match(/^\d{4}$/)?.[0];
-    const rating = f.age ? own(RATINGS, f.age) : undefined;
+    const rating = f.age ? finnishRating(f.age) : undefined;
     if (f.age && !rating) {
       unmapped.push(`age:${f.age}`);
     }

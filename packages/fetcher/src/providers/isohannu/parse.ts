@@ -14,19 +14,10 @@ import { load } from "cheerio";
 import { normalizeLang } from "../../lib/lang.ts";
 import { own } from "../../lib/records.ts";
 import { splitVersion } from "../labels.ts";
-import { byStartThenId, plainText, slugify } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { IsohannuRawSnapshot } from "./fetch.ts";
 import type { IsohannuSite } from "./sites.ts";
-
-/** Written without the hyphen: "K16". */
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  K7: "K-7",
-  K12: "K-12",
-  K16: "K-16",
-  K18: "K-18",
-};
 
 /** "Keskiviikko 14.10.2026" */
 const DAY = /(\d{1,2})\.(\d{1,2})\.(\d{4})\s*$/;
@@ -152,7 +143,7 @@ const detailsOf = (html: string): Details => {
   }
   const unmapped: string[] = [];
   const age = fields.get("elokuvan ikäraja")?.toUpperCase().replace(/[\s-]/g, "");
-  const rating = age ? own(RATINGS, age) : undefined;
+  const rating = age ? finnishRating(age) : undefined;
   if (age && !rating) {
     unmapped.push(`rating:${age}`);
   }

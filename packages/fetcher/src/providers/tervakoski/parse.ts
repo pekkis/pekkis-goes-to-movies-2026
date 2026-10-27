@@ -1,21 +1,19 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import {
   COMMON_TITLE_PREFIXES,
   isPrivateBooking,
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { TervakoskiRawSnapshot } from "./fetch.ts";
 import type { TervakoskiSite } from "./sites.ts";
@@ -32,13 +30,6 @@ const TITLE = /^(.+?)\s*\((S|K-?\d{1,2})\),?\s*(.*)$/i;
 const RUNTIME = /kesto,?\s+(\d+)\s*t(?:\s*(\d+)\s*min)?/i;
 const PRICE = /lippu\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*€/i;
 const DUBBED = /\bsuomeksi puhuttu\b/i;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  K7: "K-7",
-  K12: "K-12",
-  K16: "K-16",
-  K18: "K-18",
-};
 
 /** Pure: the programme page + site config -> normalized batch. */
 export const parseTervakoski = (
@@ -105,7 +96,7 @@ export const parseTervakoski = (
     }
     const facts = film[3] ?? "";
     const age = film[2]!.toUpperCase().replace("-", "");
-    const rating = own(RATINGS, age);
+    const rating = finnishRating(age);
     const duration = facts.match(RUNTIME);
     const runtime = duration ? Number(duration[1]) * 60 + Number(duration[2] ?? 0) : 0;
     const price = toCents(facts.match(PRICE)?.[1], { zeroIsFree: false });

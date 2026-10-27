@@ -22,21 +22,20 @@ import {
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { availabilityFromSeats, byStartThenId, slugify, tally, toCents } from "../parsing.ts";
+import {
+  availabilityFromSeats,
+  byStartThenId,
+  finnishRating,
+  slugify,
+  tally,
+  toCents,
+} from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import { EventsPage, KinolaEvent, type KinolaRawSnapshot } from "./raw.ts";
 import type { KinolaSite } from "./sites.ts";
-import { own } from "../../lib/records.ts";
 
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  // Estonian "lubatud kõigile" (all ages); Kinola is Estonian.
-  L: "S",
-  "K-7": "K-7",
-  "K-12": "K-12",
-  "K-16": "K-16",
-  "K-18": "K-18",
-};
+/** Estonian "lubatud kõigile" (all ages): Kinola is Estonian. Other ratings are Finnish. */
+const ESTONIAN_ALL_AGES = "L";
 
 /** "englanti", "Dubattu englanniksi" -> languages; unknown names are returned too. */
 export const parseLanguageList = (
@@ -165,7 +164,8 @@ export const parseKinola = (raw: KinolaRawSnapshot, site: KinolaSite): ProviderB
     unmapped.push(...audio.unknown.map((n) => `language:${n}`));
     const subs = parseSubtitleList(p.subtitles);
     unmapped.push(...subs.unknown.map((n) => `subtitles:${n}`));
-    const rating = p.rating ? own(RATINGS, p.rating.trim()) : undefined;
+    const rating =
+      p.rating?.trim() === ESTONIAN_ALL_AGES ? "S" : finnishRating(p.rating ?? undefined);
     if (p.rating && !rating && p.rating !== "Not rated") {
       unmapped.push(`rating:${p.rating}`);
     }

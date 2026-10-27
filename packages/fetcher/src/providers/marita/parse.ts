@@ -1,7 +1,6 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Warning,
@@ -9,9 +8,8 @@ import {
 import { dateWindow, helsinkiShowTime } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { normalizeLang } from "../../lib/lang.ts";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { MaritaRawSnapshot } from "./fetch.ts";
 import type { MaritaSite } from "./sites.ts";
@@ -22,13 +20,6 @@ const TIME = /^klo\s+(\d{1,2})[.:](\d{2})$/i;
 const PRICE = /^Hinta:\s*(\d{1,3}(?:[.,]\d{1,2})?)\s*€$/i;
 /** Only the age image is a rating; the other label images are KAVI content warnings. */
 const AGE_IMAGE = /\/(s|7|12|16|18)\.png$/i;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
 
 /** Pure: the front page + site config -> normalized batch. */
 export const parseMarita = (raw: MaritaRawSnapshot, site: MaritaSite): ProviderBatch => {
@@ -74,7 +65,7 @@ export const parseMarita = (raw: MaritaRawSnapshot, site: MaritaSite): ProviderB
     const unmapped: string[] = [];
     const ageImage = block.find("img.age-img").attr("src") ?? "";
     const age = ageImage.match(AGE_IMAGE)?.[1];
-    const rating = age ? own(RATINGS, age.toUpperCase()) : undefined;
+    const rating = age ? finnishRating(age.toUpperCase()) : undefined;
     if (ageImage && !rating) {
       unmapped.push(`rating:${ageImage.split("/").at(-1)}`);
     }

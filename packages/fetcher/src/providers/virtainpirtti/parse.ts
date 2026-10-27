@@ -1,7 +1,6 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type ScreeningTag,
@@ -10,9 +9,8 @@ import {
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, plainText, slugify } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { VirtainPirttiRawSnapshot } from "./fetch.ts";
 import type { VirtainPirttiSite } from "./sites.ts";
@@ -27,13 +25,6 @@ const ROWISH = /^(ma|ti|ke|to|pe|la|su)\s+\d/i;
 const FOOTNOTE_FI = /^\*.*tekstitys suomeksi/i;
 const PREVIEW = /^Ennakkonäytös$/i;
 const DURATION = /^Kesto\s+(\d+)\s*h\s*(\d+)\s*min$/i;
-const RATINGS: Record<string, FinnishRating> = {
-  "-S-": "S",
-  K7: "K-7",
-  K12: "K-12",
-  K16: "K-16",
-  K18: "K-18",
-};
 
 /** Pure: the programme page + site config -> normalized batch. */
 export const parseVirtainPirtti = (
@@ -71,7 +62,7 @@ export const parseVirtainPirtti = (
       continue;
     }
     const age = head[2]!.toUpperCase().replace(/^K-?/, "K");
-    const rating = own(RATINGS, age);
+    const rating = finnishRating(age);
     const dubbed = Boolean(head[3]);
     const duration = lines.map((l) => l.match(DURATION)).find(Boolean);
     const runtime = duration ? Number(duration[1]) * 60 + Number(duration[2]) : 0;

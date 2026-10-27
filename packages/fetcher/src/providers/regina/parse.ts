@@ -13,7 +13,7 @@ import { load } from "cheerio";
 import { normalizeLang } from "../../lib/lang.ts";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, plainText } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { ReginaRawSnapshot } from "./fetch.ts";
 import type { ReginaSite } from "./sites.ts";
@@ -21,13 +21,6 @@ import type { ReginaSite } from "./sites.ts";
 /** "15-10-2026 17:30": the row's own start, with its year. */
 const START = /^(\d{1,2})-(\d{1,2})-(\d{4})\s+(\d{1,2}):(\d{2})$/;
 const FILM_ID = /\/elokuva\/(\d+)/;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  K7: "K-7",
-  K12: "K-12",
-  K16: "K-16",
-  K18: "K-18",
-};
 /** "Kopiotieto": the print. */
 const PRINTS: Record<string, "digital" | "35mm" | "70mm" | "16mm"> = {
   "35 mm": "35mm",
@@ -151,7 +144,7 @@ const detailsOf = (html: string): Details => {
   const age = (fields.get("ikäraja")?.find("img").attr("alt") ?? "").match(
     /Ikäraja:\s*(S|K-?\d{1,2})/i,
   )?.[1];
-  const rating = age ? own(RATINGS, age.toUpperCase().replace("-", "")) : undefined;
+  const rating = age ? finnishRating(age.toUpperCase().replace("-", "")) : undefined;
   if (age && !rating) {
     unmapped.push(`rating:${age}`);
   }

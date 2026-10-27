@@ -1,7 +1,6 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Warning,
@@ -9,7 +8,6 @@ import {
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { z } from "zod";
-import { own } from "../../lib/records.ts";
 import {
   COMMON_TITLE_PREFIXES,
   findLabel,
@@ -17,7 +15,7 @@ import {
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { byStartThenId, plainText, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KuusamotaloRawSnapshot } from "./fetch.ts";
 import type { KuusamotaloSite } from "./sites.ts";
@@ -37,13 +35,6 @@ const TIME = /^(\d{1,2})(?:[.:](\d{2}))?$/;
 const AGE = /^-?\s*(S|K-?\d{1,2})\s*-?$/i;
 const DURATION = /^Kesto\s+(?:(\d+)\s*h)?\s*(\d+)\s*min$/i;
 const PRICE = /^Liput\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*€$/i;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "K-7": "K-7",
-  "K-12": "K-12",
-  "K-16": "K-16",
-  "K-18": "K-18",
-};
 
 /** Pure: the posts + site config -> normalized batch. */
 export const parseKuusamotalo = (
@@ -82,7 +73,7 @@ export const parseKuusamotalo = (
     }
     const before = lines.slice(0, at);
     const age = before.map((l) => l.match(AGE)?.[1]).find(Boolean);
-    const rating = age ? own(RATINGS, age.toUpperCase().replace(/^K(\d)/, "K-$1")) : undefined;
+    const rating = age ? finnishRating(age.toUpperCase().replace(/^K(\d)/, "K-$1")) : undefined;
     const duration = before.map((l) => l.match(DURATION)).find(Boolean);
     const runtime = duration ? Number(duration[1] ?? 0) * 60 + Number(duration[2]) : 0;
     const price = toCents(before.map((l) => l.match(PRICE)?.[1]).find(Boolean), {

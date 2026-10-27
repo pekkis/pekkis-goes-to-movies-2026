@@ -1,16 +1,14 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, plainText } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { ElavienkuvienRawSnapshot } from "./fetch.ts";
 import type { ElavienkuvienSite } from "./sites.ts";
@@ -21,13 +19,6 @@ const ROW = /^(?:[a-zäö]{2}\s+)?(\d{1,2})\.(\d{1,2})\.(\d{4})\s+klo\s+(\d{1,2}
 const DURATION = /Kesto\s+(?:(\d+)\s*h)?\s*(\d+)\s*min/i;
 /** The age limit is only the image's name: "agelimit_12.png"; "agelimit_notset" is none. */
 const AGE = /agelimit_(S|7|12|16|18)\.png$/i;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
 /** A film's path on the site: "ohjelmisto/tony/". */
 const FILM_PATH = /^\/?(ohjelmisto\/[^/?#]+\/)$/;
 
@@ -83,7 +74,7 @@ export const parseElavienkuvien = (
     const runtime = duration ? Number(duration[1] ?? 0) * 60 + Number(duration[2]) : 0;
     const ageImage = facts.find("img").attr("src") ?? "";
     const age = ageImage.match(AGE)?.[1];
-    const rating = age ? own(RATINGS, age.toUpperCase()) : undefined;
+    const rating = age ? finnishRating(age.toUpperCase()) : undefined;
     const unmapped =
       ageImage && !rating && !/agelimit_notset/i.test(ageImage)
         ? [`rating:${ageImage.split("/").at(-1)}`]

@@ -1,7 +1,6 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type RawLabel,
   type Screening,
@@ -9,14 +8,13 @@ import {
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import {
   COMMON_TITLE_PREFIXES,
   splitDatedLabel,
   splitTitlePrefix,
   splitVersion,
 } from "../labels.ts";
-import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KurikanKinoRawSnapshot } from "./fetch.ts";
 import type { KurikanKinoSite } from "./sites.ts";
@@ -25,13 +23,6 @@ import type { KurikanKinoSite } from "./sites.ts";
 const SHOWN = /(\d{1,2})\.(\d{1,2})\.\s+(\d{1,2})[.:](\d{2})$/;
 /** "13 €"; anything else ("10/8 €") settles nothing. */
 const PRICE = /^(\d{1,3}(?:[.,]\d{1,2})?)\s*€$/;
-const RATINGS: Record<string, FinnishRating> = {
-  s: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
 
 /** Pure: the front page + site config -> normalized batch. */
 export const parseKurikanKino = (
@@ -72,7 +63,7 @@ export const parseKurikanKino = (
     }
     const unmapped: string[] = [];
     const age = ageClass.match(/\bikaraja-([a-z0-9]+)\b/)?.[1];
-    const rating = age ? own(RATINGS, age) : undefined;
+    const rating = age ? finnishRating(age) : undefined;
     if (age && !rating) {
       unmapped.push(`rating:${age}`);
     }

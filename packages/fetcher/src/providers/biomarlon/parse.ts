@@ -1,16 +1,21 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, eachStartTime, plainText, slugify, toCents } from "../parsing.ts";
+import {
+  byStartThenId,
+  eachStartTime,
+  finnishRating,
+  plainText,
+  slugify,
+  toCents,
+} from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { BioMarlonRawSnapshot } from "./fetch.ts";
 import type { BioMarlonSite } from "./sites.ts";
@@ -28,13 +33,6 @@ const AGE = /^(?:-S-|-?K-?(\d{1,2})(?:\/\d{1,2})?-?)(?=\s|$)/i;
 const RUNTIME = /\b(\d)\s*t(?:\s+(\d{1,2})\s*min)?\b/;
 const PRICE = /(\d{1,3}(?:[.,]\d{1,2})?)\s*€$/;
 const DUBBED = /^Suomea puhutaan!?$/i;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
 
 /** Pure: the front page + site config -> normalized batch. */
 export const parseBioMarlon = (raw: BioMarlonRawSnapshot, site: BioMarlonSite): ProviderBatch => {
@@ -65,7 +63,7 @@ export const parseBioMarlon = (raw: BioMarlonRawSnapshot, site: BioMarlonSite): 
     const facts = paragraphs[0] ?? "";
     const unmapped: string[] = [];
     const age = facts.match(AGE);
-    const rating = age ? own(RATINGS, age[1] ?? "S") : undefined;
+    const rating = age ? finnishRating(age[1] ?? "S") : undefined;
     if (age && !rating) {
       unmapped.push(`rating:${age[0]}`);
     }

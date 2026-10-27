@@ -9,7 +9,7 @@ import {
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, plainText, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { MatinTupaRawSnapshot } from "./fetch.ts";
 import type { MatinTupaSite } from "./sites.ts";
@@ -25,14 +25,6 @@ const PRICE = /^Liput:\s*(\d{1,3}(?:[.,]\d{1,2})?)\s*€$/i;
 const AGE = /Sallittu\s+(?:yli\s+(7|12|16|18)-vuotiaille|kaikenikäisille)/i;
 /** The rating image: ".../ikaraja_sallittu-wpcf_30x30.png", "ikaraja_12-…". */
 const AGE_IMAGE = /ikaraja_(sallittu|s|7|12|16|18)\b/i;
-const RATINGS: Record<string, FinnishRating> = {
-  sallittu: "S",
-  s: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
 
 /** Pure: the programme page + site config -> normalized batch. */
 export const parseMatinTupa = (raw: MatinTupaRawSnapshot, site: MatinTupaSite): ProviderBatch => {
@@ -83,10 +75,10 @@ export const parseMatinTupa = (raw: MatinTupaRawSnapshot, site: MatinTupaSite): 
       .find(Boolean);
     const sentence = notes.match(AGE);
     const rating: FinnishRating | undefined = imageAge
-      ? RATINGS[imageAge]
+      ? finnishRating(imageAge)
       : sentence
         ? sentence[1]
-          ? RATINGS[sentence[1]]
+          ? finnishRating(sentence[1])
           : "S"
         : undefined;
     // "Puhumme suomea." in the notes: dubbed into Finnish.

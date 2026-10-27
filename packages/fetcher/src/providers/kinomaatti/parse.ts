@@ -1,16 +1,14 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KinomaattiRawSnapshot } from "./fetch.ts";
 import type { KinomaattiSite } from "./sites.ts";
@@ -22,13 +20,6 @@ const SHOWN = /^([a-zäö]{5,}),?\s+(\d{1,2})\.(\d{1,2})\.?\s+klo\s*(\d{1,2})[.:
 const PRICE = /^(\d{1,3}(?:[.,]\d{1,2})?)\s*€$/;
 /** The age image: ".../kino-age-12-150x150.jpg", "kino-age-s". */
 const AGE_IMAGE = /kino-age-(s|7|12|16|18)\b/i;
-const RATINGS: Record<string, FinnishRating> = {
-  s: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
 
 /** Pure: the timetable page + site config -> normalized batch. */
 export const parseKinomaatti = (
@@ -85,7 +76,7 @@ export const parseKinomaatti = (
     }
     const unmapped: string[] = [];
     const age = ageStyle.match(AGE_IMAGE)?.[1]?.toLowerCase();
-    const rating = age ? own(RATINGS, age) : undefined;
+    const rating = age ? finnishRating(age) : undefined;
     if (/kino-age-/i.test(ageStyle) && !rating) {
       unmapped.push(`rating:${ageStyle.match(/kino-age-[a-z0-9]+/i)?.[0]}`);
     }

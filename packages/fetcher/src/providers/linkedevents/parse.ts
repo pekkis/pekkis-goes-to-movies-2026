@@ -1,28 +1,19 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, toHelsinkiIso } from "@pgtm/model/time";
-import { own } from "../../lib/records.ts";
 import { splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import { LinkedEvent, LinkedEventsPage, type LinkedEventsRawSnapshot } from "./raw.ts";
 import type { LinkedEventsSite } from "./sites.ts";
 
 /** The age limit in parentheses after the title: "Tony (16)", "Kevlarsjäl (K12)", "(S)". */
 const AGE = /^(.+?)\s*\((S|(?:K-?)?(?:7|12|16|18))\)$/i;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
 /** Events that will not take place as listed. */
 const NOT_ON = new Set(["EventCancelled", "EventPostponed"]);
 /** "9 €", "12,50 €": one plain amount. */
@@ -95,7 +86,7 @@ export const parseLinkedEvents = (
 
       const credited = site.credits ? withoutCredits(labelled) : labelled;
       const age = credited.match(AGE);
-      const rating = age ? own(RATINGS, age[2]!.toUpperCase().replace(/^K-?/, "")) : undefined;
+      const rating = age ? finnishRating(age[2]!.toUpperCase().replace(/^K-?/, "")) : undefined;
       const { title, version } = splitVersion(age ? age[1]! : credited);
       const filmKey = slugify(title);
       const listingId = makeId(P, "film", filmKey);

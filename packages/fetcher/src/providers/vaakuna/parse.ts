@@ -1,16 +1,14 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { VaakunaRawSnapshot } from "./fetch.ts";
 import type { VaakunaSite } from "./sites.ts";
@@ -30,13 +28,6 @@ const DURATION = /(?:(\d+)\s*h)?\s*(\d+)\s*min/i;
 const PRICE = /^Liput:\s*(\d{1,3}(?:[.,]\d{1,2})?)\s*€/i;
 /** The age-limit icon is named after the limit: ".../icon/16.png", ".../icon/s.png". */
 const AGE_ICON = /\/icon\/(s|7|12|16|18)\.png$/i;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
 
 /** Pure: the front page + site config -> normalized batch. */
 export const parseVaakuna = (raw: VaakunaRawSnapshot, site: VaakunaSite): ProviderBatch => {
@@ -70,7 +61,7 @@ export const parseVaakuna = (raw: VaakunaRawSnapshot, site: VaakunaSite): Provid
       .map((li) => ({ text: plainText($(li).text()), icon: $(li).find("img").attr("src") }));
     const ageIcon = facts.find((f) => /^Ikäraja/i.test(f.text))?.icon;
     const age = ageIcon?.match(AGE_ICON)?.[1];
-    const rating = age ? own(RATINGS, age.toUpperCase()) : undefined;
+    const rating = age ? finnishRating(age.toUpperCase()) : undefined;
     const cardUnmapped = ageIcon && !rating ? [`rating:${ageIcon.split("/").at(-1)}`] : [];
     const duration = facts.find((f) => /^Kesto/i.test(f.text))?.text.match(DURATION);
     const runtime = duration ? Number(duration[1] ?? 0) * 60 + Number(duration[2]) : 0;

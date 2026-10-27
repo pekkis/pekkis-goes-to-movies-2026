@@ -3,7 +3,6 @@ import {
   type Auditorium,
   type Feature,
   type FilmListing,
-  type FinnishRating,
   type Lang,
   type ProviderBatch,
   type Screening,
@@ -14,10 +13,9 @@ import {
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTimeAt } from "@pgtm/model/time";
 import { normalizeLang } from "../../lib/lang.ts";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
 import { parseScreenName, parseSubtitles } from "../mycloudcinema/parse.ts";
-import { byStartThenId, tally } from "../parsing.ts";
+import { byStartThenId, finnishRating, tally } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import {
   FilmPost,
@@ -29,13 +27,6 @@ import {
 } from "./raw.ts";
 import type { GildaSite } from "./sites.ts";
 
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
 /** Stated as unrated: nothing to publish, nothing to flag. */
 const UNRATED = new Set(["T", "EI MÄÄR."]);
 
@@ -150,7 +141,7 @@ export const parseGilda = (raw: GildaRawSnapshot, site: GildaSite): ProviderBatc
         unmapped.push(`subtitle_lang:${s.subtitle_lang}`);
       }
       const ratingName = s.rating_name?.trim() ?? "";
-      const rating = own(RATINGS, ratingName.toUpperCase());
+      const rating = finnishRating(ratingName.toUpperCase());
       if (ratingName && !rating && !UNRATED.has(ratingName.toUpperCase())) {
         unmapped.push(`rating_name:${ratingName}`);
       }

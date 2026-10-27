@@ -1,16 +1,14 @@
 import {
   makeId,
   type FilmListing,
-  type FinnishRating,
   type ProviderBatch,
   type Screening,
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { AlataloRawSnapshot } from "./fetch.ts";
 import type { AlataloSite } from "./sites.ts";
@@ -25,13 +23,6 @@ const ROW = /^(?:kl(?:o)?\.?\s*)?(\d{1,2})[.:](\d{2})!?(?:\s+(.*))?$/i;
 const MARKER = /\s*-?\s*(?:k\s?-?\s?(\d{1,2})(?:\s*\/\s*-?\s*\d{1,2})?|(s))\s*-?$/i;
 /** A line that is only a marker. */
 const BARE_MARKER = /^-?\s*(?:k\s?-?\s?\d{1,2}(?:\s*\/\s*-?\s*\d{1,2})?|s)\s*-?$/i;
-const RATINGS: Record<string, FinnishRating> = {
-  S: "S",
-  "7": "K-7",
-  "12": "K-12",
-  "16": "K-16",
-  "18": "K-18",
-};
 
 type Row = {
   time: [number, number];
@@ -189,7 +180,7 @@ export const parseAlatalo = (raw: AlataloRawSnapshot, site: AlataloSite): Provid
       continue;
     }
     const unmapped: string[] = [];
-    const rating = r.marker ? own(RATINGS, r.marker) : undefined;
+    const rating = r.marker ? finnishRating(r.marker) : undefined;
     if (r.marker && !rating) {
       unmapped.push(`rating:${r.marker}`);
     }
