@@ -11,7 +11,7 @@ import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
-import { byStartThenId, slugify, toCents } from "../parsing.ts";
+import { byStartThenId, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { HaminaRawSnapshot } from "./fetch.ts";
 import type { HaminaSite } from "./sites.ts";
@@ -32,9 +32,8 @@ const RATINGS: Record<string, FinnishRating> = {
   "18": "K-18",
 };
 
-const text = (value: string | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 const lines = (html: string | null) =>
-  (html ?? "").split(/<br\s*\/?>/i).map((part) => text(load(part, null, false).text()));
+  (html ?? "").split(/<br\s*\/?>/i).map((part) => plainText(load(part, null, false).text()));
 
 /** Pure: the cinema's page + site config -> normalized batch. */
 export const parseHamina = (raw: HaminaRawSnapshot, site: HaminaSite): ProviderBatch => {
@@ -55,7 +54,7 @@ export const parseHamina = (raw: HaminaRawSnapshot, site: HaminaSite): ProviderB
   let unreadable = 0;
   for (const el of blocks) {
     const block = $(el);
-    const rawTitle = text(block.find(".large-content-showcase__title").first().text());
+    const rawTitle = plainText(block.find(".large-content-showcase__title").first().text());
     const paragraphs = block.find(".large-content-showcase__paragraph p").toArray();
     if (!rawTitle || paragraphs.length === 0) {
       continue;

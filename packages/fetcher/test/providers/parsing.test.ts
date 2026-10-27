@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   availabilityFromSeats,
   eachStartTime,
+  plainText,
   slugify,
   toCents,
 } from "../../src/providers/parsing.ts";
@@ -46,6 +47,21 @@ describe("slugify", () => {
     expect(slugify("Feeniks-sali (Teatteri)")).toBe("feeniks-sali-teatteri");
     expect(slugify("Sali Ä")).toBe("sali-a");
     expect(slugify("VIP-SALI")).toBe("vip-sali");
+  });
+
+  it("ignores soft hyphens and zero-width characters (Kino Hamina, 2026-10-27)", () => {
+    expect(slugify("Late Lammas Hä­mä­rä­puu­his­sa")).toBe("late-lammas-hamarapuuhissa");
+    expect(slugify("Zero​width﻿")).toBe("zerowidth");
+  });
+});
+
+describe("plainText", () => {
+  it.each([
+    ["  Late Lammas\n  Hä­mä­rä­puu­his­sa ", "Late Lammas Hämäräpuuhissa"],
+    ["﻿Kino​ Hamina", "Kino Hamina"],
+    [undefined, ""],
+  ])("plainText(%j) = %j", (value, expected) => {
+    expect(plainText(value)).toBe(expected);
   });
 });
 

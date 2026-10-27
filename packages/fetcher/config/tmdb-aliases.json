@@ -613,5 +613,15 @@
     "tmdb": 1248217,
     "title": "Berliinin sankari",
     "note": "Der Held vom Bahnhof Friedrichstraße (Berlin Hero, Germany 2025); confirmed by the maintainer."
+  },
+  "kinopirtti:film:91": {
+    "tmdb": 694,
+    "title": "The Shining",
+    "note": "Stanley Kubrick's The Shining (1980), tagged Klassikko: Kino Pirtti's 120 min is the European cut (119 min); TMDB gives the US 144."
+  },
+  "kinohamina:film:late-lammas-hamarapuuhissa": {
+    "tmdb": 1477104,
+    "title": "Late Lammas Hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as biorex:film:1548; the Finnish title of the one in cinemas in October 2026."
   }
 }
