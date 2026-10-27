@@ -163,6 +163,7 @@ describe("the shared label table", () => {
     ["Englanninkielinen tekstitys", { subtitles: "en" }],
     ["Ei puhetta", { audio: "zxx", tags: ["no-dialogue"] }],
     ["Tekijävierailu", { tags: ["guest"] }],
+    ["Klassikko", { tags: ["classic"] }],
     ["vapaa pääsy", { tags: ["free"] }],
     ["Kuvailutulkkaus", { tags: ["audio-description"] }],
     ["35 mm", { projection: "35mm" }],

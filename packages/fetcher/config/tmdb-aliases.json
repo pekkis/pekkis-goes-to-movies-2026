@@ -623,5 +623,14 @@
     "tmdb": 55256,
     "title": "Joki (25-vuotisjuhlanäytös)",
     "note": "Jarmo Lampela's Joki (2001), its 25th-anniversary screening; TMDB 111 min, Kino Hirvi gives 120 (the screening's slot, probably)."
+  "kinopirtti:film:91": {
+    "tmdb": 694,
+    "title": "The Shining",
+    "note": "Stanley Kubrick's The Shining (1980), tagged Klassikko: Kino Pirtti's 120 min is the European cut (119 min); TMDB gives the US 144."
+  },
+  "kinohamina:film:late-lammas-hamarapuuhissa": {
+    "tmdb": 1477104,
+    "title": "Late Lammas Hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as biorex:film:1548; the Finnish title of the one in cinemas in October 2026."
   }
 }

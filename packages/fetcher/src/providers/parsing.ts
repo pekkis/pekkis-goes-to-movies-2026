@@ -56,9 +56,21 @@ export const availabilityFromSeats = ({
   return "available";
 };
 
+/**
+ * Characters that print nothing: soft hyphens (`&shy;`, a CMS's hyphenation hints, as in Kino
+ * Hamina's "Hä&shy;mä&shy;rä&shy;puu&shy;his&shy;sa", 2026-10-27), zero-width spaces and
+ * joiners, word joiners and byte-order marks.
+ */
+const INVISIBLE = /[­​-‍⁠﻿]/g;
+
+/** Text as a reader sees it: invisible characters removed, whitespace collapsed, trimmed. */
+export const plainText = (value: string | undefined): string =>
+  (value ?? "").replace(INVISIBLE, "").replace(/\s+/g, " ").trim();
+
 /** "Feeniks-sali (Teatteri)" -> "feeniks-sali-teatteri", "Sali Ä" -> "sali-a": for ids. */
 export const slugify = (name: string): string =>
   name
+    .replace(INVISIBLE, "")
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
