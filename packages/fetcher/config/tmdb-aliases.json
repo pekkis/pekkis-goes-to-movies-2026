@@ -614,6 +614,15 @@
     "title": "Berliinin sankari",
     "note": "Der Held vom Bahnhof Friedrichstraße (Berlin Hero, Germany 2025); confirmed by the maintainer."
   },
+  "cinemaorion:film:0883e499-18ee-48c5-a6d2-910b3d5b70b3": {
+    "tmdb": 15916,
+    "title": "Angel's Egg",
+    "note": "Mamoru Oshii's Angel's Egg (1985): exact title, 71 min at Orion and on TMDB; Orion's 2026 is the re-release."
+  },
+  "kinohirvi:film:886": {
+    "tmdb": 55256,
+    "title": "Joki (25-vuotisjuhlanäytös)",
+    "note": "Jarmo Lampela's Joki (2001), its 25th-anniversary screening; TMDB 111 min, Kino Hirvi gives 120 (the screening's slot, probably)."
   "kinopirtti:film:91": {
     "tmdb": 694,
     "title": "The Shining",
