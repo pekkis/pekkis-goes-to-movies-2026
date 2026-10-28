@@ -138,7 +138,7 @@ pnpm design:render           # docs/design/journey-map.md -> PNGs beside it: Mer
 - **`pnpm fetch` is built into pnpm**, which is why the fetch script is `pull`.
 - **Finnkino opens a visible Chrome window** for a few seconds when its 12-hour token needs renewing (cached in `data/cache/finnkino-token.json`).
 
-**Daily routine:** the maintainer runs `pnpm pull && pnpm ingest` (and `pnpm data:push` for the server) by hand, about once a day (no scheduler: Finnkino needs a visible Chrome, and the laptop is often closed). Programmes change most on Tuesday and Wednesday; programme weeks run Friday to Thursday. Afterwards, check the run as listed in [docs/development.md](docs/development.md#after-the-daily-run):
+**Daily routine:** the home server pulls and pushes to production on a timer, at 7 and 16 Helsinki time and also at 11 and 13 on Tuesdays and Wednesdays (`scripts/scheduled-pull.sh`, Finnkino's Chrome under Xvfb; logs in `~/logs/pull-*.log` there, each ending in a `result:` line; [docs/deploy.md](docs/deploy.md#the-timer)). A local `pnpm pull && pnpm ingest` still fills the local database. Programmes change most on Tuesday and Wednesday; programme weeks run Friday to Thursday. Afterwards, check the run as listed in [docs/development.md](docs/development.md#after-the-daily-run):
 
 - warnings and unmapped labels;
 - unmatched films;
@@ -164,7 +164,7 @@ Dockerfile, .dockerignore       API image (serve, migrate, ingest): tsdown bundl
 apps/web-front/Dockerfile       website image (Astro standalone server); its own Dockerfile.dockerignore
 .env, data/                     gitignored: secrets; raw/, normalized/ (batches + pull-status.jsonl: each provider's last pull outcome), cache/ (tmdb, omdb, osm, geocode, token)
 docs/                           development, data-sources, data-model, database, api, cli
-vendor/leffavuoro/, scripts/    Leffavuoro reference copy (not built, linted or formatted); scripts: its refresher, data:push, design:render
+vendor/leffavuoro/, scripts/    Leffavuoro reference copy (not built, linted or formatted); scripts: its refresher, data:push and its server-side gate, the home server's scheduled pull, design:render
 apps/fpgm/                      the teammate's Flutter app: own tooling, not in the pnpm workspace; do not edit unasked
 apps/web-front/                 @pgtm/web-front: the website (Astro SSR, React, Vanilla Extract); see docs/web.md
   src/pages/, src/layouts/      thin .astro routes and layout; logic lives in src/lib/

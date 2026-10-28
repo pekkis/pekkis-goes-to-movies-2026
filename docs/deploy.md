@@ -36,6 +36,8 @@ Everything binds to localhost; nginx publishes it. The server never fetches show
 
 ## Daily, at home
 
+The pull runs on the home server (Ubuntu, `~/pgtm`), on a timer, and pushes to production by itself **[V]** 2026-10-28. By hand, from any checkout:
+
 ```sh
 pnpm pull && pnpm data:push
 ```
@@ -45,7 +47,61 @@ pnpm pull && pnpm data:push
 1. creates `{DEPLOY_TARGET}/data/normalized/` if it's missing (a fresh checkout has none), then rsyncs `data/normalized/` there over SSH;
 2. runs `docker compose --profile ingest run --rm ingest` on the server.
 
-Set `DEPLOY_TARGET=user@host:/srv/pgtm` in your home `.env`; it needs SSH access and Docker rights on the server. Ingest is idempotent and keeps history, as locally. Your local `pnpm ingest` still works for the local database.
+Set `DEPLOY_TARGET=user@host:/srv/pgtm` in your home `.env`. Ingest is idempotent and keeps history, as locally. Your local `pnpm ingest` still works for the local database.
+
+### The push key
+
+The home server pushes with its own key, `~/.ssh/pgtm-push`, which production allows only the three commands of `data:push`: [scripts/push-gate.sh](../scripts/push-gate.sh), installed as `~/bin/pgtm-push-gate` there and named in `~/.ssh/authorized_keys`:
+
+```
+command="/home/pekkis/bin/pgtm-push-gate",restrict ssh-ed25519 AAAA… pgtm-push@pekkis-himaserver
+```
+
+Every attempt is logged on production (`journalctl -t pgtm-push-gate`). A change to `push-data.ts`'s commands needs the same change in the gate, or the push is refused.
+
+### The timer
+
+[scripts/scheduled-pull.sh](../scripts/scheduled-pull.sh) updates the checkout (`git pull --ff-only`, `pnpm install`), pulls under Xvfb (Finnkino's token step needs a visible Chrome: `sudo apt install xvfb`), and pushes. **It pushes even when some providers failed**: ingest logs their venues as failed checks and leaves their screenings alone, so one cinema that is down never holds back the rest. It fails only when nothing was pulled or the push failed.
+
+```ini
+# /etc/systemd/system/pgtm-pull.service
+[Unit]
+Description=Pull showtimes and push them to production
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=pekkis
+ExecStart=/home/pekkis/pgtm/scripts/scheduled-pull.sh
+TimeoutStartSec=30min
+```
+
+```ini
+# /etc/systemd/system/pgtm-pull.timer
+[Unit]
+Description=Showtimes: twice a day, more on Tuesdays and Wednesdays
+
+[Timer]
+OnCalendar=*-*-* 07,16:00 Europe/Helsinki
+OnCalendar=Tue,Wed 11,13:00 Europe/Helsinki
+Persistent=true
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target
+```
+
+`sudo systemctl daemon-reload && sudo systemctl enable --now pgtm-pull.timer`. The server's clock is UTC; the timer names Helsinki time itself, because cinemas publish on Finnish time.
+
+**After a run, while away:** each run writes `~/logs/pull-<UTC time>.log` (kept 60 days) and the journal (`journalctl -u pgtm-pull`). Its last line is `result: ok`, `result: degraded (pulled 101 of 102 providers; …)` or `result: failed …`:
+
+```sh
+grep -h '^result:' ~/logs/pull-*.log | tail     # the latest runs
+systemctl list-timers pgtm-pull                 # the next run
+```
+
+Then check the run as in [development.md](development.md#after-the-daily-run): the log has the warnings, unmapped labels and unmatched films; the push's ingest lines have removals and empty batches.
 
 ## nginx
 
@@ -158,10 +214,10 @@ These match `API_PORT=3579` and `WEB_PORT=4321`; use your own if they differ. `l
 
 ## Backups
 
-The showtimes can be fetched again; their **history** can't: first and last seen, and removals. Back up the database, e.g. daily:
+The showtimes can be fetched again; their **history** can't: first and last seen, and removals. The home server backs up production every night (outside this repository): `pg_dump -Fc` of this database through a read-only forced command like the push gate's, to a NAS, with `data/raw` and `data/cache` from the home server itself **[V]** 2026-10-28. By hand:
 
 ```sh
-docker compose exec -T postgres pg_dump -U pgtm -Fc pgtm > backups/pgtm-$(date +%F).dump
+docker compose exec -T postgres pg_dump -U pgtm -Fc pgtm > pgtm-$(date +%F).dump
 ```
 
 Restore with `pg_restore -U pgtm -d pgtm --clean` inside the container.
