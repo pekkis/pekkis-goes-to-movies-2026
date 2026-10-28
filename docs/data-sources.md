@@ -570,15 +570,20 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/kirkkonummi
 
 ## Bio Savoy (Maarianhamina / Mariehamn)
 
-Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/biosavoy/`, site in `sites.ts`. Origin: Leffavuoro's `scripts/providers/biosavoy.py`, re-verified.
+Rewritten 2026-10-28 for the cinema's new site (the old Drupal one answered 503 from about 23.10 until the new one went up). Adapter: `packages/fetcher/src/providers/biosavoy/`, site in `sites.ts`. No platform we know: an own site, apparently on Statamic **[A]** (its image URLs).
 
-- **HTTP only:** the host refuses port 443 **[A]** (Leffavuoro, 2026-09-15); `http://www.biosavoy.ax/` answered 200 **[V]**. Links are published as http.
-- **The front page** (Drupal) has an `h2.block-title` "Filmvisningar - Sal 1" / "Sal 2" per hall, then rows **[V]**: `<a href="/film/{slug}"><span content="2026-10-15T18:00:00+03:00">18:00</span> - BORTGLÖMDA ÖN</a>`. The `content` attribute is the start, with date and offset: nothing is inferred. The slug is the film's id; the link (the film's page) is copied.
+- **HTTPS now** (`https://www.biosavoy.ax`; http and the bare domain redirect there) **[V]**. `robots.txt` allows everything **[V]**.
+- **`/spelschema`** lists the programme day by day, Friday to Thursday weeks, updated on Tuesdays **[V]**: `<h2 class="schedule__day-heading">Onsdag <span>28/10</span></h2>`, then rows `<a class="show-row" href="/film/{slug}">` with `.show-row__time` ("18.00"), `.show-row__title` and the hall in `.chip` ("Sal 1"). No year, no price: the parser reads it only for the film pages to fetch and to check them against.
+- **Film pages** `/film/{slug}` **[V]**: the title in `h1.hero-title`; the age limit in `.age-badge` ("16"; **"T"**, _tillåten för alla_, is S in Swedish); facts as `dt`/`dd` ("Speltid" "2 h 35 min"); and the film's own schedule, one panel per day with the date in ISO in its id (`id="film-day-2026-10-28"`), each row with time, hall and price ("15 €"). The screenings come from here: nothing about the date is inferred.
+- **Cross-check:** a schedule row that no film page has becomes an `invalid-row` warning (the batch is then incomplete, so nothing is marked removed).
+- **Requests:** one for the schedule, then one per film (11 on 2026-10-28), one at a time at the HTTP client's default pace; more than 30 film pages fails the pull.
+- **Prices** per show: 15 €, children's films 13 € **[V]**.
 - **Titles are Swedish**, in capitals, stored as `title.sv`. The API falls back to the Swedish title when a listing has no Finnish one.
-- **Reservations by phone**; no age limits or runtimes on the page.
+- **Bookings by phone** until the day before, tickets at the box office **[V]**: the film's page is copied as the ticket link. No language or subtitle information anywhere.
+- **Ids** are the old ones (`biosavoy:film:{slug}`, `{slug}-{yyyymmddhhmm}`), so the history carries over where the slugs did.
 - **City** is Maarianhamina, the Finnish name, like our other cities (Pietarsaari, Raasepori).
 - **Coordinates:** OSM node 1459454818; the address is from the cinema's page (Nygatan 14, AX-22100).
-- **First run:** 8 films (all matched), 36 screenings, no warnings.
+- **First run** (2026-10-28): 10 films (all matched), 37 screenings in seven days, no warnings.
 
 ---
 

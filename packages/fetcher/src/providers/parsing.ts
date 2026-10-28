@@ -71,6 +71,9 @@ export const plainText = (value: string | undefined): string =>
 const RATINGS: Record<string, FinnishRating> = {
   S: "S",
   SALLITTU: "S",
+  // In Swedish: "T" (tillåten för alla), as Bio Savoy prints it (2026-10-28).
+  T: "S",
+  TILLÅTEN: "S",
   K7: "K-7",
   K12: "K-12",
   K16: "K-16",
@@ -79,7 +82,7 @@ const RATINGS: Record<string, FinnishRating> = {
 
 /**
  * A Finnish age rating however a cinema spells it: "S", "Sallittu", "-S-", "7", "K7", "K-7",
- * "k 12" (case, spaces and hyphens ignored). Anything else is undefined: a source's own codes
+ * "k 12" (case, spaces and hyphens ignored), and S in Swedish: "T", "Tillåten". Anything else is undefined: a source's own codes
  * (TMB's 1–4, Kinola's Estonian "L") stay in that parser.
  */
 export const finnishRating = (value: string | undefined): FinnishRating | undefined => {
