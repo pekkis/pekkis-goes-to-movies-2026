@@ -391,7 +391,7 @@ const kirkkonummiAdapter = (site: KirkkonummiSite): Adapter => ({
   },
 });
 
-/** Bio Savoy's front page (HTTP only). */
+/** Bio Savoy's schedule, then each film's page. */
 const bioSavoyAdapter = (site: BioSavoySite): Adapter => ({
   id: site.provider,
   platform: "custom",

@@ -3,14 +3,15 @@ import { LabelRule } from "../labels.ts";
 import { defineSites, SiteBase, SiteVenue } from "../sites.ts";
 
 /**
- * Bio Savoy's Drupal front page: a "Filmvisningar - Sal N" block per hall, each row a link
- * to `/film/{slug}` with the start as a full ISO time in its `content` attribute. Titles
- * are Swedish. Reservations by phone. The host serves plain HTTP only (port 443 refused).
- * Mapped by Leffavuoro (Shady-Dev/kino, scripts/providers/biosavoy.py, AGPL-3.0);
- * re-verified 2026-10-15.
+ * Bio Savoy's own site (new on 2026-10-28, apparently Statamic): `/spelschema` lists the
+ * programme day by day ("Onsdag 28/10", no year), each row linking `/film/{slug}`; each film
+ * page has its own schedule with ISO dates (`id="film-day-2026-10-28"`), the hall and the
+ * price per show, and the film's age limit and running time. Titles are Swedish. Bookings
+ * by phone, tickets at the box office. The old Drupal front page, which Leffavuoro mapped,
+ * is gone.
  */
 export const BioSavoySite = SiteBase.extend({
-  /** The site root (http), whose front page carries the programme. */
+  /** The site root, whose `/spelschema` lists the programme. */
   base: z.url(),
   venues: z.array(SiteVenue).length(1),
   /** Site-specific "Prefix: Title" rules, merged over COMMON_TITLE_PREFIXES. */
@@ -22,11 +23,11 @@ export const BIOSAVOY_SITES: BioSavoySite[] = defineSites(BioSavoySite, [
   {
     provider: "biosavoy",
     name: "Bio Savoy",
-    homepage: "http://www.biosavoy.ax",
-    base: "http://www.biosavoy.ax",
-    verifiedAt: "2026-10-15",
+    homepage: "https://www.biosavoy.ax",
+    base: "https://www.biosavoy.ax",
+    verifiedAt: "2026-10-28",
     notes:
-      "HTTP only: biosavoy.ax refuses port 443 (Leffavuoro, re-checked 2026-10-15). Address from the cinema's page (Nygatan 14, AX-22100). City in Finnish like our others.",
+      "New site 2026-10-28 (HTTPS; the old one served HTTP only). Address from the cinema's page (Nygatan 14, AX-22100). City in Finnish like our others.",
     venues: [
       {
         slug: "maarianhamina",

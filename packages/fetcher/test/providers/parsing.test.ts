@@ -61,6 +61,8 @@ describe("finnishRating", () => {
     ["S", "S"],
     ["s", "S"],
     ["Sallittu", "S"],
+    ["T", "S"],
+    ["Tillåten", "S"],
     ["-S-", "S"],
     ["7", "K-7"],
     ["K7", "K-7"],
