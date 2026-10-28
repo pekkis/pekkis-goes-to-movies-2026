@@ -658,5 +658,10 @@
     "tmdb": 18910,
     "title": "Cinemare: The Ninth Configuration - Yhdeksäs aisti",
     "note": "William Peter Blatty's The Ninth Configuration (1980), Finnish title Yhdeksäs aisti, in Savon Kinot's Cinemare cult strand."
+  },
+  "savonkinot:film:166": {
+    "tmdb": 1251608,
+    "title": "Cinemare: Verikreivitär",
+    "note": "Ulrike Ottinger's Die Blutgräfin (Austria, Germany, Luxembourg 2026, 119 min, in German): Savon Kinot's own details (the maintainer, 2026-10-28) match TMDB's; TMDB has no Finnish title for it."
   }
 }
