@@ -633,5 +633,30 @@
     "tmdb": 1477104,
     "title": "Late Lammas Hämäräpuuhissa",
     "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as biorex:film:1548; the Finnish title of the one in cinemas in October 2026."
+  },
+  "kinotar:film:3330": {
+    "tmdb": 346364,
+    "title": "SE",
+    "note": "Andy Muschietti's It (2017): Kinotar's page names Muschietti; a re-release, premiering 30.10.2026 (the maintainer, 2026-10-28)."
+  },
+  "finnkino:film:HO00000623": {
+    "tmdb": 1381071,
+    "title": "Godzilla Minus Zero",
+    "note": "Takashi Yamazaki's ゴジラ-0.0 (2026), the sequel to Godzilla Minus One: exact title, released 3.11.2026 in Japan, the day Finnkino starts showing it; the matcher stopped at TMDB's runtime."
+  },
+  "kuvakukko:film:hopeatahdet-festivaalin-avajaisnaytos-the-wicker": {
+    "tmdb": 1195803,
+    "title": "Hopeatähdet-festivaalin avajaisnäytös: The Wicker",
+    "note": "Wicker (2026, Eleanor Wilson and Alex Huston Fischer), in Finland \"Wicker – intohimosta punottu\" (the maintainer, 2026-10-28); the opening show of the Hopeatähdet festival."
+  },
+  "savonkinot:film:169": {
+    "tmdb": 112427,
+    "title": "Cinemare: Kuutamosonaatti",
+    "note": "Olli Soinio's Kuutamosonaatti (1988) in Savon Kinot's Cinemare cult strand; the only film of that name (its 1991 sequel has a subtitle). The source gives no year, so the matcher held back."
+  },
+  "savonkinot:film:168": {
+    "tmdb": 18910,
+    "title": "Cinemare: The Ninth Configuration - Yhdeksäs aisti",
+    "note": "William Peter Blatty's The Ninth Configuration (1980), Finnish title Yhdeksäs aisti, in Savon Kinot's Cinemare cult strand."
   }
 }

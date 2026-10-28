@@ -32,6 +32,7 @@ import {
   type Text,
 } from "./raw.ts";
 import { own } from "../../lib/records.ts";
+import { findLabel, LABELS } from "../labels.ts";
 import { byStartThenId, finnishRating } from "../parsing.ts";
 
 export const PROVIDER: Provider = {
@@ -54,11 +55,14 @@ const FINNKINO_LANGS: Record<string, Lang> = { tu: "tr", ma: "ml", li: "lt" };
 const toLang = (code: string): Lang | undefined =>
   own(FINNKINO_LANGS, code.toLowerCase()) ?? normalizeLang(code);
 
-/** "KO-JA-A" -> spoken Korean and Japanese; "SE-S" -> Swedish subtitles. */
+/**
+ * "KO-JA-A" -> spoken Korean and Japanese; "SE-S" -> Swedish subtitles. A leading dot is a
+ * typo: ".JA-A" is the attribute Finnkino names "japani" (2026-10-28).
+ */
 export const parseLanguageAttribute = (
   shortName: string,
 ): { role: "audio" | "subtitles"; languages: Lang[] } | undefined => {
-  const match = shortName.match(/^([A-Z]{2}(?:-[A-Z]{2})*)-([AS])$/);
+  const match = shortName.replace(/^\./, "").match(/^([A-Z]{2}(?:-[A-Z]{2})*)-([AS])$/);
   if (!match?.[1]) {
     return undefined;
   }
@@ -95,6 +99,12 @@ const TAGS: Record<string, ScreeningTag> = {
  * name, and an internal booking setting.
  */
 const IGNORED = new Set(["Tampere", "Pkseutu", "TKU & R", "Maxim", "Varaus20"]);
+
+/** A label's tags from the shared table, when tagging is all the label does there. */
+const tagsOnly = (name: string): ScreeningTag[] | undefined => {
+  const rule = findLabel(name, LABELS);
+  return rule?.tags && Object.keys(rule).length === 1 ? rule.tags : undefined;
+};
 
 const localized = (text: Text): Localized => {
   const out: Localized = {};
@@ -165,6 +175,9 @@ const parseScreening = (s: RawShowtime, lookup: Lookup, fetchedAt: string): Scre
       formats.push(own(FORMATS, name)!);
     } else if (own(TAGS, name)) {
       tags.push(own(TAGS, name)!);
+    } else if (tagsOnly(name)) {
+      // The shared label table, where a label only tags the show ("Tekijöitä", 2026-10-28).
+      tags.push(...tagsOnly(name)!);
     } else if (name === "Annisk_K18") {
       licensed = true;
       ageLimit = "K-18";

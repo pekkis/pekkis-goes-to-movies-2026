@@ -111,6 +111,11 @@
     "kind": "festival",
     "note": "K-Kino."
   },
+  "cinemare": {
+    "name": "Cinemare",
+    "kind": "strand",
+    "note": "Cult and genre films at Savon Kinot (\"Cinemare: Deathstalker\", \"Cinemare: Kuutamosonaatti\"), seen 2026-10-28."
+  },
   "kinokopla": {
     "name": "Kinokopla",
     "kind": "club",
@@ -130,8 +135,12 @@
   "kuukauden-pohjoismainen": {
     "name": "Kuukauden pohjoismainen",
     "kind": "distributor-series",
-    "aliases": ["Walhalla - Kuukauden pohjoismainen elokuva", "Kuukauden pohjoismainen elokuva"],
-    "note": "A Nordic film of the month, distributed to several cinemas."
+    "aliases": [
+      "Walhalla - Kuukauden pohjoismainen elokuva",
+      "Kuukauden pohjoismainen elokuva",
+      "KPE"
+    ],
+    "note": "A Nordic film of the month, distributed to several cinemas. Savon Kinot abbreviates it \"KPE: …\" (Kuukauden Pohjoismainen Elokuva; the maintainer, 2026-10-28)."
   },
   "laatusarja": {
     "name": "LaatuSarja",

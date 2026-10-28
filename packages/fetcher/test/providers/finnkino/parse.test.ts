@@ -188,6 +188,23 @@ describe("parseFinnkino", () => {
     expect(parsed.unmappedLabels).toEqual([]);
   });
 
+  it("tags a show by the shared label table (Tekijöitä, 2026-10-28)", () => {
+    const raw = snapshot();
+    const response = raw.showtimes["fixture"] as {
+      showtimes: { id: string; attributeIds: string[] }[];
+      relatedData: { attributes: unknown[] };
+    };
+    response.relatedData.attributes.push({
+      id: "X1",
+      name: { text: "Tekijöitä paikalla" },
+      shortName: { text: "Tekijöitä" },
+    });
+    response.showtimes.find((s) => s.id === "1004-5833")!.attributeIds.push("X1");
+    const parsed = show(parseFinnkino(raw), "1004-5833");
+    expect(parsed.tags).toContain("guest");
+    expect(parsed.unmappedLabels).toEqual([]);
+  });
+
   it("reports an attribute it does not know", () => {
     const raw = snapshot();
     const response = raw.showtimes["fixture"] as {
@@ -210,6 +227,8 @@ describe("field parsers", () => {
     ["SE-S", { role: "subtitles", languages: ["sv"] }],
     ["KO-JA-A", { role: "audio", languages: ["ko", "ja"] }],
     ["TU-A", { role: "audio", languages: ["tr"] }],
+    // A stray dot in Finnkino's "japani" attribute (2026-10-28).
+    [".JA-A", { role: "audio", languages: ["ja"] }],
     ["SEVERAL", undefined],
     ["Annisk_K18", undefined],
   ])("parseLanguageAttribute(%s)", (input, expected) => {

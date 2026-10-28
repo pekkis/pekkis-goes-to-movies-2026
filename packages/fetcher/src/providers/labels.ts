@@ -72,6 +72,7 @@ export const LABELS: Record<string, LabelRule> = {
   "Oopperat ja muut eventit": { tags: ["event-cinema"], event: true },
   // Extras, price
   Tekijävierailu: { tags: ["guest"] },
+  Tekijöitä: { tags: ["guest"] },
   "Vapaa pääsy": { tags: ["free"] },
   "Ilmainen sisäänpääsy": { tags: ["free"] },
   "Edullinen päivänäytös": { tags: ["discount"] },
