@@ -644,11 +644,6 @@
     "title": "Godzilla Minus Zero",
     "note": "Takashi Yamazaki's ゴジラ-0.0 (2026), the sequel to Godzilla Minus One: exact title, released 3.11.2026 in Japan, the day Finnkino starts showing it; the matcher stopped at TMDB's runtime."
   },
-  "kuvakukko:film:hopeatahdet-festivaalin-avajaisnaytos-the-wicker": {
-    "tmdb": 1195803,
-    "title": "Hopeatähdet-festivaalin avajaisnäytös: The Wicker",
-    "note": "Wicker (2026, Eleanor Wilson and Alex Huston Fischer), in Finland \"Wicker – intohimosta punottu\" (the maintainer, 2026-10-28); the opening show of the Hopeatähdet festival."
-  },
   "savonkinot:film:169": {
     "tmdb": 112427,
     "title": "Cinemare: Kuutamosonaatti",
@@ -663,5 +658,25 @@
     "tmdb": 1251608,
     "title": "Cinemare: Verikreivitär",
     "note": "Ulrike Ottinger's Die Blutgräfin (Austria, Germany, Luxembourg 2026, 119 min, in German): Savon Kinot's own details (the maintainer, 2026-10-28) match TMDB's; TMDB has no Finnish title for it."
+  },
+  "kuvakukko:film:the-wicker": {
+    "tmdb": 1195803,
+    "title": "The Wicker",
+    "note": "Wicker (2026, Eleanor Wilson and Alex Huston Fischer), in Finland \"Wicker – intohimosta punottu\" (the maintainer, 2026-10-28); the opening show of the Hopeatähdet festival (the prefix comes off since 2026-10-29)."
+  },
+  "kinoregina:film:179788": {
+    "tmdb": 28480,
+    "title": "FANTOM",
+    "note": "F. W. Murnau's Phantom (1922) (the maintainer, 2026-10-29); Regina gives 1922 and 122 min, TMDB 119."
+  },
+  "riviera:film:32778": {
+    "tmdb": 858035,
+    "title": "Klara ja aurinko",
+    "note": "Taika Waititi's Klara and the Sun (2026), 116 min on both (the maintainer, 2026-10-29); TMDB has no Finnish title yet."
+  },
+  "kinomarilyn:film:39": {
+    "tmdb": 1503771,
+    "title": "Kappale kauneinta Suomea – The Beauty of Errors",
+    "note": "Jukka Kärkkäinen's The Beauty of Errors - Kappale kauneinta Suomea (2026), 94 min on both (the maintainer, 2026-10-29); the two halves of the title come in the other order."
   }
 }

@@ -16,6 +16,16 @@
     "aliases": ["Hopeatähti-kerho", "Hopeatähti-sarja"],
     "note": "Daytime screenings for older audiences and pensioners, run as series and clubs around Finland (the maintainer, 2026-10-21); seen at Savon Kinot and Kino Kuvakukko (\"Hopeatähti-kerho: …\", \"Hopeatähti-sarja: …\"). The shared label table adds the senior tag."
   },
+  "hopeatahdet": {
+    "name": "Hopeatähdet",
+    "kind": "festival",
+    "aliases": [
+      "Hopeatähdet-festivaali",
+      "Hopeatähdet-elokuvafestivaali",
+      "Hopeatähdet-festivaalin avajaisnäytös"
+    ],
+    "note": "A film festival for older audiences (open to all) at Kino Kuvakukko, Kuopio, run by ISAK ry, the East Finland regional film centre; the 15th on 3.–8.11.2026, theme \"Muutosten tuulet\" (the maintainer, 2026-10-29). Not the Hopeatähti strand. The shared label table adds the senior tag."
+  },
   "hopeacine": {
     "name": "HopeaCine",
     "kind": "strand",

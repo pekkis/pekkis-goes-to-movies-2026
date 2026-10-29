@@ -63,6 +63,10 @@ export const LABELS: Record<string, LabelRule> = {
   Hopeatähti: { series: "Hopeatähti", tags: ["senior"] },
   "Hopeatähti-kerho": { series: "Hopeatähti", tags: ["senior"] },
   "Hopeatähti-sarja": { series: "Hopeatähti", tags: ["senior"] },
+  // Hopeatähdet: a festival for older audiences at Kino Kuvakukko (not the strand above)
+  "Hopeatähdet-festivaali": { series: "Hopeatähdet", tags: ["senior"] },
+  "Hopeatähdet-elokuvafestivaali": { series: "Hopeatähdet", tags: ["senior"] },
+  "Hopeatähdet-festivaalin avajaisnäytös": { series: "Hopeatähdet", tags: ["senior"] },
   // "First time at the movies", for small children (Bio Marilyn, 2026-10-20).
   "EkaKertaLeffassa-näytös": { series: "EkaKertaLeffassa", tags: ["kids"] },
   EkaKertaLeffassa: { series: "EkaKertaLeffassa", tags: ["kids"] },
@@ -285,6 +289,14 @@ export const splitVersion = (raw: string): { title: string; version: Version } =
   if (lead && leadHit) {
     Object.assign(version, leadHit[1]);
     title = lead[2]!.trim();
+  }
+  // A sentence after the title: "Late Lammas -elokuva: Hämäräpuuhissa Elokuva on tekstitetty!"
+  // (Kino Olympia, 2026-10-29), with any marker above: "Elokuva on suomeksi puhuttu".
+  const sentence = title.match(/^(.*\S)\s+Elokuva on ([^!.]+)[!.]?$/);
+  const sentenceHit = sentence && VERSIONS.find(([re]) => re.test(sentence[2]!.trim()));
+  if (sentence && sentenceHit) {
+    Object.assign(version, sentenceHit[1]);
+    title = sentence[1]!.trim();
   }
   // A trailing capitalised language: "Unohdettu saari SUOMEKSI", "… PÅ SVENSKA" (Cinemahouse).
   // Upper case only, so a title that merely ends in the word is left alone.
