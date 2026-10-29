@@ -18,6 +18,12 @@ import {
 describe("splitVersion", () => {
   it.each([
     ["Unohdettu saari (DUB)", "Unohdettu saari", { dubbed: true, audio: "fi" }],
+    [
+      "Late Lammas -elokuva: Hämäräpuuhissa Elokuva on tekstitetty!",
+      "Late Lammas -elokuva: Hämäräpuuhissa",
+      { dubbed: false },
+    ],
+    ["Pikkuli Elokuva on suomeksi puhuttu.", "Pikkuli", { dubbed: true, audio: "fi" }],
     ["Unohdettu saari (Dub.)", "Unohdettu saari", { dubbed: true, audio: "fi" }],
     ["Kojootti vs. ACME DUB", "Kojootti vs. ACME", { dubbed: true, audio: "fi" }],
     ["Pikkuli ja Tähtipeura (SUOMEKSI)", "Pikkuli ja Tähtipeura", { dubbed: true, audio: "fi" }],
@@ -51,6 +57,7 @@ describe("splitVersion", () => {
     expect(splitVersion("Hetki ennen valoa (viimeinen esitys)").version).toEqual({});
     expect(splitVersion("Sub Zero").title).toBe("Sub Zero");
     expect(splitVersion("Kerro kaikille").title).toBe("Kerro kaikille");
+    expect(splitVersion("Elokuva on kaunis").title).toBe("Elokuva on kaunis");
     expect(splitVersion("Spider-Man: Brand New Day").title).toBe("Spider-Man: Brand New Day");
     expect(splitVersion("Hyvä, paha ja ruma").title).toBe("Hyvä, paha ja ruma");
   });
