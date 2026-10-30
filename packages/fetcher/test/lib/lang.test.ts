@@ -12,6 +12,9 @@ it.each([
   ["kannada", "kn"],
   ["mykkä elokuva", "zxx"],
   ["dari", "fa"],
+  // The genitive (Kino Myyri, 2026-10-30).
+  ["saksan", "de"],
+  ["Ruotsin", "sv"],
   ["", undefined],
   ["Klingon", undefined],
   // Country codes for languages; a two-letter code that is no language is unknown.

@@ -140,6 +140,9 @@ const OTHER_NAMES: Record<string, Lang> = {
 /** "italialainen" -> "italia", "heprealainen" -> "heprea", "nepalilainen" -> "nepali". */
 const fromAdjective = (key: string) => key.replace(/l(?:ainen|äinen)$/, "");
 
+/** The genitive, "saksan" -> "saksa" (Kino Myyri, 2026-10-30); names without gradation only. */
+const fromGenitive = (key: string) => key.replace(/n$/, "");
+
 /** Code or Finnish/English name -> ISO 639-1, or undefined when not recognized. */
 export const normalizeLang = (input: string): Lang | undefined => {
   const key = input.trim().toLowerCase();
@@ -157,6 +160,10 @@ export const normalizeLang = (input: string): Lang | undefined => {
   const stem = fromAdjective(key);
   if (stem !== key) {
     return own(FINNISH_NAMES, stem) ?? own(OTHER_NAMES, stem);
+  }
+  const genitive = own(FINNISH_NAMES, fromGenitive(key));
+  if (genitive) {
+    return genitive;
   }
   if (/^[a-z]{2}$/.test(key) && LANGUAGE_NAMES.of(key) !== undefined) {
     return key;

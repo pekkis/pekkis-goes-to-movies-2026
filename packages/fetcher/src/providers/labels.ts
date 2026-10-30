@@ -102,6 +102,7 @@ export const LABELS: Record<string, LabelRule> = {
   // Accessibility: subtitles describing sound too, for the hard of hearing
   "Kuvaileva tekstitys": { tags: ["captions"] },
   "Tekstitetty heikkokuuloisille": { tags: ["captions"] },
+  "Tekstitys heikkokuuloisille": { tags: ["captions"] },
   Kuvailutulkkaus: { tags: ["audio-description"] },
   // Projection
   "35mm": { projection: "35mm" },
@@ -183,7 +184,7 @@ export const labelEffects = (rules: (LabelRule | undefined)[]): LabelEffects => 
 /** A label's rule, matched without regard to case or punctuation. */
 // A series the registry knows is a label too: "Kuukauden pohjoismainen: Knyckertz",
 // "Geel (Taidekaupungin elokuvajuhlat)". The pull resolves the name to its id.
-const ruleFor = (rules: Record<string, LabelRule>, label: string): LabelRule | undefined =>
+export const ruleFor = (rules: Record<string, LabelRule>, label: string): LabelRule | undefined =>
   findLabel(label, rules) ?? (findSeries(label) ? { series: label } : undefined);
 
 /**

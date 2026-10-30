@@ -774,7 +774,7 @@ Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/localhub/`,
 Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/biopallas/`. Origin: Leffavuoro's `scripts/providers/pallas.py`, re-verified.
 
 - **A Wix front page, server-rendered:** the rich-text blocks (`[data-testid=richTextElement]`), in document order, are the structure **[V]**:
-  - the title block: "Kerro kaikille", an optional version line ("På svenska", "Suomeksi"), "1h 52min -K12-";
+  - the title block: "Kerro kaikille", an optional version line ("På svenska", "Suomeksi"), "1h 52min -K12-"; the extra line can instead be a label or a registered series, before or after the facts: "Neulontanäytös" (then "Stikningvisning"), a knitting screening, is the `neulekino` series (2026-10-30) **[V]**; a line that is neither goes to `unmappedLabels` as `version:…`;
   - the date-and-time block: "Ke/Ons 14.10" and "Klo 19.00" (bilingual weekday, Finnish first; no year, inferred and checked against the weekday);
   - the price block: "13€", or "12€ med kaffeserv./kahvitarjoilulla" (one amount is published; "22/25€" is not).
 
