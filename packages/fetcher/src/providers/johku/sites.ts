@@ -9,16 +9,17 @@ import { defineSites, SiteBase, SiteVenue, Slug } from "../sites.ts";
  *
  * Adding a cinema: the front page's `__NUXT_DATA__` names `storefront-{shop}-fi_FI` and one
  * `showschedule-fi_FI-f{date}-c{category}` key per programme block; list the film blocks.
- * Not here: sites that only embed a Johku widget (Kino Engel, Kino Tapiola) or load the
- * show list through `/api/auth/widget-session` (KuvaTähti): those need an API key.
+ * A venue page that shows a category shared from another shop ("Ohjelmisto", Sun Kino's and
+ * KuvaTähti's venue pages) reads the same call with the sharing shop and that category.
+ * Not here: sites that only embed a Johku widget for tickets (Kino Engel, Kino Tapiola).
  *
  * Origin: Leffavuoro (vendor/leffavuoro/scripts/providers/johku.py), which reads the copy
  * embedded in the front page; the endpoint itself was first called here, 2026-10-12.
  */
 
 export const JohkuVenue = SiteVenue.extend({
-  /** The hall's `resource_name` in the schedule. */
-  resource: z.string().min(1),
+  /** Its halls' `resource_name`s in the schedule; the first is the venue's source id. */
+  resources: z.array(z.string().min(1)).min(1),
 });
 export type JohkuVenue = z.infer<typeof JohkuVenue>;
 
@@ -55,7 +56,7 @@ export const JOHKU_SITES: JohkuSite[] = defineSites(JohkuSite, [
         slug: "lapua",
         name: "Bio Marilyn",
         city: "Lapua",
-        resource: "Bio Marilyn",
+        resources: ["Bio Marilyn"],
         address: "Vanhan paukun tie 1",
         postalCode: "62100",
         geo: { lat: 62.968085, lon: 23.017527 },
@@ -77,7 +78,7 @@ export const JOHKU_SITES: JohkuSite[] = defineSites(JohkuSite, [
         slug: "vihti",
         name: "Vihdin Kino",
         city: "Vihti",
-        resource: "Vihdin Kino",
+        resources: ["Vihdin Kino"],
         address: "Riihitie 2",
         postalCode: "03400",
         geo: { lat: 60.419193, lon: 24.316843 },
@@ -99,7 +100,7 @@ export const JOHKU_SITES: JohkuSite[] = defineSites(JohkuSite, [
         name: "Bio Forum",
         city: "Raasepori",
         shortName: "Bio Forum Tammisaari",
-        resource: "Bio Forum",
+        resources: ["Bio Forum"],
         address: "Helene Schjerfbecks gata 5",
         geo: { lat: 59.973495, lon: 23.435663 },
         geoSource: "osm:node/1396819513",
@@ -121,7 +122,7 @@ export const JOHKU_SITES: JohkuSite[] = defineSites(JohkuSite, [
         slug: "oulainen",
         name: "Kinokulma",
         city: "Oulainen",
-        resource: "Kulmasali",
+        resources: ["Kulmasali"],
         address: "Asemakatu 1",
         geo: { lat: 64.269778, lon: 24.819202 },
         geoSource: "osm:node/5437298938",
@@ -141,7 +142,7 @@ export const JOHKU_SITES: JohkuSite[] = defineSites(JohkuSite, [
         slug: "nurmes",
         name: "Kino Hannikainen",
         city: "Nurmes",
-        resource: "Hannikaisen sali",
+        resources: ["Hannikaisen sali"],
         address: "Kötsintie 2",
         postalCode: "75500",
         geo: { lat: 63.549298, lon: 29.12749 },
@@ -163,7 +164,7 @@ export const JOHKU_SITES: JohkuSite[] = defineSites(JohkuSite, [
         slug: "kalajoki",
         name: "Kino Virta",
         city: "Kalajoki",
-        resource: "Virta-sali",
+        resources: ["Virta-sali"],
         geo: { lat: 64.259867, lon: 23.946979 },
         geoSource: "osm:node/5923100732",
       },
@@ -185,11 +186,91 @@ export const JOHKU_SITES: JohkuSite[] = defineSites(JohkuSite, [
         slug: "myllypuro",
         name: "Kino Kulttuurimylly",
         city: "Helsinki",
-        resource: "Feeniks-sali (Kino Kulttuurimylly)",
+        resources: ["Feeniks-sali (Kino Kulttuurimylly)"],
         address: "Jauhokuja 3",
         postalCode: "00920",
         geo: { lat: 60.224767, lon: 25.07714 },
         geoSource: "nominatim",
+      },
+    ],
+  },
+  {
+    provider: "sunkino",
+    name: "Sun Kino",
+    homepage: "https://elokuviin.info",
+    host: "elokuviin.info",
+    shop: "elokuviin",
+    categories: [2],
+    verifiedAt: "2026-10-30",
+    notes:
+      'Sun Kino Oy\'s storefront for four cinemas (Kauhavan Y-Kino has its own shop). Each venue page shows the category "Ohjelmisto" (2) shared into the shop "elokuviin", which answers the anonymous schedule call with all four. Thought to need the widget key until 2026-10-30 (Leffavuoro tried allproducts.json).',
+    venues: [
+      {
+        slug: "kauhava",
+        name: "Y-Kino",
+        city: "Kauhava",
+        resources: ["Y-Kino (KAUHAVA)"],
+        address: "Kauppatie 109",
+        postalCode: "62200",
+        geo: { lat: 63.09942, lon: 23.05971 },
+        geoSource: "osm:node/6236693231",
+      },
+      {
+        slug: "alavus",
+        name: "Kino Kyntäjä",
+        city: "Alavus",
+        resources: ["Kino Kyntäjä, sali 1 (ALAVUS)", "Kino Kyntäjä, sali 2 (ALAVUS)"],
+        address: "Järviluomantie 5",
+        postalCode: "63300",
+        geo: { lat: 62.585566, lon: 23.615868 },
+        geoSource: "osm:node/2638781636",
+      },
+      {
+        slug: "ahtari",
+        name: "Sun Kino",
+        city: "Ähtäri",
+        resources: ["Sun Kino (ÄHTÄRI)"],
+        address: "Lukiontie 3",
+        postalCode: "63700",
+        geo: { lat: 62.551206, lon: 24.077192 },
+        geoSource: "osm:node/11384636630",
+      },
+      {
+        slug: "alajarvi",
+        name: "Alareksi",
+        city: "Alajärvi",
+        resources: ["Alareksi (ALAJÄRVI)"],
+        geo: { lat: 62.999335, lon: 23.81868 },
+        geoSource: "osm:node/2992011001",
+      },
+    ],
+  },
+  {
+    provider: "kuvatahti",
+    name: "Kuva-Tähti",
+    homepage: "https://www.kuvatahti.fi",
+    host: "www.kuvatahti.fi",
+    shop: "kuvatahti",
+    categories: [2],
+    verifiedAt: "2026-10-30",
+    notes:
+      'Kuva-Tähti Oy\'s storefront for Kuvala and Kauttuan Kuva. As with Sun Kino, the venue pages show the shared category "Ohjelmisto" (2), read anonymously; thought to need the widget key until 2026-10-30.',
+    venues: [
+      {
+        slug: "uusikaupunki",
+        name: "Kuvala",
+        city: "Uusikaupunki",
+        resources: ["Kuvala (UUSIKAUPUNKI)"],
+        geo: { lat: 60.800592, lon: 21.417702 },
+        geoSource: "osm:node/4408430758",
+      },
+      {
+        slug: "eura",
+        name: "Kauttuan Kuva",
+        city: "Eura",
+        resources: ["Kauttuan Kuva sali 1 (EURA)", "Kauttuan Kuva sali 2 (EURA)"],
+        geo: { lat: 61.114852, lon: 22.167567 },
+        geoSource: "osm:node/551331489",
       },
     ],
   },

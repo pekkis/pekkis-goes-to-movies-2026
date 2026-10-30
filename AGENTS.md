@@ -15,7 +15,7 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 ## Current state
 
-- **Data:** 161 venues in 113 cities from 106 providers on fifty source types:
+- **Data:** 167 venues in 119 cities from 108 providers on fifty source types:
   - one chain: Finnkino (Vista OCAPI), and Vista's open public web services (Korjaamo Kino, Riviera Kallio and Punavuori, Bio-Kaari);
   - six multi-site platforms: MyCloudCinema (BioRex, Cine Mäntsälä, and Gilda through its own WordPress facade), Nexxo, eTiketti, Kinola, Johku, and The Events Calendar for WordPress (Ritz Vaasa, Tähti Kino Muhos);
   - the open Linked Events APIs of Helsinki and Espoo (Kino Helios in Malmitalo, Kino Kuutamo and HopeaCine in Kanneltalo and Vuotalo, Kannusali);
@@ -61,7 +61,8 @@ It is part of the user-centered design course at JAMK. License: **AGPL-3.0-or-la
 
 - Identifiable User-Agent. **GET by default**: a read-only POST (the request the cinema's own listing makes) only for sources that offer nothing else, one at a time and with the maintainer; they are listed in the README's "Sources read with a POST" (`HttpClient.postForm`). Few, paced requests (see per-adapter pacing in the registry). No residential proxies, fingerprint spoofing or captcha solving; do not try hard to get around Cloudflare.
 - Never call ticket purchase, booking or payment endpoints. Ticket links are **copied** from the source into `ticketUrl`, never constructed and never requested (eTiketti's `/salikartta`, Kinola's and Johku's `/checkout/…`).
-- **Johku:** only storefronts whose own code reads the schedule anonymously. Never a widget's `X-ApiKey` (KuvaTähti loads its shows only that way, so it is out). Kino Engel and Kino Tapiola merely embed the Johku widget for tickets: their own server-rendered pages may be read like any HTML source (Engel challenges datacenter IPs; if it challenges us too, skip it).
+- **Credentials a site gives every visitor** may be used the way the site's own code uses them: a token or key embedded in the public page (Finnkino's Vista token, a Johku widget's `X-ApiKey` and the visitor session it opens), read-only, at a visitor's pace. Never a credential that needs logging in or that the site does not hand to visitors, and never one of ours sent elsewhere. Decided by the maintainer on 2026-10-30: such a token is the site's own invitation to every visitor, not anybody's stolen credential. Leffavuoro draws the line elsewhere (it declines the widget key).
+- **Johku:** storefronts are read through the anonymous call their own code makes; a widget's `X-ApiKey` falls under the rule above. Kino Engel and Kino Tapiola merely embed the Johku widget for tickets: their own server-rendered pages may be read like any HTML source (Engel challenges datacenter IPs; if it challenges us too, skip it).
 - **Finnkino:** only the token step uses a (visible) browser; never defeat Cloudflare by other means. It does not run in CI or the cloud.
 - **Posters, synopses and trailers come only from TMDB**, never from cinemas, and cinemas' texts stay out of test fixtures.
 - **Coordinates never from Google Maps** (its terms forbid storing them). OpenStreetMap (ODbL, credit "© OpenStreetMap contributors"), Nominatim (1 request/s, cached), the cinema's own pages, or the maintainer.

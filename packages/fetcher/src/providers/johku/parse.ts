@@ -57,7 +57,7 @@ export const parseJohku = (raw: JohkuRawSnapshot, site: JohkuSite): ProviderBatc
   const warnings: Warning[] = [];
   const prefixRules = { ...COMMON_TITLE_PREFIXES, ...site.titlePrefixes };
 
-  const venues: Venue[] = site.venues.map((v) => toVenue(P, v, v.resource));
+  const venues: Venue[] = site.venues.map((v) => toVenue(P, v, v.resources[0]!));
   const auditoriums = new Map<string, Auditorium>();
   const listings = new Map<string, FilmListing>();
   const screenings = new Map<string, Screening>();
@@ -97,7 +97,7 @@ export const parseJohku = (raw: JohkuRawSnapshot, site: JohkuSite): ProviderBatc
         continue;
       }
 
-      const venue = site.venues.find((v) => v.resource === e.resource_name);
+      const venue = site.venues.find((v) => v.resources.includes(e.resource_name ?? ""));
       if (!venue) {
         const hall = e.resource_name ?? "(no hall)";
         tally(unclaimed, hall);

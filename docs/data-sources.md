@@ -368,7 +368,7 @@ Probed 2026-10-14, four GETs. Adapter: `packages/fetcher/src/providers/tapiola/`
 
   A page that fails gives a `film-page-missing` warning: the details stay unknown, the screenings (which come from the list) stay complete. Opera pages state their language only in the description text **[A]** (Leffavuoro); not read.
 
-- **Not read:** stills behind the titles and the cinema's synopses (TMDB only); seats and prices (the Johku widget draws them client-side, and its API key is never used, per the rules).
+- **Not read:** stills behind the titles and the cinema's synopses (TMDB only); seats and prices (the Johku widget draws them client-side; not looked into).
 - **Tickets:** the run page is the ticket page (Johku's widget on it), so `ticketUrl` is that page, copied.
 - **Coordinates:** OSM node 1430315541 "Kino Tapiola"; address from the site's footer (Mäntyviita 2, 02110 Espoo).
 - **First run:** 16 films, 26 screenings over 31 days, no warnings.
@@ -914,7 +914,7 @@ Cinemas we know of and do not read, for the next batch. Found by comparing our v
 
 **Facebook only** (no site of their own found; unreachable unless they sell on a ticket platform): Sysmän Kino and Kino Hetta (Enontekiö): their municipal pages give prices and practical details, the programme only on Facebook (2026-10-30). Kino Mantsi's page on ilomantsi.fi answers 404.
 
-**Out by our rules:** the Sun Kino group (Alareksi, Kino Kyntäjä, Y-Kino, Sun Kino), Kauttuan Kuva and Kuvala load their showtimes only through the Johku widget's `X-ApiKey`.
+**Thought out by our rules, now read:** the Sun Kino group (Alareksi, Kino Kyntäjä, Y-Kino, Sun Kino), Kauttuan Kuva and Kuvala were believed to load their showtimes only through the Johku widget's `X-ApiKey`; the storefronts' anonymous schedule call serves them (2026-10-30, see the Johku section).
 
 **Source not found:** Kino Näyttämö (Joensuu, elokuviin.com's "Kino Sihis"), run by Pohjois-Karjalan elokuvayhdistys: its page on pkey.fi shows no programme, and the theatre's own Events Calendar (teatterinayttamo.fi) had no events (2026-10-30). Art house and genre films; worth asking the association.
 
@@ -1118,7 +1118,8 @@ Found on 2026-10-12. Adapter: `packages/fetcher/src/providers/johku/`, cinemas i
   - Called anonymously with our User-Agent on 2026-10-12, it answered 200 with JSON on all seven storefronts.
   - Leffavuoro reads the same data from the `__NUXT_DATA__` copy embedded in the front page instead.
 - **Finding the parameters:** the front page's `__NUXT_DATA__` names `storefront-{shop}-fi_FI` and one `showschedule-fi_FI-f{date}-c{category}` per programme block.
-- **Not used:** KuvaTähti loads its shows only through `/api/auth/widget-session` and the widget's `X-ApiKey`, which we never use. Kino Engel and Kino Tapiola embed the Johku widget for tickets only; their programmes are on their own server-rendered pages, which Leffavuoro reads as HTML (`engel.py`, `tapiola.py`) **[A]**, and which we may read the same way.
+- **A category shared from another shop** [V, 2026-10-30]: Sun Kino's and KuvaTähti's venue pages show the category "Ohjelmisto" (2), shared into the storefront's shop; the same anonymous call with that shop and category answers with every venue's shows (`elokuviin.info/api/elokuviin/…&category=2`: Y-Kino, Kino Kyntäjä's two halls, Sun Kino, Alareksi; `www.kuvatahti.fi/api/kuvatahti/…&category=2`: Kuvala and Kauttuan Kuva's two halls). Their page state carries no key (`apiKey` empty, `isWidget` false). Leffavuoro and we had them out as needing the widget's `X-ApiKey`: Leffavuoro tried `allproducts.json`, which does want a session, and never this call. A venue may list several halls (`resources`).
+- **Not used:** Kino Engel and Kino Tapiola embed the Johku widget for tickets only; their programmes are on their own server-rendered pages, which Leffavuoro reads as HTML (`engel.py`, `tapiola.py`) **[A]**, and which we may read the same way.
 - **Entry fields:**
   - `text` (title as written, with labels: "Perhekino:", "Seniorikino:", "Vauvakino:", "På svenska:", "MLL-näytös:");
   - `start_date` (Helsinki local, "2026-10-14 19:00") and `resource_name` (the hall);
@@ -1134,6 +1135,7 @@ Found on 2026-10-12. Adapter: `packages/fetcher/src/providers/johku/`, cinemas i
 - **Cinemas [V]:**
   - Bio Marilyn (Lapua, blocks 1 and 9, sharing some shows), Vihdin Kino (Vihti), Bio Forum (Tammisaari, Raasepori), Kinokulma (Oulainen), Kino Hannikainen (Nurmes), Kino Virta (Kalajoki, `kinovirta.johku.com`).
   - Kino Kulttuurimylly (Helsinki, Myllypuro): new since Leffavuoro's sweep, when its programme was paused.
+  - Sun Kino (`elokuviin.info`, shop `elokuviin`): Y-Kino (Kauhava), Kino Kyntäjä (Alavus, two halls), Sun Kino (Ähtäri), Alareksi (Alajärvi). KuvaTähti (`www.kuvatahti.fi`): Kuvala (Uusikaupunki), Kauttuan Kuva (Eura, two halls). Added 2026-10-30: 70 screenings a week, all matched, no warnings; coordinates from OSM's cinema nodes.
 - **First run:** 85 screenings a week. All 61 film listings matched TMDB (56 by search, 5 by sibling).
 
 ---
