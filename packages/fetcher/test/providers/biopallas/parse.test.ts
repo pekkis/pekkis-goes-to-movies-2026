@@ -4,6 +4,7 @@ import { ProviderBatch, isIncomplete } from "@pgtm/model";
 import { describe, expect, it } from "vitest";
 import type { BioPallasRawSnapshot } from "../../../src/providers/biopallas/fetch.ts";
 import { parseBioPallas } from "../../../src/providers/biopallas/parse.ts";
+import { findSeries } from "../../../src/series/registry.ts";
 import { BIOPALLAS_SITES } from "../../../src/providers/biopallas/sites.ts";
 
 const SITE = BIOPALLAS_SITES[0]!;
@@ -60,6 +61,17 @@ describe("parseBioPallas", () => {
 
   it("reads a version line between the title and the facts", () => {
     expect(show("bortglomda-on-202610151500")).toMatchObject({ dubbed: true, audio: ["sv"] });
+  });
+
+  it("reads a label line as a label or series: a knitting screening (2026-10-30)", () => {
+    expect(show("heart-of-the-beast-202610141700")).toMatchObject({
+      series: ["Neulontanäytös"],
+      unmappedLabels: [],
+    });
+    expect(findSeries("Neulontanäytös")).toBe("neulekino");
+    expect(batch.listings.find((l) => l.sourceId === "heart-of-the-beast")?.title.fi).toBe(
+      "Heart of the Beast",
+    );
   });
 
   it("publishes no price for two amounts", () => {

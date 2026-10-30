@@ -173,6 +173,7 @@ describe("the shared label table", () => {
     ["Klassikko", { tags: ["classic"] }],
     ["vapaa pääsy", { tags: ["free"] }],
     ["Kuvailutulkkaus", { tags: ["audio-description"] }],
+    ["Tekstitys heikkokuuloisille", { tags: ["captions"] }],
     ["35 mm", { projection: "35mm" }],
     ["Anniskelunäytös K-18", { licensed: true, ageLimit: "K-18" }],
     ["K18 - Anniskelunäytös", { licensed: true, ageLimit: "K-18" }],

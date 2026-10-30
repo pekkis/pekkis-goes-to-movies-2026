@@ -10,6 +10,7 @@ import { load } from "cheerio";
 import {
   COMMON_TITLE_PREFIXES,
   isPrivateBooking,
+  ruleFor,
   splitTitlePrefix,
   splitVersion,
   type Version,
@@ -91,7 +92,10 @@ export const parseBioPallas = (raw: BioPallasRawSnapshot, site: BioPallasSite): 
       return; // a private event: nothing to list, nothing missing (2026-10-19)
     }
     const unmapped: string[] = [];
-    if (versionLine && lineVersion.audio === undefined && lineVersion.dubbed === undefined) {
+    // Not a version, the line may be a label or a series: "Neulontanäytös" (2026-10-30).
+    const lineIsVersion = lineVersion.audio !== undefined || lineVersion.dubbed !== undefined;
+    const lineRule = versionLine && !lineIsVersion ? ruleFor(prefixRules, versionLine) : undefined;
+    if (versionLine && !lineIsVersion && !lineRule) {
       unmapped.push(`version:${versionLine}`);
     }
     const age = facts?.[3]?.toUpperCase().replace("-", "");
@@ -137,8 +141,8 @@ export const parseBioPallas = (raw: BioPallasRawSnapshot, site: BioPallasSite): 
       audio: version.audio ? [version.audio] : [],
       ...(version.dubbed !== undefined && { dubbed: version.dubbed }),
       subtitles: { kind: "unknown" },
-      tags: [...(rule?.tags ?? [])],
-      series: rule?.series ? [rule.series] : [],
+      tags: [...new Set([...(rule?.tags ?? []), ...(lineRule?.tags ?? [])])],
+      series: [rule?.series, lineRule?.series].filter((s) => s !== undefined),
       availability: "unknown",
       ...(price !== undefined && { price: { amountCents: price, currency: "EUR" as const } }),
       // Tickets at the door: the programme page.
