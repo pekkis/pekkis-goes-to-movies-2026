@@ -99,6 +99,7 @@ Open questions; let the conversation run, follow up on what's interesting.
 - "What's hard to find or compare on the cinemas' sites?"
 - "And what works well in what you use now?"
 - "Finnkino redesigned its website. Have you used the new one? What do you like or dislike about it?" (Stay neutral: let them judge it.)
+- "Do you know who runs the sites you use for showtimes? Does it matter to you, and why?" If it needs opening up: "a company, a hobbyist, the cinema itself". (Don't say which we are until the wrap-up; the other aggregators are companies and one hobby project, see the [competitor analysis](COMPETITOR-ANALYSIS.md).)
 
 **Choosing**
 
@@ -178,6 +179,7 @@ These map to the hypotheses in the [journey maps](journey-map.md#hypotheses-to-t
 | Do they follow directors, series, kinds of screenings?          | 3, 4, 7      | 9          |
 | Does the website work for their tasks; where do they get stuck? | 4, 5         | –          |
 | Would they use a chat, and would they trust it?                 | 6            | –          |
+| Does it matter who runs a showtimes site, and why?              | 3            | –          |
 
 ## Afterwards
 
