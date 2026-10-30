@@ -49,6 +49,7 @@ export const LABELS: Record<string, LabelRule> = {
   "Ensi-ilta": { tags: ["premiere"] },
   "Suomen ensi-ilta": { tags: ["premiere"] },
   "Viimeinen näytös": { tags: ["last-screening"] },
+  "Viimeinen esitys": { tags: ["last-screening"] },
   "Viimeiset näytökset": { tags: ["last-screening"] },
   // Kino Pirtti (2026-10-27); Finnkino's attribute of the same name is in its own table.
   Klassikko: { tags: ["classic"] },

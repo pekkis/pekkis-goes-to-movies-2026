@@ -63,6 +63,8 @@ For comparison, we had 157 venues in 110 cities from 102 providers on the same d
    - **To check:** Ähtäri, Alajärvi, Alavus, Enontekiö, Eura, Huhtamo, Ilomantsi, Kangasniemi, Kauhava, Kolari, Luumäki, Mäntyharju, Nivala, Närpiö, Parikkala, Pomarkku, Punkalaidun, Rautjärvi, Ruokolahti, Sodankylä, Sulkava, Sysmä, Utsjoki, Uusikaupunki, Vimpeli. Some are empty listings: Uusikaupunki's Kuvala had nothing on [V].
    - **Ours only:** about 20 places Elokuviin lacks, Maarianhamina (Bio Savoy) among them [V].
 
+**Follow-up, 2026-10-30:** of the cinemas Elokuviin had with shows and we lacked, four are now read: Kino Kellokas (Kolari), Kino Visio (Vuokatti, Sotkamo), Oulun Elokuvakeskus's Studio and Vimpelin Nuorisokuvat. Six are out by our rules (the Sun Kino group's four, Kauttuan Kuva and Kuvala load their shows only through Johku's widget key), two publish only on Facebook (Sysmä, Enontekiö), and Kino Näyttämö's source is not found. Details in [data-sources.md](../data-sources.md#not-read-yet-candidates-2026-10-15).
+
 ## What we have that they don't
 
 1. **Search by the hobbyist's question.** Several days at once, a place with a radius or "near me", time of day, venue and film, with faceted counts (`/fi/haku`). The others offer one city and one day, or a week.

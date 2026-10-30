@@ -382,4 +382,25 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
       },
     ],
   },
+  {
+    provider: "kinokellokas",
+    name: "Kino Kellokas",
+    homepage: "https://kinokellokas.fi",
+    programmePath: "/naytoslista/",
+    verifiedAt: "2026-10-30",
+    notes:
+      "Kolari's cinema, in Äkäslompolo; found through elokuviin.com (2026-10-30). Location 1 has the shows; 2 and 3 are empty. Address from its own page.",
+    venues: [
+      {
+        slug: "akaslompolo",
+        locationId: "1",
+        name: "Kino Kellokas",
+        city: "Kolari",
+        address: "Tunturintie 54",
+        postalCode: "95970",
+        geo: { lat: 67.589719, lon: 24.204695 },
+        geoSource: "osm:node/6428212330",
+      },
+    ],
+  },
 ]);
