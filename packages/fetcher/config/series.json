@@ -66,8 +66,8 @@
   "neulekino": {
     "name": "Neulekino",
     "kind": "strand",
-    "aliases": ["Neulontanäytös", "Stikningvisning"],
-    "note": "Knitting screenings. Kino Pirtti (\"Neulekino\"), Bio Pallas (\"Neulontanäytös\" / \"Stikningvisning\", 2026-10-30)."
+    "aliases": ["Neulontanäytös", "Stikningvisning", "Knitting Cinema"],
+    "note": "Knitting screenings. Kino Pirtti (\"Neulekino\"), Bio Pallas (\"Neulontanäytös\" / \"Stikningvisning\", 2026-10-30), Ritz Vaasa (\"Knitting Cinema!\", its film announced later, 2026-10-30)."
   },
   "kirjastokino": {
     "name": "Kirjastokino",

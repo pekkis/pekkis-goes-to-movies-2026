@@ -171,12 +171,17 @@ export const parseTribe = (raw: TribeRawSnapshot, site: TribeSite): ProviderBatc
       // "KirjastoKino: One Battle After Another" (Tähti Kino, 2026-10-22): a label, then the film.
       const { title: unprefixed, rule, label } = splitTitlePrefix(rawTitle, prefixRules);
       rawTitle = unprefixed;
+      // Version markers first, so "[Eng Audio]" is not taken for a Finnish title (2026-10-30).
+      const marked = splitVersion(rawTitle);
+      rawTitle = marked.title;
       // "Tell Everyone [Kerro kaikille]": the Finnish title in brackets, the English before.
       const bracketed = site.bracketedFinnishTitle
         ? rawTitle.match(/^(.+?)\s*\[([^\]]+)\]\s*$/)
         : undefined;
       const english = bracketed?.[1]!.trim();
-      const { title, version } = splitVersion(bracketed ? bracketed[2]!.trim() : rawTitle);
+      const split = splitVersion(bracketed ? bracketed[2]!.trim() : rawTitle);
+      const title = split.title;
+      const version = { ...marked.version, ...split.version };
       const rating = facts.rating ?? titleRating;
 
       const filmKey = slugify(title);

@@ -71,6 +71,23 @@ describe("parseTribe: Ritz Vaasa", () => {
     });
   });
 
+  it("lists a knitting screening whose film is announced later as an event (2026-10-30)", () => {
+    expect(listingOf("10003775").kind).toBe("event");
+    expect(show("10003775").series).toEqual(["Neulekino"]);
+  });
+
+  it('reads "[Eng Audio]" as English audio, not as a Finnish title (2026-10-30)', () => {
+    const ritz = page("ritz");
+    const title = "Shaun the Sheep: The Beast of Mossy Bottom [Eng Audio]";
+    const events = ritz.events.map((e) => (e["id"] === 10003757 ? { ...e, title } : e));
+    const result = parseTribe(snapshot([{ ...ritz, events }]), RITZ);
+    const shaun = result.screenings.find((s) => s.sourceId === "10003757")!;
+    expect(shaun).toMatchObject({ audio: ["en"], dubbed: false });
+    expect(result.listings.find((l) => l.id === shaun.listingId)?.title).toEqual({
+      fi: "Shaun the Sheep: The Beast of Mossy Bottom",
+    });
+  });
+
   it("publishes no price for a band of values", () => {
     expect(show("10003749").price).toBeUndefined();
   });
