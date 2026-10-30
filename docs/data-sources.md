@@ -449,6 +449,7 @@ Probed 2026-10-14, two GETs. Adapter: `packages/fetcher/src/providers/tribe/`, s
   - Muhos ends every title in "-elokuvanäytös" (a configured suffix).
   - Ritz puts the year ("Wholetrain (2006)") or an age limit ("Knitting Cinema! (K18)") in a trailing parenthesis; both are read off the title.
   - Ritz also writes some titles "English [Finnish]" ("Tell Everyone [Kerro kaikille]", "The Lapland War [Lapin Sota]", 2026-10-20 [V]): the bracketed part is the Finnish title, the English one is kept as `title.en` (site setting `bracketedFinnishTitle`).
+  - A version marker in brackets is read first: "Shaun the Sheep: The Beast of Mossy Bottom [Eng Audio]" is English audio, not a Finnish title "Eng Audio" (2026-10-30 [V]). Events whose films are announced later are whole-title labels in the site's `titlePrefixes`: "Knitting Cinema!" (the `neulekino` series) and "Ritz Horrorfest!" (Ritz's own strand), both event listings, so they are not reported as unmatched films.
   - Other parentheses stay: "Two Seasons, Two Strangers (Tabi to hibi)".
   - A "Prefix: Title" whose prefix is a known label or a registry series is split off like on other platforms (`splitTitlePrefix`; site setting `titlePrefixes` for a site's own): "KirjastoKino: One Battle After Another" at Muhos becomes the film plus the Kirjastokino series (2026-10-22 [V]).
 - **Event series** ("Knitting Cinema!", "Ritz Horrorfest!") are listed as events of their own name; which film plays is not stated, so they stay unmatched.
@@ -1129,6 +1130,7 @@ Found on 2026-10-12. Adapter: `packages/fetcher/src/providers/johku/`, cinemas i
   - Maccs Box codes `maccsboxlanguage` / `maccsboxsubtitles` (FI, OV, FI-SE, XX, as on Nexxo);
   - `storefronturl` (the film's booking page, copied as `ticketUrl`).
 - **Left out:**
+  - Private screenings in the programme ("YKSITYISNÄYTÖS! Late Lammas …", Sun Kino 2026-10-30), by the shared `isPrivateBooking`.
   - `upcoming` = 1 entries: coming soon, with no time yet (Bio Marilyn lists 20).
   - Entries with no price, no age limit and no language. Kinokulma's hall hire ("Salivaraus"), closure notice ("Olemme vapaalla") and a private booking all look like this, while every film has at least one of the three. `product.displayedtype` is "movie" for all of them, so it does not help.
   - Kulttuurimylly's block 5, which is theatre ("Feeniks-sali (Teatteri)"); only its cinema block 2 is read.

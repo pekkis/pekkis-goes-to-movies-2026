@@ -209,6 +209,12 @@ export const splitTitlePrefix = (
   if (suffix && suffixRule) {
     return { title: suffix[1]!.trim(), rule: suffixRule, label: suffix[2]!.trim() };
   }
+  // The whole title is a label: "Knitting Cinema!" (Ritz, the film announced later). Only the
+  // rule tables: a film named like a registered series keeps its title.
+  const whole = findLabel(title.replace(/!+$/, ""), rules);
+  if (whole) {
+    return { title, rule: whole, label: title.replace(/!+$/, "") };
+  }
   // In parentheses at the end, an exclamation mark allowed: "(Ennakkonäytös!)" (TMB).
   const paren = title.match(/^(.+?)\s*\(([^()]+?)!?\)$/);
   const parenRule = paren ? ruleFor(rules, paren[2]!.trim()) : undefined;
@@ -270,7 +276,7 @@ const VERSIONS: [RegExp, Version][] = [
     { dubbed: true, audio: "fi" },
   ],
   [/^(?:på svenska|ruotsiksi)$/i, { dubbed: true, audio: "sv" }],
-  [/^(?:englanniksi|eng|english)$/i, { dubbed: false, audio: "en" }],
+  [/^(?:englanniksi|eng|english|eng(?:lish)? audio)$/i, { dubbed: false, audio: "en" }],
   [/^(?:orig|original|alkuperäinen|sub|tekstitetty)$/i, { dubbed: false }],
   // A cut of the film, not a different film: strip it so TMDB matching sees the title.
   [/^(?:ohjaajan versio|director's cut|restauroitu|restored)$/i, {}],
@@ -309,11 +315,11 @@ export const splitVersion = (raw: string): { title: string; version: Version } =
     title = caps[1]!.trim();
   }
   for (;;) {
-    // "(DUB)", "DUB", or after a comma or dash: "Unohdettu saari, englanniksi".
+    // "(DUB)", "[Eng Audio]" (Ritz), "DUB", or after a comma or dash: "Unohdettu saari, englanniksi".
     const m = title.match(
-      /^(.*?)\s*(?:\(([^()]+)\)|\b(DU[BP]\.?|SUB|ORIG|ENG|2D|3D)|(?:,|\s[–-])\s*([^,()–-]+))$/i,
+      /^(.*?)\s*(?:\(([^()]+)\)|\[([^[\]]+)\]|\b(DU[BP]\.?|SUB|ORIG|ENG|2D|3D)|(?:,|\s[–-])\s*([^,()–-]+))$/i,
     );
-    const marker = m && (m[2] ?? m[3] ?? m[4])?.trim();
+    const marker = m && (m[2] ?? m[3] ?? m[4] ?? m[5])?.trim();
     const hit = marker ? VERSIONS.find(([re]) => re.test(marker)) : undefined;
     if (!m || !hit || !m[1]) {
       return { title, version };

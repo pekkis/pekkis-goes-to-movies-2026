@@ -678,5 +678,25 @@
     "tmdb": 1503771,
     "title": "Kappale kauneinta Suomea – The Beauty of Errors",
     "note": "Jukka Kärkkäinen's The Beauty of Errors - Kappale kauneinta Suomea (2026), 94 min on both (the maintainer, 2026-10-29); the two halves of the title come in the other order."
+  },
+  "kinovisio:film:amelie": {
+    "tmdb": 194,
+    "title": "Amélie",
+    "note": "Jean-Pierre Jeunet's Le Fabuleux Destin d'Amélie Poulain (2001): Kino Visio's film page gives Jeunet, Audrey Tautou and 2 h 1 min (2026-10-30); its programme has no runtimes."
+  },
+  "kinovisio:film:late-lammas-elokuva-hamarapuuhissa": {
+    "tmdb": 1477104,
+    "title": "Late Lammas-elokuva: hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as at every other cinema; Kino Visio writes \"Lammas-elokuva\" without the space and gives no runtime (2026-10-30)."
+  },
+  "kinovisio:film:pikku-kummitus-lapanen-keppostelee": {
+    "tmdb": 1781923,
+    "title": "Pikku Kummitus Lapanen keppostelee",
+    "note": "Lilla spöket Laban busar vidare (2026, premiered 9.10.), matched at other cinemas; Kino Visio gives no runtime (2026-10-30)."
+  },
+  "elokuvateatterikaarre:film:elokuvateatteri-kaarteen-halloween-viikonloppu-pikku-kummitus-lapanen-keppostelee": {
+    "tmdb": 1781923,
+    "title": "Elokuvateatteri Kaarteen Halloween-viikonloppu! PIKKU KUMMITUS LAPANEN KEPPOSTELEE",
+    "note": "Lilla spöket Laban busar vidare (2026), 63 min on both; the bold title starts with Kaarre's Halloween teaser (2026-10-30)."
   }
 }

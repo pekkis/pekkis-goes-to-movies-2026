@@ -9,7 +9,12 @@ import {
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, parseLocalDateTime } from "@pgtm/model/time";
-import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
+import {
+  COMMON_TITLE_PREFIXES,
+  isPrivateBooking,
+  splitTitlePrefix,
+  splitVersion,
+} from "../labels.ts";
 import { codes, parseAudio, parseSubtitles, UNKNOWN_CODE } from "../language-codes.ts";
 import {
   availabilityFromSeats,
@@ -94,6 +99,10 @@ export const parseJohku = (raw: JohkuRawSnapshot, site: JohkuSite): ProviderBatc
         continue;
       }
       if (!inCatalogue(e) || !isPublicScreening(e)) {
+        continue;
+      }
+      // "YKSITYISNÄYTÖS! Late Lammas …" (Sun Kino, 2026-10-30): booked, not public.
+      if (isPrivateBooking(e.text)) {
         continue;
       }
 

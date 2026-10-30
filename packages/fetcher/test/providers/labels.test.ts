@@ -19,6 +19,11 @@ describe("splitVersion", () => {
   it.each([
     ["Unohdettu saari (DUB)", "Unohdettu saari", { dubbed: true, audio: "fi" }],
     [
+      "Shaun the Sheep: The Beast of Mossy Bottom [Eng Audio]",
+      "Shaun the Sheep: The Beast of Mossy Bottom",
+      { dubbed: false, audio: "en" },
+    ],
+    [
       "Late Lammas -elokuva: Hämäräpuuhissa Elokuva on tekstitetty!",
       "Late Lammas -elokuva: Hämäräpuuhissa",
       { dubbed: false },
@@ -64,6 +69,16 @@ describe("splitVersion", () => {
 });
 
 describe("splitTitlePrefix", () => {
+  it("takes a whole title that is a label, but not a series name alone (2026-10-30)", () => {
+    const rules = { "Knitting Cinema": { series: "Neulekino", event: true } };
+    expect(splitTitlePrefix("Knitting Cinema!", rules)).toEqual({
+      title: "Knitting Cinema!",
+      rule: { series: "Neulekino", event: true },
+      label: "Knitting Cinema",
+    });
+    expect(splitTitlePrefix("Matinea", COMMON_TITLE_PREFIXES)).toEqual({ title: "Matinea" });
+  });
+
   it("strips only known prefixes", () => {
     expect(splitTitlePrefix("Ennakkonäytös: Pikkuli ja Tähtipeura", COMMON_TITLE_PREFIXES)).toEqual(
       {

@@ -107,6 +107,17 @@ describe("parseJohku", () => {
     ).toEqual(["Kino Kyntäjä, sali 1 (ALAVUS)", "Kino Kyntäjä, sali 2 (ALAVUS)"]);
   });
 
+  it("leaves out a private screening in the programme (Sun Kino, 2026-10-30)", () => {
+    const payload = loadFixture("johku", "elokuviin-c2.json") as { data: { text: string }[] };
+    const data = payload.data.map((e, i) =>
+      i === 0 ? { ...e, text: `YKSITYISNÄYTÖS! ${e.text}` } : e,
+    );
+    const batch = parse("elokuviin", [2], { schedules: { "2": { data } } });
+    expect(batch.warnings).toEqual([]);
+    expect(batch.screenings.map((s) => s.sourceId)).not.toContain("3965");
+    expect(batch.screenings).toHaveLength(4);
+  });
+
   it("skips coming-soon entries and publishes a show in two blocks once", () => {
     const batch = parse("biomarilyn", [1, 9]);
     expect(batch.screenings.map((s) => s.sourceId).toSorted()).toEqual(["10158", "10161"]);

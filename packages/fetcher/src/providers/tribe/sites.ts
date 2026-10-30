@@ -37,6 +37,11 @@ export const TRIBE_SITES: TribeSite[] = defineSites(TribeSite, [
     booking: "door",
     titleSuffixes: [],
     bracketedFinnishTitle: true,
+    // Events whose films are announced later (2026-10-30).
+    titlePrefixes: {
+      "Knitting Cinema": { series: "Neulekino", event: true },
+      "Ritz Horrorfest": { series: "Ritz Horrorfest", event: true },
+    },
     verifiedAt: "2026-10-14",
     notes: 'Tickets at the door ("sold at the door" in every description).',
     venues: [
