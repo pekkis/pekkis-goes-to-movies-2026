@@ -83,6 +83,18 @@ import { fetchSuoja } from "./suoja/fetch.ts";
 import { parseSuoja } from "./suoja/parse.ts";
 import { SUOJA_SITES, type SuojaSite } from "./suoja/sites.ts";
 import { fetchKinoRio } from "./kinorio/fetch.ts";
+import { fetchKinoVisio } from "./kinovisio/fetch.ts";
+import { parseKinoVisio } from "./kinovisio/parse.ts";
+import { KINOVISIO_SITES, type KinoVisioSite } from "./kinovisio/sites.ts";
+import { fetchNuorisokuvat } from "./nuorisokuvat/fetch.ts";
+import { parseNuorisokuvat } from "./nuorisokuvat/parse.ts";
+import { NUORISOKUVAT_SITES, type NuorisokuvatSite } from "./nuorisokuvat/sites.ts";
+import { fetchOulunElokuvakeskus } from "./oulunelokuvakeskus/fetch.ts";
+import { parseOulunElokuvakeskus } from "./oulunelokuvakeskus/parse.ts";
+import {
+  OULUNELOKUVAKESKUS_SITES,
+  type OulunElokuvakeskusSite,
+} from "./oulunelokuvakeskus/sites.ts";
 import { parseKinoRio } from "./kinorio/parse.ts";
 import { KINORIO_SITES, type KinoRioSite } from "./kinorio/sites.ts";
 import { fetchKinomaatti } from "./kinomaatti/fetch.ts";
@@ -571,6 +583,42 @@ const kinoRioAdapter = (site: KinoRioSite): Adapter => ({
   },
 });
 
+/** Kino Visio's front page. */
+const kinoVisioAdapter = (site: KinoVisioSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchKinoVisio(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseKinoVisio(raw, site), venues) };
+  },
+});
+
+/** Oulun Elokuvakeskus's programme page (the Studio cinema). */
+const oulunElokuvakeskusAdapter = (site: OulunElokuvakeskusSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchOulunElokuvakeskus(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseOulunElokuvakeskus(raw, site), venues) };
+  },
+});
+
+/** Vimpelin Nuorisokuvat's films page. */
+const nuorisokuvatAdapter = (site: NuorisokuvatSite): Adapter => ({
+  id: site.provider,
+  platform: "custom",
+  pull: async ({ env }, { from, days, venues }) => {
+    const http = createHttpClient(contact(env));
+    onlyVenues(site, venues);
+    const raw = await fetchNuorisokuvat(http, site, { from, days });
+    return { raw, batch: restrictToVenues(parseNuorisokuvat(raw, site), venues) };
+  },
+});
+
 /** Suojan elokuvat's front page. */
 const suojaAdapter = (site: SuojaSite): Adapter => ({
   id: site.provider,
@@ -765,6 +813,9 @@ export const ADAPTERS: Adapter[] = [
   ...KISAKINO_SITES.map(kisaKinoAdapter),
   ...KINOMAATTI_SITES.map(kinomaattiAdapter),
   ...KINORIO_SITES.map(kinoRioAdapter),
+  ...KINOVISIO_SITES.map(kinoVisioAdapter),
+  ...OULUNELOKUVAKESKUS_SITES.map(oulunElokuvakeskusAdapter),
+  ...NUORISOKUVAT_SITES.map(nuorisokuvatAdapter),
   ...SUOJA_SITES.map(suojaAdapter),
   ...BIODUX_SITES.map(bioDuxAdapter),
   ...KINOYLARI_SITES.map(kinoYlariAdapter),

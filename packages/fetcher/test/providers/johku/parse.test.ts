@@ -89,6 +89,24 @@ describe("parseJohku", () => {
     expect(batch.auditoriums).toEqual([expect.objectContaining({ name: "Kulmasali", seats: 113 })]);
   });
 
+  it("reads a shared category with several venues, one of them with two halls", () => {
+    const batch = parse("elokuviin", [2]);
+    expect(() => ProviderBatch.parse(batch)).not.toThrow();
+    expect(batch.warnings).toEqual([]);
+    expect(batch.venues.map((v) => v.id)).toEqual([
+      "sunkino:venue:kauhava",
+      "sunkino:venue:alavus",
+      "sunkino:venue:ahtari",
+      "sunkino:venue:alajarvi",
+    ]);
+    // Kino Kyntäjä's two halls are one venue with two auditoriums.
+    expect(show(batch, "3965").venueId).toBe("sunkino:venue:alavus");
+    expect(show(batch, "3966").venueId).toBe("sunkino:venue:alavus");
+    expect(
+      batch.auditoriums.filter((a) => a.venueId === "sunkino:venue:alavus").map((a) => a.name),
+    ).toEqual(["Kino Kyntäjä, sali 1 (ALAVUS)", "Kino Kyntäjä, sali 2 (ALAVUS)"]);
+  });
+
   it("skips coming-soon entries and publishes a show in two blocks once", () => {
     const batch = parse("biomarilyn", [1, 9]);
     expect(batch.screenings.map((s) => s.sourceId).toSorted()).toEqual(["10158", "10161"]);
