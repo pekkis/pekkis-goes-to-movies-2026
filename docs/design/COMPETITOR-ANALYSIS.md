@@ -39,7 +39,7 @@ For comparison, we had 157 venues in 110 cities from 102 providers on the same d
 - **City page:** "Tänään" and "Tällä viikolla" tabs, genre chips with counts ("Uutuudet 41", "Klassikot 4", "Kauhu 9" …), and showtimes grouped by day, film, then cinema [V]. Time buttons go to the cinema's ticket page through a redirect that adds UTM parameters [V].
 - **Film page:** synopsis, stills, a video, director and cast (TMDB). Showtimes in time order with the hall, **seat count ("106 paikkaa")**, the format ("iSense", "LUXE", "PRIME", "VIP"), subtitle codes ("SUO/RUO"), and availability: "Loppuunmyyty" or "Liput ovelta" [V]. "Suosikki" (favourite) and "Piilota" (hide) controls [V].
 - **Personal:** "Historiani", a viewing history to share with a friend when planning a movie night [V]. Whether it needs an account was not visible [A].
-- **Voting ("Äänestä valkokankaalle"):** people suggest and vote for films they want on the big screen; the most wanted are ranked (new films and classics) [V]. Distributors and cinemas are offered vote-threshold notifications, regional audience insight, and a way to reach the voters when tickets go on sale [V]. This is the business model as far as the site shows it [A].
+- **Voting ("Äänestä valkokankaalle"):** people suggest and vote for films they want on the big screen; the most wanted are ranked (new films and classics) [V]. Distributors and cinemas who get in touch are offered a notification when a film passes a chosen number of votes, an understanding of the audience by region, and a way to reach the people who wished for a film when its screening goes on sale [V]. No prices or terms are given, and the page does not say what it collects from voters [V]; whether this is paid is not known.
 
 ### Kinossa.fi
 
@@ -85,4 +85,4 @@ For comparison, we had 157 venues in 110 cities from 102 providers on the same d
 - One view by film, or a choice between by film and by showtime?
 - How much discovery (coming soon, recommendations) do hobbyists want, given they follow films closely already?
 
-Kinoon's voting is a different product: demand data sold to distributors. It is noted here, not proposed.
+Kinoon's voting is a different product: audience demand shown to distributors and cinemas. It is noted here, not proposed.
