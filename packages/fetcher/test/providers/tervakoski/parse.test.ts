@@ -63,6 +63,20 @@ describe("parseTervakoski", () => {
     expect(result.listings.find((l) => l.title.fi === "Kerro kaikille")?.runtimeMinutes).toBe(112);
   });
 
+  it("reads a row whose age limit is not set yet, leaving the rating unknown (2026-10-31)", () => {
+    const html = HTML.replace(
+      /Klo 19\.00 &#8211;\s*<a href="#h-kerro-kaikille"[^>]*\s*>Kerro kaikille \(K12\),<\/a\s*>/,
+      "Klo 19.00 &#8211; Ebenezer: Saiturin joulu (Ikäraja ei viellä tiedossa), fantasia,",
+    );
+    expect(html).not.toBe(HTML);
+    const result = parseTervakoski(snapshot({ html }), SITE);
+    expect(result.warnings).toEqual([]);
+    const ebenezer = result.listings.find((l) => l.title.fi === "Ebenezer: Saiturin joulu");
+    expect(ebenezer).toBeDefined();
+    expect(ebenezer?.rating).toBeUndefined();
+    expect(result.screenings.flatMap((s) => s.unmappedLabels)).toEqual([]);
+  });
+
   it("warns about a day whose weekday fits no date", () => {
     const broken = HTML.replace("Keskiviikko 14.10.", "Tiistai 14.10.");
     const result = parseTervakoski(snapshot({ html: broken }), SITE);

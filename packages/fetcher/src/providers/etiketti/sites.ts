@@ -542,6 +542,8 @@ export const ETIKETTI_SITES: EtikettiSite[] = defineSites(EtikettiSite, [
     name: "Kino Marilyn",
     homepage: "https://kinomarilyn.fi",
     verifiedAt: "2026-10-25",
+    // The cinema's club for adults, its own strand (2026-10-31).
+    tags: { "Aikuisten leffakerho": { series: "Aikuisten leffakerho" } },
     venues: [
       {
         slug: "loviisa",
