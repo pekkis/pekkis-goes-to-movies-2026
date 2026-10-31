@@ -183,6 +183,8 @@ export const NEXXO_SITES: NexxoSite[] = defineSites(NexxoSite, [
     name: "Järvelän Kino",
     homepage: "https://jarvelankino.fi",
     programmePath: "/naytoslista/",
+    // A comedy night in the cinema, not a film (2026-10-31).
+    titlePrefixes: { "Järvelän Kinon Stand Up -ilta": { event: true } },
     verifiedAt: "2026-10-10",
     venues: [
       {

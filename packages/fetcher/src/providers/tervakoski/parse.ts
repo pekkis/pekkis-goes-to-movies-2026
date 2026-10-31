@@ -24,8 +24,12 @@ const WEEKDAYS = ["ma", "ti", "ke", "to", "pe", "la", "su"];
 const DAY = /^([a-zäö]{5,})\s+(\d{1,2})\.(\d{1,2})\.?$/i;
 /** "Klo 17.00 – Pirjo i Sverige (S), kotimainen, …". */
 const ROW = /^Klo\s+(\d{1,2})[.:](\d{2})\s*[–-]\s*(.+)$/i;
-/** The title closes with its rating: "Pirjo i Sverige (S),". */
-const TITLE = /^(.+?)\s*\((S|K-?\d{1,2})\),?\s*(.*)$/i;
+/**
+ * The title closes with its rating: "Pirjo i Sverige (S),", or a note that it is not set
+ * yet: "(Ikäraja ei viellä tiedossa)" (2026-10-31), which leaves the rating unknown.
+ */
+const TITLE = /^(.+?)\s*\((S|K-?\d{1,2}|ikäraja ei vie?ll?ä tiedossa)\),?\s*(.*)$/i;
+const NOT_RATED = /^ikäraja/i;
 /** "kesto 1 t 28 min", also "kesto, 1t 57 min" (2026-10-17). */
 const RUNTIME = /kesto,?\s+(\d+)\s*t(?:\s*(\d+)\s*min)?/i;
 const PRICE = /lippu\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*€/i;
@@ -95,8 +99,9 @@ export const parseTervakoski = (
       continue;
     }
     const facts = film[3] ?? "";
+    const notRated = NOT_RATED.test(film[2]!);
     const age = film[2]!.toUpperCase().replace("-", "");
-    const rating = finnishRating(age);
+    const rating = notRated ? undefined : finnishRating(age);
     const duration = facts.match(RUNTIME);
     const runtime = duration ? Number(duration[1]) * 60 + Number(duration[2] ?? 0) : 0;
     const price = toCents(facts.match(PRICE)?.[1], { zeroIsFree: false });
@@ -140,7 +145,7 @@ export const parseTervakoski = (
       ...(price !== undefined && { price: { amountCents: price, currency: "EUR" as const } }),
       // Tickets at the door: the programme page.
       ticketUrl: site.programme,
-      unmappedLabels: rating ? [] : [`rating:${film[2]}`],
+      unmappedLabels: rating || notRated ? [] : [`rating:${film[2]}`],
       fetchedAt: raw.fetchedAt,
     });
   }
