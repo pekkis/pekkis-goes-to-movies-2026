@@ -68,6 +68,25 @@ describe("parseGilda", () => {
     expect(batch.listings.find((l) => l.id === album.listingId)?.kind).toBe("event");
   });
 
+  it("treats an anniversary special as an event whatever its style (2026-10-31)", () => {
+    // The film behind show 303234 has the style "Ei tekstitystä", as two album sessions had.
+    const name = "My Bloody Valentine 'Loveless' (35th Anniversary)";
+    const movies = JSON.parse(JSON.stringify(loadFixture("gilda", "movies.json"))) as {
+      fi: {
+        data: { movie_name: string; show_times: { show_time_id: number; movie_name: string }[] }[];
+      };
+    };
+    for (const m of movies.fi.data) {
+      if (m.show_times.some((t) => t.show_time_id === 303234)) {
+        m.movie_name = name;
+        m.show_times.forEach((t) => (t.movie_name = name));
+      }
+    }
+    const result = parseGilda(snapshot({ movies }), SITE);
+    const show = screening(result, "303234");
+    expect(result.listings.find((l) => l.id === show.listingId)?.kind).toBe("event");
+  });
+
   it('reads "-" as no subtitles only when the style says so', () => {
     expect(screening(batch, "303234").subtitles).toEqual({ kind: "none" });
     expect(screening(batch, "303560").subtitles).toEqual({ kind: "unknown" });
