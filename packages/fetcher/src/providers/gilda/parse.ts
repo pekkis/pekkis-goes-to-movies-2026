@@ -32,6 +32,11 @@ const UNRATED = new Set(["T", "EI MÄÄR."]);
 
 /** Album listening sessions: listed with films, but not films. */
 const EVENT_STYLES = new Set(["albumikuuntelu"]);
+/**
+ * "Amy Winehouse 'Back To Black' (20th Anniversary)": an anniversary special, an event
+ * whatever its style says (two album sessions came as "Ei tekstitystä", 2026-10-31).
+ */
+const ANNIVERSARY = /\(\d+(?:st|nd|rd|th) Anniversary\)\s*$/i;
 
 /** Loose title key for matching a film to its WordPress page. */
 const titleKey = (title: string): string =>
@@ -129,7 +134,8 @@ export const parseGilda = (raw: GildaRawSnapshot, site: GildaSite): ProviderBatc
       const { title: unprefixed, rule: prefix } = splitTitlePrefix(s.movie_name, prefixRules);
       const { title, version } = splitVersion(unprefixed);
       const style = s.movie_audio_style_name?.trim().toLowerCase() ?? "";
-      const isEvent = EVENT_STYLES.has(style) || (prefix?.event ?? false);
+      const isEvent =
+        EVENT_STYLES.has(style) || ANNIVERSARY.test(s.movie_name) || (prefix?.event ?? false);
 
       const rawAudio = s.audio_lang?.trim() ?? "";
       const audio: Lang | undefined = rawAudio ? normalizeLang(rawAudio) : undefined;
