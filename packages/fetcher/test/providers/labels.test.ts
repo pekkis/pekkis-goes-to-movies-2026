@@ -17,6 +17,7 @@ import {
 
 describe("splitVersion", () => {
   it.each([
+    ["Tonttu - puhutaan suomea", "Tonttu", { dubbed: true, audio: "fi" }],
     ["Unohdettu saari (DUB)", "Unohdettu saari", { dubbed: true, audio: "fi" }],
     [
       "Shaun the Sheep: The Beast of Mossy Bottom [Eng Audio]",
@@ -77,6 +78,30 @@ describe("splitTitlePrefix", () => {
       label: "Knitting Cinema",
     });
     expect(splitTitlePrefix("Matinea", COMMON_TITLE_PREFIXES)).toEqual({ title: "Matinea" });
+  });
+
+  it("takes a prefix ending in an exclamation mark (Sun Kino, 2026-11-01)", () => {
+    expect(splitTitlePrefix("ERIKOISNÄYTÖS! Lapin sota", COMMON_TITLE_PREFIXES)).toEqual({
+      title: "Lapin sota",
+      rule: {},
+      label: "ERIKOISNÄYTÖS",
+    });
+    expect(splitTitlePrefix("Mamma Mia! Here We Go Again", COMMON_TITLE_PREFIXES)).toEqual({
+      title: "Mamma Mia! Here We Go Again",
+    });
+  });
+
+  it("takes a known capitalised label off the end (Ihmekompleksi, 2026-11-01)", () => {
+    expect(
+      splitTitlePrefix("Tonttu - puhutaan suomea ILMAISNÄYTÖS", COMMON_TITLE_PREFIXES),
+    ).toEqual({
+      title: "Tonttu - puhutaan suomea",
+      rule: { tags: ["free"] },
+      label: "ILMAISNÄYTÖS",
+    });
+    expect(splitTitlePrefix("PEDON SYDÄN", COMMON_TITLE_PREFIXES)).toEqual({
+      title: "PEDON SYDÄN",
+    });
   });
 
   it("strips only known prefixes", () => {

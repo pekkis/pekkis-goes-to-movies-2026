@@ -11,6 +11,7 @@ it.each([
   ["pushto", "ps"],
   ["kannada", "kn"],
   ["mykkä elokuva", "zxx"],
+  ["ei dialogia", "zxx"],
   ["dari", "fa"],
   // The genitive (Kino Myyri, 2026-10-30).
   ["saksan", "de"],

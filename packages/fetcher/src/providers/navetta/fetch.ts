@@ -5,7 +5,7 @@ export type NavettaRawSnapshot = {
   fetchedAt: string;
   from: string;
   days: number;
-  /** The front page: the weekend's screenings and the film blocks. */
+  /** The front page: one card per film with its screenings. */
   html: string;
 };
 

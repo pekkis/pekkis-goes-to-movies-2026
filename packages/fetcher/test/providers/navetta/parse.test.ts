@@ -12,8 +12,8 @@ const HTML = readFileSync(
   "utf8",
 );
 const snapshot = (overrides: Partial<NavettaRawSnapshot> = {}): NavettaRawSnapshot => ({
-  fetchedAt: "2026-10-15T06:00:00.000Z",
-  from: "2026-10-15",
+  fetchedAt: "2026-11-01T06:00:00.000Z",
+  from: "2026-11-01",
   days: 31,
   html: HTML,
   ...overrides,
@@ -22,47 +22,50 @@ const snapshot = (overrides: Partial<NavettaRawSnapshot> = {}): NavettaRawSnapsh
 describe("parseNavetta", () => {
   const batch = parseNavetta(snapshot(), SITE);
 
-  it("produces one screening although the page lists it twice", () => {
+  it("reads the film card's screening once, not the summary above it", () => {
     expect(() => ProviderBatch.parse(batch)).not.toThrow();
     expect(batch.warnings).toEqual([]);
-    expect(batch.provider).toMatchObject({ platform: "custom", booking: "door" });
+    expect(batch.provider).toMatchObject({ platform: "custom", booking: "reserve" });
     expect(batch.screenings).toHaveLength(1);
     expect(batch.screenings[0]).toMatchObject({
-      sourceId: "pirjo-i-sverige-202610171500",
-      startsAt: "2026-10-17T15:00:00+03:00",
-      price: { amountCents: 1000, currency: "EUR" },
+      sourceId: "lapin-sota-202611011700",
+      startsAt: "2026-11-01T17:00:00+02:00",
+      price: { amountCents: 1100, currency: "EUR" },
+      ticketUrl: "https://www.navettakino.fi/varaa.php?id=80",
     });
   });
 
-  it("joins the film block's facts by title", () => {
+  it("reads the card's facts", () => {
     expect(batch.listings[0]).toMatchObject({
-      title: { fi: "Pirjo i Sverige" },
-      rating: "S",
-      runtimeMinutes: 88,
+      title: { fi: "Lapin sota" },
+      rating: "K-16",
+      runtimeMinutes: 158,
     });
   });
 
-  it("reads a facts line with the runtime in hours", () => {
-    // Presidentin kyyditys has a block but no screening: its facts wait for one.
-    const added = HTML.replace(
-      "näytökset</strong></p>",
-      "näytökset</strong></p>\n<p>Presidentin kyyditys la 17.10 klo 17:00</p>",
+  it("reads a facts line with the runtime in hours, and several screenings", () => {
+    const changed = HTML.replace("K16, kesto 158 min", "Kesto 1 h 27 min, K12,").replace(
+      ">Varaa</a></p>",
+      ">Varaa</a></p><p>la 07.11 klo 15:00 - <a href='varaa.php?id=81'>Varaa</a></p>",
     );
-    const result = parseNavetta(snapshot({ html: added }), SITE);
-    expect(result.listings.find((l) => l.title.fi === "Presidentin kyyditys")).toMatchObject({
-      rating: "K-12",
-      runtimeMinutes: 87,
-    });
+    const result = parseNavetta(snapshot({ html: changed }), SITE);
+    expect(result.warnings).toEqual([]);
+    expect(result.listings[0]).toMatchObject({ rating: "K-12", runtimeMinutes: 87 });
+    expect(result.screenings.map((s) => s.ticketUrl)).toEqual([
+      "https://www.navettakino.fi/varaa.php?id=80",
+      "https://www.navettakino.fi/varaa.php?id=81",
+    ]);
   });
 
   it("places nothing when the weekday does not fit the date", () => {
-    const wrong = HTML.replaceAll("la 17.10 klo 15:00", "pe 17.10 klo 15:00");
+    const wrong = HTML.replace("su 01.11 klo 17:00", "la 01.11 klo 17:00");
     const result = parseNavetta(snapshot({ html: wrong }), SITE);
+    expect(result.screenings).toEqual([]);
     expect(result.warnings.map((w) => w.code)).toEqual(["invalid-row"]);
     expect(isIncomplete(result)).toBe(true);
   });
 
-  it("warns when the heading is gone", () => {
+  it("warns when the page has no film cards", () => {
     const result = parseNavetta(snapshot({ html: "<html><body></body></html>" }), SITE);
     expect(result.warnings.map((w) => w.code)).toEqual(["invalid-response"]);
   });

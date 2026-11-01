@@ -80,6 +80,7 @@ export const LABELS: Record<string, LabelRule> = {
   Tekijöitä: { tags: ["guest"] },
   "Vapaa pääsy": { tags: ["free"] },
   "Ilmainen sisäänpääsy": { tags: ["free"] },
+  Ilmaisnäytös: { tags: ["free"] },
   "Edullinen päivänäytös": { tags: ["discount"] },
   // Bar service; the age limit only where the label states it (Finnkino separates the two).
   Anniskelunäytös: { licensed: true },
@@ -102,6 +103,7 @@ export const LABELS: Record<string, LabelRule> = {
   // Kino Pirtti (2026-10-26).
   "Englanninkielinen tekstitys": { subtitles: "en" },
   "Ei puhetta": { audio: "zxx", tags: ["no-dialogue"] },
+  "Ei dialogia": { audio: "zxx", tags: ["no-dialogue"] },
   // Accessibility: subtitles describing sound too, for the hard of hearing
   "Kuvaileva tekstitys": { tags: ["captions"] },
   "Tekstitetty heikkokuuloisille": { tags: ["captions"] },
@@ -193,14 +195,16 @@ export const ruleFor = (rules: Record<string, LabelRule>, label: string): LabelR
 /**
  * "Ennakkonäytös: Pikkuli" -> { title: "Pikkuli", rule } when the prefix has a rule.
  * Only listed prefixes are touched: "Ryhmä Hau: Dinoelokuva" is a title, not a label.
- * The same labels at the end: "Pirjo i Sverige – Vauvakino", "Pikkuli (Ennakkonäytös!)".
+ * The same labels at the end: "Pirjo i Sverige – Vauvakino", "Pikkuli (Ennakkonäytös!)",
+ * "Tonttu ILMAISNÄYTÖS".
  */
 export const splitTitlePrefix = (
   raw: string,
   rules: Record<string, LabelRule>,
 ): { title: string; rule?: LabelRule; label?: string } => {
   const title = raw.trim();
-  const prefix = title.match(/^([^:]+):\s*(.+)$/);
+  // "Ennakkonäytös: Pikkuli", or an exclamation mark: "ERIKOISNÄYTÖS! Lapin sota" (Sun Kino).
+  const prefix = title.match(/^([^:]+):\s*(.+)$/) ?? title.match(/^([^:!]+)!\s+(.+)$/);
   const prefixRule = prefix ? ruleFor(rules, prefix[1]!.trim()) : undefined;
   if (prefix && prefixRule) {
     return { title: prefix[2]!.trim(), rule: prefixRule, label: prefix[1]!.trim() };
@@ -210,6 +214,13 @@ export const splitTitlePrefix = (
   const suffixRule = suffix ? ruleFor(rules, suffix[2]!.trim()) : undefined;
   if (suffix && suffixRule) {
     return { title: suffix[1]!.trim(), rule: suffixRule, label: suffix[2]!.trim() };
+  }
+  // A capitalised word at the end, no separator: "Tonttu ILMAISNÄYTÖS" (Ihmekompleksi). Only
+  // the rule tables, as below.
+  const caps = title.match(/^(.*\S)\s+([A-ZÅÄÖ][A-ZÅÄÖ-]{3,})!?$/);
+  const capsRule = caps ? findLabel(caps[2]!, rules) : undefined;
+  if (caps && capsRule) {
+    return { title: caps[1]!.trim(), rule: capsRule, label: caps[2]! };
   }
   // The whole title is a label: "Knitting Cinema!" (Ritz, the film announced later). Only the
   // rule tables: a film named like a registered series keeps its title.
@@ -274,7 +285,7 @@ export type Version = {
 const VERSIONS: [RegExp, Version][] = [
   [
     // "DUP." is a typo seen in the wild for DUB.
-    /^(?:dub|dup|dubattu|suomeksi|suomeksi puhuttu|puhuttu suomeksi|puhumme suomea!?)\.?$/i,
+    /^(?:dub|dup|dubattu|suomeksi|suomeksi puhuttu|puhuttu suomeksi|puhu(?:mme|taan) suomea!?)\.?$/i,
     { dubbed: true, audio: "fi" },
   ],
   [/^(?:på svenska|ruotsiksi)$/i, { dubbed: true, audio: "sv" }],
