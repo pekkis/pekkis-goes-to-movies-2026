@@ -180,6 +180,7 @@ describe("the shared label table", () => {
   it.each([
     ["KIIREHDI", { availability: "few-left" }],
     ["Loppuunmyyty", { availability: "sold-out" }],
+    ["Loppuunvarattu", { availability: "sold-out" }],
     ["viimeinen esitys!", { tags: ["last-screening"] }],
     ["Puhuttu suomeksi", { audio: "fi", dubbed: true }],
     ["Ei tekstitystä", { subtitles: "none" }],

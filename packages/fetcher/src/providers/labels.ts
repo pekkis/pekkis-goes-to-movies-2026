@@ -92,6 +92,8 @@ export const LABELS: Record<string, LabelRule> = {
   Kiirehdi: { availability: "few-left" },
   "Viimeiset liput": { availability: "few-left" },
   Loppuunmyyty: { availability: "sold-out" },
+  // "Fully booked": Cinema Niagara's eTiketti tag (2026-10-27).
+  Loppuunvarattu: { availability: "sold-out" },
   // Language
   "Puhuttu suomeksi": { audio: "fi", dubbed: true },
   "Puhuttu ruotsiksi": { audio: "sv", dubbed: true },
