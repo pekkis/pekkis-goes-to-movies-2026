@@ -739,16 +739,18 @@ Probed 2026-10-15, two GETs. Adapter: `packages/fetcher/src/providers/mycalendar
 
 ## Navettakino (Konnevesi)
 
-Probed 2026-10-15, one GET. Adapter: `packages/fetcher/src/providers/navetta/`. Origin: Leffavuoro's `scripts/providers/navetta.py`, re-verified.
+Probed 2026-10-15, one GET; the site was rebuilt by 2026-11-01 and the adapter rewritten that day. Adapter: `packages/fetcher/src/providers/navetta/`. Origin: Leffavuoro's `scripts/providers/navetta.py`, for the earlier WordPress page.
 
-- **The front page is prose** (WordPress blocks) **[V]**. After the "Tulevan viikonlopun näytökset" paragraph:
-  - screening lines, either "Pirjo i Sverige la 17.10 klo 15:00" (title on the line) or a title line then "la 17.10 klo 15:00";
-  - film blocks: a title paragraph, a figure (the poster, not read), the cinema's synopsis (not read), and a facts line "S, 88 min, liput 10 €" / "Kesto 1 h 27 min, K12, liput 10 €".
-- **Each block's facts** attach to its title (the paragraph before its figure). A screening may be listed twice (in the list and in its block); film plus start minute makes it one.
-- **No year** in the dates: inferred and checked against the weekday. The editor sometimes splits a title's markup ("Presidentin kyydity</strong>s"); the text is read, not the markup.
-- **Weekends only, tickets at the door.**
+- **The front page is the cinema's own PHP site** (W3.CSS) since 2026-11 **[V]**. One `div.w3-card` per film:
+  - the title in an `h2`;
+  - a facts line, "K16, kesto 158 min, liput 11 €" (also read: "Kesto 1 h 27 min");
+  - under the `h4` "Näytökset", one paragraph per screening, "su 01.11 klo 17:00 - Varaa", linking its reservation page (`varaa.php?id=…`), copied into `ticketUrl` and never requested.
+- **The box above the cards** ("Seuraavat näytökset", "Tänään Lapin sota klo 17:00") repeats the cards without dates and is not read. "Tuleva ohjelmisto" (`tulevaa.php`) lists coming titles by month, without dates, and is not read either.
+- **No year** in the dates: inferred and checked against the weekday. No cards at all is an `invalid-response` warning, so ingest infers no removals.
+- **Weekends only; seats are reserved online** (booking `reserve`).
+- **Until 2026-10-31:** a WordPress page of prose under "Tulevan viikonlopun näytökset"; the afternoon pull of 2026-11-01 found the new site and warned.
 - **Coordinates:** the cinema's contact page gives the visiting address, Pyhälahdentie 972, 44370 Konnevesi, and GPS N 62° 48.330′, E 26° 5.232′ (`geoSource: manual`); it is not in OSM.
-- **First run:** 1 film (matched), 1 screening, no warnings.
+- **First run (new site):** 1 film, 1 screening, no warnings.
 
 ---
 

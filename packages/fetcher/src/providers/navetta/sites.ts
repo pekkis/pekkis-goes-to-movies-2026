@@ -3,15 +3,13 @@ import { LabelRule } from "../labels.ts";
 import { defineSites, SiteBase, SiteVenue } from "../sites.ts";
 
 /**
- * Navettakino's front page (WordPress blocks, prose): after "Tulevan viikonlopun
- * näytökset", screening lines ("Pirjo i Sverige la 17.10 klo 15:00", or a title line then
- * the date) and film blocks whose facts line reads "Kesto 1 h 27 min, K12, liput 10 €".
- * Weekends only, tickets at the door. Mapped by Leffavuoro (Shady-Dev/kino,
- * scripts/providers/navetta.py, AGPL-3.0); re-verified 2026-10-15.
+ * Navettakino's front page (its own PHP site since 2026-11, W3.CSS): one card per film, a
+ * title, a facts line ("K16, kesto 158 min, liput 11 €") and its screenings under
+ * "Näytökset" ("su 01.11 klo 17:00 - Varaa", each linking its reservation page).
+ * Weekends only. First mapped by Leffavuoro (Shady-Dev/kino, scripts/providers/navetta.py,
+ * AGPL-3.0) for the earlier WordPress page; rewritten 2026-11-01.
  */
 export const NavettaSite = SiteBase.extend({
-  /** The paragraph that opens the screenings. */
-  heading: z.string().min(1),
   venues: z.array(SiteVenue).length(1),
   /** Site-specific "Prefix: Title" rules, merged over COMMON_TITLE_PREFIXES. */
   titlePrefixes: z.record(z.string(), LabelRule).optional(),
@@ -23,8 +21,7 @@ export const NAVETTA_SITES: NavettaSite[] = defineSites(NavettaSite, [
     provider: "navettakino",
     name: "Navettakino",
     homepage: "https://www.navettakino.fi",
-    heading: "Tulevan viikonlopun näytökset",
-    verifiedAt: "2026-10-15",
+    verifiedAt: "2026-11-01",
     notes:
       "A cinema in a cowshed in Pyhälahti. Visiting address and GPS (N 62° 48.330′, E 26° 5.232′) from the cinema's contact page, 2026-10-15; not in OSM.",
     venues: [

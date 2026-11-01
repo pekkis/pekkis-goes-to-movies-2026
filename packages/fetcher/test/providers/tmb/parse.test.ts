@@ -67,8 +67,12 @@ describe("parseTmb: Kino-Toijala", () => {
     expect(listing("847").rating).toBe("S");
     expect(listing("867").rating).toBe("K-7");
     expect(listing("846").rating).toBe("K-16");
-    expect(listing("878").rating).toBeUndefined();
-    expect(byFilm(batch, "878")[0]!.unmappedLabels).toEqual(["ikaraja:5"]);
+    expect(listing("878").rating).toBe("K-18");
+    expect(byFilm(batch, "878")[0]!.unmappedLabels).toEqual([]);
+    const unknown = html("toijala-lista.html").replace("ikaraja_5.png", "ikaraja_9.png");
+    const result = parseTmb(snapshot("toijala-lista.html", { html: unknown }), site("kinotoijala"));
+    expect(result.listings.find((l) => l.sourceId === "878")?.rating).toBeUndefined();
+    expect(byFilm(result, "878")[0]!.unmappedLabels).toEqual(["ikaraja:9"]);
   });
 
   it("keeps only rows inside the window", () => {

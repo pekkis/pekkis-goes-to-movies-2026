@@ -22,7 +22,14 @@ import type { TmbSite } from "./sites.ts";
  * Sverige" S at 13 cinemas, "Pikkuli ja Tähtipeura" S at 6). `_0` is titled "Ikärajaa ei
  * ole määritetty" (no rating set). Anything else is reported, not guessed.
  */
-const RATINGS: Record<string, FinnishRating> = { "1": "S", "2": "K-7", "3": "K-12", "4": "K-16" };
+// The image's number; 5 is K-18 (seen on Kino-Toijala, 2026-11-01).
+const RATINGS: Record<string, FinnishRating> = {
+  "1": "S",
+  "2": "K-7",
+  "3": "K-12",
+  "4": "K-16",
+  "5": "K-18",
+};
 const UNRATED = "0";
 
 const WEEKDAYS = ["MA", "TI", "KE", "TO", "PE", "LA", "SU"];

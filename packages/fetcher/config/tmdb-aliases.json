@@ -703,5 +703,20 @@
     "tmdb": 191294,
     "title": "VI ÄR BÄST! (Me ollaan parhaita!)",
     "note": "Lukas Moodysson's Vi är bäst! (2013), 102 min on both; the Finnish title in parentheses after the Swedish one (2026-10-31). Oulun Elokuvakeskus's IMDb link (tt2364975) gives the same film."
+  },
+  "sunkino:film:321": {
+    "tmdb": 1450460,
+    "title": "ERIKOISNÄYTÖS! Lapin sota",
+    "note": "A special screening of Lapin sota (2026), TMDB 1450460 as elsewhere; Sun Kino gives 188 min against the film's 158 (the special adds a programme), so runtime cannot match (2026-11-01)."
+  },
+  "korjaamo:film:5242": {
+    "tmdb": 716855,
+    "title": "Sokea Mies Joka Ei Halunnut Nähdä Titanicia",
+    "note": "Teemu Nikki's film (2021), 82 min and K-12 on both; Korjaamo's Tekijätorstai screening gives the year of the screening, 2026 (2026-11-01)."
+  },
+  "kuvakukko:film:wicker-intohimosta-punottu": {
+    "tmdb": 1195803,
+    "title": "Wicker – intohimosta punottu",
+    "note": "Wicker (2026, Eleanor Wilson and Alex Huston Fischer): Kuvakukko lists it as the Hopeatähdet festival's opening screening on 3.11., ten days before TMDB's Finnish premiere of 1195803 (13.11., K-12); no other 2026 film is called Wicker. The Finnish subtitle is not in TMDB (2026-11-01)."
   }
 }
