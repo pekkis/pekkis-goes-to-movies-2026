@@ -47,6 +47,13 @@ export const LABELS: Record<string, LabelRule> = {
   Ennakkonäytökset: { tags: ["preview"] },
   Ennakko: { tags: ["preview"] },
   "Ensi-ilta": { tags: ["premiere"] },
+  // An extra screening added to the run (Savon Kinot, 2026-11-03).
+  Lisänäytös: {},
+  // A screening with an intermission ("Lapin sota: VÄLIAIKA!", "(väliajalla)"), 2026-11-03.
+  Väliaika: {},
+  Väliajalla: {},
+  // A daytime screening with coffee (Kino-Kuva, 2026-11-02); no audience stated.
+  "Leffa-kaffinäytös": {},
   "Suomen ensi-ilta": { tags: ["premiere"] },
   "Viimeinen näytös": { tags: ["last-screening"] },
   "Viimeinen esitys": { tags: ["last-screening"] },
@@ -102,6 +109,8 @@ export const LABELS: Record<string, LabelRule> = {
   "Ei tekstitystä": { subtitles: "none" },
   // Kino Pirtti (2026-10-26).
   "Englanninkielinen tekstitys": { subtitles: "en" },
+  // Bio Pallas (2026-11-02).
+  "Tekstitys vain englanniksi": { subtitles: "en" },
   "Ei puhetta": { audio: "zxx", tags: ["no-dialogue"] },
   "Ei dialogia": { audio: "zxx", tags: ["no-dialogue"] },
   // Accessibility: subtitles describing sound too, for the hard of hearing
@@ -196,7 +205,7 @@ export const ruleFor = (rules: Record<string, LabelRule>, label: string): LabelR
  * "Ennakkonäytös: Pikkuli" -> { title: "Pikkuli", rule } when the prefix has a rule.
  * Only listed prefixes are touched: "Ryhmä Hau: Dinoelokuva" is a title, not a label.
  * The same labels at the end: "Pirjo i Sverige – Vauvakino", "Pikkuli (Ennakkonäytös!)",
- * "Tonttu ILMAISNÄYTÖS".
+ * "Tonttu ILMAISNÄYTÖS", "Lapin sota: VÄLIAIKA!".
  */
 export const splitTitlePrefix = (
   raw: string,
@@ -214,6 +223,13 @@ export const splitTitlePrefix = (
   const suffixRule = suffix ? ruleFor(rules, suffix[2]!.trim()) : undefined;
   if (suffix && suffixRule) {
     return { title: suffix[1]!.trim(), rule: suffixRule, label: suffix[2]!.trim() };
+  }
+  // A label after a colon at the end: "Lapin sota: VÄLIAIKA!" (Sun Kino). Only the rule
+  // tables, as below: "Ryhmä Hau: Dinoelokuva" keeps its title.
+  const after = title.match(/^(.+):\s*([^:]+?)!?$/);
+  const afterRule = after ? findLabel(after[2]!, rules) : undefined;
+  if (after && afterRule) {
+    return { title: after[1]!.trim(), rule: afterRule, label: after[2]! };
   }
   // A capitalised word at the end, no separator: "Tonttu ILMAISNÄYTÖS" (Ihmekompleksi). Only
   // the rule tables, as below.

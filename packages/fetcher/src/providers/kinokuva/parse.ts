@@ -9,16 +9,28 @@ import {
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
-import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
+import {
+  COMMON_TITLE_PREFIXES,
+  findLabel,
+  labelEffects,
+  splitTitlePrefix,
+  splitVersion,
+} from "../labels.ts";
 import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { KinoKuvaRawSnapshot } from "./fetch.ts";
 import type { KinoKuvaSite } from "./sites.ts";
 
 const WEEKDAYS = ["MA", "TI", "KE", "TO", "PE", "LA", "SU"];
-/** "KE 14.10. KLO 19.00", "TO 15.10. KLO 14.00 JA KLO 17.00". */
-const ROW = /^(MA|TI|KE|TO|PE|LA|SU)\s+(\d{1,2})\.(\d{1,2})\.?\s+KLO\s+(.+)$/i;
-const ROWISH = /^(MA|TI|KE|TO|PE|LA|SU)\s+\d/i;
+/**
+ * "KE 14.10. KLO 19.00", "TO 15.10. KLO 14.00 JA KLO 17.00", with a label before the day or
+ * after the times: "ENSI-ILTA PE 6.11. KLO 17.30", "KE 11.11. KLO 13.00 leffa-kaffinäytös!".
+ */
+const ROW = /^(?:(.+?)\s+)?(MA|TI|KE|TO|PE|LA|SU)\s+(\d{1,2})\.(\d{1,2})\.?\s+KLO\s+(.+)$/i;
+const ROWISH =
+  /^(MA|TI|KE|TO|PE|LA|SU)\s+\d|\b(MA|TI|KE|TO|PE|LA|SU)\s+\d{1,2}\.\d{1,2}\.?\s+KLO\b/i;
+/** The times, then any note: "14.00 JA KLO 17.00", "13.00 leffa-kaffinäytös!". */
+const TIMES = /^(\d{1,2}[.:]\d{2}(?:\s*(?:,|\bJA\b)\s*(?:KLO\s*)?\d{1,2}[.:]\d{2})*)\s*(.*)$/i;
 const TIME = /^(\d{1,2})[.:](\d{2})$/;
 /** "Kesto: 1 h 52 min -K12-", "Kesto: 1 h 03 min -S-". */
 const DURATION = /Kesto:\s*(\d+)\s*h\s*(\d+)\s*min/i;
@@ -95,22 +107,33 @@ export const parseKinoKuva = (raw: KinoKuvaRawSnapshot, site: KinoKuvaSite): Pro
 
     for (const line of lines.filter((l) => ROWISH.test(l))) {
       const m = line.match(ROW);
-      const date = m ? nearestDate(Number(m[2]), Number(m[3]), raw.from) : undefined;
+      const date = m ? nearestDate(Number(m[3]), Number(m[4]), raw.from) : undefined;
       const fits =
-        date && WEEKDAYS[Temporal.PlainDate.from(date).dayOfWeek - 1] === m![1]!.toUpperCase();
-      if (!m || !date || !fits || !rawTitle) {
+        date && WEEKDAYS[Temporal.PlainDate.from(date).dayOfWeek - 1] === m![2]!.toUpperCase();
+      const times = m?.[5]!.match(TIMES);
+      if (!m || !date || !fits || !times || !rawTitle) {
         unreadable += 1;
         continue;
       }
+      // The row's own labels, before the day and after the times, through the label table.
+      const notes = [m[1], times[2]].map((n) => n?.trim().replace(/!+$/, "")).filter(Boolean);
+      const rowRules = notes.map((n) => findLabel(n!, prefixRules));
+      const rowEffects = labelEffects(rowRules);
+      const rowTags = [...new Set([...tags, ...rowEffects.tags])];
+      const rowSeries = [...new Set([...series, ...rowEffects.series])];
+      const rowUnmapped = [
+        ...unmapped,
+        ...notes.filter((_, i) => !rowRules[i]).map((n) => `note:${n}`),
+      ];
       // "14.00 JA KLO 17.00": several screenings on one day.
-      for (const t of m[4]!.split(/\s*(?:,|\bJA\b)\s*(?:KLO\s*)?/i)) {
+      for (const t of times[1]!.split(/\s*(?:,|\bJA\b)\s*(?:KLO\s*)?/i)) {
         const tm = t.trim().match(TIME);
         const start =
           tm &&
           helsinkiShowTime({
             year: Number(date.slice(0, 4)),
-            month: Number(m[3]),
-            day: Number(m[2]),
+            month: Number(m[4]),
+            day: Number(m[3]),
             hour: Number(tm[1]),
             minute: Number(tm[2]),
           });
@@ -152,13 +175,13 @@ export const parseKinoKuva = (raw: KinoKuvaRawSnapshot, site: KinoKuvaSite): Pro
           audio: version.audio ? [version.audio] : [],
           ...(version.dubbed !== undefined && { dubbed: version.dubbed }),
           subtitles,
-          tags,
-          series,
+          tags: rowTags,
+          series: rowSeries,
           availability: "unknown",
           ...(price !== undefined && { price: { amountCents: price, currency: "EUR" as const } }),
           // Tickets at the door: the programme page.
           ticketUrl: `${site.homepage}/`,
-          unmappedLabels: unmapped,
+          unmappedLabels: rowUnmapped,
           fetchedAt: raw.fetchedAt,
         });
       }

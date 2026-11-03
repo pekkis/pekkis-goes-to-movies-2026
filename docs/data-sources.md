@@ -746,7 +746,7 @@ Probed 2026-10-15, one GET; the site was rebuilt by 2026-11-01 and the adapter r
   - a facts line, "K16, kesto 158 min, liput 11 €" (also read: "Kesto 1 h 27 min");
   - under the `h4` "Näytökset", one paragraph per screening, "su 01.11 klo 17:00 - Varaa", linking its reservation page (`varaa.php?id=…`), copied into `ticketUrl` and never requested.
 - **The box above the cards** ("Seuraavat näytökset", "Tänään Lapin sota klo 17:00") repeats the cards without dates and is not read. "Tuleva ohjelmisto" (`tulevaa.php`) lists coming titles by month, without dates, and is not read either.
-- **No year** in the dates: inferred and checked against the weekday. No cards at all is an `invalid-response` warning, so ingest infers no removals.
+- **No year** in the dates: inferred and checked against the weekday. A week without screenings keeps the "Seuraavat näytökset" heading over a note ("Esitysajat ilmestyvät tälle sivulle aina alkuviikosta…") and has no cards: an empty batch, no warning (ingest still infers no removals from an empty batch). Neither heading nor cards is an `invalid-response` warning.
 - **Weekends only; seats are reserved online** (booking `reserve`).
 - **Until 2026-10-31:** a WordPress page of prose under "Tulevan viikonlopun näytökset"; the afternoon pull of 2026-11-01 found the new site and warned.
 - **Coordinates:** the cinema's contact page gives the visiting address, Pyhälahdentie 972, 44370 Konnevesi, and GPS N 62° 48.330′, E 26° 5.232′ (`geoSource: manual`); it is not in OSM.

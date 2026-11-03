@@ -87,6 +87,20 @@ describe("parseGilda", () => {
     expect(result.listings.find((l) => l.id === show.listingId)?.kind).toBe("event");
   });
 
+  it('reads several language codes in one field: "fi en" (2026-11-02)', () => {
+    const movies = JSON.parse(JSON.stringify(loadFixture("gilda", "movies.json"))) as {
+      fi: { data: { show_times: { show_time_id: number; audio_lang?: string }[] }[] };
+    };
+    for (const t of movies.fi.data.flatMap((m) => m.show_times)) {
+      if (t.show_time_id === 303234) {
+        t.audio_lang = "fi en";
+      }
+    }
+    const show = screening(parseGilda(snapshot({ movies }), SITE), "303234");
+    expect(show.audio).toEqual(["fi", "en"]);
+    expect(show.unmappedLabels).toEqual([]);
+  });
+
   it('reads "-" as no subtitles only when the style says so', () => {
     expect(screening(batch, "303234").subtitles).toEqual({ kind: "none" });
     expect(screening(batch, "303560").subtitles).toEqual({ kind: "unknown" });

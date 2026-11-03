@@ -308,6 +308,8 @@ export const ETIKETTI_SITES: EtikettiSite[] = defineSites(EtikettiSite, [
     homepage: "https://kinojuha.fi",
     verifiedAt: V,
     notes: "Two places on one listing: the main hall and the VIP-Sali, each its own venue.",
+    // A daytime screening; the price is the ticket's own, read elsewhere (2026-11-03).
+    tags: { "Päivänäytös 12€": {} },
     venues: [
       {
         slug: "kino-juha",
