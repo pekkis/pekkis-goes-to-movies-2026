@@ -65,7 +65,16 @@ describe("parseNavetta", () => {
     expect(isIncomplete(result)).toBe(true);
   });
 
-  it("warns when the page has no film cards", () => {
+  it("reads a week without screenings as empty, without a warning (2026-11-03)", () => {
+    const html =
+      "<html><body><div class='w3-container w3-auto'><h2>Seuraavat näytökset</h2>" +
+      "<p>Esitysajat ilmestyvät tälle sivulle aina alkuviikosta.</p></div></body></html>";
+    const result = parseNavetta(snapshot({ html }), SITE);
+    expect(result.screenings).toEqual([]);
+    expect(result.warnings).toEqual([]);
+  });
+
+  it("warns when the page has neither the heading nor film cards", () => {
     const result = parseNavetta(snapshot({ html: "<html><body></body></html>" }), SITE);
     expect(result.warnings.map((w) => w.code)).toEqual(["invalid-response"]);
   });

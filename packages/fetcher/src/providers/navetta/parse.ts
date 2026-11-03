@@ -56,7 +56,11 @@ export const parseNavetta = (raw: NavettaRawSnapshot, site: NavettaSite): Provid
 
   const $ = load(raw.html);
   const cards = $("div.w3-card").toArray();
-  if (cards.length === 0) {
+  // A week without screenings keeps the heading over a note and shows no cards (2026-11-03).
+  const heading = $("h2")
+    .toArray()
+    .some((h) => /^seuraavat näytökset$/i.test(plainText($(h).text())));
+  if (cards.length === 0 && !heading) {
     warnings.push({ code: "invalid-response", message: "No film cards on the page" });
   }
   let unreadable = 0;

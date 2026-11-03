@@ -12,7 +12,7 @@ import {
   type Warning,
 } from "@pgtm/model";
 import { dateWindow, helsinkiShowTimeAt } from "@pgtm/model/time";
-import { normalizeLang } from "../../lib/lang.ts";
+import { normalizeLangs } from "../../lib/lang.ts";
 import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
 import { parseScreenName, parseSubtitles } from "../mycloudcinema/parse.ts";
 import { byStartThenId, finnishRating, tally } from "../parsing.ts";
@@ -138,7 +138,12 @@ export const parseGilda = (raw: GildaRawSnapshot, site: GildaSite): ProviderBatc
         EVENT_STYLES.has(style) || ANNIVERSARY.test(s.movie_name) || (prefix?.event ?? false);
 
       const rawAudio = s.audio_lang?.trim() ?? "";
-      const audio: Lang | undefined = rawAudio ? normalizeLang(rawAudio) : undefined;
+      // One language, or several codes: "fi en" (2026-11-02).
+      const audio: Lang[] | undefined = !rawAudio
+        ? undefined
+        : /^[a-z]{2}(?:\s+[a-z]{2})+$/i.test(rawAudio)
+          ? normalizeLangs(rawAudio.split(/\s+/).join(","))
+          : normalizeLangs(rawAudio);
       if (rawAudio && !audio && rawAudio !== "MULTI") {
         unmapped.push(`audio_lang:${rawAudio}`);
       }
@@ -218,7 +223,7 @@ export const parseGilda = (raw: GildaRawSnapshot, site: GildaSite): ProviderBatc
           dimension: isSet(s.version_3d) ? "3d" : (version.dimension ?? "2d"),
           formats: [...formats],
         },
-        audio: version.audio ? [version.audio] : audio ? [audio] : [],
+        audio: version.audio ? [version.audio] : (audio ?? []),
         ...(style === "dubattu" && { dubbed: true }),
         ...((style === "tekstitetty" || style === "ei tekstitystä") && { dubbed: false }),
         subtitles,

@@ -91,6 +91,17 @@ describe("splitTitlePrefix", () => {
     });
   });
 
+  it("takes a known label after a colon at the end (Sun Kino, 2026-11-03)", () => {
+    expect(splitTitlePrefix("Lapin sota: VÄLIAIKA!", COMMON_TITLE_PREFIXES)).toEqual({
+      title: "Lapin sota",
+      rule: {},
+      label: "VÄLIAIKA",
+    });
+    expect(splitTitlePrefix("Spider-Man: Brand New Day", COMMON_TITLE_PREFIXES)).toEqual({
+      title: "Spider-Man: Brand New Day",
+    });
+  });
+
   it("takes a known capitalised label off the end (Ihmekompleksi, 2026-11-01)", () => {
     expect(
       splitTitlePrefix("Tonttu - puhutaan suomea ILMAISNÄYTÖS", COMMON_TITLE_PREFIXES),

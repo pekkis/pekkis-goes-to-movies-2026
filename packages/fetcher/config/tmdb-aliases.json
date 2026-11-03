@@ -718,5 +718,65 @@
     "tmdb": 1195803,
     "title": "Wicker – intohimosta punottu",
     "note": "Wicker (2026, Eleanor Wilson and Alex Huston Fischer): Kuvakukko lists it as the Hopeatähdet festival's opening screening on 3.11., ten days before TMDB's Finnish premiere of 1195803 (13.11., K-12); no other 2026 film is called Wicker. The Finnish subtitle is not in TMDB (2026-11-01)."
+  },
+  "kinoelo:film:883": {
+    "tmdb": 1781923,
+    "title": "Pikku Kummitus Lapanen keppostelee",
+    "note": "Lilla spöket Laban busar vidare (2026), as kinovisio and Kaarre; TMDB has no Finnish title and TMB gives no runtime, rating S (2026-11-03)."
+  },
+  "kinomania:film:883": {
+    "tmdb": 1781923,
+    "title": "Pikku Kummitus Lapanen keppostelee",
+    "note": "Lilla spöket Laban busar vidare (2026), as kinovisio and Kaarre; TMDB has no Finnish title and TMB gives no runtime, rating S (2026-11-03)."
+  },
+  "kinosampo:film:883": {
+    "tmdb": 1781923,
+    "title": "Pikku Kummitus Lapanen keppostelee",
+    "note": "Lilla spöket Laban busar vidare (2026), as kinovisio and Kaarre; TMDB has no Finnish title and TMB gives no runtime, rating S (2026-11-03)."
+  },
+  "kinotoijala:film:883": {
+    "tmdb": 1781923,
+    "title": "Pikku Kummitus Lapanen keppostelee",
+    "note": "Lilla spöket Laban busar vidare (2026), as kinovisio and Kaarre; TMDB has no Finnish title and TMB gives no runtime, rating S (2026-11-03)."
+  },
+  "kinojalasjarvi:film:late-lammas-elokuva-hamarapuuhissa": {
+    "tmdb": 1477104,
+    "title": "Late Lammas -elokuva: Hämäräpuuhissa",
+    "note": "Shaun the Sheep: The Beast of Mossy Bottom (2026), as elsewhere; K-7 as TMDB's Finnish release, no runtime given (2026-11-03)."
+  },
+  "sunkino:film:371": {
+    "tmdb": 1450460,
+    "title": "Lapin sota: VÄLIAIKA!",
+    "note": "Lapin sota (2026) with an intermission: 173 min against the film's 158 (2026-11-03)."
+  },
+  "finnkino:film:HO00000691": {
+    "tmdb": 1450460,
+    "title": "Lapin sota (väliajalla)",
+    "note": "Lapin sota (2026) with an intermission: 173 min against the film's 158 (2026-11-03)."
+  },
+  "finnkino:film:HO00000600": {
+    "tmdb": 627,
+    "title": "Trainspotting",
+    "note": "Danny Boyle's Trainspotting (1996), shown again: 93 vs 94 min, K-16 as its Finnish release (2026-11-03)."
+  },
+  "cinemaniagara:film:96": {
+    "tmdb": 42229,
+    "title": "Kohtaaminen Roomassa",
+    "note": "Ettore Scola's Una giornata particolare (1977), TMDB's Finnish title exactly; 103 vs 106 min (2026-11-03)."
+  },
+  "kuvakukko:film:hiroshima-rakastettuni": {
+    "tmdb": 5544,
+    "title": "Hiroshima – rakastettuni",
+    "note": "Alain Resnais's Hiroshima mon amour (1959), TMDB's Finnish title \"Hiroshima, rakastettuni\" (2026-11-03)."
+  },
+  "kuvakukko:film:me-olemme-pariisin-orkesteri": {
+    "tmdb": 1459622,
+    "title": "Me olemme Pariisin orkesteri",
+    "note": "Nous, l'Orchestre (2026, Philippe Béziat), the documentary on the Orchestre de Paris: TMDB's Finnish release is 6.11.2026, the week these screenings start; no other film fits (2026-11-03)."
+  },
+  "kinovisio:film:me-olemme-pariisin-orkesteri": {
+    "tmdb": 1459622,
+    "title": "Me olemme Pariisin orkesteri",
+    "note": "Nous, l'Orchestre (2026, Philippe Béziat), the documentary on the Orchestre de Paris: TMDB's Finnish release is 6.11.2026, the week these screenings start; no other film fits (2026-11-03)."
   }
 }

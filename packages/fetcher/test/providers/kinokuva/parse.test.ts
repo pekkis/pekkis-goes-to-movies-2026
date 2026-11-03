@@ -59,6 +59,20 @@ describe("parseKinoKuva", () => {
     });
   });
 
+  it("reads a label before the day and a note after the time (2026-11-02)", () => {
+    const labelled = HTML.replace("KE 14.10. KLO 19.00", "ENSI-ILTA KE 14.10. KLO 19.00")
+      .replace("LA 17.10. KLO 16.00", "LA 17.10. KLO 16.00 leffa-kaffinäytös!")
+      .replace("TI 20.10. KLO 19.00", "TI 20.10. KLO 19.00 juhlanäytös");
+    const result = parseKinoKuva(snapshot({ html: labelled }), SITE);
+    expect(result.warnings).toEqual([]);
+    const kerro = result.screenings.filter((s) => s.listingId.endsWith(":film:kerro-kaikille"));
+    expect(kerro.map((s) => [s.startsAt, s.tags, s.unmappedLabels])).toEqual([
+      ["2026-10-14T19:00:00+03:00", ["premiere"], []],
+      ["2026-10-17T16:00:00+03:00", [], []],
+      ["2026-10-20T19:00:00+03:00", [], ["note:juhlanäytös"]],
+    ]);
+  });
+
   it("warns about a row whose weekday fits no date", () => {
     const broken = HTML.replace("KE 14.10. KLO 19.00", "MA 14.10. KLO 19.00");
     const result = parseKinoKuva(snapshot({ html: broken }), SITE);
