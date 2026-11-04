@@ -47,6 +47,10 @@ export const LABELS: Record<string, LabelRule> = {
   Ennakkonäytökset: { tags: ["preview"] },
   Ennakko: { tags: ["preview"] },
   "Ensi-ilta": { tags: ["premiere"] },
+  // A discussion after the film (Kino Iiris, Kino Aurora, 2026-11-04): who leads it is not
+  // stated, so not "guest"; the label itself is kept.
+  Keskustelu: {},
+  Keskustelutilaisuus: {},
   // An extra screening added to the run (Savon Kinot, 2026-11-03).
   Lisänäytös: {},
   // A screening with an intermission ("Lapin sota: VÄLIAIKA!", "(väliajalla)"), 2026-11-03.
