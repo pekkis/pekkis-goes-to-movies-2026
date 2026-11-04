@@ -4,4 +4,4 @@ export const labelKey = (label: string): string =>
     .normalize("NFC")
     .toLowerCase()
     .replace(/[\s ]+/g, " ")
-    .replace(/^[\s(*"'«»–-]+|[\s)!.:,*"'«»–-]+$/g, "");
+    .replace(/^[\s(*+"'«»–-]+|[\s)!.:,*"'«»–-]+$/g, "");

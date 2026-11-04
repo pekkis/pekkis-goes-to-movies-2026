@@ -20,9 +20,10 @@ const WEEKDAYS = ["ma", "ti", "ke", "to", "pe", "la", "su"];
 const HEAD = /^(.+?)\s+(-S-|K-?\d{1,2})(\s+dub\.?)?$/i;
 /** "pe 16.10. klo 15.15*": the star points to the footnote. */
 const ROW = /^(ma|ti|ke|to|pe|la|su)\s+(\d{1,2})\.(\d{1,2})\.?\s+klo\s+(\d{1,2})[.:](\d{2})(\*)?$/i;
-const ROWISH = /^(ma|ti|ke|to|pe|la|su)\s+\d/i;
-/** "*16.10. ja 21.10. tekstitys suomeksi". */
-const FOOTNOTE_FI = /^\*.*tekstitys suomeksi/i;
+/** A row's star ends it; a star before words is the footnote ("la 7.11. *tekstitys suomeksi)"). */
+const ROWISH = /^(ma|ti|ke|to|pe|la|su)\s+\d(?!.*\*\s*\p{L})/iu;
+/** "*16.10. ja 21.10. tekstitys suomeksi", "(11.11. on 10€ päivänäytös ja *tekstitys suomeksi,". */
+const FOOTNOTE_FI = /\*.*tekstitys suomeksi/i;
 const PREVIEW = /^Ennakkonäytös$/i;
 const DURATION = /^Kesto\s+(\d+)\s*h\s*(\d+)\s*min$/i;
 

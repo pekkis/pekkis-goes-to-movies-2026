@@ -91,6 +91,19 @@ describe("splitTitlePrefix", () => {
     });
   });
 
+  it("takes a discussion off the title without calling it a guest (2026-11-04)", () => {
+    expect(
+      splitTitlePrefix(
+        "Naiskäsityöläinen: Elämä ehjäksi kutoen (+keskustelutilaisuus)",
+        COMMON_TITLE_PREFIXES,
+      ),
+    ).toEqual({
+      title: "Naiskäsityöläinen: Elämä ehjäksi kutoen",
+      rule: {},
+      label: "+keskustelutilaisuus",
+    });
+  });
+
   it("takes a known label after a colon at the end (Sun Kino, 2026-11-03)", () => {
     expect(splitTitlePrefix("Lapin sota: VÄLIAIKA!", COMMON_TITLE_PREFIXES)).toEqual({
       title: "Lapin sota",
@@ -209,6 +222,7 @@ describe("the shared label table", () => {
     ["Ennakkonäytös!", "ennakkonäytös"],
     ["  ANNISKELUNÄYTÖS   K18 ", "anniskelunäytös k18"],
     ["(Vapaa pääsy)", "vapaa pääsy"],
+    ["+keskustelu", "keskustelu"],
   ])("labelKey(%s) = %s", (label, key) => {
     expect(labelKey(label)).toBe(key);
   });

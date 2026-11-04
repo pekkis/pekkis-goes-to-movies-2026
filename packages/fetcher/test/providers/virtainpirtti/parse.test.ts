@@ -53,6 +53,21 @@ describe("parseVirtainPirtti", () => {
     ]);
   });
 
+  it("reads a footnote broken across lines, a day in it not taken for a row (2026-11-04)", () => {
+    const footnote = HTML.replace(
+      "<strong>*</strong>16.10. ja 21.10. tekstitys suomeksi",
+      "(21.10. on 10&euro; päivänäytös ja <strong>*</strong>tekstitys suomeksi,<br />" +
+        "&#8203;pe 16.10. <strong>*</strong>tekstitys suomeksi)",
+    );
+    const result = parseVirtainPirtti(snapshot({ html: footnote }), SITE);
+    expect(result.warnings).toEqual([]);
+    expect(result.screenings).toHaveLength(11);
+    const kerro = result.listings.find((l) => l.title.fi === "Kerro kaikille")!;
+    expect(
+      result.screenings.filter((s) => s.listingId === kerro.id).map((s) => s.subtitles.kind),
+    ).toEqual(["languages", "unknown", "unknown", "languages"]);
+  });
+
   it("marks the dubbed print, the preview, and reads a row behind a zero-width space", () => {
     expect(shows("Unohdettu saari")[0]).toMatchObject({ audio: ["fi"], dubbed: true });
     expect(shows("Late Lammas-elokuva: Hämäräpuuhissa")[0]?.tags).toEqual(["preview"]);
