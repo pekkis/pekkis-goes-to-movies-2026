@@ -49,6 +49,10 @@ export const parseLanguageList = (
     if (!name) {
       continue;
     }
+    // "Useita" (several, Kino Kilta 2026-11-08): the languages are not named, audio stays unknown.
+    if (/^(?:useita|several)$/i.test(name)) {
+      continue;
+    }
     const dub = name.match(/^dubattu\s+(.+)$/i);
     if (dub) {
       dubbed = true;

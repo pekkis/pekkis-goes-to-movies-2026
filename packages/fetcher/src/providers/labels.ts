@@ -47,6 +47,13 @@ export const LABELS: Record<string, LabelRule> = {
   Ennakkonäytökset: { tags: ["preview"] },
   Ennakko: { tags: ["preview"] },
   "Ensi-ilta": { tags: ["premiere"] },
+  // Festival programme headings in titles ("NV26: Avajaiselokuva: …", 2026-11-08).
+  Avajaiselokuva: {},
+  "Finlandia-gaala": {},
+  // A genre printed as a tag (Savon Kinot); known, says nothing about the screening.
+  Dokumentti: {},
+  Tekijävieras: { tags: ["guest"] },
+  Paneelikeskustelu: {},
   // A discussion after the film (Kino Iiris, Kino Aurora, 2026-11-04): who leads it is not
   // stated, so not "guest"; the label itself is kept.
   Keskustelu: {},
@@ -228,6 +235,12 @@ export const splitTitlePrefix = (
   if (suffix && suffixRule) {
     return { title: suffix[1]!.trim(), rule: suffixRule, label: suffix[2]!.trim() };
   }
+  // A label after a plus at the end: "Metsäsota ja rauha + keskustelu" (Savon Kinot).
+  const plus = title.match(/^(.+?)\s+\+\s*([^+]+)$/);
+  const plusRule = plus ? ruleFor(rules, plus[2]!.trim()) : undefined;
+  if (plus && plusRule) {
+    return { title: plus[1]!.trim(), rule: plusRule, label: plus[2]!.trim() };
+  }
   // A label after a colon at the end: "Lapin sota: VÄLIAIKA!" (Sun Kino). Only the rule
   // tables, as below: "Ryhmä Hau: Dinoelokuva" keeps its title.
   const after = title.match(/^(.+):\s*([^:]+?)!?$/);
@@ -255,6 +268,30 @@ export const splitTitlePrefix = (
     return { title: paren[1]!.trim(), rule: parenRule, label: paren[2]!.trim() };
   }
   return { title };
+};
+
+/**
+ * splitTitlePrefix up to `depth` times, for titles with a festival and an occasion:
+ * "Rokumentti: Metsäsota ja rauha + keskustelu", "NV26: Avajaiselokuva: Sanguine" (2026-11-08).
+ */
+export const splitTitleLabels = (
+  raw: string,
+  rules: Record<string, LabelRule>,
+  depth = 2,
+): { title: string; rules: LabelRule[]; labels: string[] } => {
+  let title = raw.trim();
+  const found: LabelRule[] = [];
+  const labels: string[] = [];
+  for (let i = 0; i < depth; i += 1) {
+    const split = splitTitlePrefix(title, rules);
+    if (!split.rule) {
+      break;
+    }
+    found.push(split.rule);
+    labels.push(split.label ?? "");
+    title = split.title;
+  }
+  return { title, rules: found, labels: labels.filter(Boolean) };
 };
 
 /**
@@ -313,6 +350,8 @@ const VERSIONS: [RegExp, Version][] = [
   [/^(?:orig|original|alkuperäinen|sub|tekstitetty)$/i, { dubbed: false }],
   // A cut of the film, not a different film: strip it so TMDB matching sees the title.
   [/^(?:ohjaajan versio|director's cut|restauroitu|restored)$/i, {}],
+  // A restoration, not a different film: "Hard Boiled 4k" (Night Visions, 2026-11-08).
+  [/^4k$/i, {}],
   [/^2d$/i, { dimension: "2d" }],
   [/^3d$/i, { dimension: "3d" }],
 ];
@@ -350,7 +389,7 @@ export const splitVersion = (raw: string): { title: string; version: Version } =
   for (;;) {
     // "(DUB)", "[Eng Audio]" (Ritz), "DUB", or after a comma or dash: "Unohdettu saari, englanniksi".
     const m = title.match(
-      /^(.*?)\s*(?:\(([^()]+)\)|\[([^[\]]+)\]|\b(DU[BP]\.?|SUB|ORIG|ENG|2D|3D)|(?:,|\s[–-])\s*([^,()–-]+))$/i,
+      /^(.*?)\s*(?:\(([^()]+)\)|\[([^[\]]+)\]|\b(DU[BP]\.?|SUB|ORIG|ENG|2D|3D|4K)|(?:,|\s[–-])\s*([^,()–-]+))$/i,
     );
     const marker = m && (m[2] ?? m[3] ?? m[4] ?? m[5])?.trim();
     const hit = marker ? VERSIONS.find(([re]) => re.test(marker)) : undefined;

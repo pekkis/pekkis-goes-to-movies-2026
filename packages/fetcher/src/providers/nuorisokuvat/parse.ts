@@ -34,7 +34,8 @@ type Show = { month: number; day: number; weekday: string; hour?: number; minute
  */
 export const parseShows = (text: string): Show[] | undefined => {
   const parts = text
-    .split(/\s*(?:,|\bja\b)\s*/i)
+    // "pe 13.11. klo 18 sekä la 14.11. ja su 15.11. klo 15" (2026-11-08).
+    .split(/\s*(?:,|\bja\b|\bsekä(?=\s))\s*/i)
     .map((p) => p.trim())
     .filter(Boolean);
   const shows: Show[] = [];
@@ -153,7 +154,12 @@ export const parseNuorisokuvat = (
           minute: show.minute!,
         });
       if (!start) {
-        unreadable += 1;
+        // A show already past, left on the page ("to 8.10." in November): its date a year
+        // back fits the weekday; it is outside the window, so nothing is lost (2026-11-08).
+        const past = date && Temporal.PlainDate.from(date).subtract({ years: 1 });
+        if (!past || WEEKDAYS[past.dayOfWeek - 1] !== show.weekday || past.toString() >= raw.from) {
+          unreadable += 1;
+        }
         continue;
       }
       if (start.businessDate < window.from || start.businessDate > window.to) {

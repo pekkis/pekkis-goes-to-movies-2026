@@ -36,6 +36,15 @@ describe("parseShows", () => {
         { weekday: "to", day: 5, month: 11, hour: 18, minute: 0 },
       ],
     ],
+    // "sekä" (and) between groups (2026-11-08).
+    [
+      "pe 13.11. klo 18 sekä la 14.11. ja su 15.11. klo 15",
+      [
+        { weekday: "pe", day: 13, month: 11, hour: 18, minute: 0 },
+        { weekday: "la", day: 14, month: 11, hour: 15, minute: 0 },
+        { weekday: "su", day: 15, month: 11, hour: 15, minute: 0 },
+      ],
+    ],
     ["la 31.10. klo 20.30", [{ weekday: "la", day: 31, month: 10, hour: 20, minute: 30 }]],
     ["la 31.10.", undefined],
     ["lauantaina", undefined],
@@ -70,6 +79,14 @@ describe("parseNuorisokuvat", () => {
     const free = show("other-mommy-202610312000");
     expect(free.tags).toEqual(["free"]);
     expect(free.price).toBeUndefined();
+  });
+
+  it("skips a past show left on the page without warning (2026-11-08)", () => {
+    // 20.9.2026 is a Sunday; seen from 30.10. the date reads as next September.
+    const past = HTML.replace("la 31.10. klo 20", "su 20.9. klo 20");
+    const result = parseNuorisokuvat(snapshot({ html: past }), SITE);
+    expect(result.warnings).toEqual([]);
+    expect(result.screenings.some((s) => s.startsAt.startsWith("2026-09-20"))).toBe(false);
   });
 
   it("warns about shows it cannot read", () => {

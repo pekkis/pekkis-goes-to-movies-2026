@@ -21,6 +21,9 @@ const WEEKDAYS = ["MA", "TI", "KE", "TO", "PE", "LA", "SU"];
  */
 const GROUP =
   /(\d{1,2})\.(?:\s*-\s*(\d{1,2})\.)?\s*(\d{1,2})\.\s+((?:MA|TI|KE|TO|PE|LA|SU)(?:\s*(?:,|\bja\b)\s*(?:MA|TI|KE|TO|PE|LA|SU))*)\s+klo\s*(\d{1,2}[.:]\d{2}(?:\s*(?:,|\bja\b)\s*(?:klo\s*)?\d{1,2}[.:]\d{2})*)/gi;
+/** Two single days in one group: "13.11. ja 15.11. PE ja SU klo 18.00" (2026-11-08). */
+const TWO_DAYS =
+  /(\d{1,2}\.\d{1,2}\.)\s*(?:,|\bja\b)\s*(\d{1,2}\.\d{1,2}\.)\s+(MA|TI|KE|TO|PE|LA|SU)\s*(?:,|\bja\b)\s*(MA|TI|KE|TO|PE|LA|SU)\s+(klo\s*\d{1,2}[.:]\d{2}(?:\s*(?:,|\bja\b)\s*(?:klo\s*)?\d{1,2}[.:]\d{2})*)/gi;
 /** "Kestoaika n. 2t 35min." */
 const DURATION = /Kestoaika\s+(?:n\.\s*)?(?:(\d+)\s*t)?\s*(\d+)\s*min/i;
 /** "Liput 12€." and nothing else on the line. */
@@ -46,7 +49,11 @@ export const parseKinoHuovi = (raw: KinoHuoviRawSnapshot, site: KinoHuoviSite): 
   for (const el of cards) {
     const card = $(el);
     const rawTitle = plainText(card.find(".postTitle h3").first().text());
-    const body = plainText(card.find(".postDescription").text());
+    // Two days in one group become two groups, one weekday each.
+    const body = plainText(card.find(".postDescription").text()).replace(
+      TWO_DAYS,
+      "$1 $3 $5 $2 $4 $5",
+    );
     if (!rawTitle) {
       continue;
     }

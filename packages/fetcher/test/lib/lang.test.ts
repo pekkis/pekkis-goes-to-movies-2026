@@ -12,6 +12,8 @@ it.each([
   ["kannada", "kn"],
   ["mykkä elokuva", "zxx"],
   ["ei dialogia", "zxx"],
+  ["Faroese", "fo"],
+  ["bulgaria", "bg"],
   ["dari", "fa"],
   // The genitive (Kino Myyri, 2026-10-30).
   ["saksan", "de"],

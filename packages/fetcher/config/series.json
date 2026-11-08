@@ -149,9 +149,10 @@
     "aliases": [
       "Walhalla - Kuukauden pohjoismainen elokuva",
       "Kuukauden pohjoismainen elokuva",
-      "KPE"
+      "KPE",
+      "Nordic Film of the Month"
     ],
-    "note": "A Nordic film of the month, distributed to several cinemas. Savon Kinot abbreviates it \"KPE: …\" (Kuukauden Pohjoismainen Elokuva; the maintainer, 2026-10-28)."
+    "note": "A Nordic film of the month, distributed to several cinemas. Savon Kinot abbreviates it \"KPE: …\" (Kuukauden Pohjoismainen Elokuva; the maintainer, 2026-10-28). Ritz Vaasa writes \"Nordic Film of the Month: …\" (2026-11-08)."
   },
   "laatusarja": {
     "name": "LaatuSarja",
@@ -163,5 +164,22 @@
     "kind": "strand",
     "aliases": ["EkaKertaLeffassa-näytös", "Eka kerta leffassa"],
     "note": "\"First time at the movies\": screenings for small children (Bio Marilyn, 2026-10-20)."
+  },
+  "night-visions": {
+    "name": "Night Visions",
+    "kind": "festival",
+    "aliases": ["NV26", "NV"],
+    "note": "Helsinki's genre film festival, at Finnkino; Finnkino prefixes its titles \"NV26: …\" and tags the shows with the attribute \"NV\" (2026-11-08)."
+  },
+  "rokumentti": {
+    "name": "Rokumentti",
+    "kind": "festival",
+    "note": "The rock and music documentary festival in Joensuu, at Savon Kinot's Tapio; titles \"Rokumentti: …\" and a tag of the same name (2026-11-08)."
+  },
+  "pennittomat": {
+    "name": "Pennittömät",
+    "kind": "strand",
+    "aliases": ["elokuvakerho Pennittömät"],
+    "note": "A film club at Bio Vuoksi, Imatra, as a title suffix \"(elokuvakerho Pennittömät)\" (2026-11-08)."
   }
 }

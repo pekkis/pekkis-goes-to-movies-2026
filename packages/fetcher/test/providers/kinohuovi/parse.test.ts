@@ -71,6 +71,16 @@ describe("parseKinoHuovi", () => {
     ).toEqual(["2026-10-13T15:00:00+03:00", "2026-10-13T18:00:00+03:00"]);
   });
 
+  it('reads two single days in one group: "13.11. ja 15.11. PE ja SU" (2026-11-08)', () => {
+    const two = HTML.replace("25.10. SU klo 16.00", "24.10. ja 25.10. LA ja SU klo 16.00");
+    const result = parseKinoHuovi(snapshot({ html: two }), SITE);
+    expect(result.warnings).toEqual([]);
+    const pikkuli = result.screenings
+      .filter((s) => s.listingId.endsWith(":film:pikkuli-ja-tahtipeura"))
+      .map((s) => s.startsAt);
+    expect(pikkuli).toEqual(["2026-10-24T16:00:00+03:00", "2026-10-25T16:00:00+02:00"]);
+  });
+
   it("places nothing when a listed weekday is not in the range", () => {
     // 23.-27.10. is Friday to Tuesday: no Wednesday in it.
     const wrong = HTML.replace("PE, LA, SU, MA ja TI", "PE, LA, SU, MA ja KE");
