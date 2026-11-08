@@ -18,7 +18,7 @@ import {
   findLabel,
   LABELS,
   labelEffects,
-  splitTitlePrefix,
+  splitTitleLabels,
   splitVersion,
 } from "../labels.ts";
 import {
@@ -288,11 +288,12 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
     const unmapped: string[] = [];
 
     // Title: "Ennakkonäytös: Pikkuli (DUB)" -> "Pikkuli", preview tag, Finnish dub.
+    // Up to two labels: "Rokumentti: Hacking Hate + paneelikeskustelu" (2026-11-08).
     const {
       title: unprefixed,
-      rule: prefix,
-      label: prefixLabel,
-    } = splitTitlePrefix(f.title, prefixRules);
+      rules: titleRules,
+      labels: titleLabels,
+    } = splitTitleLabels(f.title, prefixRules);
     const { title, version } = splitVersion(unprefixed);
     const facts = f.facts;
     const languageFact = parseAudio(facts["Kieli"]);
@@ -311,7 +312,7 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
     }
 
     const listingId = makeId(P, "film", f.sourceId);
-    let isEvent = prefix?.event ?? false;
+    let isEvent = titleRules.some((r) => r.event);
     let shown = 0;
 
     for (const item of extracted.shows) {
@@ -346,7 +347,7 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
       // "Kiirehdi" with real strands).
       const rowUnmapped: string[] = [];
       const effects = labelEffects([
-        prefix,
+        ...titleRules,
         ...s.tags.map((tag) => {
           const rule = findLabel(tag, tagRules, LABELS);
           if (rule) {
@@ -364,7 +365,7 @@ export const parseEtiketti = (raw: EtikettiRawSnapshot, site: EtikettiSite): Pro
       }
       const licensed = s.licensedIcon || effects.licensed === true;
       const rowLabels: RawLabel[] = [
-        ...(prefixLabel ? [{ source: "title.prefix", text: prefixLabel }] : []),
+        ...titleLabels.map((text) => ({ source: "title.prefix", text })),
         ...s.tags.map((tag) => ({ source: "etiketti.tag", text: tag })),
       ];
 

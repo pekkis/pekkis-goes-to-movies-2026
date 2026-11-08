@@ -205,6 +205,31 @@ describe("parseFinnkino", () => {
     expect(parsed.unmappedLabels).toEqual([]);
   });
 
+  it("takes festival prefixes and a 4K marker off the title (Night Visions, 2026-11-08)", () => {
+    const raw = snapshot();
+    const response = raw.showtimes["fixture"] as {
+      showtimes: { id: string; filmId: string; attributeIds: string[] }[];
+      relatedData: {
+        attributes: unknown[];
+        films: { id: string; title: { text: string; translations?: unknown[] } }[];
+      };
+    };
+    const target = response.showtimes.find((s) => s.id === "1004-5830")!;
+    const film = response.relatedData.films.find((f) => f.id === target.filmId)!;
+    film.title = { text: "NV26: Avajaiselokuva: Hard Boiled 4k" };
+    response.relatedData.attributes.push({
+      id: "X1",
+      name: { text: "Night Visions" },
+      shortName: { text: "NV" },
+    });
+    target.attributeIds.push("X1");
+    const result = parseFinnkino(raw);
+    const parsed = show(result, "1004-5830");
+    expect(result.listings.find((l) => l.id === parsed.listingId)?.title.fi).toBe("Hard Boiled");
+    expect(parsed.series).toEqual(["NV26", "NV"]);
+    expect(parsed.unmappedLabels).toEqual([]);
+  });
+
   it("reports an attribute it does not know", () => {
     const raw = snapshot();
     const response = raw.showtimes["fixture"] as {

@@ -32,7 +32,15 @@ import {
   type Text,
 } from "./raw.ts";
 import { own } from "../../lib/records.ts";
-import { findLabel, LABELS } from "../labels.ts";
+import { findSeries } from "../../series/registry.ts";
+import {
+  COMMON_TITLE_PREFIXES,
+  findLabel,
+  LABELS,
+  splitTitleLabels,
+  splitVersion,
+  type LabelRule,
+} from "../labels.ts";
 import { byStartThenId, finnishRating } from "../parsing.ts";
 
 export const PROVIDER: Provider = {
@@ -106,15 +114,25 @@ const tagsOnly = (name: string): ScreeningTag[] | undefined => {
   return rule?.tags && Object.keys(rule).length === 1 ? rule.tags : undefined;
 };
 
+/**
+ * A title's festival or occasion prefixes, up to two deep ("NV26: Avajaiselokuva: Sanguine",
+ * 2026-11-08), and a trailing restoration marker ("Hard Boiled 4k"), taken off. Finnkino's
+ * attributes state the version, so only the title is kept from splitVersion.
+ */
+const cleanTitle = (raw: string): { title: string; rules: LabelRule[] } => {
+  const { title, rules } = splitTitleLabels(raw, COMMON_TITLE_PREFIXES);
+  return { title: splitVersion(title).title, rules };
+};
+
 const localized = (text: Text): Localized => {
   const out: Localized = {};
   if (text.text.trim()) {
-    out.fi = text.text.trim();
+    out.fi = cleanTitle(text.text).title;
   }
   for (const t of text.translations ?? []) {
     const lang = t.languageTag.slice(0, 2).toLowerCase();
     if ((lang === "en" || lang === "sv") && !out[lang] && t.text.trim()) {
-      out[lang] = t.text.trim();
+      out[lang] = cleanTitle(t.text).title;
     }
   }
   return out;
@@ -146,11 +164,17 @@ const availability = (s: RawShowtime, lookup: Lookup, fetchedAt: string): Availa
   return "available";
 };
 
-const parseScreening = (s: RawShowtime, lookup: Lookup, fetchedAt: string): Screening => {
+const parseScreening = (
+  s: RawShowtime,
+  lookup: Lookup,
+  fetchedAt: string,
+  titleRules: LabelRule[],
+): Screening => {
   const audio: Lang[] = [];
   const subtitleLangs: Lang[] = [];
   const formats: Feature[] = [];
-  const tags: ScreeningTag[] = [];
+  const tags: ScreeningTag[] = titleRules.flatMap((r) => r.tags ?? []);
+  const series: string[] = titleRules.flatMap((r) => (r.series ? [r.series] : []));
   const unmapped: string[] = [];
   let dimension: "2d" | "3d" = s.requires3dGlasses ? "3d" : "2d";
   let licensed = false;
@@ -192,6 +216,9 @@ const parseScreening = (s: RawShowtime, lookup: Lookup, fetchedAt: string): Scre
       noSubtitles = true;
     } else if (name === "SEVERAL") {
       // "Several languages": spoken languages not listed, so audio stays unknown.
+    } else if (findSeries(name)) {
+      // A festival's attribute ("NV": Night Visions, 2026-11-08).
+      series.push(name);
     } else if (!IGNORED.has(name)) {
       unmapped.push(name);
     }
@@ -224,8 +251,8 @@ const parseScreening = (s: RawShowtime, lookup: Lookup, fetchedAt: string): Scre
     subtitles,
     ...(ageLimit && { ageLimit }),
     ...(licensed && { licensed }),
-    tags,
-    series: [],
+    tags: [...new Set(tags)],
+    series: [...new Set(series)],
     availability: status,
     ...(status !== "not-bookable" && { ticketUrl: ticketUrl(s.id) }),
     unmappedLabels: unmapped,
@@ -383,7 +410,7 @@ export const parseFinnkino = (raw: FinnkinoRawSnapshot): ProviderBatch => {
       });
       continue;
     }
-    const screening = parseScreening(s, lookup, fetchedAt);
+    const screening = parseScreening(s, lookup, fetchedAt, cleanTitle(film.title.text).rules);
     screenings.set(screening.id, screening);
 
     const auditoriumId = makeId(P, "screen", s.screenId);

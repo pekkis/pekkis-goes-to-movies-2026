@@ -53,6 +53,8 @@ const FINNISH_NAMES: Record<string, Lang> = {
   hollanti: "nl",
   kreikka: "el",
   ukraina: "uk",
+  bulgaria: "bg",
+  fääri: "fo",
   saame: "se",
   saami: "se",
   pohjoissaame: "se",
@@ -97,6 +99,8 @@ const ENGLISH_NAMES: Record<string, Lang> = {
   georgian: "ka",
   yiddish: "yi",
   nepali: "ne",
+  bulgarian: "bg",
+  faroese: "fo",
 };
 
 /**

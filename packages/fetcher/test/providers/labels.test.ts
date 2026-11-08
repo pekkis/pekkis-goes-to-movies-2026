@@ -11,6 +11,7 @@ import {
   labelKey,
   LABELS,
   splitDatedLabel,
+  splitTitleLabels,
   splitTitlePrefix,
   splitVersion,
 } from "../../src/providers/labels.ts";
@@ -18,6 +19,7 @@ import {
 describe("splitVersion", () => {
   it.each([
     ["Tonttu - puhutaan suomea", "Tonttu", { dubbed: true, audio: "fi" }],
+    ["Hard Boiled 4k", "Hard Boiled", {}],
     ["Unohdettu saari (DUB)", "Unohdettu saari", { dubbed: true, audio: "fi" }],
     [
       "Shaun the Sheep: The Beast of Mossy Bottom [Eng Audio]",
@@ -69,6 +71,23 @@ describe("splitVersion", () => {
   });
 });
 
+describe("splitTitleLabels", () => {
+  it("takes a festival and an occasion off one title (Rokumentti, 2026-11-08)", () => {
+    expect(
+      splitTitleLabels("Rokumentti: Metsäsota ja rauha + keskustelu", COMMON_TITLE_PREFIXES),
+    ).toEqual({
+      title: "Metsäsota ja rauha",
+      rules: [{ series: "Rokumentti" }, {}],
+      labels: ["Rokumentti", "keskustelu"],
+    });
+    expect(splitTitleLabels("Ryhmä Hau: Dinoelokuva", COMMON_TITLE_PREFIXES)).toEqual({
+      title: "Ryhmä Hau: Dinoelokuva",
+      rules: [],
+      labels: [],
+    });
+  });
+});
+
 describe("splitTitlePrefix", () => {
   it("takes a whole title that is a label, but not a series name alone (2026-10-30)", () => {
     const rules = { "Knitting Cinema": { series: "Neulekino", event: true } };
@@ -102,6 +121,37 @@ describe("splitTitlePrefix", () => {
       rule: {},
       label: "+keskustelutilaisuus",
     });
+  });
+
+  it("takes a known label after a plus, and registered festivals as prefixes (2026-11-08)", () => {
+    expect(splitTitlePrefix("Metsäsota ja rauha + keskustelu", COMMON_TITLE_PREFIXES)).toEqual({
+      title: "Metsäsota ja rauha",
+      rule: {},
+      label: "keskustelu",
+    });
+    expect(
+      splitTitlePrefix("Punaista lunta (Red Snow) + tekijävieras", COMMON_TITLE_PREFIXES),
+    ).toEqual({
+      title: "Punaista lunta (Red Snow)",
+      rule: { tags: ["guest"] },
+      label: "tekijävieras",
+    });
+    expect(splitTitlePrefix("Rokumentti: Jawbreaker", COMMON_TITLE_PREFIXES)).toEqual({
+      title: "Jawbreaker",
+      rule: { series: "Rokumentti" },
+      label: "Rokumentti",
+    });
+    expect(
+      splitTitlePrefix("Nordic Film of the Month: Vi är bäst!", COMMON_TITLE_PREFIXES).title,
+    ).toBe("Vi är bäst!");
+    expect(
+      splitTitlePrefix("Bushido (elokuvakerho Pennittömät)", COMMON_TITLE_PREFIXES).rule,
+    ).toEqual({
+      series: "elokuvakerho Pennittömät",
+    });
+    expect(splitTitlePrefix("Sing-along + Oona Airola vieraana", COMMON_TITLE_PREFIXES).title).toBe(
+      "Sing-along + Oona Airola vieraana",
+    );
   });
 
   it("takes a known label after a colon at the end (Sun Kino, 2026-11-03)", () => {

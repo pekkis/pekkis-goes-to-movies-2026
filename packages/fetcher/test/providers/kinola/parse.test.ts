@@ -53,6 +53,12 @@ describe("field parsers", () => {
       dubbed: true,
       unknown: [],
     });
+    // "Useita": several languages, not named (Kino Kilta, 2026-11-08).
+    expect(parseLanguageList(["Useita", "englanti"])).toEqual({
+      langs: ["en"],
+      dubbed: false,
+      unknown: [],
+    });
     expect(parseLanguageList(["Taiwan", ""])).toEqual({
       langs: [],
       dubbed: false,

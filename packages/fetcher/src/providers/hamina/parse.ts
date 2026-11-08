@@ -9,7 +9,7 @@ import {
 import { dateWindow, helsinkiShowTime, nearestDate } from "@pgtm/model/time";
 import { load } from "cheerio";
 import { own } from "../../lib/records.ts";
-import { COMMON_TITLE_PREFIXES, splitTitlePrefix, splitVersion } from "../labels.ts";
+import { COMMON_TITLE_PREFIXES, ruleFor, splitTitlePrefix, splitVersion } from "../labels.ts";
 import { byStartThenId, finnishRating, plainText, slugify, toCents } from "../parsing.ts";
 import { providerOf, toVenue } from "../sites.ts";
 import type { HaminaRawSnapshot } from "./fetch.ts";
@@ -19,6 +19,8 @@ const WEEKDAYS = ["MA", "TI", "KE", "TO", "PE", "LA", "SU"];
 /** "To 22.10. Klo 15:00" (also "Su 25.10.. Klo 13:00", 2026-10-17), optionally "(Liput 8€)", "(8€)" or "| Liput 8€" for that showing. */
 const ROW =
   /^(Ma|Ti|Ke|To|Pe|La|Su)\s+(\d{1,2})\.(\d{1,2})\.{0,2}\s+Klo\s+(\d{1,2})[:.](\d{2})(?:\s*[|(]?\s*(?:Liput\s+)?(\d{1,3}(?:[.,]\d{1,2})?)\s*€\s*\)?)?$/i;
+/** A known label in place of the weekday: "Neulontanäytös 6.11. Klo 18:00" (2026-11-08). */
+const LABELLED = /^(.+?)\s+(\d{1,2})\.(\d{1,2})\.{0,2}\s+Klo\s+(\d{1,2})[:.](\d{2})$/i;
 /** "1 h 57 min", "1 t 28 min" */
 const DURATION = /^(?:(\d+)\s*[ht])?\s*(\d+)\s*min$/i;
 /** One plain amount: "11€". A range or "alkaen" settles nothing. */
@@ -87,17 +89,20 @@ export const parseHamina = (raw: HaminaRawSnapshot, site: HaminaSite): ProviderB
 
     for (const p of paragraphs.slice(1)) {
       for (const row of lines($(p).html())) {
-        if (!row) {
+        // A line without a date is prose (a screening's description, 2026-11-08), not a row.
+        if (!row || !/\d{1,2}\.\d{1,2}\./.test(row)) {
           continue;
         }
-        const m = row.match(ROW);
+        const labelled = row.match(LABELLED);
+        const rowRule = labelled ? ruleFor(prefixRules, labelled[1]!) : undefined;
+        const m = row.match(ROW) ?? (rowRule ? labelled : null);
         const date = m ? nearestDate(Number(m[2]), Number(m[3]), raw.from) : undefined;
         const weekday = date ? WEEKDAYS[Temporal.PlainDate.from(date).dayOfWeek - 1] : undefined;
         const start =
           m &&
           date &&
-          // The weekday is the only check on the year we infer.
-          weekday === m[1]!.toUpperCase() &&
+          // The weekday is the only check on the year we infer; a labelled row has none.
+          (rowRule || weekday === m[1]!.toUpperCase()) &&
           helsinkiShowTime({
             year: Number(date.slice(0, 4)),
             month: Number(m[3]),
@@ -126,7 +131,7 @@ export const parseHamina = (raw: HaminaRawSnapshot, site: HaminaSite): ProviderB
           });
         }
         // A price on the row is that showing's ("(Liput 8€)"); otherwise the film's.
-        const price = m[6] ? toCents(m[6], { zeroIsFree: false }) : filmPrice;
+        const price = !rowRule && m[6] ? toCents(m[6], { zeroIsFree: false }) : filmPrice;
         const sourceId = `${filmKey}-${start.startsAt.slice(0, 16).replace(/[-T:]/g, "")}`;
         const id = makeId(P, "show", sourceId);
         screenings.set(id, {
@@ -145,8 +150,13 @@ export const parseHamina = (raw: HaminaRawSnapshot, site: HaminaSite): ProviderB
           audio: audio ? [audio] : [],
           ...(dubbed !== undefined && { dubbed }),
           subtitles,
-          tags: [...(rule?.tags ?? [])],
-          series: rule?.series ? [rule.series] : [],
+          tags: [...new Set([...(rule?.tags ?? []), ...(rowRule?.tags ?? [])])],
+          series: [
+            ...new Set([
+              ...(rule?.series ? [rule.series] : []),
+              ...(rowRule?.series ? [rowRule.series] : []),
+            ]),
+          ],
           availability: "unknown",
           ...(price !== undefined && { price: { amountCents: price, currency: "EUR" as const } }),
           // Tickets at the door: the cinema's page.

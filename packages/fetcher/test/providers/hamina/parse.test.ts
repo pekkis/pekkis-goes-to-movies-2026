@@ -83,6 +83,18 @@ describe("parseHamina", () => {
     expect(result.screenings).toHaveLength(batch.screenings.length);
   });
 
+  it("reads a labelled row without a weekday and skips prose (2026-11-08)", () => {
+    const knitting = HTML.replace(
+      "Pe 16.10. Klo 19:15<br />",
+      "Neulontanäytös 16.10. Klo 19:15<br />”Tule nauttimaan elokuvasta neuloen!”<br />",
+    );
+    const result = parseHamina(snapshot({ html: knitting }), SITE);
+    expect(result.warnings).toEqual([]);
+    expect(result.screenings).toHaveLength(batch.screenings.length);
+    const shown = result.screenings.find((s) => s.startsAt === "2026-10-16T19:15:00+03:00")!;
+    expect(shown.series).toEqual(["Neulontanäytös"]);
+  });
+
   it('reads a row\'s own price without the word "Liput": "Pe 23.10. Klo 15:00 (8€)"', () => {
     const html = HTML.replace("Pe 16.10. Klo 19:15", "Pe 16.10. Klo 19:15 (8€)");
     const result = parseHamina(snapshot({ html }), SITE);
