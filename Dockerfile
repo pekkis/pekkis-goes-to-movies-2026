@@ -4,7 +4,7 @@
 
 # The base image is pinned by version and digest: an update is a deliberate change, made
 # together with devEngines in package.json (Dependabot opens the PRs; .github/dependabot.yml).
-FROM node:26.12.1-alpine3.24@sha256:40cd011b55415bc894e45b02fdd5a5dfde056921b7d23a64c74f80497af48797 AS build
+FROM node:26.13.0-alpine3.24@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94 AS build
 # pnpm pinned to the repo's packageManager. Installed with npm here, outside the project
 # (devEngines blocks npm only inside it).
 RUN npm install --global pnpm@12.10.1
@@ -26,7 +26,7 @@ RUN pnpm --filter @pgtm/backend build \
  && pnpm --filter @pgtm/backend deploy --prod --legacy /out \
  && cp -r packages/backend/dist /out/dist
 
-FROM node:26.12.1-alpine3.24@sha256:40cd011b55415bc894e45b02fdd5a5dfde056921b7d23a64c74f80497af48797 AS runtime
+FROM node:26.13.0-alpine3.24@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94 AS runtime
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3000
 WORKDIR /app
 COPY --from=build --chown=node:node /out/package.json ./
