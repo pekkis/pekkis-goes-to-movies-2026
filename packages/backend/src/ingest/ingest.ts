@@ -203,7 +203,7 @@ export const ingestBatch = (db: Kysely<DB>, batch: ProviderBatch): Promise<Batch
       ? Number(
           (
             await upcoming()
-              .select(sql<number>`count(*)`.as("n"))
+              .select(sql<string>`count(*)`.as("n"))
               .executeTakeFirstOrThrow()
           ).n,
         )

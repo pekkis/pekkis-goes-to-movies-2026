@@ -13,7 +13,7 @@ export const report = ({ error, results }: MigrationResultSet): void => {
     );
   }
   if (error) {
-    throw error instanceof Error ? error : new Error(String(error));
+    throw error instanceof Error ? error : new Error("Migration failed", { cause: error });
   }
   if (!results?.length) {
     console.log("  nothing to do");

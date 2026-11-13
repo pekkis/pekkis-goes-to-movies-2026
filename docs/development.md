@@ -63,6 +63,9 @@ When the same fact appears in several sources, it has one helper:
 - Node 26 runs `.ts` directly: erasable syntax only, no build step except the API's Docker bundle.
 - We use no general utility library (remeda, lodash, es-toolkit). Reviewed on 2026-10-12, the code's generic patterns (unique values, counts, chunks, sorting) are one-liners or Node built-ins: `toSorted`, `Object.groupBy`/`Map.groupBy`, `Set` methods, iterator helpers. The duplication worth removing was domain logic, which no library covers.
 - Prefer `toSorted` over `sort` (oxlint enforces it).
+- **Lint is type-aware** (`oxlint --type-aware`, with `oxlint-tsgolint`; turned on 2026-11-13 [V]). It costs about 2 s instead of 30 ms. It enforces `no-floating-promises`, `no-misused-promises` and `await-thenable` as errors, and `no-unnecessary-condition` as a warning (which fails too). Off on purpose:
+  - `no-unsafe-type-assertion`: it flagged 109 casts, almost all narrowing a tuple after `split().map(Number)` or a language list after a filter. JSON from outside goes through Zod instead (the disk cache, Finnkino's token, the geocoders), so the rule added only noise.
+  - `require-array-sort-compare` in tests, which sort strings.
 - Reconsider a library only for something clearly beyond a one-liner.
 
 ## Warning codes

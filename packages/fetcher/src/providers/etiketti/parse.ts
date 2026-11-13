@@ -91,7 +91,7 @@ export const extractFilmPage = (
   const facts: Record<string, string> = {};
   $("span.label").each((_, el) => {
     const key = plainText($(el).text()).replace(/:$/, "");
-    const value = labelValue($, el as unknown as DomNode);
+    const value = labelValue($, el);
     if (key && value && !(key in facts)) {
       facts[key] = value;
     }

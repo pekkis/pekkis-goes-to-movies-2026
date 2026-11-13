@@ -227,7 +227,7 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
   - `engineStrict`
 - **No npm or npx:** `devEngines` blocks them; use `pnpm exec`.
 - **Adding dependencies:** a runtime dependency goes to its package (`pnpm --filter @pgtm/fetcher add …`), shared dev tooling to the root (`-D -w`).
-- **Checks:** TypeScript (strict, `noEmit`), oxlint (correctness and suspicious categories plus `curly: all` and the React plugin's hook rules, warnings fail), oxfmt and vitest. No ESLint or Prettier.
+- **Checks:** TypeScript (strict, `noEmit`), oxlint (correctness and suspicious categories plus `curly: all` and the React plugin's hook rules, warnings fail; **type-aware** through `oxlint-tsgolint`, which adds the promise rules and `no-unnecessary-condition`; `no-unsafe-type-assertion` is off, because Zod guards the boundaries and the remaining casts narrow tuples and filters), oxfmt and vitest. No ESLint or Prettier.
 - **Libraries:**
   - `zod` v4, `ky`, `p-queue`;
   - `cheerio` (eTiketti HTML);

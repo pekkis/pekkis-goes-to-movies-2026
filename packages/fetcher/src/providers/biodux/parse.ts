@@ -121,7 +121,7 @@ export const parseBioDux = (raw: BioDuxRawSnapshot, site: BioDuxSite): ProviderB
             id: listingId,
             provider: P,
             sourceId: filmKey,
-            title: { fi: title, ...(bilingual && { sv: sv! }) },
+            title: { fi: title, ...(bilingual && { sv: sv }) },
             ...(film.runtime && { runtimeMinutes: film.runtime }),
             ...(rating && { rating }),
             genres: [],

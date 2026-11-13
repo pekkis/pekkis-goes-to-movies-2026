@@ -50,7 +50,7 @@ const feelings = (row: string[] | undefined, what: string): Feeling[] => {
     if (!m) {
       throw new Error(`"${what}" cell is not "score · word": ${cell}`);
     }
-    return { score: Number(m[1]), word: m[2]!.replace(/\s*\(.*\)$/, "") };
+    return { score: Number(m[1]), word: m[2].replace(/\s*\(.*\)$/, "") };
   });
 };
 
@@ -59,7 +59,7 @@ const parse = (md: string): Journey[] =>
     .split(/^## /m)
     .filter((s) => s.startsWith("Journey "))
     .map((section) => {
-      const heading = section.split("\n")[0]!;
+      const heading = section.split("\n")[0];
       const letter = heading.match(/^Journey (\w+)/)?.[1] ?? "?";
       const title = heading.replace(/^Journey \w+:\s*/, "").replace(/\s*\(.*\)$/, "");
       const persona = plain(section.match(/\*\*Persona: (.+?)\*\*/)?.[1] ?? "");
@@ -106,7 +106,7 @@ const curve = (
       const ty = labelAbove ? py - 16 : py + 28;
       const word = hide.has(i)
         ? ""
-        : `<text x="${px}" y="${ty}" text-anchor="middle" class="${dashed ? "w-today" : "w-us"}">${escape(points[i]!.word)}</text>`;
+        : `<text x="${px}" y="${ty}" text-anchor="middle" class="${dashed ? "w-today" : "w-us"}">${escape(points[i].word)}</text>`;
       return dot + word;
     })
     .join("");
@@ -121,7 +121,7 @@ const slide = (j: Journey, drafted: string) => {
   // Where both curves meet at the same feeling, the word is printed once (above).
   const same = new Set(
     j.today.flatMap((t, i) =>
-      t.score === j.withUs[i]!.score && t.word === j.withUs[i]!.word ? [i] : [],
+      t.score === j.withUs[i].score && t.word === j.withUs[i].word ? [i] : [],
     ),
   );
   const grid = [1, 2, 3, 4, 5]

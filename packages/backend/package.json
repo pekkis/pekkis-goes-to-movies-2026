@@ -22,21 +22,21 @@
     "build": "tsdown"
   },
   "dependencies": {
-    "@hono/mcp": "^0.3.2",
-    "@hono/node-server": "^2.1.4",
+    "@hono/mcp": "^0.3.5",
+    "@hono/node-server": "^2.1.7",
     "@hono/zod-openapi": "^1.6.3",
     "@modelcontextprotocol/sdk": "^1.32.1",
     "@pgtm/model": "workspace:*",
-    "@scalar/hono-api-reference": "^0.12.11",
-    "hono": "^4.13.13",
-    "kysely": "^0.29.6",
+    "@scalar/hono-api-reference": "^0.12.19",
+    "hono": "^4.13.18",
+    "kysely": "^0.29.8",
     "pg": "^8.23.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/pg": "^8.23.1",
     "kysely-codegen": "^0.20.0",
-    "tsdown": "^0.23.0"
+    "tsdown": "^0.23.7"
   },
   "engines": {
     "node": ">=26"

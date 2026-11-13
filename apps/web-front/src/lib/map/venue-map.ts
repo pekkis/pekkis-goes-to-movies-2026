@@ -111,14 +111,21 @@ export const mountVenueMap = (el: HTMLElement, venues: VenueCollection): MapLibr
   // Our layers are part of the style: re-add them whenever the style (re)loads.
   map.on("style.load", () => addVenueLayers(map, el, venues));
 
-  map.on("click", "clusters", async (e) => {
+  map.on("click", "clusters", (e) => {
     const cluster = e.features?.[0];
-    const id = cluster?.properties?.["cluster_id"];
+    const id = cluster?.properties["cluster_id"];
     if (!cluster || typeof id !== "number") {
       return;
     }
-    const zoom = await map.getSource<GeoJSONSource>(SOURCE)!.getClusterExpansionZoom(id);
-    map.easeTo({ center: pointOf(cluster), zoom });
+    const center = pointOf(cluster);
+    // If the cluster is gone (the data or style reloaded), just zoom in a little.
+    void map
+      .getSource<GeoJSONSource>(SOURCE)!
+      .getClusterExpansionZoom(id)
+      .then(
+        (zoom) => map.easeTo({ center, zoom }),
+        () => map.easeTo({ center, zoom: map.getZoom() + 2 }),
+      );
   });
 
   map.on("click", "venue", (e) => {

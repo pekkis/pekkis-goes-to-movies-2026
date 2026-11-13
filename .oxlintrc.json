@@ -11,7 +11,12 @@
     "react/exhaustive-deps": "error",
     "react/no-direct-mutation-state": "error",
     "react/jsx-key": "error",
-    "react/react-in-jsx-scope": "off"
+    "react/react-in-jsx-scope": "off",
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error",
+    "typescript/await-thenable": "error",
+    "typescript/no-unnecessary-condition": "warn",
+    "typescript/no-unsafe-type-assertion": "off"
   },
   "ignorePatterns": [
     "vendor/**",
@@ -23,7 +28,8 @@
     {
       "files": ["**/test/**"],
       "rules": {
-        "unicorn/consistent-function-scoping": "off"
+        "unicorn/consistent-function-scoping": "off",
+        "typescript/require-array-sort-compare": "off"
       }
     }
   ]

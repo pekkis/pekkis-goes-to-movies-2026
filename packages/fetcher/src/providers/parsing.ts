@@ -15,13 +15,7 @@ export const toCents = (
   { zeroIsFree }: { zeroIsFree: boolean },
 ): number | undefined => {
   const n =
-    typeof value === "number"
-      ? value
-      : Number(
-          String(value ?? "")
-            .replace(",", ".")
-            .trim() || NaN,
-        );
+    typeof value === "number" ? value : Number((value ?? "").replace(",", ".").trim() || NaN);
   if (!Number.isFinite(n) || n < 0) {
     return undefined;
   }

@@ -184,6 +184,8 @@ export type LabelEffects = {
   availability?: Availability;
   audio?: Lang;
   dubbed?: boolean;
+  // "none" never passes Lang's pattern; the union documents the sentinel.
+  // oxlint-disable-next-line typescript/no-redundant-type-constituents
   subtitles?: "none" | Lang;
   projection?: Projection;
 };
