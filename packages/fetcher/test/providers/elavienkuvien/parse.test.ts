@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { ElavienkuvienRawSnapshot } from "../../../src/providers/elavienkuvien/fetch.ts";
 import { filmPaths, parseElavienkuvien } from "../../../src/providers/elavienkuvien/parse.ts";
 import { ELAVIENKUVIEN_SITES } from "../../../src/providers/elavienkuvien/sites.ts";

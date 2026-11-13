@@ -1,6 +1,6 @@
 import reactRenderer from "@astrojs/react/server.js";
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vite-plus/test";
 import { createApi } from "../../src/lib/api.ts";
 import MapPage from "../../src/pages/fi/kartta.astro";
 import { fakeFetch, NOON_INSTANT, venue } from "../fixtures.ts";

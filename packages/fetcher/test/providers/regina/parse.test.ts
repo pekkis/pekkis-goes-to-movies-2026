@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import type { HttpClient } from "../../../src/lib/http.ts";
 import { fetchRegina, type ReginaRawSnapshot } from "../../../src/providers/regina/fetch.ts";
 import { parseRegina } from "../../../src/providers/regina/parse.ts";

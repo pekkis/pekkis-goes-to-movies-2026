@@ -15,11 +15,11 @@
     "ingest": "node --env-file-if-exists=../../.env src/cli/ingest.ts",
     "showtimes": "node --env-file-if-exists=../../.env src/cli/showtimes.ts",
     "db:types": "node --env-file-if-exists=../../.env src/cli/db-types.ts",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vp test run",
+    "test:watch": "vp test",
     "typecheck": "tsc",
     "api:dev": "node --env-file-if-exists=../../.env --watch src/cli/serve.ts",
-    "build": "tsdown"
+    "build": "vp pack"
   },
   "dependencies": {
     "@hono/mcp": "^0.3.5",
@@ -36,7 +36,7 @@
   "devDependencies": {
     "@types/pg": "^8.23.1",
     "kysely-codegen": "^0.20.0",
-    "tsdown": "^0.23.7"
+    "vite-plus": "catalog:"
   },
   "engines": {
     "node": ">=26"

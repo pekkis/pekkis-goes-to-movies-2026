@@ -1,5 +1,5 @@
 import { hc } from "hono/client";
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vite-plus/test";
 import { createApp } from "../../src/api/app.ts";
 import { createDb } from "../../src/db/database.ts";
 import type { AppType } from "../../src/index.ts";

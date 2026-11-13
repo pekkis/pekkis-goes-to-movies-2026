@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from "vite-plus";
 
 // Integration tests need TEST_DATABASE_URL from the repo-root .env.
 try {

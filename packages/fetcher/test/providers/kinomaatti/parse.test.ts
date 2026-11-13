@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { KinomaattiRawSnapshot } from "../../../src/providers/kinomaatti/fetch.ts";
 import { parseKinomaatti } from "../../../src/providers/kinomaatti/parse.ts";
 import { KINOMAATTI_SITES } from "../../../src/providers/kinomaatti/sites.ts";

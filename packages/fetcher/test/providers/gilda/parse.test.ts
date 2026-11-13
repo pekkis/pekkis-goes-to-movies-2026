@@ -1,5 +1,5 @@
 import { ProviderBatch } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { gildaSubtitles, parseGilda } from "../../../src/providers/gilda/parse.ts";
 import type { GildaRawSnapshot } from "../../../src/providers/gilda/raw.ts";
 import { GILDA_SITES } from "../../../src/providers/gilda/sites.ts";

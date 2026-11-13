@@ -1,4 +1,4 @@
-import { defineConfig } from "tsdown";
+import { defineConfig } from "vite-plus/pack";
 
 /**
  * Production bundle for the Docker image only; development runs the .ts sources directly.

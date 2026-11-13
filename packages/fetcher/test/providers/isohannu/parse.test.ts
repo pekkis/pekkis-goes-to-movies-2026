@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { IsohannuRawSnapshot } from "../../../src/providers/isohannu/fetch.ts";
 import { filmIds, parseIsohannu } from "../../../src/providers/isohannu/parse.ts";
 import { ISOHANNU_SITES } from "../../../src/providers/isohannu/sites.ts";

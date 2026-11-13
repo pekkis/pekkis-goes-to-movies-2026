@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createApi } from "../../src/lib/api.ts";
 import { loadFilmPage, loadFrontPage, openingNote } from "../../src/lib/film-pages.ts";
 import { fakeFetch, film, screening, venue } from "../fixtures.ts";

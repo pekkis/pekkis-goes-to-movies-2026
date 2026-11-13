@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { MyCalendarRawSnapshot } from "../../../src/providers/mycalendar/fetch.ts";
 import { parseMyCalendar } from "../../../src/providers/mycalendar/parse.ts";
 import { MYCALENDAR_SITES } from "../../../src/providers/mycalendar/sites.ts";

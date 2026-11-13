@@ -1,5 +1,5 @@
 import { ProviderBatch } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { parseLinkedEvents, withoutCredits } from "../../../src/providers/linkedevents/parse.ts";
 import type { LinkedEventsRawSnapshot } from "../../../src/providers/linkedevents/raw.ts";
 import { LINKED_EVENTS_SITES } from "../../../src/providers/linkedevents/sites.ts";

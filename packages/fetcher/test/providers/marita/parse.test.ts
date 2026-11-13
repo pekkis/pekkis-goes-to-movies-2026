@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { MaritaRawSnapshot } from "../../../src/providers/marita/fetch.ts";
 import { parseMarita } from "../../../src/providers/marita/parse.ts";
 import { MARITA_SITES } from "../../../src/providers/marita/sites.ts";

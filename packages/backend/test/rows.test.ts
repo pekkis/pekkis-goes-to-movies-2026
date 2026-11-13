@@ -1,4 +1,4 @@
-import { expect, it } from "vitest";
+import { expect, it } from "vite-plus/test";
 import { filmListingRow, filmRow, screeningRow, venueRow } from "../src/ingest/rows.ts";
 import { batch, film, screening } from "./factory.ts";
 

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import type { HttpClient } from "../../../src/lib/http.ts";
 import { fetchNexxo } from "../../../src/providers/nexxo/fetch.ts";
 import { NEXXO_SITES } from "../../../src/providers/nexxo/sites.ts";

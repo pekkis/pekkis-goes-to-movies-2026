@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { mergePullStatus, parsePullStatus, type PullStatus } from "../src/schema.ts";
 
 const status = (provider: string, at: string, ok = true): PullStatus => ({

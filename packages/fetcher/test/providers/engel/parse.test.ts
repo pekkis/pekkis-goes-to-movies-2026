@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { fetchEngel, type EngelRawSnapshot } from "../../../src/providers/engel/fetch.ts";
 import { filmPages, parseEngel } from "../../../src/providers/engel/parse.ts";
 import { ENGEL_SITES } from "../../../src/providers/engel/sites.ts";

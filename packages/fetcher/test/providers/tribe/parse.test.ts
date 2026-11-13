@@ -1,5 +1,5 @@
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { parseTribe } from "../../../src/providers/tribe/parse.ts";
 import { findSeries } from "../../../src/series/registry.ts";
 import type { TribeRawSnapshot } from "../../../src/providers/tribe/raw.ts";

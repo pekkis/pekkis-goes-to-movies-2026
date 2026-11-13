@@ -1,5 +1,5 @@
 import type { ProviderBatch } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import {
   batchReport,
   failureReport,

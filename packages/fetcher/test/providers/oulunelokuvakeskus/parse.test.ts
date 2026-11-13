@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { OulunElokuvakeskusRawSnapshot } from "../../../src/providers/oulunelokuvakeskus/fetch.ts";
 import { parseOulunElokuvakeskus } from "../../../src/providers/oulunelokuvakeskus/parse.ts";
 import { OULUNELOKUVAKESKUS_SITES } from "../../../src/providers/oulunelokuvakeskus/sites.ts";

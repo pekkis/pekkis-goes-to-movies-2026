@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { byTitle, filmIdOfSlug, filmPath, groupByFilm } from "../../src/lib/films.ts";
 import { screening } from "../fixtures.ts";
 

@@ -12,7 +12,7 @@
   },
   "scripts": {
     "typecheck": "tsc",
-    "test": "vitest run"
+    "test": "vp test run"
   },
   "dependencies": {
     "zod": "^4.6.5"

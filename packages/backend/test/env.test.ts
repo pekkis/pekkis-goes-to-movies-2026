@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { loadEnv } from "../src/lib/env.ts";
 
 const DATABASE_URL = "postgres://pgtm:pgtm@localhost:5432/pgtm";

@@ -1,5 +1,5 @@
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { PajakkakinoRawSnapshot } from "../../../src/providers/pajakkakino/fetch.ts";
 import { parsePajakkakino } from "../../../src/providers/pajakkakino/parse.ts";
 import { PAJAKKAKINO_SITES } from "../../../src/providers/pajakkakino/sites.ts";

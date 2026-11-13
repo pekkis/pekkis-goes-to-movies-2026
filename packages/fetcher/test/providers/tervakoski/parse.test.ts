@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { TervakoskiRawSnapshot } from "../../../src/providers/tervakoski/fetch.ts";
 import { parseTervakoski } from "../../../src/providers/tervakoski/parse.ts";
 import { TERVAKOSKI_SITES } from "../../../src/providers/tervakoski/sites.ts";

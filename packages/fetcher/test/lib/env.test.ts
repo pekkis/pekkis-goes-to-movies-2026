@@ -1,4 +1,4 @@
-import { expect, it } from "vitest";
+import { expect, it } from "vite-plus/test";
 import { loadEnv, requireTmdbKey } from "../../src/lib/env.ts";
 
 it("accepts a v4 token and an optional contact", () => {

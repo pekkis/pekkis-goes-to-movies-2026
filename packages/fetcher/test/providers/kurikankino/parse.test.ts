@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { KurikanKinoRawSnapshot } from "../../../src/providers/kurikankino/fetch.ts";
 import { parseKurikanKino } from "../../../src/providers/kurikankino/parse.ts";
 import { KURIKANKINO_SITES } from "../../../src/providers/kurikankino/sites.ts";

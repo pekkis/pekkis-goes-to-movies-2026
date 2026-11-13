@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { BioDuxRawSnapshot } from "../../../src/providers/biodux/fetch.ts";
 import { parseBioDux } from "../../../src/providers/biodux/parse.ts";
 import { BIODUX_SITES } from "../../../src/providers/biodux/sites.ts";

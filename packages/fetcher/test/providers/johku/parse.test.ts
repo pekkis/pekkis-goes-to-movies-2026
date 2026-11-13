@@ -1,5 +1,5 @@
 import { ProviderBatch } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { isPublicScreening, parseJohku } from "../../../src/providers/johku/parse.ts";
 import type { JohkuRawSnapshot } from "../../../src/providers/johku/raw.ts";
 import { JOHKU_SITES, type JohkuSite } from "../../../src/providers/johku/sites.ts";

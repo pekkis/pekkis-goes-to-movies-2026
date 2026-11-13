@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { FilmProgramme } from "../../src/components/FilmProgramme.tsx";
 import { renderWithClock, freezeClockAt } from "../clock.tsx";
 import { screening } from "../fixtures.ts";

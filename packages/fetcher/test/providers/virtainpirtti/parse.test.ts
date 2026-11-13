@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { VirtainPirttiRawSnapshot } from "../../../src/providers/virtainpirtti/fetch.ts";
 import { parseVirtainPirtti } from "../../../src/providers/virtainpirtti/parse.ts";
 import { VIRTAINPIRTTI_SITES } from "../../../src/providers/virtainpirtti/sites.ts";

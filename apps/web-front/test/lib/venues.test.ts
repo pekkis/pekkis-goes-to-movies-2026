@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { osmUrl, resolveVenue, venueLabel, venuePath, venueSlug } from "../../src/lib/venues.ts";
 
 describe("venueLabel", () => {

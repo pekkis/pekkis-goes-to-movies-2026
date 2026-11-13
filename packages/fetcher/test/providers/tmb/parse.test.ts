@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { TmbRawSnapshot } from "../../../src/providers/tmb/fetch.ts";
 import { parseTmb } from "../../../src/providers/tmb/parse.ts";
 import { TMB_SITES } from "../../../src/providers/tmb/sites.ts";

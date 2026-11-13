@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { parseBbox } from "../../src/api/params.ts";
 import { toHelsinkiIso } from "@pgtm/model/time";
 import { toFilmSummary } from "../../src/queries/common.ts";

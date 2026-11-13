@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { KinoRioRawSnapshot } from "../../../src/providers/kinorio/fetch.ts";
 import { parseKinoRio } from "../../../src/providers/kinorio/parse.ts";
 import { KINORIO_SITES } from "../../../src/providers/kinorio/sites.ts";

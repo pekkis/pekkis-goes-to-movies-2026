@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { NuorisokuvatRawSnapshot } from "../../../src/providers/nuorisokuvat/fetch.ts";
 import { parseNuorisokuvat, parseShows } from "../../../src/providers/nuorisokuvat/parse.ts";
 import { NUORISOKUVAT_SITES } from "../../../src/providers/nuorisokuvat/sites.ts";

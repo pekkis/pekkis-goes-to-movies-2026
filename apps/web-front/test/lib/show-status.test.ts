@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { collapseStarted, showStatus } from "../../src/lib/show-status.ts";
 
 const NOW = Temporal.Instant.from("2026-10-13T12:00:00+03:00");

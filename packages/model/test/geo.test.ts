@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { bboxAround, distanceKm } from "../src/geo.ts";
 
 const HELSINKI = { lat: 60.1699, lon: 24.9384 };

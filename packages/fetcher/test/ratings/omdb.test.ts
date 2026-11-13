@@ -1,5 +1,5 @@
 import type { Film } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { noCache } from "../../src/lib/cache.ts";
 import type { HttpClient } from "../../src/lib/http.ts";
 import { addOmdbRatings, fetchOmdb, normalizeScore, parseOmdb } from "../../src/ratings/omdb.ts";

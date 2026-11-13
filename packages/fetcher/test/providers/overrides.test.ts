@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { ProviderBatch, Venue } from "@pgtm/model";
 import { finishVenues, loadVenueOverrides, VenueOverrides } from "../../src/providers/overrides.ts";
 

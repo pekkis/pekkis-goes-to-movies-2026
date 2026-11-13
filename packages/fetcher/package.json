@@ -8,8 +8,8 @@
   "scripts": {
     "pull": "node --env-file-if-exists=../../.env src/cli/fetch.ts",
     "match": "node --env-file-if-exists=../../.env src/cli/match.ts",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vp test run",
+    "test:watch": "vp test",
     "typecheck": "tsc",
     "venues:locate": "node --env-file-if-exists=../../.env src/cli/locate.ts"
   },

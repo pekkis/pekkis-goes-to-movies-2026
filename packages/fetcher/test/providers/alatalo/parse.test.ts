@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { AlataloRawSnapshot } from "../../../src/providers/alatalo/fetch.ts";
 import { parseAlatalo } from "../../../src/providers/alatalo/parse.ts";
 import { ALATALO_SITES } from "../../../src/providers/alatalo/sites.ts";
