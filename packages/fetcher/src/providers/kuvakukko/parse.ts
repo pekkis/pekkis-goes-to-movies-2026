@@ -16,7 +16,7 @@ import {
   COMMON_TITLE_PREFIXES,
   labelEffects,
   type LabelRule,
-  splitTitlePrefix,
+  splitTitleLabels,
   splitVersion,
 } from "../labels.ts";
 import { byStartThenId, finnishRating, plainText, slugify } from "../parsing.ts";
@@ -196,7 +196,7 @@ type Details = {
 /** A title as compared with a page's heading: no case, no version marker, one space. */
 const comparable = (title: string, site: KuvakukkoSite) =>
   splitVersion(
-    splitTitlePrefix(title, { ...COMMON_TITLE_PREFIXES, ...site.titlePrefixes }).title,
+    splitTitleLabels(title, { ...COMMON_TITLE_PREFIXES, ...site.titlePrefixes }).title,
   ).title.toLowerCase();
 
 const languages = (value: string, unmapped: string[], role: string) => {
@@ -295,10 +295,15 @@ export const parseKuvakukko = (raw: KuvakukkoRawSnapshot, site: KuvakukkoSite): 
   for (const row of inWindow(rows, raw.from, raw.days)) {
     const { venue, rawTitle, start, note } = row;
     const venueId = makeId(P, "venue", venue.slug);
-    const { title: unprefixed, rule, label } = splitTitlePrefix(rawTitle, prefixRules);
-    const effects = labelEffects([rule, note?.rule]);
+    // Up to two labels: "Hopeatähti-sarja: Lahjakas murhaaja (ennakkonäytös)" (2026-11-13).
+    const {
+      title: unprefixed,
+      rules: titleRules,
+      labels: titleLabels,
+    } = splitTitleLabels(rawTitle, prefixRules);
+    const effects = labelEffects([...titleRules, note?.rule]);
     const labels: RawLabel[] = [
-      ...(label ? [{ source: "title.prefix", text: label }] : []),
+      ...titleLabels.map((text) => ({ source: "title.prefix", text })),
       ...(note ? [{ source: "title.note", text: note.text }] : []),
     ];
     const { title, version } = splitVersion(unprefixed);

@@ -104,9 +104,17 @@ const TAGS: Record<string, ScreeningTag> = {
 
 /**
  * Attributes that carry no information for viewers: regional marketing groups, a site
- * name, and an internal booking setting.
+ * name, and booking settings.
  */
-const IGNORED = new Set(["Tampere", "Pkseutu", "TKU & R", "Maxim", "Varaus20"]);
+const IGNORED = new Set([
+  "Tampere",
+  "Pkseutu",
+  "TKU & R",
+  "Maxim",
+  "Varaus20",
+  // Tickets for logged-in loyalty members only (2026-11-13); the model has no field for it.
+  "myFinnkino",
+]);
 
 /** A label's tags from the shared table, when tagging is all the label does there. */
 const tagsOnly = (name: string): ScreeningTag[] | undefined => {

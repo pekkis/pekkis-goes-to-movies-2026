@@ -853,5 +853,215 @@
     "tmdb": 1787721,
     "title": "Metsäsota ja rauha",
     "note": "Jari Kokko's documentary, TMDB's title exactly; 88 vs 87 min; TMDB has no year (2026-11-08)."
+  },
+  "finnkino:film:HO00000577": {
+    "tmdb": 1743488,
+    "title": "Unesta tehty mies",
+    "note": "Unesta tehty mies (2026), the Sallinen brothers' documentary on Aulis Sallinen (Finnkino's synopsis names Emil and Artur Sallinen, as TMDB does). TMDB has no runtime or date yet, so neither search nor siblings can be certain; 94 min, K-7 at the cinemas."
+  },
+  "cinemaniagara:film:135": {
+    "tmdb": 1743488,
+    "title": "Unesta tehty mies",
+    "note": "Unesta tehty mies (2026), the Sallinen brothers' documentary on Aulis Sallinen (Finnkino's synopsis names Emil and Artur Sallinen, as TMDB does). TMDB has no runtime or date yet, so neither search nor siblings can be certain; 94 min, K-7 at the cinemas."
+  },
+  "elokuvateatteristar:film:3226": {
+    "tmdb": 1743488,
+    "title": "Unesta tehty mies",
+    "note": "Unesta tehty mies (2026), the Sallinen brothers' documentary on Aulis Sallinen (Finnkino's synopsis names Emil and Artur Sallinen, as TMDB does). TMDB has no runtime or date yet, so neither search nor siblings can be certain; 94 min, K-7 at the cinemas."
+  },
+  "gilda:film:1687": {
+    "tmdb": 1743488,
+    "title": "Unesta tehty mies",
+    "note": "Unesta tehty mies (2026), the Sallinen brothers' documentary on Aulis Sallinen (Finnkino's synopsis names Emil and Artur Sallinen, as TMDB does). TMDB has no runtime or date yet, so neither search nor siblings can be certain; 94 min, K-7 at the cinemas."
+  },
+  "kinoengel:film:unesta-tehty-mies": {
+    "tmdb": 1743488,
+    "title": "Unesta tehty mies",
+    "note": "Unesta tehty mies (2026), the Sallinen brothers' documentary on Aulis Sallinen (Finnkino's synopsis names Emil and Artur Sallinen, as TMDB does). TMDB has no runtime or date yet, so neither search nor siblings can be certain; 94 min, K-7 at the cinemas."
+  },
+  "kinoiiris:film:3287": {
+    "tmdb": 1743488,
+    "title": "Unesta tehty mies",
+    "note": "Unesta tehty mies (2026), the Sallinen brothers' documentary on Aulis Sallinen (Finnkino's synopsis names Emil and Artur Sallinen, as TMDB does). TMDB has no runtime or date yet, so neither search nor siblings can be certain; 94 min, K-7 at the cinemas."
+  },
+  "kinokirkkonummi:film:unesta-tehty-mies": {
+    "tmdb": 1743488,
+    "title": "Unesta tehty mies",
+    "note": "Unesta tehty mies (2026), the Sallinen brothers' documentary on Aulis Sallinen (Finnkino's synopsis names Emil and Artur Sallinen, as TMDB does). TMDB has no runtime or date yet, so neither search nor siblings can be certain; 94 min, K-7 at the cinemas."
+  },
+  "savonkinot:film:197": {
+    "tmdb": 1743488,
+    "title": "Unesta tehty mies",
+    "note": "Unesta tehty mies (2026), the Sallinen brothers' documentary on Aulis Sallinen (Finnkino's synopsis names Emil and Artur Sallinen, as TMDB does). TMDB has no runtime or date yet, so neither search nor siblings can be certain; 94 min, K-7 at the cinemas."
+  },
+  "kinoakseli:film:ebenezer-saiturin-joulu": {
+    "tmdb": 1567605,
+    "title": "Ebenezer: Saiturin joulu",
+    "note": "Ebenezer (2026, Ti West, Johnny Depp); the Finnish release title, K-12 as elsewhere. This cinema states no runtime, so the sibling pass cannot link it."
+  },
+  "kinoelo:film:874": {
+    "tmdb": 1567605,
+    "title": "Ebenezer: Saiturin joulu",
+    "note": "Ebenezer (2026, Ti West, Johnny Depp); the Finnish release title, K-12 as elsewhere. This cinema states no runtime, so the sibling pass cannot link it."
+  },
+  "kinomania:film:874": {
+    "tmdb": 1567605,
+    "title": "Ebenezer: Saiturin joulu",
+    "note": "Ebenezer (2026, Ti West, Johnny Depp); the Finnish release title, K-12 as elsewhere. This cinema states no runtime, so the sibling pass cannot link it."
+  },
+  "kinosampo:film:874": {
+    "tmdb": 1567605,
+    "title": "Ebenezer: Saiturin joulu",
+    "note": "Ebenezer (2026, Ti West, Johnny Depp); the Finnish release title, K-12 as elsewhere. This cinema states no runtime, so the sibling pass cannot link it."
+  },
+  "kinotoijala:film:874": {
+    "tmdb": 1567605,
+    "title": "Ebenezer: Saiturin joulu",
+    "note": "Ebenezer (2026, Ti West, Johnny Depp); the Finnish release title, K-12 as elsewhere. This cinema states no runtime, so the sibling pass cannot link it."
+  },
+  "kinojalasjarvi:film:ebenezer-saiturin-joulu": {
+    "tmdb": 1567605,
+    "title": "Ebenezer: Saiturin joulu",
+    "note": "Ebenezer (2026, Ti West, Johnny Depp); the Finnish release title, K-12 as elsewhere. This cinema states no runtime, so the sibling pass cannot link it."
+  },
+  "kinovisio:film:ebenezer-saiturin-joulu": {
+    "tmdb": 1567605,
+    "title": "Ebenezer: Saiturin joulu",
+    "note": "Ebenezer (2026, Ti West, Johnny Depp); the Finnish release title, K-12 as elsewhere. This cinema states no runtime, so the sibling pass cannot link it."
+  },
+  "biomarlon:film:ebenezer-saiturin-joulu": {
+    "tmdb": 1567605,
+    "title": "EBENEZER: SAITURIN JOULU",
+    "note": "Ebenezer (2026, Ti West); the Finnish release title, K-12 as elsewhere. 110 vs 115 min, so the sibling pass does not link it."
+  },
+  "biomarilyn:film:1076": {
+    "tmdb": 1567605,
+    "title": "Ebenezer-Saiturin joulu",
+    "note": "Ebenezer (2026, Ti West). The cinema's own description names Johnny Depp and Ti West and its Maccsbox title is \"Ebenezer: A Christmas Carol\", but its original title, 85 min, director and IMDb id are filled in from the horror film Ebenezer Scrooge: A Christmas Carol Horror (1749825), which the automatic match followed (2026-11-13)."
+  },
+  "kinoakseli:film:wicker-intohimosta-punottu": {
+    "tmdb": 1195803,
+    "title": "Wicker - Intohimosta punottu",
+    "note": "Wicker (2026, Eleanor Wilson and Alex Huston Fischer); the Finnish release title, K-12 as elsewhere. This cinema states no runtime, so the sibling pass cannot link it."
+  },
+  "kinoelo:film:881": {
+    "tmdb": 1195803,
+    "title": "Wicker - Intohimosta punottu",
+    "note": "Wicker (2026, Eleanor Wilson and Alex Huston Fischer); the Finnish release title, K-12 as elsewhere. This cinema states no runtime, so the sibling pass cannot link it."
+  },
+  "kinomania:film:881": {
+    "tmdb": 1195803,
+    "title": "Wicker - Intohimosta punottu",
+    "note": "Wicker (2026, Eleanor Wilson and Alex Huston Fischer); the Finnish release title, K-12 as elsewhere. This cinema states no runtime, so the sibling pass cannot link it."
+  },
+  "kinosampo:film:881": {
+    "tmdb": 1195803,
+    "title": "Wicker - Intohimosta punottu",
+    "note": "Wicker (2026, Eleanor Wilson and Alex Huston Fischer); the Finnish release title, K-12 as elsewhere. This cinema states no runtime, so the sibling pass cannot link it."
+  },
+  "kinotoijala:film:881": {
+    "tmdb": 1195803,
+    "title": "Wicker - Intohimosta punottu",
+    "note": "Wicker (2026, Eleanor Wilson and Alex Huston Fischer); the Finnish release title, K-12 as elsewhere. This cinema states no runtime, so the sibling pass cannot link it."
+  },
+  "kinovisio:film:wicker-intohimosta-punottu": {
+    "tmdb": 1195803,
+    "title": "Wicker - Intohimosta punottu",
+    "note": "Wicker (2026, Eleanor Wilson and Alex Huston Fischer); the Finnish release title, K-12 as elsewhere. This cinema states no runtime, so the sibling pass cannot link it."
+  },
+  "kinoylari:film:wicker-intohimosta-punottu": {
+    "tmdb": 1195803,
+    "title": "Wicker - Intohimosta punottu",
+    "note": "Wicker (2026, Eleanor Wilson and Alex Huston Fischer); the Finnish release title, K-12 as elsewhere. This cinema states no runtime, so the sibling pass cannot link it."
+  },
+  "kinokirkkonummi:film:wicker-intohimosta-pudottu": {
+    "tmdb": 1195803,
+    "title": "Wicker - intohimosta pudottu",
+    "note": "Wicker (2026); the cinema's typo of \"Intohimosta punottu\", the Finnish release title. No runtime stated."
+  },
+  "kinovisio:film:how-to-rob-a-bank": {
+    "tmdb": 1437511,
+    "title": "How to Rob a Bank",
+    "note": "How to Rob a Bank (2026, David Leitch), 122 min K-16 at the other cinemas; this cinema states no runtime, and an unrelated How to Rob a Bank (2024, 87 min) makes the title ambiguous."
+  },
+  "kinojalasjarvi:film:how-to-rob-a-bank": {
+    "tmdb": 1437511,
+    "title": "How To Rob A Bank",
+    "note": "How to Rob a Bank (2026, David Leitch), 122 min K-16 at the other cinemas; this cinema states no runtime, and an unrelated How to Rob a Bank (2024, 87 min) makes the title ambiguous. Jalasjärvi prints S, a cinema error (K-16 everywhere else)."
+  },
+  "kinoylari:film:leviticus": {
+    "tmdb": 1564614,
+    "title": "Leviticus",
+    "note": "Leviticus (2026, Adrian Chiarella), K-16 as at BioRex and Finnkino (88 min, AU/US); Kittilä states no runtime and a 1-minute NZ short shares the title."
+  },
+  "biorex:film:406": {
+    "tmdb": 438631,
+    "title": "Dyyni: Osa Yksi",
+    "note": "Re-release of Dune (2021). MyCloudCinema film 406, as Gilda's with original title Dune; BioRex's 166 min runs about ten minutes over (155)."
+  },
+  "biorex:film:927": {
+    "tmdb": 693134,
+    "title": "Dyyni: Osa Kaksi",
+    "note": "Re-release of Dune: Part Two (2024). MyCloudCinema film 927, as Gilda's with original title Dune: Part Two; BioRex's 177 min runs about ten minutes over (167)."
+  },
+  "cinemaniagara:film:97": {
+    "tmdb": 9595,
+    "title": "Hot Shots! - Kaikkien elokuvien äiti",
+    "note": "Hot Shots! (1991), re-run; TMDB's Finnish title, 85 min both."
+  },
+  "finnkino:film:HO00000649": {
+    "tmdb": 17918,
+    "title": "Swamp Thing",
+    "note": "Swamp Thing (1982, Wes Craven) at Night Visions; 91 min both."
+  },
+  "finnkino:film:HO00000644": {
+    "tmdb": 11782,
+    "title": "Hard Boiled",
+    "note": "Hard Boiled (1992, John Woo), 4K restoration at Night Visions; 128 vs 126 min."
+  },
+  "finnkino:film:HO00000666": {
+    "tmdb": 123411,
+    "title": "Gore from Outer Space",
+    "note": "Gore from Outer Space (2001, TMDB's English title of 血を吸う宇宙) at Night Visions; 85 min both."
+  },
+  "finnkino:film:HO00000671": {
+    "tmdb": 56172,
+    "title": "Päätöselokuva: TC 2000",
+    "note": "TC 2000 (1993), Night Visions' closing film; 95 min both."
+  },
+  "finnkino:film:HO00000680": {
+    "tmdb": 153920,
+    "title": "Gröna Gubbar från Y.R.",
+    "note": "Gröna gubbar från Y.R. (1986, SE) at Night Visions; 86 vs 85 min."
+  },
+  "finnkino:film:HO00000642": {
+    "tmdb": 1103,
+    "title": "Escape from New York - Pako New Yorkista 4K",
+    "note": "Escape from New York (1981), 4K restoration; TMDB's Finnish title Pako New Yorkista, 99 min both."
+  },
+  "finnkino:film:HO00000640": {
+    "tmdb": 27958,
+    "title": "Cruising - Yön kuningas",
+    "note": "Cruising (1980, William Friedkin) at Night Visions, with Mineshaft: The Cruising Murders; 102 min both."
+  },
+  "finnkino:film:HO00000692": {
+    "tmdb": 1300968,
+    "title": "MyFazer-ennakkonäytös",
+    "note": "A MyFazer members' preview of The Hunger Games: Sunrise on the Reaping (2026), named in Finnkino's synopsis; 158 vs 159 min."
+  },
+  "elokuvateatteristar:film:3267": {
+    "tmdb": 1366,
+    "title": "Rocky - 50th Anniversary",
+    "note": "Rocky (1976), 50th anniversary re-run; 120 vs 119 min."
+  },
+  "savonkinot:film:125": {
+    "tmdb": 35861,
+    "title": "Ristiinnaulitut rakastavaiset",
+    "note": "The Crucified Lovers (1954, Kenji Mizoguchi); TMDB's Finnish title, 100 vs 102 min."
+  },
+  "korjaamo:film:5245": {
+    "tmdb": 102534,
+    "title": "Hyvä Poika",
+    "note": "Hyvä poika (2011, Zaida Bergroth), shown with Bergroth's Tove; 88 min both, K-12."
   }
 }

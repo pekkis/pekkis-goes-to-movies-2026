@@ -97,18 +97,23 @@ export const parseTitleExtension = (
     };
   }
   const formats: Feature[] = [];
+  const tags: ScreeningTag[] = [];
   const unmapped: string[] = [];
   for (const token of raw?.trim().split(/\s+/).filter(Boolean) ?? []) {
     const upper = token.toUpperCase();
+    // A one-word label among the format words: "RE-RELEASE" (2026-11-10).
+    const tokenRule = labelRule(token, siteLabels);
     if (upper === "ATMOS") {
       formats.push("atmos");
     } else if (upper === "IMAX") {
       formats.push("imax");
+    } else if (tokenRule) {
+      tags.push(...(tokenRule.tags ?? []));
     } else if (!LANGUAGE_TOKENS.has(upper)) {
       unmapped.push(`title_extension:${token}`);
     }
   }
-  return { formats, tags: [], series: [], event: false, unmapped };
+  return { formats, tags, series: [], event: false, unmapped };
 };
 
 /** "6 REX (K-18)" -> features and the hall's own age limit. */

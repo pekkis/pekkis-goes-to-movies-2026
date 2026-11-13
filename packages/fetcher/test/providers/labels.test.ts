@@ -20,6 +20,13 @@ describe("splitVersion", () => {
   it.each([
     ["Tonttu - puhutaan suomea", "Tonttu", { dubbed: true, audio: "fi" }],
     ["Hard Boiled 4k", "Hard Boiled", {}],
+    // A dash earlier in the title does not hide the trailing marker (Finnkino, 2026-11-10).
+    ["Escape from New York - Pako New Yorkista 4K", "Escape from New York - Pako New Yorkista", {}],
+    [
+      "Opiskelijanäytös - Kojootti vs. ACME ENG",
+      "Opiskelijanäytös - Kojootti vs. ACME",
+      { audio: "en", dubbed: false },
+    ],
     ["Unohdettu saari (DUB)", "Unohdettu saari", { dubbed: true, audio: "fi" }],
     [
       "Shaun the Sheep: The Beast of Mossy Bottom [Eng Audio]",
@@ -107,6 +114,18 @@ describe("splitTitlePrefix", () => {
     });
     expect(splitTitlePrefix("Mamma Mia! Here We Go Again", COMMON_TITLE_PREFIXES)).toEqual({
       title: "Mamma Mia! Here We Go Again",
+    });
+  });
+
+  it("takes a known label before a dash, and anniversaries and closing films (2026-11-13)", () => {
+    expect(
+      splitTitlePrefix("Opiskelijanäytös - Kojootti vs. ACME ENG", COMMON_TITLE_PREFIXES),
+    ).toEqual({ title: "Kojootti vs. ACME ENG", rule: {}, label: "Opiskelijanäytös" });
+    expect(splitTitlePrefix("Rocky - 50th Anniversary", COMMON_TITLE_PREFIXES).title).toBe("Rocky");
+    expect(splitTitlePrefix("Päätöselokuva: TC 2000", COMMON_TITLE_PREFIXES).title).toBe("TC 2000");
+    // An unknown first part is the title: "Hot Shots! - Kaikkien elokuvien äiti".
+    expect(splitTitlePrefix("Wicker - Intohimosta punottu", COMMON_TITLE_PREFIXES)).toEqual({
+      title: "Wicker - Intohimosta punottu",
     });
   });
 

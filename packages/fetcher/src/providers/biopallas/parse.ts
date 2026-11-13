@@ -62,11 +62,13 @@ export const parseBioPallas = (raw: BioPallasRawSnapshot, site: BioPallasSite): 
     }
     const titleBlock = blocks[i - 1] ?? [];
     const priceBlock = blocks[i + 1] ?? [];
-    const factsLine = titleBlock.find((l) => FACTS.test(l));
-    const facts = factsLine?.match(FACTS);
+    // Two facts lines that disagree settle nothing: "1h 57min -K16-" over a leftover
+    // "1h 55min -K12-" (Wild Horse Nine, 2026-11-13).
+    const factsLines = new Set(titleBlock.filter((l) => FACTS.test(l)));
+    const facts = factsLines.size === 1 ? [...factsLines][0]!.match(FACTS) : undefined;
     const rawTitle = titleBlock[0] ?? "";
-    // A line between the title and the facts is the print's version: "På svenska".
-    const versionLine = titleBlock.slice(1).find((l) => l !== factsLine);
+    // A line besides the title and the facts is the print's version: "På svenska".
+    const versionLine = titleBlock.slice(1).find((l) => !FACTS.test(l));
     const lineVersion: Version = versionLine ? splitVersion(`x (${versionLine})`).version : {};
     const date = nearestDate(Number(d[2]), Number(d[3]), raw.from);
     const weekday = date ? WEEKDAYS[Temporal.PlainDate.from(date).dayOfWeek - 1] : undefined;
@@ -94,7 +96,13 @@ export const parseBioPallas = (raw: BioPallasRawSnapshot, site: BioPallasSite): 
     const unmapped: string[] = [];
     // Not a version, the line may be a label or a series: "Neulontanäytös" (2026-10-30).
     const lineIsVersion = lineVersion.audio !== undefined || lineVersion.dubbed !== undefined;
-    const lineRule = versionLine && !lineIsVersion ? ruleFor(prefixRules, versionLine) : undefined;
+    // A note is known by its first sentence: "Ei lippuvarauksia! Lippuja voi lunastaa …"
+    // (2026-11-13).
+    const lineRule =
+      versionLine && !lineIsVersion
+        ? (ruleFor(prefixRules, versionLine) ??
+          ruleFor(prefixRules, versionLine.split(/[!.]/)[0]!.trim()))
+        : undefined;
     if (versionLine && !lineIsVersion && !lineRule) {
       unmapped.push(`version:${versionLine}`);
     }

@@ -88,4 +88,30 @@ describe("parseBioPallas", () => {
     expect(result.warnings.map((w) => w.code)).toEqual(["invalid-row"]);
     expect(isIncomplete(result)).toBe(true);
   });
+
+  it("reads a note after the facts by its first sentence, the label (2026-11-13)", () => {
+    const note = "Ei lippuvarauksia! Lippuja voi lunastaa tapahtumapäivänä klo 12.00 alkaen";
+    const html = HTML.replace("<p>1h 52min -K12-</p>", `<p>1h 52min -K12-</p><p>${note}</p>`);
+    const known = parseBioPallas(snapshot({ html }), SITE);
+    expect(known.screenings.flatMap((s) => s.unmappedLabels)).toEqual([]);
+    const other = parseBioPallas(
+      snapshot({ html: html.replace("Ei lippuvarauksia", "Tuo omat eväät") }),
+      SITE,
+    );
+    expect(
+      other.screenings.find((s) => s.sourceId === "kerro-kaikille-202610131400")?.unmappedLabels,
+    ).toEqual([`version:${note.replace("Ei lippuvarauksia", "Tuo omat eväät")}`]);
+  });
+
+  it("states no runtime or rating when two facts lines disagree (2026-11-13)", () => {
+    const html = HTML.replace(
+      "<p>1h 52min -K12-</p>",
+      "<p>1h 52min -K12-</p><p>1h 55min -K16-</p>",
+    );
+    const result = parseBioPallas(snapshot({ html }), SITE);
+    const listing = result.listings.find((l) => l.sourceId === "kerro-kaikille");
+    expect(listing?.rating).toBeUndefined();
+    expect(listing?.runtimeMinutes).toBeUndefined();
+    expect(result.screenings.flatMap((s) => s.unmappedLabels)).toEqual([]);
+  });
 });

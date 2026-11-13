@@ -285,6 +285,9 @@ describe("field parsers", () => {
     ["SWE DUB", [], []],
     ["ORIG", [], []],
     ["4DX", [], ["title_extension:4DX"]],
+    // A known one-word label among the tokens (BioRex, 2026-11-10).
+    ["RE-RELEASE", [], []],
+    ["FI RE-RELEASE ATMOS", ["atmos"], []],
   ])("parseTitleExtension(%s)", (input, formats, unmapped) => {
     expect(parseTitleExtension(input)).toEqual({
       formats,
