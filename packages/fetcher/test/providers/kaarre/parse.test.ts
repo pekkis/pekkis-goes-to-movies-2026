@@ -73,4 +73,16 @@ describe("parseKaarre", () => {
     expect(result.warnings.map((w) => w.code)).toEqual(["invalid-row"]);
     expect(isIncomplete(result)).toBe(true);
   });
+
+  it("reads two times on one row as two screenings", () => {
+    const html = HTML.replace("La 17.10. klo 15.30", "La 17.10. klo 11.30 ja klo 15.30");
+    const saari = parseKaarre(snapshot({ html }), SITE).screenings.filter(
+      (s) => s.listingId === listing("UNOHDETTU SAARI").id,
+    );
+    expect(saari.map((s) => s.startsAt).slice(0, 2)).toEqual([
+      "2026-10-17T11:30:00+03:00",
+      "2026-10-17T15:30:00+03:00",
+    ]);
+    expect(saari.flatMap((s) => s.unmappedLabels)).toEqual([]);
+  });
 });

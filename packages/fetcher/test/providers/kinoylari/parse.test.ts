@@ -53,4 +53,34 @@ describe("parseKinoYlari", () => {
     expect(result.warnings.map((w) => w.code)).toEqual(["invalid-row"]);
     expect(isIncomplete(result)).toBe(true);
   });
+
+  describe("the November 2026 layout: <p> rows without klo", () => {
+    const html = readFileSync(
+      join(import.meta.dirname, "../../fixtures/kinoylari/kinoylari-elokuvat-2026-11.html"),
+      "utf8",
+    );
+    const result = parseKinoYlari(
+      snapshot({ html, from: "2026-11-13", fetchedAt: "2026-11-13T06:00:00.000Z" }),
+      SITE,
+    );
+
+    it("reads every row, and days without a film are no warning", () => {
+      expect(() => ProviderBatch.parse(result)).not.toThrow();
+      expect(result.warnings).toEqual([]);
+      expect(result.screenings.map((s) => s.startsAt)).toEqual([
+        "2026-11-13T19:00:00+02:00",
+        "2026-11-14T16:00:00+02:00",
+        "2026-11-14T18:00:00+02:00",
+        "2026-11-21T18:00:00+02:00",
+        "2026-11-28T18:00:00+02:00",
+      ]);
+      expect(result.listings.map((l) => l.title.fi)).toContain("Wicker - Intohimosta punottu");
+    });
+
+    it("warns about a dated line it cannot read instead of skipping it", () => {
+      const broken = html.replace("16.00", "kello neljä");
+      const r = parseKinoYlari(snapshot({ html: broken, from: "2026-11-13" }), SITE);
+      expect(r.warnings.map((w) => w.code)).toEqual(["invalid-row"]);
+    });
+  });
 });

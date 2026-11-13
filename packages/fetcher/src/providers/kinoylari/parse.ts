@@ -14,9 +14,13 @@ import type { KinoYlariRawSnapshot } from "./fetch.ts";
 import type { KinoYlariSite } from "./sites.ts";
 
 const WEEKDAYS = ["ma", "ti", "ke", "to", "pe", "la", "su"];
-/** "to 15.10. klo 15.00 Kätyrit & Monsterit K7": the title is the bold part. */
+/** "to 15.10. klo 15.00 Kätyrit & Monsterit K7", later "pe 13.11. 19.00 …" (2026-11-13): the title is the bold part. */
 const ROW =
-  /^(ma|ti|ke|to|pe|la|su)\s+(\d{1,2})\.(\d{1,2})\.?\s+klo\s+(\d{1,2})[.:](\d{2})\s+(.+)$/i;
+  /^(ma|ti|ke|to|pe|la|su)\s+(\d{1,2})\.(\d{1,2})\.?\s+(?:klo\s+)?(\d{1,2})[.:](\d{2})\s+(.+)$/i;
+/** A line that starts like a row: one ROW does not read is a warning, not a spacer. */
+const DATED = /^(ma|ti|ke|to|pe|la|su)\s+\d{1,2}\.\d{1,2}\./i;
+/** "pe 27.11. Ei elokuvaa. Jouluyö!": a day without a film. */
+const NO_FILM = /^\S+\s+\S+\s+ei elokuvaa\b/i;
 /** The rating after the title; "K?" is not rated yet. */
 const AGE = /\b(S|K\d{1,2}|K\?)\s*(.*)$/;
 
@@ -38,15 +42,25 @@ export const parseKinoYlari = (raw: KinoYlariRawSnapshot, site: KinoYlariSite): 
   if (!heading) {
     warnings.push({ code: "invalid-response", message: "No Ohjelmisto heading on the page" });
   }
-  const rows = heading ? $(heading).next("div").find("div").toArray() : [];
+  // One row per child: <div>s until November 2026, <p>s since.
+  const rows = heading ? $(heading).next("div").children("div, p").toArray() : [];
   let unreadable = 0;
   for (const el of rows) {
     const line = plainText($(el).text());
     const m = line.match(ROW);
     if (!m) {
+      if (DATED.test(line) && !NO_FILM.test(line)) {
+        unreadable += 1;
+      }
       continue; // spacers, links, notes
     }
-    const bold = plainText($(el).find("strong").first().text());
+    // An empty <strong> may sit in the spacing before the title (2026-11-13).
+    const bold =
+      $(el)
+        .find("strong")
+        .toArray()
+        .map((b) => plainText($(b).text()))
+        .find(Boolean) ?? "";
     // A bold line that is itself a showtime announces the row below it.
     if (!bold || ROW.test(bold)) {
       continue;

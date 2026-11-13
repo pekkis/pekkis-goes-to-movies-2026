@@ -146,6 +146,17 @@ describe("parseKuvakukko", () => {
     expect(at("kuopio", "2026-10-22T17:30:00+03:00").series).toEqual(["Hyvät Kuvat -kerho"]);
   });
 
+  it("takes two labels off one title (2026-11-13)", () => {
+    const html = HTML.replace(
+      "Kuvin aluesarja: Omenaleikki<",
+      "Kuvin aluesarja: Omenaleikki (ennakkonäytös)<",
+    );
+    const result = parseKuvakukko(snapshot({ html }), SITE);
+    const show = result.screenings.find((s) => s.startsAt === "2026-10-19T18:00:00+03:00")!;
+    expect(result.listings.find((l) => l.id === show.listingId)?.title.fi).toBe("Omenaleikki");
+    expect(show).toMatchObject({ series: ["Kuvin aluesarja"], tags: ["preview"] });
+  });
+
   it("files Manttu's past weekend under Nilsiä, outside the window", () => {
     const all = parseKuvakukko(snapshot({ from: "2026-10-09", days: 3 }), SITE);
     const nilsia = all.screenings.filter((s) => s.venueId === "kuvakukko:venue:nilsia");

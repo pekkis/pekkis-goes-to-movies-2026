@@ -47,8 +47,17 @@ export const LABELS: Record<string, LabelRule> = {
   Ennakkonäytökset: { tags: ["preview"] },
   Ennakko: { tags: ["preview"] },
   "Ensi-ilta": { tags: ["premiere"] },
+  // A loyalty programme's preview, the film named only in the synopsis (Finnkino, 2026-11-13).
+  "MyFazer-ennakkonäytös": { tags: ["preview"] },
+  // A re-run in cinemas again ("RE-RELEASE": BioRex's Dune, 2026-11-10; "Rocky - 50th
+  // Anniversary"); how old the film is decides the derived "classic" tag, not the label.
+  "Re-release": {},
+  "50th Anniversary": {},
+  // For students (Bio Rex Kokkola, 2026-11-12); no discount stated.
+  Opiskelijanäytös: {},
   // Festival programme headings in titles ("NV26: Avajaiselokuva: …", 2026-11-08).
   Avajaiselokuva: {},
+  Päätöselokuva: {},
   "Finlandia-gaala": {},
   // A genre printed as a tag (Savon Kinot); known, says nothing about the screening.
   Dokumentti: {},
@@ -108,6 +117,9 @@ export const LABELS: Record<string, LabelRule> = {
   "K18 - Anniskelunäytös": { licensed: true, ageLimit: "K-18" },
   "K-18 - Anniskelunäytös": { licensed: true, ageLimit: "K-18" },
   // Availability
+  // Tickets at the door on the day only (Bio Pallas, 2026-11-13); the model has no field for it.
+  "Ei lippuvarauksia": {},
+  "Inga biljettbokningar": {},
   Kiirehdi: { availability: "few-left" },
   "Viimeiset liput": { availability: "few-left" },
   Loppuunmyyty: { availability: "sold-out" },
@@ -228,6 +240,12 @@ export const splitTitlePrefix = (
   const prefixRule = prefix ? ruleFor(rules, prefix[1]!.trim()) : undefined;
   if (prefix && prefixRule) {
     return { title: prefix[2]!.trim(), rule: prefixRule, label: prefix[1]!.trim() };
+  }
+  // Before a dash: "Opiskelijanäytös - Kojootti vs. ACME" (Bio Rex Kokkola, 2026-11-12).
+  const dashed = title.match(/^([^–-]+?)\s+[–-]\s+(.+)$/);
+  const dashedRule = dashed ? ruleFor(rules, dashed[1]!.trim()) : undefined;
+  if (dashed && dashedRule) {
+    return { title: dashed[2]!.trim(), rule: dashedRule, label: dashed[1]!.trim() };
   }
   // The same labels after a dash at the end: "Pirjo i Sverige – Vauvakino".
   const suffix = title.match(/^(.+?)\s+[–-]\s+([^–-]+)$/);
@@ -387,11 +405,18 @@ export const splitVersion = (raw: string): { title: string; version: Version } =
     title = caps[1]!.trim();
   }
   for (;;) {
-    // "(DUB)", "[Eng Audio]" (Ritz), "DUB", or after a comma or dash: "Unohdettu saari, englanniksi".
-    const m = title.match(
-      /^(.*?)\s*(?:\(([^()]+)\)|\[([^[\]]+)\]|\b(DU[BP]\.?|SUB|ORIG|ENG|2D|3D|4K)|(?:,|\s[–-])\s*([^,()–-]+))$/i,
-    );
-    const marker = m && (m[2] ?? m[3] ?? m[4] ?? m[5])?.trim();
+    // A bare marker at the very end comes first, so a dash earlier in the title does not hide
+    // it: "Escape from New York - Pako New Yorkista 4K" (Finnkino, 2026-11-10).
+    const bare = title.match(/^(.*?)\s*\b(DU[BP]\.?|SUB|ORIG|ENG|2D|3D|4K)$/i);
+    const bareHit = bare && VERSIONS.find(([re]) => re.test(bare[2]!));
+    if (bare && bareHit && bare[1]) {
+      Object.assign(version, bareHit[1]);
+      title = bare[1].trim();
+      continue;
+    }
+    // "(DUB)", "[Eng Audio]" (Ritz), or after a comma or dash: "Unohdettu saari, englanniksi".
+    const m = title.match(/^(.*?)\s*(?:\(([^()]+)\)|\[([^[\]]+)\]|(?:,|\s[–-])\s*([^,()–-]+))$/i);
+    const marker = m && (m[2] ?? m[3] ?? m[4])?.trim();
     const hit = marker ? VERSIONS.find(([re]) => re.test(marker)) : undefined;
     if (!m || !hit || !m[1]) {
       return { title, version };

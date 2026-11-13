@@ -26,6 +26,12 @@ const WEEKDAYS = ["ma", "ti", "ke", "to", "pe", "la", "su"];
 const ROW =
   /^(ma|ti|ke|to|pe|la|su)\s+(\d{1,2})\.(\d{1,2})\.?\s+klo\s+(\d{1,2})(?:[.:](\d{2}))?\b\s*(.*)$/i;
 const ROWISH = /^(ma|ti|ke|to|pe|la|su)\s+\d/i;
+/** "La 14.11. klo 11.30 ja klo 14.30" (2026-11-10): one row per time, the day repeated. */
+const DAY = /^((?:ma|ti|ke|to|pe|la|su)\s+\d{1,2}\.\d{1,2}\.?)\s+(.+)$/i;
+const perTime = (line: string): string[] => {
+  const m = line.match(DAY);
+  return m ? m[2]!.split(/\s+ja\s+(?=klo\s+\d)/i).map((part) => `${m[1]} ${part}`) : [line];
+};
 /** "Ikäraja K7, liput 10 €, kesto 1 h 27 min". */
 const AGE = /Ikäraja\s+(-S-|S\b|K-?\d{1,2}\b)/i;
 const PRICE = /liput\s+(\d{1,3}(?:[.,]\d{1,2})?)\s*€/i;
@@ -60,7 +66,7 @@ export const parseKaarre = (raw: KaarreRawSnapshot, site: KaarreSite): ProviderB
       .split(/<br\s*\/?>/i)
       .map((chunk) => plainText(load(chunk, null, false).text()))
       .filter(Boolean);
-    const rows = lines.filter((l) => ROWISH.test(l));
+    const rows = lines.filter((l) => ROWISH.test(l)).flatMap(perTime);
     if (rows.length === 0) {
       continue; // notes (ticket sales, hashtags)
     }
