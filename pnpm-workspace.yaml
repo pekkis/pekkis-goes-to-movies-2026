@@ -31,6 +31,12 @@ allowBuilds:
 # --- Consistency ----------------------------------------------------------
 # Enforce package.json "engines" (node >= 24).
 engineStrict: true
+
+# --- Vite+ (trial, written by `vp migrate`) --------------------------------
+# One version for the whole toolchain: vite-plus bundles Vite, Vitest, Oxlint,
+# Oxfmt and tsdown. Every `vite` in the tree (Astro's included) resolves to
+# Vite+'s build of Vite core. `vp migrate` also exempted its packages from
+# minimumReleaseAge; we removed that, so the one-day rule covers them too.
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@1.6.0
   vite-plus: 1.6.0
@@ -41,14 +47,3 @@ peerDependencyRules:
     - vite
   allowedVersions:
     vite: "*"
-minimumReleaseAgeExclude:
-  - vite-plus
-  - "@voidzero-dev/*"
-  - oxlint
-  - "@oxlint/*"
-  - oxlint-tsgolint
-  - "@oxlint-tsgolint/*"
-  - oxfmt
-  - "@oxfmt/*"
-  - vitest
-  - "@vitest/*"

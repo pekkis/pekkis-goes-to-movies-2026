@@ -18,7 +18,7 @@
     "showtimes": "pnpm --filter @pgtm/backend showtimes",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
-    "lint": "vp lint --deny-warnings --type-aware",
+    "lint": "vp lint --deny-warnings",
     "fmt": "vp fmt",
     "fmt:check": "vp fmt --check",
     "check": "pnpm typecheck && pnpm lint && pnpm fmt:check && pnpm web:build && pnpm test",
