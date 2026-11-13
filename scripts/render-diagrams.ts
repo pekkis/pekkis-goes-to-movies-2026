@@ -20,7 +20,7 @@ const source = join(root, process.argv[2] ?? "docs/design/journey-map.md");
 const mermaidJs = createRequire(import.meta.url).resolve("mermaid/dist/mermaid.min.js");
 
 const blocks = [...(await readFile(source, "utf8")).matchAll(/```mermaid\n([\s\S]*?)```/g)].map(
-  (m) => m[1] ?? "",
+  (m) => m[1],
 );
 if (!blocks.length) {
   console.error(`No mermaid blocks in ${source}`);

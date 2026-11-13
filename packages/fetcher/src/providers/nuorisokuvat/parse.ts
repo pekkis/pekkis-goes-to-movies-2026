@@ -91,7 +91,7 @@ export const parseNuorisokuvat = (
           return label
             ? [[label.replace(/:$/, ""), plainText($(p).text()).slice(label.length).trim()]]
             : [];
-        }) as [string, string][],
+        }),
     );
     const showText = facts.get("Näytökset") ?? "";
     if (!showText) {

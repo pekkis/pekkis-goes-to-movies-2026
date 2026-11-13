@@ -18,7 +18,7 @@ export const fetchVista = async (
     // XML stays text here; the parser reads it.
     schedules[area] =
       site.format === "xml"
-        ? await http.getText(`${url}?${new URLSearchParams(params)}`)
+        ? await http.getText(`${url}?${new URLSearchParams(params).toString()}`)
         : await http.getJson(url, params);
   }
   return { fetchedAt, from, days, schedules };

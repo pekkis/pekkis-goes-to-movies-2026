@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { promisify } from "node:util";
+import { z } from "zod";
 import { REPO_ROOT } from "../lib/paths.ts";
 
 /** Where the showtimes CLI searches from: a point plus how it was found, for the user. */
@@ -20,16 +21,25 @@ const isPoint = (lat: unknown, lon: unknown): boolean =>
 
 // --- CoreLocationCLI (macOS: Wi-Fi positioning, like Maps) -----------------------------
 
+const optionalNumber = z.coerce.number().optional().catch(undefined);
+const optionalText = z.string().optional().catch(undefined);
+
+const CoreLocation = z.looseObject({
+  latitude: z.coerce.number(),
+  longitude: z.coerce.number(),
+  h_accuracy: optionalNumber,
+  horizontalAccuracy: optionalNumber,
+});
+
 /** Pure: CoreLocationCLI `--json` output -> point. */
 export const parseCoreLocation = (stdout: string): Located | undefined => {
   try {
-    const d = JSON.parse(stdout) as Record<string, unknown>;
-    const lat = Number(d["latitude"]);
-    const lon = Number(d["longitude"]);
-    if (!isPoint(lat, lon)) {
+    const d = CoreLocation.safeParse(JSON.parse(stdout)).data;
+    if (!d || !isPoint(d.latitude, d.longitude)) {
       return undefined;
     }
-    const accuracy = Number(d["h_accuracy"] ?? d["horizontalAccuracy"]);
+    const { latitude: lat, longitude: lon } = d;
+    const accuracy = d.h_accuracy ?? d.horizontalAccuracy ?? NaN;
     return {
       lat,
       lon,
@@ -65,19 +75,16 @@ export const fromCoreLocation = async (): Promise<Located | undefined> => {
 
 // --- IP geolocation (any machine; city-level at best) ----------------------------------
 
+const Ipinfo = z.looseObject({ loc: z.string(), city: optionalText, region: optionalText });
+
 /** Pure: ipinfo.io `/json` -> point ("loc": "60.1695,24.9354"). */
 export const parseIpinfo = (body: unknown): Located | undefined => {
-  if (!body || typeof body !== "object") {
+  const d = Ipinfo.safeParse(body).data;
+  const [lat, lon] = (d?.loc ?? "").split(",").map(Number);
+  if (!d || !isPoint(lat, lon)) {
     return undefined;
   }
-  const d = body as Record<string, unknown>;
-  const [lat, lon] = String(d["loc"] ?? "")
-    .split(",")
-    .map(Number);
-  if (!isPoint(lat, lon)) {
-    return undefined;
-  }
-  const place = [d["city"], d["region"]].filter((x) => typeof x === "string" && x).join(", ");
+  const place = [d.city, d.region].filter(Boolean).join(", ");
   return {
     lat: lat!,
     lon: lon!,
@@ -104,31 +111,33 @@ export const fromIp = async (contact?: string): Promise<Located> => {
 
 // --- Address geocoding (OpenStreetMap Nominatim) ---------------------------------------
 
+/** Nominatim gives coordinates as strings ("62.2366190"). */
+const NominatimResults = z.array(
+  z.looseObject({
+    lat: z.coerce.number(),
+    lon: z.coerce.number(),
+    display_name: z.string().catch(""),
+  }),
+);
+
 /** Pure: Nominatim jsonv2 search results -> the best match. */
 export const parseNominatim = (body: unknown): Located | undefined => {
-  if (!Array.isArray(body) || body.length === 0) {
-    return undefined;
-  }
-  const top = body[0] as Record<string, unknown>;
-  const lat = Number(top["lat"]);
-  const lon = Number(top["lon"]);
-  if (!isPoint(lat, lon)) {
+  const top = NominatimResults.safeParse(body).data?.[0];
+  if (!top || !isPoint(top.lat, top.lon)) {
     return undefined;
   }
   return {
-    lat,
-    lon,
+    lat: top.lat,
+    lon: top.lon,
     // "Kulttuurikeskus Villa Rana, 13, Seminaarinkatu, …, Suomi / Finland": the first parts are enough.
-    label: `${String(top["display_name"] ?? "")
-      .split(", ")
-      .slice(0, 4)
-      .join(", ")} (© OpenStreetMap contributors)`,
+    label: `${top.display_name.split(", ").slice(0, 4).join(", ")} (© OpenStreetMap contributors)`,
     approximate: false,
   };
 };
 
 const CACHE_DIR = join(REPO_ROOT, "data", "cache", "geocode");
 const CACHE_MAX_AGE_MS = 30 * 24 * 3_600_000;
+const CachedGeocode = z.object({ storedAt: z.string(), body: z.unknown() });
 
 /**
  * Finnish addresses, places and towns. Nominatim's policy: an identifying User-Agent,
@@ -138,7 +147,7 @@ export const geocode = async (address: string, contact?: string): Promise<Locate
   const key = address.trim().toLowerCase().replace(/\s+/g, " ");
   const path = join(CACHE_DIR, `${createHash("sha1").update(key).digest("hex")}.json`);
   try {
-    const cached = JSON.parse(await readFile(path, "utf8")) as { storedAt: string; body: unknown };
+    const cached = CachedGeocode.parse(JSON.parse(await readFile(path, "utf8")));
     if (Date.now() - Date.parse(cached.storedAt) < CACHE_MAX_AGE_MS) {
       return parseNominatim(cached.body);
     }

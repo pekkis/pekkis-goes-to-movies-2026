@@ -63,7 +63,7 @@ const rowsOf = (html: string, site: IsohannuSite) => {
           const title = plainText(
             name
               .contents()
-              .filter((_i, node) => node.type === "text")
+              .filter((_i, node) => node.nodeType === 3) // text nodes
               .text(),
           );
           const time = plainText(row.find(".showtable-time").text()).match(TIME);

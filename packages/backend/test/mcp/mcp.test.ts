@@ -1,6 +1,5 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { sql } from "kysely";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../../src/api/app.ts";
@@ -19,14 +18,14 @@ const connect = async () => {
     fetch: async (input, init) => app.request(String(input), init),
   });
   // The SDK's client and transport types disagree under exactOptionalPropertyTypes.
-  await client.connect(transport as unknown as Transport);
+  await client.connect(transport);
   return client;
 };
 
 type CallResult = { content: { type: string; text: string }[] };
 const call = async (client: Client, name: string, args: Record<string, unknown>) => {
   const result = (await client.callTool({ name, arguments: args })) as CallResult;
-  return JSON.parse(result.content[0]!.text) as any;
+  return JSON.parse(result.content[0]!.text);
 };
 
 beforeAll(async () => {

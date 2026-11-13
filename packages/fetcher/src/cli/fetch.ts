@@ -117,7 +117,7 @@ const pullOne = async (
 const queue = new PQueue({ concurrency: CONCURRENCY });
 /** Each provider's outcome, for pull-status.jsonl: ingest logs it per venue. */
 const statuses: PullStatus[] = [];
-const total = selected?.length ?? 0;
+const total = selected.length;
 let done = 0;
 /** Providers being pulled now, with when they started: what a slow pull is waiting for. */
 const running = new Map<string, number>();
@@ -125,7 +125,7 @@ const progress = setInterval(() => {
   console.log(progressReport(done, total, running, Date.now(), paintOut));
 }, PROGRESS_EVERY_MS);
 const results = await Promise.all(
-  (selected ?? []).map((adapter) =>
+  selected.map((adapter) =>
     queue.add(async () => {
       const started = Date.now();
       running.set(adapter.id, started);

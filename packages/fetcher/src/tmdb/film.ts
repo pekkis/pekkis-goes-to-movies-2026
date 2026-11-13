@@ -1,4 +1,4 @@
-import { FinnishRating, type Film, type Lang, type Localized, type Rating } from "@pgtm/model";
+import { FinnishRating, type Film, type Localized, type Rating } from "@pgtm/model";
 import type { MovieDetails } from "./raw.ts";
 
 export const imageUrl = (path: string, size: "w185" | "w342" | "w500" | "w780" | "original") =>
@@ -65,7 +65,7 @@ const trailers = (details: MovieDetails): Film["trailers"] =>
       site: "YouTube" as const,
       key: v.key,
       name: v.name,
-      ...(v.iso_639_1 && /^[a-z]{2}$/.test(v.iso_639_1) && { language: v.iso_639_1 as Lang }),
+      ...(v.iso_639_1 && /^[a-z]{2}$/.test(v.iso_639_1) && { language: v.iso_639_1 }),
     }));
 
 /** Below this many votes a TMDB score is noise (a handful of early viewers). */

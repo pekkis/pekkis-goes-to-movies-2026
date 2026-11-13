@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { chromium } from "playwright";
+import { z } from "zod";
 
 /**
  * Finnkino's API needs Vista's public client token (a JWT, valid 12 h). Vista documents it
@@ -17,16 +18,19 @@ const JWT = /eyJ[\w-]{20,}\.[\w-]{20,}\.[\w-]{20,}/;
 /** Get a new token when less than this is left. */
 const MIN_VALIDITY_MS = 60 * 60 * 1000;
 
-export type Token = { token: string; expiresAt: string };
+const Token = z.object({ token: z.string(), expiresAt: z.string() });
+export type Token = z.infer<typeof Token>;
+
+const Claims = z.looseObject({ exp: z.number() });
 
 export const tokenExpiry = (token: string): Date => {
-  const payload = JSON.parse(Buffer.from(token.split(".")[1] ?? "", "base64url").toString()) as {
-    exp?: unknown;
-  };
-  if (typeof payload.exp !== "number") {
+  const claims = Claims.safeParse(
+    JSON.parse(Buffer.from(token.split(".")[1] ?? "", "base64url").toString()),
+  );
+  if (!claims.success) {
     throw new Error("Finnkino token has no exp claim");
   }
-  return new Date(payload.exp * 1000);
+  return new Date(claims.data.exp * 1000);
 };
 
 export const isFresh = (token: Token, now: Date): boolean =>
@@ -67,7 +71,7 @@ export const getToken = async ({
   readToken = readTokenWithBrowser,
 }: TokenSource): Promise<string> => {
   try {
-    const cached = JSON.parse(await readFile(cachePath, "utf8")) as Token;
+    const cached = Token.parse(JSON.parse(await readFile(cachePath, "utf8")));
     if (isFresh(cached, now())) {
       return cached.token;
     }

@@ -15,7 +15,7 @@ const fakeHttp = () => {
   const http: HttpClient = { getJson, getText: vi.fn(), postForm: vi.fn() };
   const showtimeQueries = () =>
     getJson.mock.calls
-      .filter(([url]) => String(url).endsWith("getShowTimesDays"))
+      .filter(([url]) => url.endsWith("getShowTimesDays"))
       .map(([, query]) => query);
   return { http, showtimeQueries };
 };
@@ -49,7 +49,7 @@ describe("fetchMyCloudCinema", () => {
       data: dates.map((d, i) => ({ show_time_id: i, business_date: d })),
     });
     const getJson = vi.fn(async (url: string, query?: unknown) => {
-      if (!String(url).endsWith("getShowTimesDays")) {
+      if (!url.endsWith("getShowTimesDays")) {
         return { data: [], resultCode: 0 };
       }
       const { date, number_of_days } = query as { date: string; number_of_days: number };
@@ -70,7 +70,7 @@ describe("fetchMyCloudCinema", () => {
       cinemaIds: [1],
     });
     const asked = getJson.mock.calls
-      .filter(([url]) => String(url).endsWith("getShowTimesDays"))
+      .filter(([url]) => url.endsWith("getShowTimesDays"))
       .map(([, q]) => q);
     expect(asked).toEqual([
       { cinema_id: 1, date: "2026-10-22", number_of_days: 7 },
@@ -107,7 +107,7 @@ describe("fetchMyCloudCinema: a week cut off at its end", () => {
   });
   const run = async (answer: (date: string, days: number) => unknown) => {
     const getJson = vi.fn(async (url: string, query?: unknown) => {
-      if (!String(url).endsWith("getShowTimesDays")) {
+      if (!url.endsWith("getShowTimesDays")) {
         return { data: [], resultCode: 0 };
       }
       const { date, number_of_days } = query as { date: string; number_of_days: number };
@@ -120,7 +120,7 @@ describe("fetchMyCloudCinema: a week cut off at its end", () => {
       cinemaIds: [1],
     });
     const asked = getJson.mock.calls
-      .filter(([url]) => String(url).endsWith("getShowTimesDays"))
+      .filter(([url]) => url.endsWith("getShowTimesDays"))
       .map(([, q]) => q);
     return { raw, asked };
   };

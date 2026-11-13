@@ -1,21 +1,24 @@
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { z } from "zod";
 
 export type JsonCache = {
   /** Returns the cached value if younger than `maxAgeMs`, otherwise calls `load` and stores the result. */
   get: <T>(key: string, maxAgeMs: number, load: () => Promise<T>) => Promise<T>;
 };
 
-type Entry = { storedAt: string; key: string; value: unknown };
+const Entry = z.object({ storedAt: z.string(), key: z.string(), value: z.unknown() });
+type Entry = z.infer<typeof Entry>;
 
 /** File-per-key JSON cache. Keys are hashed, the original key is kept inside for debugging. */
 export const createDiskCache = (dir: string, now: () => Date = () => new Date()): JsonCache => ({
   get: async <T>(key: string, maxAgeMs: number, load: () => Promise<T>): Promise<T> => {
     const path = join(dir, `${createHash("sha1").update(key).digest("hex")}.json`);
     try {
-      const entry = JSON.parse(await readFile(path, "utf8")) as Entry;
+      const entry = Entry.parse(JSON.parse(await readFile(path, "utf8")));
       if (now().getTime() - Date.parse(entry.storedAt) < maxAgeMs) {
+        // Our own write coming back: the envelope is checked, the value trusted.
         return entry.value as T;
       }
     } catch {

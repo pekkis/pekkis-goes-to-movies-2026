@@ -380,7 +380,13 @@ export const parseMyCloudCinema = (
         warnings.push({
           code: "invalid-showtime",
           message: row.error.message,
-          context: { cinemaId, showTimeId: (item as { show_time_id?: unknown })?.show_time_id },
+          context: {
+            cinemaId,
+            showTimeId:
+              item && typeof item === "object" && "show_time_id" in item
+                ? item.show_time_id
+                : undefined,
+          },
         });
         continue;
       }

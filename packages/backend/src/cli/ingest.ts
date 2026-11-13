@@ -32,7 +32,7 @@ const validate = async <T>(
   console.error(
     `${file} does not match the model (stale data? run \`pnpm pull\`):\n${result.error.message}`,
   );
-  process.exit(1);
+  return process.exit(1);
 };
 const catalog = files.includes(CATALOG) ? await validate(CATALOG, FilmCatalog) : undefined;
 const batches = await Promise.all(

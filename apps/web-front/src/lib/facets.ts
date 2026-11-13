@@ -59,7 +59,7 @@ export const facetCounts = (
   screenings: readonly Screening[],
   selection: Selection,
 ): FacetCounts => {
-  const counts = { slots: new Map(), venues: new Map(), films: new Map() } as FacetCounts;
+  const counts = { slots: new Map(), venues: new Map(), films: new Map() };
   for (const s of screenings) {
     for (const facet of FACETS) {
       if (FACETS.every((other) => other === facet || passes(s, selection, other))) {
@@ -72,11 +72,7 @@ export const facetCounts = (
 };
 
 /** The selection with one value checked or unchecked. */
-export const toggle = <F extends Facet>(
-  selection: Selection,
-  facet: F,
-  value: string,
-): Selection => {
+export const toggle = (selection: Selection, facet: Facet, value: string): Selection => {
   const next = new Set(selection[facet] as ReadonlySet<string>);
   if (next.has(value)) {
     next.delete(value);
@@ -87,9 +83,9 @@ export const toggle = <F extends Facet>(
 };
 
 /** The selection with several values of one facet checked, or all of them unchecked. */
-export const setAll = <F extends Facet>(
+export const setAll = (
   selection: Selection,
-  facet: F,
+  facet: Facet,
   values: readonly string[],
   on: boolean,
 ): Selection => {

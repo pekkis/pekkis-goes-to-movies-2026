@@ -203,7 +203,7 @@ export const parseTribe = (raw: TribeRawSnapshot, site: TribeSite): ProviderBatc
 
       // One value is this event's price; several are a band that settles none.
       const values = e.cost_details?.values ?? [];
-      const price = values.length === 1 ? toCents(values[0]!, { zeroIsFree: false }) : undefined;
+      const price = values.length === 1 ? toCents(values[0], { zeroIsFree: false }) : undefined;
       const sourceId = String(e.id);
       const id = makeId(P, "show", sourceId);
       const audio = version.audio ? [version.audio] : (facts.audio ?? []);
