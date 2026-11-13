@@ -1,5 +1,5 @@
 import { sql } from "kysely";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
 import { createApp } from "../../src/api/app.ts";
 import { createDb } from "../../src/db/database.ts";
 import { ingestBatch, ingestFilms, ingestPullStatus } from "../../src/ingest/ingest.ts";

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { KirkkonummiRawSnapshot } from "../../../src/providers/kirkkonummi/fetch.ts";
 import { parseKirkkonummi } from "../../../src/providers/kirkkonummi/parse.ts";
 import { KIRKKONUMMI_SITES } from "../../../src/providers/kirkkonummi/sites.ts";

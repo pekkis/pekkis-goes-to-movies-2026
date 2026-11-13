@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { JuliaRawSnapshot } from "../../../src/providers/julia/fetch.ts";
 import { parseJulia } from "../../../src/providers/julia/parse.ts";
 import { JULIA_SITES } from "../../../src/providers/julia/sites.ts";

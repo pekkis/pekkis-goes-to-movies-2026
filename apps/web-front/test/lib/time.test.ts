@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { formatDay, formatDayRange, formatMoment, formatTime } from "../../src/lib/time.ts";
 
 // Date arithmetic (addDays, isIsoDate, …) is shared: tested in packages/model/test/time.test.ts.

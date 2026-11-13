@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { screen } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { ClockIsland, useNow, useShowStatus } from "../../src/components/clock.tsx";
 import { advanceMinutes, freezeClockAt, renderWithClock } from "../clock.tsx";
 

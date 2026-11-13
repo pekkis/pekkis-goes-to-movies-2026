@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { SuojaRawSnapshot } from "../../../src/providers/suoja/fetch.ts";
 import { parseSuoja } from "../../../src/providers/suoja/parse.ts";
 import { SUOJA_SITES } from "../../../src/providers/suoja/sites.ts";

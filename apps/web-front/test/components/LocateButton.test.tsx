@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { LOCATE_WATCHDOG_MS, LocateButton } from "../../src/components/LocateButton.tsx";
 
 afterEach(cleanup);

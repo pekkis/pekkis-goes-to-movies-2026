@@ -1,5 +1,5 @@
 import { renderToString } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { DateNav } from "../../src/components/DateNav.tsx";
 
 describe("DateNav", () => {

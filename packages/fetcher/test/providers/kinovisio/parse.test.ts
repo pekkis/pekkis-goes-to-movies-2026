@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { KinoVisioRawSnapshot } from "../../../src/providers/kinovisio/fetch.ts";
 import { parseKinoVisio } from "../../../src/providers/kinovisio/parse.ts";
 import { KINOVISIO_SITES } from "../../../src/providers/kinovisio/sites.ts";

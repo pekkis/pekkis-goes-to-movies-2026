@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createApi } from "../../src/lib/api.ts";
 import { loadCityPage, loadVenuePage } from "../../src/lib/pages.ts";
 import { pageHeaders } from "../../src/lib/headers.ts";

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { ProviderBatch, Screening } from "@pgtm/model";
 import { findSeries, resolveSeries, SERIES } from "../../src/series/registry.ts";
 

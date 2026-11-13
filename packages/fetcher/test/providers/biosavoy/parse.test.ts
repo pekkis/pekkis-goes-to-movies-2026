@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { BioSavoyRawSnapshot } from "../../../src/providers/biosavoy/fetch.ts";
 import { filmUrls, parseBioSavoy } from "../../../src/providers/biosavoy/parse.ts";
 import { BIOSAVOY_SITES } from "../../../src/providers/biosavoy/sites.ts";

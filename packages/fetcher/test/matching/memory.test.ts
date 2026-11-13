@@ -1,5 +1,5 @@
 import type { FilmListing } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { remember, sameRuntime } from "../../src/matching/memory.ts";
 
 const NOW = new Date("2026-10-18T06:00:00.000Z");

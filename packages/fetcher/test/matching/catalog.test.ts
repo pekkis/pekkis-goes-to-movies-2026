@@ -2,7 +2,7 @@ import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { ProviderBatch, type FilmListing, type Screening } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { buildCatalog } from "../../src/matching/catalog.ts";
 import type { TmdbClient } from "../../src/tmdb/client.ts";
 import { details } from "../tmdb/factory.ts";

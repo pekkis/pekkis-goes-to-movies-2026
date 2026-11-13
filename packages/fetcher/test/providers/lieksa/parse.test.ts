@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { LieksaRawSnapshot } from "../../../src/providers/lieksa/fetch.ts";
 import { parseLieksa } from "../../../src/providers/lieksa/parse.ts";
 import { LIEKSA_SITES } from "../../../src/providers/lieksa/sites.ts";

@@ -110,7 +110,7 @@ The principles the code follows; [docs/development.md](docs/development.md) expl
 - **Native TypeScript first.** Node 26 runs `.ts` directly (no build step, except the API's Docker bundle). Erasable syntax only: no `enum`, `namespace` or parameter properties. Prefer built-ins (`toSorted`, `Object.groupBy`, `Set` methods, iterator helpers) over utility libraries; lookup tables keyed by outside text use `own()` (`lib/records.ts`).
 - **Dates and times are Temporal** (no date library). Calendar and time-zone logic (Helsinki wall-clock time, the programme day, adding days, minutes until a show) lives in `@pgtm/model/time` and nowhere else. Plain `Date` only for timestamps and at library boundaries (`pg` returns `Date`); `currentInstant()` reads the clock through `Date.now()` so tests can fake it. The website loads `temporal-polyfill` (native where available; Safari lacks Temporal) and formats with `Intl` in `src/lib/time.ts`.
 - `strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`: optional fields are spread in only when set (`...(x && { x })`).
-- **Braces always:** every `if` / `else` / loop body goes in `{}` on its own lines, never `if (x) return y;`. Enforced by oxlint (`curly: all`, autofixable with `pnpm exec oxlint --fix`; oxfmt puts the body on its own line).
+- **Braces always:** every `if` / `else` / loop body goes in `{}` on its own lines, never `if (x) return y;`. Enforced by oxlint (`curly: all`, autofixable with `pnpm exec vp lint --fix`; oxfmt puts the body on its own line).
 - **Modern React 19:** `use(Context)` instead of `useContext`, `<Context value>` instead of `<Context.Provider>`, `ref` as an ordinary prop (no `forwardRef`), function components only. Shared client state lives in **jotai** atoms (an atom's `onMount` subscribes to external sources, like the clock); each island root is a jotai `Provider`, so the server never shares a store between requests. Never `setState` in an effect to sync with the outside world. oxlint's React plugin checks the rules of hooks, effect dependencies and `setState` in effects.
 
 ## Commands
@@ -159,9 +159,9 @@ pnpm design:render           # docs/design/journey-map.md -> PNGs beside it: Mer
 ## Layout
 
 ```
-package.json, pnpm-workspace.yaml, tsconfig.base.json   workspace root; .oxlintrc.json, .oxfmtrc.json
+package.json, pnpm-workspace.yaml, tsconfig.base.json   workspace root; vite.config.ts (Vite+: lint and fmt settings)
 compose.yaml, docker/           Postgres 18 (+ pgtm_test via docker/postgres/init); profile "app": migrate, api, web; profile "ingest": ingest
-Dockerfile, .dockerignore       API image (serve, migrate, ingest): tsdown bundle + `pnpm deploy --prod` node_modules
+Dockerfile, .dockerignore       API image (serve, migrate, ingest): `vp pack` bundle (packages/backend/vite.config.ts) + `pnpm deploy --prod` node_modules
 apps/web-front/Dockerfile       website image (Astro standalone server); its own Dockerfile.dockerignore
 .env, data/                     gitignored: secrets; raw/, normalized/ (batches + pull-status.jsonl: each provider's last pull outcome), cache/ (tmdb, omdb, osm, geocode, token)
 docs/                           development, data-sources, data-model, database, api, cli
@@ -227,7 +227,9 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
   - `engineStrict`
 - **No npm or npx:** `devEngines` blocks them; use `pnpm exec`.
 - **Adding dependencies:** a runtime dependency goes to its package (`pnpm --filter @pgtm/fetcher add …`), shared dev tooling to the root (`-D -w`).
-- **Checks:** TypeScript (strict, `noEmit`), oxlint (correctness and suspicious categories plus `curly: all` and the React plugin's hook rules, warnings fail; **type-aware** through `oxlint-tsgolint`, which adds the promise rules and `no-unnecessary-condition`; `no-unsafe-type-assertion` is off, because Zod guards the boundaries and the remaining casts narrow tuples and filters), oxfmt and vitest. No ESLint or Prettier.
+- **Vite+ (trial branch):** the `vite-plus` package (one version, in the `pnpm-workspace.yaml` catalog) bundles Vite, Vitest, Oxlint, Oxfmt and tsdown behind the project-local `vp` command (`pnpm exec vp`; never a global install, and `vp env` is not used: pnpm's `devEngines` still manages Node). `vite` resolves to Vite+'s Vite core everywhere. Settings live in `vite.config.ts` (root: `lint`, `fmt`; backend: `test`, `pack`); the website keeps Astro's `vitest.config.ts`. Imports come from `vite-plus/test`, enforced by its lint rule.
+- **Task cache (`vp run`):** `typecheck`, `test` and the website's `build` are tasks in each package's `vite.config.ts`, cached in `node_modules/.vite/task-cache` (`pnpm exec vp cache clean` empties it); the root scripts (`pnpm check`, `pnpm test`, `pnpm typecheck`, `pnpm web:build`) run them with `vp run`, and `vp run -F @pgtm/backend test` runs one. Tasks get a **clean environment**: a variable a task needs must be listed in its `cache.env` (the backend's `TEST_DATABASE_URL`). TypeScript 7's native `tsc` reads files the tracker cannot see, so `typecheck` lists its inputs by hand; keep them in step with the `tsconfig` includes. Scripts that touch the network or the database (`pull`, `ingest`, `migrate`) stay uncached `package.json` scripts; never set `run.cache.scripts`.
+- **Checks:** TypeScript (strict, `noEmit`; `tsc`, not oxlint's experimental type check), oxlint via `vp lint` (correctness and suspicious categories plus `curly: all` and the React plugin's hook rules, warnings fail; **type-aware** through `oxlint-tsgolint`, which adds the promise rules and `no-unnecessary-condition`; `no-unsafe-type-assertion` is off, because Zod guards the boundaries and the remaining casts narrow tuples and filters), oxfmt and vitest. No ESLint or Prettier.
 - **Libraries:**
   - `zod` v4, `ky`, `p-queue`;
   - `cheerio` (eTiketti HTML);
@@ -235,7 +237,7 @@ packages/backend/               @pgtm/backend: PostgreSQL (Kysely), ingest, sear
   - `mermaid` (root dev dependency: `design:render` draws design documents' diagrams offline);
   - `kysely` + `pg` (+ `kysely-codegen`);
   - `hono` + `@hono/zod-openapi` + `@scalar/hono-api-reference`;
-  - `tsdown` (Docker bundle only);
+  - `vite-plus` (`vp`: test, lint, fmt, and `vp pack` for the Docker bundle only);
   - website: `astro` (+ `@astrojs/node`, `@astrojs/react`), `react`, `@vanilla-extract/*` (css, vite-plugin, sprinkles, recipes, dynamic), `hono/client`, `jotai` (shared client state), `maplibre-gl` (the map page only, with OpenFreeMap tiles). Interactive and live UI is React islands, rendered on the server first and hydrated `client:idle`; no hand-written DOM scripts for UI (the map excepted).
 - **Website caveats:** `astro check` does not support TypeScript 7 yet, so `tsc` checks the `.ts`/`.tsx` files and `.astro` files stay thin. oxlint checks `.astro` frontmatter; oxfmt does not format `.astro` files.
 - **No general utility library** (remeda, lodash, es-toolkit). Node 26's built-ins cover what the code needs (see development.md).

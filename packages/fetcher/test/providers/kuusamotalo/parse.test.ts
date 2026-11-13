@@ -1,5 +1,5 @@
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { KuusamotaloRawSnapshot } from "../../../src/providers/kuusamotalo/fetch.ts";
 import { parseKuusamotalo } from "../../../src/providers/kuusamotalo/parse.ts";
 import { KUUSAMOTALO_SITES } from "../../../src/providers/kuusamotalo/sites.ts";

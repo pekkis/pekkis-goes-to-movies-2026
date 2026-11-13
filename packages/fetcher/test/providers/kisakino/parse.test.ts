@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { KisaKinoRawSnapshot } from "../../../src/providers/kisakino/fetch.ts";
 import { filmUrls, parseKisaKino } from "../../../src/providers/kisakino/parse.ts";
 import { KISAKINO_SITES } from "../../../src/providers/kisakino/sites.ts";

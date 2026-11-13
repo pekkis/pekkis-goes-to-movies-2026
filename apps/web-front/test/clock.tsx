@@ -1,6 +1,6 @@
 import { act, cleanup, render } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { afterEach, beforeEach, vi } from "vitest";
+import { afterEach, beforeEach, vi } from "vite-plus/test";
 import { ClockIsland } from "../src/components/clock.tsx";
 import { currentInstant } from "@pgtm/model/time";
 import { NOON } from "./fixtures.ts";

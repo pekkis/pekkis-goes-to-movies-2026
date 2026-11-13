@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { formatFilm, formatScreenings, languageLabel, table } from "../src/search/format.ts";
 import type { FilmDetails, ShowtimeRow } from "../src/search/showtimes.ts";
 

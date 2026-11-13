@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { KaarreRawSnapshot } from "../../../src/providers/kaarre/fetch.ts";
 import { parseKaarre } from "../../../src/providers/kaarre/parse.ts";
 import { KAARRE_SITES } from "../../../src/providers/kaarre/sites.ts";

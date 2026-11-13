@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createApi } from "../../src/lib/api.ts";
 import { loadSearchPage, parseSearchParams, searchPageTitle } from "../../src/lib/search.ts";
 import { fakeFetch, screening, venue } from "../fixtures.ts";

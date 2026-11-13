@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { SearchResults } from "../../src/components/SearchResults.tsx";
 import { freezeClockAt } from "../clock.tsx";
 import { NOON_INSTANT, screening } from "../fixtures.ts";

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { BioMarlonRawSnapshot } from "../../../src/providers/biomarlon/fetch.ts";
 import { parseBioMarlon } from "../../../src/providers/biomarlon/parse.ts";
 import { BIOMARLON_SITES } from "../../../src/providers/biomarlon/sites.ts";

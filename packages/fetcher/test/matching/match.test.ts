@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { matchListings } from "../../src/matching/match.ts";
 import type { FilmListing } from "@pgtm/model";
 import type { TmdbClient } from "../../src/tmdb/client.ts";

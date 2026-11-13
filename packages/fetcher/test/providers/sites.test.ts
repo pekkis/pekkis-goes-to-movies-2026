@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { restrictToVenues } from "../../src/providers/adapter.ts";
 import { parseNexxo } from "../../src/providers/nexxo/parse.ts";
 import type { NexxoRawSnapshot } from "../../src/providers/nexxo/raw.ts";

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { TapiolaRawSnapshot } from "../../../src/providers/tapiola/fetch.ts";
 import { filmPages, parseTapiola } from "../../../src/providers/tapiola/parse.ts";
 import { TAPIOLA_SITES } from "../../../src/providers/tapiola/sites.ts";

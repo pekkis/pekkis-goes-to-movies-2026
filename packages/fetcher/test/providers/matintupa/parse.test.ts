@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { MatinTupaRawSnapshot } from "../../../src/providers/matintupa/fetch.ts";
 import { parseMatinTupa } from "../../../src/providers/matintupa/parse.ts";
 import { MATINTUPA_SITES } from "../../../src/providers/matintupa/sites.ts";

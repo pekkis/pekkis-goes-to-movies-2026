@@ -20,7 +20,7 @@ COPY tsconfig.base.json ./
 COPY packages/model packages/model
 COPY packages/backend packages/backend
 COPY apps/web-front apps/web-front
-RUN pnpm --filter @pgtm/web-front build \
+RUN pnpm --filter @pgtm/web-front exec vp run --no-cache build \
  && pnpm --filter @pgtm/web-front deploy --prod --legacy /out \
  && cp -r apps/web-front/dist /out/dist
 

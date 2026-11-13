@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { boundsOf, venuesToGeoJson } from "../../../src/lib/map/geojson.ts";
 
 const venue = (over: Partial<Parameters<typeof venuesToGeoJson>[0][number]> = {}) => ({

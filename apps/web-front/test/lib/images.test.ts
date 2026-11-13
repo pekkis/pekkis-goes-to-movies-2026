@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { posterSource } from "../../src/lib/images.ts";
 
 const TMDB = "https://image.tmdb.org/t/p/w500/abc.jpg";

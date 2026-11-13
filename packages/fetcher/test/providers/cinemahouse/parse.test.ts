@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { CinemahouseRawSnapshot } from "../../../src/providers/cinemahouse/fetch.ts";
 import { parseCinemahouse } from "../../../src/providers/cinemahouse/parse.ts";
 import { CINEMAHOUSE_SITES } from "../../../src/providers/cinemahouse/sites.ts";

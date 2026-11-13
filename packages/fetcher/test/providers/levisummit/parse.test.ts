@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { LeviSummitRawSnapshot } from "../../../src/providers/levisummit/fetch.ts";
 import { parseLeviSummit } from "../../../src/providers/levisummit/parse.ts";
 import { LEVISUMMIT_SITES } from "../../../src/providers/levisummit/sites.ts";

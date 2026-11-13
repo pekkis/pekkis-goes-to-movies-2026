@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { parseCoreLocation, parseIpinfo, parseNominatim } from "../src/geo/locate.ts";
 
 describe("parseCoreLocation", () => {

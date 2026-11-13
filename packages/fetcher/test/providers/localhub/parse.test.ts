@@ -1,5 +1,5 @@
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { LocalhubRawSnapshot } from "../../../src/providers/localhub/fetch.ts";
 import { parseLocalhub } from "../../../src/providers/localhub/parse.ts";
 import { LOCALHUB_SITES } from "../../../src/providers/localhub/sites.ts";

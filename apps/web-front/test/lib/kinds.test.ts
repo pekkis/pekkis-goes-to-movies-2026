@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createApi } from "../../src/lib/api.ts";
 import { KIND_DAYS, loadKindsPage, parseKindsParams } from "../../src/lib/kinds.ts";
 import { fakeFetch, screening } from "../fixtures.ts";

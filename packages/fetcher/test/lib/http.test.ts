@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createHttpClient, decodeBody, retryAfterMs } from "../../src/lib/http.ts";
 
 const bytes = (...values: number[]) => new Uint8Array(values).buffer;

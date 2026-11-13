@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { parseVista } from "../../../src/providers/vista/parse.ts";
 import type { VistaRawSnapshot } from "../../../src/providers/vista/raw.ts";
 import { VISTA_SITES } from "../../../src/providers/vista/sites.ts";

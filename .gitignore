@@ -13,3 +13,4 @@ dist/
 
 # Astro generated types (astro sync)
 .astro/
+.vitest/

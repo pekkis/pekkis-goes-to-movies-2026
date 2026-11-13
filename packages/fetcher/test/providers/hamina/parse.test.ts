@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ProviderBatch, isIncomplete } from "@pgtm/model";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import type { HaminaRawSnapshot } from "../../../src/providers/hamina/fetch.ts";
 import { parseHamina } from "../../../src/providers/hamina/parse.ts";
 import { HAMINA_SITES } from "../../../src/providers/hamina/sites.ts";

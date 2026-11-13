@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { decide, gatherEvidence, tierOf, type Evidence } from "../../src/matching/score.ts";
 import { details } from "../tmdb/factory.ts";
 
