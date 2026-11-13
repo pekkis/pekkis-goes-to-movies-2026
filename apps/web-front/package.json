@@ -5,10 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "test": "vp test run",
-    "typecheck": "astro sync && tsc"
+    "preview": "astro preview"
   },
   "dependencies": {
     "@astrojs/node": "^11.1.12",

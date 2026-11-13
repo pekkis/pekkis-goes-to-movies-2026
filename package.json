@@ -16,8 +16,8 @@
     "ingest": "pnpm --filter @pgtm/backend ingest",
     "data:push": "node --env-file-if-exists=.env scripts/push-data.ts",
     "showtimes": "pnpm --filter @pgtm/backend showtimes",
-    "test": "pnpm -r test",
-    "typecheck": "pnpm -r typecheck",
+    "test": "vp run -r test",
+    "typecheck": "vp run -r typecheck",
     "lint": "vp lint --deny-warnings",
     "fmt": "vp fmt",
     "fmt:check": "vp fmt --check",
@@ -29,7 +29,7 @@
     "api:up": "docker compose --profile app up -d --build --wait",
     "api:down": "docker compose --profile app rm --stop --force api migrate",
     "web:dev": "pnpm --filter @pgtm/web-front dev",
-    "web:build": "pnpm --filter @pgtm/web-front build"
+    "web:build": "vp run -F @pgtm/web-front build"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

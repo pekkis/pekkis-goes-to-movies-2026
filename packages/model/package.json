@@ -10,10 +10,6 @@
     "./geo": "./src/geo.ts",
     "./time": "./src/time.ts"
   },
-  "scripts": {
-    "typecheck": "tsc",
-    "test": "vp test run"
-  },
   "dependencies": {
     "zod": "^4.6.5"
   },

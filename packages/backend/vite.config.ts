@@ -8,6 +8,32 @@ try {
 }
 
 export default defineConfig({
+  run: {
+    tasks: {
+      typecheck: {
+        command: "tsc",
+        // TypeScript 7's tsc is a native binary whose file reads Vite Task does not see: without
+        // these, a type error replays the cached success (found 2026-11-13).
+        cache: {
+          input: [
+            { auto: true },
+            "src/**",
+            "test/**",
+            "migrations/**",
+            "tsconfig.json",
+            { pattern: "packages/*/src/**", base: "workspace" },
+            { pattern: "tsconfig.base.json", base: "workspace" },
+            { pattern: "pnpm-lock.yaml", base: "workspace" },
+          ],
+        },
+      },
+      test: {
+        command: "vp test run",
+        // Tasks run in a clean environment: CI passes the database here, not in .env.
+        cache: { env: ["TEST_DATABASE_URL"] },
+      },
+    },
+  },
   test: {
     globalSetup: "test/global-setup.ts",
     // Integration tests share one database.
