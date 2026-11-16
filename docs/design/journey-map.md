@@ -215,18 +215,20 @@ For the questionnaire and the user tests:
 
 ### Results so far
 
-From the focus group of 2026-11-10 ([findings](../interviews-anonymized/focus-group-2026-11-10.md)). Two participants, both keen hobbyists who know the moderator: read these as signals, not proof.
+From the focus group of 2026-11-10 ([findings](../interviews-anonymized/focus-group-2026-11-10.md); two keen hobbyists who know the moderator) and the survey of October–November 2026 ([findings](../interviews-anonymized/survey-2026-11.md); 22 answers, mostly occasional moviegoers in the Helsinki region). Read them as signals, not proof.
 
-| #   | Result                                                                                                                                              |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Partly **[V]**: one participant checks a single cinema's site, the other uses an aggregator instead.                                                |
-| 2   | Unclear: not raised.                                                                                                                                |
-| 3   | Both **[V]**: one participant starts from the film, the other from the time ("what starts on Wednesday between five and seven").                    |
-| 4   | Weakly supported: a suburban multiplex late at night is a reason not to go.                                                                         |
-| 5   | Not asked. Buying at Finnkino was a strong pain point **[V]**, which supports the "straight to the show's purchase flow" opportunity.               |
-| 6   | Supported strongly **[V]**: asked for unprompted (knitting screenings, a festival, a favourite actor's new film).                                   |
-| 7   | Divides, as expected **[V]**: high scores make one participant anxious; the other avoids trailers. Supports opt-in scores.                          |
-| 8   | Partly: the hall and the seat decide for one participant. Prints and formats not raised; the probes were not run.                                   |
-| 9   | Supported strongly **[V]**: knitting screenings, a horror festival, director visits, Finnkino's member previews, quiet and alcohol-free screenings. |
+| #   | Focus group                                                                                                                                         | Survey                                                                                           |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| 1   | Partly **[V]**: one participant checks a single cinema's site, the other uses an aggregator instead.                                                | Partly **[V]**: 45% compared cinemas last time; 91% use Finnkino, 23% other cinemas' sites.      |
+| 2   | Unclear: not raised.                                                                                                                                | Not a top factor: 1 of 22 put it in their top three.                                             |
+| 3   | Both **[V]**: one participant starts from the film, the other from the time ("what starts on Wednesday between five and seven").                    | **Film first, 73% [V]**; time first 14%. The hypothesis "mostly time and place" is contradicted. |
+| 4   | Weakly supported: a suburban multiplex late at night is a reason not to go.                                                                         | Supported **[V]**: location is in 82% of top threes, as often as the start time.                 |
+| 5   | Not asked. Buying at Finnkino was a strong pain point **[V]**, which supports the "straight to the show's purchase flow" opportunity.               | Not asked. Buying and tickets come up in the open answers.                                       |
+| 6   | Supported strongly **[V]**: asked for unprompted (knitting screenings, a festival, a favourite actor's new film).                                   | Not asked. Related: seeing further ahead, and when a film leaves the cinemas.                    |
+| 7   | Divides, as expected **[V]**: high scores make one participant anxious; the other avoids trailers. Supports opt-in scores.                          | Not asked.                                                                                       |
+| 8   | Partly: the hall and the seat decide for one participant. Prints and formats not raised; the probes were not run.                                   | Partly: IMAX in 14% of top threes; good free seats in the open answers.                          |
+| 9   | Supported strongly **[V]**: knitting screenings, a horror festival, director visits, Finnkino's member previews, quiet and alcohol-free screenings. | Not asked.                                                                                       |
 
-New pain points the maps don't have yet: programmes are published only days ahead (Tuesday to Thursday for the same week), too late for groups to plan; and special screenings sell out before people hear of them.
+Both also agree that Finnkino's redesign is the shared pain point, that one place for every cinema is wanted (survey: 3.73 of 5), and that chat is not wanted for searching (survey: 0 of 22). The survey's phones lead narrowly (59%), which supports mobile first.
+
+New pain points the maps don't have yet: programmes are published only days ahead (Tuesday to Thursday for the same week), too late for groups to plan; special screenings sell out before people hear of them; and people want to know when a film leaves the cinemas.
