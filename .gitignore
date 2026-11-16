@@ -13,3 +13,5 @@ dist/
 
 # Astro generated types (astro sync)
 .astro/
+
+docs/interviews

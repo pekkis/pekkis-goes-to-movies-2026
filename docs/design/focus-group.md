@@ -1,6 +1,6 @@
 # Focus group: discussion guide
 
-A script for the focus group interview after the third workshop: who to invite, what to ask, what to have them do, and what we want to learn. The answers themselves (notes, recordings) stay outside this repository, like the rest of the user research (see [AGENTS.md](../../AGENTS.md#current-state)).
+A script for the focus group interview after the third workshop: who to invite, what to ask, what to have them do, and what we want to learn. The answers themselves (recordings, transcripts) stay outside this repository, like the rest of the user research; only anonymised findings go in [docs/interviews-anonymized/](../interviews-anonymized/) (see [AGENTS.md](../../AGENTS.md#current-state)).
 
 **Status: a first draft, 2026-10-21.**
 
@@ -52,7 +52,7 @@ So the focus group doesn't repeat the questionnaire's closed questions. It turns
 
 - **5–8 hobbyists**: people who go to the cinema at least twice a month, or who follow film clubs, festivals, retrospectives or a cinema's own series.
 - **A mix within the hobby:** an art-house regular, someone who travels for screenings, a festival goer, a film student or film club member, and a big-screen fan (IMAX, 70 mm).
-- **Where to find them:** local film clubs (_elokuvakerhot_), festival volunteers, film students, the regulars of small and art-house cinemas, our own circles. Elsis is a candidate.
+- **Where to find them:** local film clubs (_elokuvakerhot_), festival volunteers, film students, the regulars of small and art-house cinemas, our own circles.
 - **Screening question:** "How many times did you go to the cinema in the last three months, and how did you find out what was on?"
 
 ## Before the session
