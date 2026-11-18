@@ -1079,6 +1079,7 @@ Profiled on 2026-10-10 against all 21 sites (listing + 2 film pages each). **Kin
 
 - **Kino Kaustinen** (2026-10-15): a real eTiketti tenant (kinokaustinen.fi) that Leffavuoro found with no programme in September; now five films, place line "KINO KAUSTINEN". One site entry. Coordinates: OSM way 768088981 (Pajalantie 19, 69600 Kaustinen) **[V]**.
 - **The `data-dates` template** (2026-10-15) **[V]**: some sites' film pages moved a screening row's date from a `date-17.10.2026` class to a JSON attribute, `data-dates='["17.10.2026"]'`. The rows were then silently skipped: Savon Kinot (6 cinemas) and Leffabuumi (3) published nothing, and others lost part of their rows. Both forms are read now. A row inside the screenings block without a readable date warns `invalid-show` (missing data) instead of disappearing.
+- **The `show-row` template** (Leffabuumi, 2026-11-15) **[V]**: rows became `div.item.show-row` with spans: the time in `.show-time` ("19.00", no "klo"), the place split into `.show-city` and `.show-screen` ("Mikkeli" + "Kinolinna | Sali 1", joined with `|` for venue matching), seats as "Vapaana 159/163"; the film's facts moved from `span.label` lines to a `dl.movie-facts` of `dt`/`dd`. Every row warned `invalid-show` (no time) from 2026-11-15 to the fix; the warnings kept ingest from removing anything. Both templates are read.
 
 ## Kinola (public JSON API)
 

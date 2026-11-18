@@ -353,3 +353,41 @@ describe("parseEtiketti: the data-dates template (Savon Kinot, Leffabuumi, 2026-
     });
   });
 });
+
+describe("parseEtiketti: the show-row template (Leffabuumi, 2026-11-15)", () => {
+  const batch = parseEtiketti(
+    snapshot(
+      { "/elokuvat/3340/ebenezer-saiturin-joulu": html("leffabuumi-show-rows") },
+      { fetchedAt: "2026-11-18T06:00:00.000Z", from: "2026-11-18", days: 30 },
+    ),
+    site("leffabuumi"),
+  );
+
+  it("reads the time, place, seats and price from the show-row spans", () => {
+    expect(() => ProviderBatch.parse(batch)).not.toThrow();
+    expect(batch.warnings).toEqual([]);
+    expect(batch.screenings).toHaveLength(2);
+    expect(batch.screenings[0]).toMatchObject({
+      startsAt: "2026-11-18T19:00:00+02:00",
+      venueId: "leffabuumi:venue:kinolinna",
+      ticketUrl: "https://leffabuumi.fi/salikartta?id=57504",
+      price: { amountCents: 1450, currency: "EUR" },
+      availability: "available",
+    });
+    expect(batch.screenings[1]).toMatchObject({
+      startsAt: "2026-11-19T13:15:00+02:00",
+      venueId: "leffabuumi:venue:kino-saimaa",
+      tags: ["last-screening"],
+      // "Vapaana 2/50"
+      availability: "few-left",
+    });
+  });
+
+  it("reads the film's facts from the dl", () => {
+    expect(batch.listings[0]).toMatchObject({ runtimeMinutes: 115 });
+    expect(batch.screenings[0]).toMatchObject({
+      audio: ["en"],
+      subtitles: { kind: "languages", languages: ["fi", "sv"] },
+    });
+  });
+});
