@@ -34,6 +34,7 @@ beforeAll(async () => {
     }),
     screening("3", { listingId: "testchain:film:2", filmId: "tmdb:2" }),
     screening("4", { listingId: "testchain:film:3", filmId: undefined }),
+    screening("5", { listingId: "testchain:film:4", filmId: undefined }),
   ]);
   const listing = b.listings[0]!;
   b.listings = [
@@ -60,6 +61,15 @@ beforeAll(async () => {
       match: undefined,
       kind: "event",
     },
+    {
+      // An unmatched variant of a film whose id sorts before "tmdb:" (2026-11-18).
+      ...listing,
+      id: "testchain:film:4",
+      sourceId: "4",
+      title: { fi: "Ryhmä Hau: Dinoelokuva TEKIJÄVIERAILULLA" },
+      filmId: undefined,
+      match: undefined,
+    },
   ];
   await ingestBatch(db, b);
 });
@@ -73,8 +83,11 @@ describe("searchFilms", () => {
     expect(hit!.score).toBeGreaterThan(0.5);
   });
 
-  it("finds a film by the title cinemas list it under", async () => {
-    expect(await searchFilms(db, "ryhmä hau")).toEqual([{ kind: "film", id: "tmdb:2", score: 1 }]);
+  it("finds a film by the title cinemas list it under, before unmatched listings that tie", async () => {
+    expect(await searchFilms(db, "ryhmä hau")).toEqual([
+      { kind: "film", id: "tmdb:2", score: 1 },
+      { kind: "listing", id: "testchain:film:4", score: 1 },
+    ]);
   });
 
   it("finds a listing that has no TMDB film", async () => {

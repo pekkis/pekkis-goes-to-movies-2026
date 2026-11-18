@@ -9,7 +9,8 @@ import { nextDay, type ScreeningFilter } from "./filters.ts";
  * A "hit" is either a TMDB film (matched on its fi/sv/en/original titles and on the titles
  * cinemas list it under) or a cinema listing with no TMDB film (an opera, an unmatched film),
  * matched on its own titles. Scores are pg_trgm `word_similarity` (0..1), so typos and
- * partial names work: "odysey" finds The Odyssey.
+ * partial names work: "odysey" finds The Odyssey. On equal scores, films come before
+ * unmatched listings.
  */
 
 export const DEFAULT_MIN_SCORE = 0.5;
@@ -48,7 +49,9 @@ export const searchFilms = async (
     )
     select kind, id, score::float8 as score from hits
     where score >= ${minScore}
-    order by score desc, id
+    -- On a tie, a TMDB film before unmatched listings: they are often its variants
+    -- ("… TEKIJÄVIERAILULLA"), and their ids may sort before "tmdb:".
+    order by score desc, kind = 'film' desc, id
     limit ${limit}
   `.execute(db);
   return rows;
