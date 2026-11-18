@@ -96,6 +96,14 @@ export const extractFilmPage = (
       facts[key] = value;
     }
   });
+  // The show-row template (Leffabuumi, 2026-11-15) lists the facts as <dt>/<dd> pairs.
+  $("dl.movie-facts dt").each((_, el) => {
+    const key = plainText($(el).text()).replace(/:$/, "");
+    const value = plainText($(el).next("dd").text());
+    if (key && value && !(key in facts)) {
+      facts[key] = value;
+    }
+  });
   const genres = $("span.movie-genre")
     .map((_, el) => plainText($(el).text()))
     .get()
@@ -125,7 +133,7 @@ export const extractFilmPage = (
       const timeMatch =
         row.text().match(/klo\s*(\d{1,2})[.:](\d{2})/) ??
         row
-          .find(".time")
+          .find(".time, .show-time")
           .text()
           .match(/(\d{1,2})[.:](\d{2})/);
       const time = timeMatch && `${timeMatch[1]!.padStart(2, "0")}:${timeMatch[2]}`;
@@ -137,12 +145,21 @@ export const extractFilmPage = (
       const firstLine = details.length
         ? fragmentText(($(details).html() ?? "").split(/<br\s*\/?>/i)[0] ?? "")
         : "";
-      const place = firstLine && !DETAILS.test(firstLine) ? firstLine : undefined;
+      // The show-row template splits the place: "Mikkeli" + "Kinolinna | Sali 1".
+      const showPlace = row
+        .find(".show-city, .show-screen")
+        .map((_index, part) => plainText($(part).text()))
+        .get()
+        .filter(Boolean)
+        .join(" | ");
+      const place = showPlace || (firstLine && !DETAILS.test(firstLine) ? firstLine : undefined);
       const rowText = plainText(row.text());
       const price = (row.find(".show-price").text() || rowText).match(
         /(\d+(?:[.,]\d{1,2})?)\s*€/,
       )?.[1];
-      const seats = rowText.match(/(?:Vapaat paikat|Paikkoja vapaana):?\s*(\d+)\s*\/\s*(\d+)/i);
+      const seats = rowText.match(
+        /(?:Vapaat paikat|Paikkoja vapaana|Vapaana):?\s*(\d+)\s*\/\s*(\d+)/i,
+      );
       return {
         date,
         time,
